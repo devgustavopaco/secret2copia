@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky install",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "commit:hook": "exec < /dev/tty && git-cz --hook || true"
   },
   "dependencies": {
     "next": "12.2.2",
