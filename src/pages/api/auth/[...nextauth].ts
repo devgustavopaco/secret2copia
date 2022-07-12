@@ -24,12 +24,34 @@ export const authOptions: NextAuthOptions = {
           placeholder: 'Senha',
         },
       },
-      async authorize(credentials, _req) {
-        const user = { id: 1, name: credentials?.email ?? 'J Smith' }
-        return user
+      async authorize(credentials, req) {
+        const user = await fetch(
+          `${process.env.NEXTAUTH_URL}/api/user/checkCredentials`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              accept: 'application/json',
+            },
+            body: JSON.stringify(credentials),
+          }
+        )
+          .then((response) => response.json())
+          .catch((err) => null)
+
+        if (user) {
+          return user
+        }
+
+        return null
       },
     }),
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
 }
 
 export default NextAuth(authOptions)
