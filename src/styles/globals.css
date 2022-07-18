@@ -35,6 +35,7 @@ body {
   padding: 0;
   margin: 0;
   font-family: var(--font-family);
+  line-height: 1.5;
 }
 
 * {
