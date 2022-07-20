@@ -1,12 +1,9 @@
-import type { NextPage } from "next";
-import Head from "next/head";
-import { trpc } from "../utils/trpc";
+import type { NextPage } from 'next'
+import Head from 'next/head'
+import { trpc } from '../utils/trpc'
 
 const Home: NextPage = () => {
-  const { data, isLoading } = trpc.useQuery([
-    "example.hello",
-    { text: "from tRPC" },
-  ]);
+  const { data, isLoading } = trpc.useQuery(['auth.getSession'])
 
   return (
     <>
@@ -44,11 +41,11 @@ const Home: NextPage = () => {
             </li>
           </ul>
 
-          <div>{data ? <p>{data.greeting}</p> : <p>Loading..</p>}</div>
+          <div>{data?.user ? <p>{data.user.name}</p> : <p>Loading..</p>}</div>
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

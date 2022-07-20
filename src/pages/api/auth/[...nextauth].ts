@@ -1,45 +1,57 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth, { type NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 // Prisma adapter for NextAuth, optional and can be removed
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "../../../server/db/client";
-import { env } from "../../../server/env.mjs";
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { prisma } from '../../../server/db/client'
 
 export const authOptions: NextAuthOptions = {
-  // Include user.id on session
-  callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-      }
-      return session;
-    },
-  },
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
     // ...add more providers here
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        name: {
-          label: "Name",
-          type: "text",
-          placeholder: "Enter your name",
+        email: {
+          label: 'Email',
+          type: 'email',
+          placeholder: 'exemplo@exemplo.com',
+        },
+        password: {
+          label: 'Senha',
+          type: 'password',
+          placeholder: 'Senha',
         },
       },
-      async authorize(credentials, _req) {
-        const user = { id: 1, name: credentials?.name ?? "J Smith" };
-        return user;
+      async authorize(credentials, req) {
+        const user = await fetch(
+          `${process.env.NEXTAUTH_URL}/api/user/checkCredentials`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              accept: 'application/json',
+            },
+            body: JSON.stringify(credentials),
+          }
+        )
+          .then((response) => response.json())
+          .catch((err) => null)
+
+        if (user) {
+          return user
+        }
+
+        return null
       },
     }),
   ],
-};
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+}
 
-export default NextAuth(authOptions);
+export default NextAuth(authOptions)
