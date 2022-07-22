@@ -1,14 +1,22 @@
 .content {
   display: flex;
   // max-height: calc(100vh - 2rem - 3rem - 1px);
-  padding: 2rem 4rem;
+  padding-block: 2rem;
   gap: 1.75rem;
   align-items: flex-start;
+
+  margin-inline: auto;
+
+  main {
+    flex: 1;
+  }
 }
 
 .operations {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(20.25rem, 1fr));
+
   gap: 1rem 2rem;
 
   margin-top: 1rem;
