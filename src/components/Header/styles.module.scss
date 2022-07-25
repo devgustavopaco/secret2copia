@@ -1,8 +1,10 @@
 .header {
-  display: flex;
-  gap: 2.5rem;
-  align-items: center;
-  padding: 1rem 4rem;
+  :global(.container) {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    padding-block: 1rem;
+  }
 
   border-bottom: solid 1px var(--gray-500);
 

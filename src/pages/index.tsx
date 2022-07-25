@@ -1,15 +1,9 @@
 import type { NextPage } from 'next'
-import { useSession } from 'next-auth/react'
 import Head from 'next/head'
 import { trpc } from '../utils/trpc'
 
 const Home: NextPage = () => {
-  const { data, isLoading } = trpc.useQuery([
-    'example.hello',
-    { text: 'from tRPC' },
-  ])
-
-  const { data: session, status } = trpc.useQuery(['auth.getSession'])
+  const { data, isLoading } = trpc.useQuery(['auth.getSession'])
 
   return (
     <>
@@ -47,9 +41,7 @@ const Home: NextPage = () => {
             </li>
           </ul>
 
-          <div>{data ? <p>{data.greeting}</p> : <p>Loading..</p>}</div>
-          <div>{session ? <p>{session.user?.name}</p> : <p>Loading..</p>}</div>
-          <div>{status ? <p>{status}</p> : <p>Loading..</p>}</div>
+          <div>{data?.user ? <p>{data.user.name}</p> : <p>Loading..</p>}</div>
         </div>
       </div>
     </>

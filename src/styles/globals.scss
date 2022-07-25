@@ -93,3 +93,19 @@ button {
   cursor: pointer;
   border: none;
 }
+
+.container {
+  --max-width: auto;
+
+  max-width: var(--max-width);
+  padding-inline: 4rem;
+
+  margin-inline: auto;
+
+  @media only screen and (min-width: 1280px) {
+    --max-width: 1536px;
+  }
+  @media only screen and (min-width: 1536px) {
+    --max-width: 1920px;
+  }
+}

@@ -14,7 +14,7 @@ const Monitoring: NextPage = () => {
       </Head>
       <div>
         <Header />
-        <div className={styles.content}>
+        <div className={`${styles.content} container`}>
           <Sidebar />
 
           <main>
