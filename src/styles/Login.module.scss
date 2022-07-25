@@ -1,0 +1,139 @@
+.body{
+    background-image: url('/images/loginImg.png');
+    width: 100%;
+    height: 100vh;
+    display: flex;
+}
+
+
+
+.contentBox{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+
+
+.formBox{
+    width: 500px;
+    height:60%;
+    padding: 20px;
+    border-radius: 40px;
+    background: rgba(16, 16, 16, 0.9);
+    margin: 30px;     
+}
+
+.formBox h3{
+    color: whitesmoke;
+    text-align: center;
+    margin: 30px 0 10px;
+    font-weight: 500;
+}
+
+.formBox h2{
+    color: whitesmoke;
+    font-weight: 600;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    border-bottom: 4px solid #7158E2;
+    display: inline-block;
+    letter-spacing: 1px;
+}
+
+
+.inputBox{
+    margin-bottom: 25px;
+}
+
+.inputBox span{
+    font-size: 16px;
+    margin-bottom: 5px;
+    display: inline-block;
+    color: whitesmoke;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.inputBox input {
+    width: 100%;
+    padding: 10px 20px;
+    outline: none;
+    font-weight: 400;
+    border: 1px solid #7158E2;
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: whitesmoke;
+    background: transparent;
+    border-radius: 30px;
+}
+
+
+.inputBox input[type="submit"]{
+    background: rgb(181, 53, 246);
+    color: #fff;
+    outline: none;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.inputBox inputBox[type="submit"]:hover{
+    background: #950a95;
+}
+
+.inputBox p{
+    color: whitesmoke;
+}
+
+.inputBox p a{
+    color: rgb(181, 53, 246);
+    text-decoration: underline;
+}
+
+
+
+.remember {
+  margin-bottom: 10px;
+  color: whitesmoke;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+
+
+.socialMedia {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+
+.icon{
+    height: 33px;
+    width: 33px;
+    margin: 0 0.4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: whitesmoke;
+    border-radius: 50%;
+    transition: 0.3;
+}
+
+
+.icon:hover{
+    color: rgb(181, 53, 246);
+    border-color: rgb(181, 53, 246);
+}
+
+
+@media (max-width: 820px) {
+    
+  }
