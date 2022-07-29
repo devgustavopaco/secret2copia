@@ -1,0 +1,72 @@
+.userList{
+    margin: 0px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items:flex-end;
+    width: 100%;
+    height: 100%;
+}
+
+.buttonList{
+    display: flex;
+    margin: 30px 10px;
+}
+
+.box{
+    padding: 5px;
+    background: var(--gray-800);
+    color: red !important;
+    border-radius: 15px;
+    box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
+    border:none !important;
+    svg{
+        color: var(--purple-500) !important;
+    }
+}
+
+.grid{
+    border: none;
+    color: whitesmoke !important;
+    p{
+        color: whitesmoke !important;
+    }
+}
+
+.deleteButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-left: auto;
+    background-color: transparent;
+    color: var(--white);    
+    border-radius: 4px;
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--white);
+
+    &:hover{
+        color: var(--purple-200);
+        transition: filter 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 0 0 1.5px var(--purple-200);
+    }
+}
+
+
+.addButton{
+    margin-right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;   
+    background-color: transparent;
+    color: var(--white);    
+    border-radius: 4px;
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--white);
+
+    &:hover{
+        color: var(--purple-200);
+        transition: filter 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 0 0 1.5px var(--purple-200);
+    }
+}

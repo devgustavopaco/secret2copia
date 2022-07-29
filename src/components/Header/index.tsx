@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { SignOut } from 'phosphor-react'
 import styles from './styles.module.scss'
 
@@ -22,6 +23,11 @@ export function Header() {
             </li>
             <li>
               <a href="#">Contato</a>
+            </li>
+            <li>
+              <Link href="/adminSales">
+                <a>Painel Administrator</a>
+              </Link>
             </li>
           </ul>
         </nav>
