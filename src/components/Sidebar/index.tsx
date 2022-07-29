@@ -7,7 +7,7 @@ const exchanges = [
   'BitcoinTrade',
   'Coinbase',
   'Chiliz',
-  'Coinnext',
+  'Coinext',
   'Crypto.com',
   'FTX',
   'Foxbit',
