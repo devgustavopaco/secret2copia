@@ -5,7 +5,14 @@ interface OperationCardProps {
   coin: {
     image: string
     name: string
-    price: number
+    ask: {
+      exchange: string
+      price: number
+    }
+    bid: {
+      exchange: string
+      price: number
+    }
     symbol: string
   }
   onClick: () => void
@@ -34,12 +41,12 @@ export function OperationCard({ coin, onClick }: OperationCardProps) {
           <h3>Compra</h3>
           <div>
             <img src={coin.image} alt={coin.name} />
-            Mercado Bitcoin
+            {coin.ask.exchange}
           </div>
           <p>
             <span>R$</span>
             &nbsp;
-            {coin.price}
+            {coin.ask.price}
           </p>
         </div>
 
@@ -49,12 +56,12 @@ export function OperationCard({ coin, onClick }: OperationCardProps) {
           <h3>Venda</h3>
           <div>
             <img src={coin.image} alt={coin.name} />
-            Binance
+            {coin.bid.exchange}
           </div>
           <p>
             <span>R$</span>
             &nbsp;
-            {coin.price}
+            {coin.bid.price}
           </p>
         </div>
       </div>

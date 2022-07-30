@@ -4,8 +4,13 @@ import { OperationCard } from '../components/OperationCard'
 import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
 import styles from '../styles/Monitor.module.scss'
+import { trpc } from '../utils/trpc'
 
 const Monitoring: NextPage = () => {
+  const { data } = trpc.useQuery(['orderBook.getAll'], {
+    refetchInterval: 30 * 1000,
+  })
+
   return (
     <>
       <Head>
@@ -21,105 +26,24 @@ const Monitoring: NextPage = () => {
             <h1>Operações</h1>
 
             <div className={styles.operations}>
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
-              <OperationCard
-                coin={{
-                  image: '/Ethereum.png',
-                  name: 'Ethereum',
-                  price: 6627.37,
-                  symbol: 'ETH',
-                }}
-                onClick={() => {}}
-              />
+              {data && (
+                <OperationCard
+                  coin={{
+                    image: '/Ethereum.png',
+                    name: data.coin,
+                    ask: {
+                      exchange: data.lowestAsk.exchange,
+                      price: data.lowestAsk.price,
+                    },
+                    bid: {
+                      exchange: data.highestBid.exchange,
+                      price: data.highestBid.price,
+                    },
+                    symbol: 'ETH',
+                  }}
+                  onClick={() => {}}
+                />
+              )}
             </div>
           </main>
         </div>
