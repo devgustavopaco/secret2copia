@@ -122,64 +122,101 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HotBitStrategy(),
 ]
 
+interface ArbitrageOpportunity {
+  coin: string
+  ticker: string
+  lowestAsk: {
+    exchange: string
+    price: number
+    amount: number
+  }
+  highestBid: {
+    exchange: string
+    price: number
+    amount: number
+  }
+}
+
+const fetchArbitrageOpportunity = async (coin: {
+  name: string
+  ticker: string
+}): Promise<ArbitrageOpportunity> => {
+  const { name, ticker } = coin
+
+  const orderBookPromises: Promise<Exchange>[] = []
+
+  for (const exchangeStrategy of exchangeStrategies) {
+    const coinPair = exchangeStrategy.formatPair(ticker, 'usdt')
+    orderBookPromises.push(exchangeStrategy.fetchOrderbook(coinPair))
+  }
+
+  const results = await Promise.allSettled(orderBookPromises)
+
+  const orderBooks = results.map((result) => {
+    if (result.status === 'fulfilled') {
+      return result.value
+    }
+  })
+
+  const lowestAsk = orderBooks.reduce(
+    (acc, book) => {
+      if (book?.ask) {
+        if (book.ask.price < acc.price) {
+          return { exchange: book.name, ...book.ask }
+        }
+      }
+      return acc
+    },
+    { exchange: '', price: 9999999999999, amount: 0 }
+  )
+
+  const highestBid = orderBooks.reduce(
+    (acc, book) => {
+      if (book?.bid) {
+        if (book.bid.price > acc.price) {
+          return { exchange: book.name, ...book.bid }
+        }
+      }
+      return acc
+    },
+    { exchange: '', price: 0, amount: 0 }
+  )
+
+  return {
+    coin: name,
+    ticker,
+    lowestAsk,
+    highestBid,
+  }
+}
+
 export const orderbookRouter = createRouter().query('getAll', {
   async resolve({ ctx }) {
-    const orderBookPromises: Promise<Exchange>[] = []
+    const activeCoins = await ctx.prisma.coin.findMany({
+      where: {
+        active: true,
+      },
+    })
 
-    for (const exchangeStrategy of exchangeStrategies) {
-      const coinPair = exchangeStrategy.formatPair('btc', 'usdt')
-      orderBookPromises.push(exchangeStrategy.fetchOrderbook(coinPair))
+    const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] = []
+
+    for (const coin of activeCoins) {
+      arbitrageOpportunitiesPromises.push(
+        fetchArbitrageOpportunity({
+          name: coin.name,
+          ticker: coin.ticker,
+        })
+      )
     }
 
-    const results = await Promise.allSettled(orderBookPromises)
+    const results = await Promise.allSettled(arbitrageOpportunitiesPromises)
 
-    const orderBooks = results.map((result) => {
+    const arbitrageOpportunities = results.map((result) => {
       if (result.status === 'fulfilled') {
         return result.value
       }
     })
 
-    // const lowestAsk = orderBooks.reduce(
-    //   (acc, book) => {
-    //     if (book?.ask) {
-    //       if (book.ask.price < acc.price) {
-    //         return { exchange: book.name, ...book.ask }
-    //       }
-    //     }
-    //     return acc
-    //   },
-    //   { exchange: '', price: 0, amount: 0 }
-    // )
-
-    const lowestAsk = orderBooks.reduce(
-      (acc, book) => {
-        if (book?.ask) {
-          if (book.ask.price < acc.price) {
-            return { exchange: book.name, ...book.ask }
-          }
-        }
-        return acc
-      },
-      { exchange: '', price: 9999999999999, amount: 0 }
-    )
-
-    const highestBid = orderBooks.reduce(
-      (acc, book) => {
-        if (book?.bid) {
-          if (book.bid.price > acc.price) {
-            return { exchange: book.name, ...book.bid }
-          }
-        }
-        return acc
-      },
-      { exchange: '', price: 0, amount: 0 }
-    )
-
-    return {
-      coin: 'bitcoin',
-      ticker: 'btc',
-      lowestAsk,
-      highestBid,
-    }
+    return arbitrageOpportunities
   },
 })
