@@ -85,7 +85,7 @@ interface Exchange {
   }
 }
 
-/* const exchangeStrategies: { [key: string]: ExchangeStrategy } = {
+const exchangeStrategies: { [key: string]: ExchangeStrategy } = {
   binance: new BinanceStrategy(),
   bitso: new BitsoStrategy(),
   brasilbitcoin: new BrasilBitcoinStrategy(),
@@ -102,9 +102,9 @@ interface Exchange {
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
   hotbit: new HotBitStrategy(),
-} */
+}
 
-const exchangeStrategies: ExchangeStrategy[] = [
+/* const exchangeStrategies: ExchangeStrategy[] = [
   new BinanceStrategy(),
   new BitsoStrategy(),
   new BrasilBitcoinStrategy(),
@@ -121,7 +121,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HitBTCStrategy(),
   new BitfinexStrategy(),
   new HotBitStrategy(),
-]
+] */
 
 interface ArbitrageOpportunity {
   coin: string
@@ -150,9 +150,16 @@ const fetchArbitrageOpportunity = async (
 
   const orderBookPromises: Promise<Exchange>[] = []
 
-  for (const exchangeStrategy of exchangeStrategies) {
-    const coinPair = exchangeStrategy.formatPair(ticker, 'usdt')
-    orderBookPromises.push(exchangeStrategy.fetchOrderbook(coinPair))
+  var allowedExchanges = buyExchanges.concat(
+    sellExchanges.filter((item) => sellExchanges.indexOf(item) < 0)
+  )
+
+  for (const exchange of allowedExchanges) {
+    const exchangeStrategy = exchangeStrategies[exchange]
+    if (exchangeStrategy) {
+      const coinPair = exchangeStrategy.formatPair(ticker, 'usdt')
+      orderBookPromises.push(exchangeStrategy.fetchOrderbook(coinPair))
+    }
   }
 
   const results = await Promise.allSettled(orderBookPromises)
