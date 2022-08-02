@@ -22,6 +22,7 @@ import {
   ExchangeStrategy,
   OrderbookContext,
 } from '../modules/exchanges/ExchangeStrategy'
+import { z } from 'zod'
 
 const exchanges = [
   'Binance', // Feito
@@ -137,10 +138,14 @@ interface ArbitrageOpportunity {
   }
 }
 
-const fetchArbitrageOpportunity = async (coin: {
-  name: string
-  ticker: string
-}): Promise<ArbitrageOpportunity> => {
+const fetchArbitrageOpportunity = async (
+  coin: {
+    name: string
+    ticker: string
+  },
+  buyExchanges: string[],
+  sellExchanges: string[]
+): Promise<ArbitrageOpportunity> => {
   const { name, ticker } = coin
 
   const orderBookPromises: Promise<Exchange>[] = []
@@ -158,11 +163,14 @@ const fetchArbitrageOpportunity = async (coin: {
     }
   })
 
+  // Lowest buy price
   const lowestAsk = orderBooks.reduce(
-    (acc, book) => {
-      if (book?.ask) {
-        if (book.ask.price < acc.price) {
-          return { exchange: book.name, ...book.ask }
+    (acc, exchange) => {
+      if (buyExchanges.includes(exchange?.name ?? '')) {
+        if (exchange?.ask) {
+          if (exchange.ask.price < acc.price) {
+            return { exchange: exchange.name, ...exchange.ask }
+          }
         }
       }
       return acc
@@ -170,11 +178,14 @@ const fetchArbitrageOpportunity = async (coin: {
     { exchange: '', price: 9999999999999, amount: 0 }
   )
 
+  // Highest sell price
   const highestBid = orderBooks.reduce(
-    (acc, book) => {
-      if (book?.bid) {
-        if (book.bid.price > acc.price) {
-          return { exchange: book.name, ...book.bid }
+    (acc, exchange) => {
+      if (sellExchanges.includes(exchange?.name ?? '')) {
+        if (exchange?.bid) {
+          if (exchange.bid.price > acc.price) {
+            return { exchange: exchange.name, ...exchange.bid }
+          }
         }
       }
       return acc
@@ -191,21 +202,45 @@ const fetchArbitrageOpportunity = async (coin: {
 }
 
 export const orderbookRouter = createRouter().query('getAll', {
-  async resolve({ ctx }) {
+  input: z
+    .object({
+      buyExchanges: z.string().array(),
+      sellExchanges: z.string().array(),
+    })
+    .optional(),
+  async resolve({ ctx, input }) {
+    if (!input) {
+      return []
+    }
+
+    const { buyExchanges, sellExchanges } = input
+
+    if (buyExchanges.length === 0 || sellExchanges.length === 0) {
+      return []
+    }
+
     const activeCoins = await ctx.prisma.coin.findMany({
       where: {
         active: true,
       },
     })
 
+    if (activeCoins.length === 0) {
+      return []
+    }
+
     const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] = []
 
     for (const coin of activeCoins) {
       arbitrageOpportunitiesPromises.push(
-        fetchArbitrageOpportunity({
-          name: coin.name,
-          ticker: coin.ticker,
-        })
+        fetchArbitrageOpportunity(
+          {
+            name: coin.name,
+            ticker: coin.ticker,
+          },
+          buyExchanges,
+          sellExchanges
+        )
       )
     }
 
