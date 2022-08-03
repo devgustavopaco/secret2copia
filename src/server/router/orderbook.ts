@@ -1,5 +1,4 @@
 import { createRouter } from './context'
-import fetch from 'node-fetch'
 import {
   BinanceStrategy,
   BitfinexStrategy,
@@ -18,33 +17,8 @@ import {
   MercadoBitcoinStrategy,
   NovaDAXStrategy,
 } from '../modules/exchanges/Exchanges'
-import {
-  ExchangeStrategy,
-  OrderbookContext,
-} from '../modules/exchanges/ExchangeStrategy'
+import type { ExchangeStrategy } from '../modules/exchanges/ExchangeStrategy'
 import { z } from 'zod'
-
-const exchanges = [
-  'Binance', // Feito
-  'Bitso', // Feito
-  'BrasilBitcoin', // Feito
-  'BitcoinTrade', // Precisa de um token https://apidocs.bitcointrade.com.br/#operation/GetBookOrders
-  'Coinbase', // Feito
-  'Chiliz', // Feito
-  'Coinext', // Feito, mas muito ruim
-  'Crypto.com', // Feito
-  'FTX', // Precisa de um token https://docs.ftx.com/?python#get-open-orders
-  'Foxbit', // Só por websocket
-  'Gemini', // Feito
-  'Huobi', // Feito
-  'Kraken', // Feito
-  'KuCoin', // Feito
-  'NovaDAX', // Feito
-  'Mercado Bitcoin', // Feito
-  'HitBTC', // Feito
-  'Bitfinex', // Feito
-  'HotBit', // Feito
-]
 
 interface Operation {
   coin: {
@@ -104,25 +78,6 @@ const exchangeStrategies: { [key: string]: ExchangeStrategy } = {
   hotbit: new HotBitStrategy(),
 }
 
-/* const exchangeStrategies: ExchangeStrategy[] = [
-  new BinanceStrategy(),
-  new BitsoStrategy(),
-  new BrasilBitcoinStrategy(),
-  new CoinBaseStrategy(),
-  new ChilizStrategy(),
-  new CoinextStrategy(),
-  new CryptoComStrategy(),
-  new GeminiStategy(),
-  new HuobiStrategy(),
-  new KrakenStrategy(),
-  new KuCoinStratefy(),
-  // new NovaDAXStrategy(),
-  new MercadoBitcoinStrategy(),
-  new HitBTCStrategy(),
-  new BitfinexStrategy(),
-  new HotBitStrategy(),
-] */
-
 interface ArbitrageOpportunity {
   coin: string
   ticker: string
@@ -150,11 +105,11 @@ const fetchArbitrageOpportunity = async (
 
   const orderBookPromises: Promise<Exchange>[] = []
 
-  var allowedExchanges = buyExchanges.concat(
+  var uniqueExchanges = buyExchanges.concat(
     sellExchanges.filter((item) => sellExchanges.indexOf(item) < 0)
   )
 
-  for (const exchange of allowedExchanges) {
+  for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
     if (exchangeStrategy) {
       const coinPair = exchangeStrategy.formatPair(ticker, 'usdt')
