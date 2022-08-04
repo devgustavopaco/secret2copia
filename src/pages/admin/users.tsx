@@ -1,12 +1,12 @@
 import type { NextPage } from 'next'
 import { Trash, UserCirclePlus } from 'phosphor-react'
-import { DataGridUsers } from '../components/GridComponents/DataGridUsers'
-import { SideBarAdmin } from '../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../components/Admin/TopBarAdmin'
-import styles from '../styles/Admin.module.scss'
+import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
+import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
+import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import styles from '../../styles/Admin.module.scss'
 import { useState } from 'react'
-import { ModalDeleteUser } from '../components/Modals/ModalDeleteUser'
-import { ModalAddUser } from '../components/Modals/ModalAddUser'
+import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
+import { ModalAddUser } from '../../components/Modals/ModalAddUser'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)

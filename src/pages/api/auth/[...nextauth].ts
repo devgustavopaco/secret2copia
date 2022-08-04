@@ -52,6 +52,27 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+        token.name = user.name
+      }
+
+      return token
+    },
+
+    async session({ session, token }) {
+      if (token) {
+        session.id = token.id
+        session.email = token.email
+        session.name = token.name
+      }
+
+      return session
+    },
+  },
 }
 
 export default NextAuth(authOptions)

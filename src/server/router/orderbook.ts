@@ -105,9 +105,9 @@ const fetchArbitrageOpportunity = async (
 
   const orderBookPromises: Promise<Exchange>[] = []
 
-  var uniqueExchanges = buyExchanges.concat(
-    sellExchanges.filter((item) => sellExchanges.indexOf(item) < 0)
-  )
+  var uniqueExchanges = Array.from(
+    new Set([...buyExchanges, ...sellExchanges])
+  ).map((exchange) => exchange.toLowerCase().replace(/\s/g, ''))
 
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
@@ -128,7 +128,7 @@ const fetchArbitrageOpportunity = async (
   // Lowest buy price
   const lowestAsk = orderBooks.reduce(
     (acc, exchange) => {
-      if (buyExchanges.includes(exchange?.name ?? '')) {
+      if (buyExchanges.includes(exchange?.name.toLowerCase() ?? '')) {
         if (exchange?.ask) {
           if (exchange.ask.price < acc.price) {
             return { exchange: exchange.name, ...exchange.ask }
@@ -143,7 +143,7 @@ const fetchArbitrageOpportunity = async (
   // Highest sell price
   const highestBid = orderBooks.reduce(
     (acc, exchange) => {
-      if (sellExchanges.includes(exchange?.name ?? '')) {
+      if (sellExchanges.includes(exchange?.name.toLowerCase() ?? '')) {
         if (exchange?.bid) {
           if (exchange.bid.price > acc.price) {
             return { exchange: exchange.name, ...exchange.bid }
