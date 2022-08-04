@@ -1,11 +1,11 @@
 import type { NextPage } from 'next'
-import { SideBarAdmin } from '../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../components/Admin/TopBarAdmin'
-import styles from '../styles/Admin.module.scss'
-import { DataGridCryptos } from '../components/GridComponents/DataGridCryptos'
+import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
+import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import styles from '../../styles/Admin.module.scss'
+import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
 import { CurrencyEth } from 'phosphor-react'
 import { useState } from 'react'
-import { ModalAddCrypto } from '../components/Modals/ModalAddCrypto'
+import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 
 const AdminExchanges: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)

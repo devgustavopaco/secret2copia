@@ -1,19 +1,21 @@
+import { X } from 'phosphor-react'
+import { ImageDropzone } from '../../ImageDropzone'
 import styles from './styles.module.scss'
 
 export function ModalAddCrypto({ setOpenModal }: any) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
-        <div className={styles.titleCloseBtn}>
+        <header className={styles.modalHeader}>
+          <h3>Adicionar Moeda</h3>
           <button
             onClick={() => {
               setOpenModal(false)
             }}
-            className={styles.xBtn}
           >
-            X
+            <X size={24} weight="bold" />
           </button>
-        </div>
+        </header>
         <form action="#">
           <div className={styles.userDetails}>
             <div className={styles.inputBox}>
@@ -26,11 +28,11 @@ export function ModalAddCrypto({ setOpenModal }: any) {
             </div>
             <div className={styles.inputBoxFile}>
               <span className={styles.details}>Foto</span>
-              <input type="file" id="img" name="img" accept="image/*" />
+              <ImageDropzone />
             </div>
           </div>
         </form>
-        <div className={styles.footer}>
+        <footer className={styles.footer}>
           <button
             className={styles.voltarBtn}
             onClick={() => {
@@ -40,7 +42,7 @@ export function ModalAddCrypto({ setOpenModal }: any) {
             Voltar
           </button>
           <button className={styles.addBtn}>Adicionar</button>
-        </div>
+        </footer>
       </div>
     </div>
   )
