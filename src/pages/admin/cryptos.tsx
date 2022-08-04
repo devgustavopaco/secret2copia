@@ -4,7 +4,7 @@ import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
 import { CurrencyEth } from 'phosphor-react'
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
 
