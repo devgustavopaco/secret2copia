@@ -24,10 +24,10 @@ export function SideBarAdmin() {
                 <span className={styles.sidebarText}>Home</span>
               </li>
             </Link>
-            <Link href="/adminSales/">
+            <Link href="/admin/sales/">
               <li
                 className={
-                  router.pathname === '/adminSales'
+                  router.pathname === '/admin/sales'
                     ? styles.sidebarListItem + ' ' + styles.active
                     : styles.sidebarListItem
                 }
@@ -41,10 +41,10 @@ export function SideBarAdmin() {
         <div className={styles.sidebarMenu}>
           <h3 className={styles.sidebarTitle}>Menu Rápido</h3>
           <ul className={styles.sidebarList}>
-            <Link href="/adminUsers/">
+            <Link href="/admin/users/">
               <li
                 className={
-                  router.pathname == '/adminUsers'
+                  router.pathname == '/admin/users'
                     ? styles.sidebarListItem + ' ' + styles.active
                     : styles.sidebarListItem
                 }
@@ -53,10 +53,10 @@ export function SideBarAdmin() {
                 <span className={styles.sidebarText}>Usuários</span>
               </li>
             </Link>
-            <Link href="/adminCryptos/">
+            <Link href="/admin/cryptos/">
               <li
                 className={
-                  router.pathname == '/adminCryptos'
+                  router.pathname == '/admin/cryptos'
                     ? styles.sidebarListItem + ' ' + styles.active
                     : styles.sidebarListItem
                 }
@@ -65,10 +65,10 @@ export function SideBarAdmin() {
                 <span className={styles.sidebarText}>Cryptos</span>
               </li>
             </Link>
-            <Link href="/adminExchanges/">
+            <Link href="/admin/exchanges/">
               <li
                 className={
-                  router.pathname == '/adminExchanges'
+                  router.pathname == '/admin/exchanges'
                     ? styles.sidebarListItem + ' ' + styles.active
                     : styles.sidebarListItem
                 }
