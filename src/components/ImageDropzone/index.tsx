@@ -3,7 +3,11 @@ import { useDropzone } from 'react-dropzone'
 
 import styles from './styles.module.scss'
 
-export function ImageDropzone() {
+interface ImageDropzoneProps {
+  onDrop: (acceptedFiles: File[]) => void
+}
+
+export function ImageDropzone({ onDrop }: ImageDropzoneProps) {
   const {
     acceptedFiles,
     isFocused,
@@ -16,6 +20,7 @@ export function ImageDropzone() {
       'image/png': [],
     },
     maxFiles: 1,
+    onDrop,
   })
 
   const file = acceptedFiles[0]
