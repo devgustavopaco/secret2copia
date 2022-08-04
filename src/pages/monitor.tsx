@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import Head from 'next/head'
 import { OperationCard } from '../components/OperationCard'
 import { Header } from '../components/Header'
@@ -7,6 +7,8 @@ import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
 import { CoinNotFound } from '../components/CoinNotFound'
 import { useCallback, useState } from 'react'
+import { unstable_getServerSession } from 'next-auth'
+import { authOptions } from './api/auth/[...nextauth]'
 
 interface SelectedExchanges {
   name: string
@@ -121,3 +123,24 @@ const Monitoring: NextPage = () => {
 }
 
 export default Monitoring
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  )
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: true,
+      },
+    }
+  }
+
+  return {
+    props: {},
+  }
+}
