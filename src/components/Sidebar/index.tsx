@@ -7,7 +7,7 @@ const exchanges = [
   'BitcoinTrade',
   'Coinbase',
   'Chiliz',
-  'Coinnext',
+  'Coinext',
   'Crypto.com',
   'FTX',
   'Foxbit',
@@ -22,7 +22,15 @@ const exchanges = [
   'HotBit',
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  onSelectBuyExchange: (exchange: string) => void
+  onSelectSellExchange: (exchange: string) => void
+}
+
+export function Sidebar({
+  onSelectBuyExchange,
+  onSelectSellExchange,
+}: SidebarProps) {
   return (
     <aside className={styles.sidebar}>
       <h2>Filtros</h2>
@@ -40,7 +48,12 @@ export function Sidebar() {
         <div className={styles['filter-options']}>
           {exchanges.map((exchange) => (
             <label key={exchange}>
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                onChange={() => {
+                  onSelectBuyExchange(exchange.toLowerCase())
+                }}
+              />
               {exchange}
             </label>
           ))}
@@ -53,7 +66,12 @@ export function Sidebar() {
         <div className={styles['filter-options']}>
           {exchanges.map((exchange) => (
             <label key={exchange}>
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                onChange={() => {
+                  onSelectSellExchange(exchange.toLowerCase())
+                }}
+              />
               {exchange}
             </label>
           ))}

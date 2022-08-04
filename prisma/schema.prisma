@@ -64,16 +64,17 @@ model Exchange {
   id        String  @id @default(cuid())
   tag       String  @unique
   name      String
-  api       String
   fee       Float
   image_url String?
-  active    Boolean
+  convert   Boolean
 }
 
 model Coin {
-  id        String  @id @default(cuid())
-  name      String  @unique
+  id        String   @id @default(cuid())
+  name      String   @unique
   ticker    String
   image_url String?
   active    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
