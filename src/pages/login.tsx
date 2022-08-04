@@ -3,6 +3,7 @@ import { faFacebookF, faInstagram } from '@fortawesome/free-brands-svg-icons'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { NextPage } from 'next'
+import Link from 'next/link'
 
 import styles from '../styles/Login.module.scss'
 
@@ -18,37 +19,32 @@ const Login: NextPage = () => {
           <h2>Login</h2>
           <form>
             <div className={styles.inputBox}>
-              <span>Username</span>
+              <span>Email</span>
               <input type="text" name="" />
             </div>
             <div className={styles.inputBox}>
-              <span>Password</span>
+              <span>Senha</span>
               <input type="password" name="" />
             </div>
 
             <div className={styles.remember}>
-              <label>
-                <input type="checkbox" name="" />
-                Remember me
-              </label>
+              <input type="checkbox" name="" className={styles.check} />
+              <span>Lembrar dados</span>
             </div>
 
             <div className={styles.inputBox}>
               <input type="submit" value="Sign In" name="" />
             </div>
-
-            <div className={styles.inputBox}>
-              <p>
-                Don&apos;t have an account? <a href="#">Sign up</a>
-              </p>
-            </div>
           </form>
-          <h3>Follow us on social medias</h3>
+          <h3>Nos acompanhe nas redes sociais!</h3>
 
           <div className={styles.socialMedia}>
-            <FontAwesomeIcon icon={faPropFacebook} className={styles.icon} />
-
-            <FontAwesomeIcon icon={faPropGoogle} className={styles.icon} />
+            <Link href="https://www.instagram.com/gustavonigre/">
+              <FontAwesomeIcon icon={faPropFacebook} className={styles.icon} />
+            </Link>
+            <Link href="https://www.facebook.com/Guh.Nigre">
+              <FontAwesomeIcon icon={faPropGoogle} className={styles.icon} />
+            </Link>
           </div>
         </div>
       </div>

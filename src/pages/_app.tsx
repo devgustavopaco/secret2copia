@@ -1,5 +1,7 @@
 // src/pages/_app.tsx
 import { withTRPC } from '@trpc/next'
+import 'nprogress/nprogress.css'
+import NextNProgress from 'nextjs-progressbar'
 import type { AppRouter } from '../server/router'
 import type { AppType } from 'next/dist/shared/lib/utils'
 import superjson from 'superjson'
@@ -12,6 +14,7 @@ const MyApp: AppType = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      <NextNProgress color="#7158e2" />
       <Component {...pageProps} />
     </SessionProvider>
   )

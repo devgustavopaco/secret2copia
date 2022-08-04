@@ -99,10 +99,21 @@
 
 
 .remember {
-  margin-bottom: 10px;
-  color: whitesmoke;
-  font-weight: 400;
-  font-size: 14px;
+    display:flex;
+    justify-content:flex-start;
+    align-items:center;
+    margin-bottom: 20px;
+    color: whitesmoke;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.check{
+    margin-right: 10px;
+    accent-color: var(--purple-500);
+    width: 20px;
+    height: 20px;
+    
 }
 
 
@@ -110,13 +121,13 @@
 .socialMedia {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
 
 .icon{
-    height: 33px;
-    width: 33px;
+    height: 40px;
+    width: 40px;
     margin: 0 0.4rem;
     display: flex;
     justify-content: center;
