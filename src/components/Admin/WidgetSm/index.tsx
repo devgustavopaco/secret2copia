@@ -8,7 +8,7 @@ export function WidgetSm() {
       <ul className={styles.widgetSmList}>
         <li className={styles.widgetSmListItem}>
           <img
-            src="/images/Herbert.png"
+            src="/images/Users/Herbert.png"
             alt=""
             className={styles.widgetSmImg}
           />
@@ -22,7 +22,11 @@ export function WidgetSm() {
           </button>
         </li>
         <li className={styles.widgetSmListItem}>
-          <img src="/images/Thiago.jpg" alt="" className={styles.widgetSmImg} />
+          <img
+            src="/images/Users/Thiago.jpg"
+            alt=""
+            className={styles.widgetSmImg}
+          />
           <div className={styles.widgetSmUser}>
             <span className={styles.widgetSmUsername}>Thiago Medeiros</span>
             <span className={styles.widgetSmUserTitle}>Engenheiro</span>
@@ -34,7 +38,7 @@ export function WidgetSm() {
         </li>
         <li className={styles.widgetSmListItem}>
           <img
-            src="/images/Barbara.jpg"
+            src="/images/Users/Barbara.jpg"
             alt=""
             className={styles.widgetSmImg}
           />
@@ -51,7 +55,7 @@ export function WidgetSm() {
         </li>
         <li className={styles.widgetSmListItem}>
           <img
-            src="/images/NigreCliente.jpg"
+            src="/images/Users/NigreCliente.jpg"
             alt=""
             className={styles.widgetSmImg}
           />

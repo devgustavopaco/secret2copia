@@ -22,7 +22,7 @@ export function TopBarAdmin() {
             <Settings />
           </div>
           <img
-            src="/images/NigreCliente.jpg"
+            src="/images/Users/NigreCliente.jpg"
             alt=""
             className={styles.topAvatar}
           />

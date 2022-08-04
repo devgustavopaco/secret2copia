@@ -26,7 +26,7 @@ export function Header() {
             </li>
             <li>
               <Link href="/adminSales">
-                <a>Painel Administrator</a>
+                <a>Dashboard</a>
               </Link>
             </li>
           </ul>

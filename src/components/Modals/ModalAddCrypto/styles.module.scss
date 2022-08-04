@@ -1,0 +1,128 @@
+.modalBackground {
+    animation: fadein .5s;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.685);
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.xBtn{
+    color: white;
+    font-size: 29px !important;
+}
+  
+.modalContainer {
+    width: 400px;
+    height: auto;
+    border-radius: 12px;
+    background: var(--gray-800);
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    display: flex;
+    flex-direction: column;
+    padding: 35px;  
+
+}
+
+.details{
+    display: flex;
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 19px;
+}
+.userDetails{
+    display: flex;
+    flex-direction: column;
+}
+
+.inputBox{
+    margin: 20px 10px;
+    input{
+        height: 45px;
+        width: 100%;
+        border:none;
+        background-color:rgb(240, 240, 240);
+        padding: 5px;
+        border-radius: 8px;
+    }   
+}
+
+.inputBoxFile{
+    margin: 20px 10px;
+    input{        
+        border-radius: 3px;
+        font-size: 15px;
+    }
+}
+
+
+
+
+
+.titleCloseBtn {
+    display: flex;
+    justify-content: flex-end;
+    
+}
+
+.titleCloseBtn button {
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    
+}
+
+.modalContainer .footer {
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.modalContainer .footer button {
+    width: 150px;
+    height: 45px;
+    margin: 10px;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.addBtn {
+    background-color: var(--purple-500);
+    &:hover{
+        color: rgb(73, 7, 73);
+        transition: filter 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 0 0 1.5px var(--purple-500);
+    }
+}
+
+.voltarBtn{
+    background-color: transparent;
+    color: var(--white);    
+    border-radius: 4px;
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--white);
+
+    &:hover{
+        color: var(--purple-200);
+        transition: filter 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 0 0 1.5px var(--purple-200);
+    }
+}
+
+@keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}

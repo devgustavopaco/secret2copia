@@ -13,7 +13,7 @@ export function WidgetLg() {
         <tr className={styles.widgetLgTr}>
           <td className={styles.widgetLgUser}>
             <img
-              src="/images/Thiago.jpg"
+              src="/images/Users/Thiago.jpg"
               alt=""
               className={styles.widgetLgImg}
             />
@@ -25,7 +25,7 @@ export function WidgetLg() {
         <tr className={styles.widgetLgTr}>
           <td className={styles.widgetLgUser}>
             <img
-              src="/images/Herbert.png"
+              src="/images/Users/Herbert.png"
               alt=""
               className={styles.widgetLgImg}
             />
@@ -37,7 +37,7 @@ export function WidgetLg() {
         <tr className={styles.widgetLgTr}>
           <td className={styles.widgetLgUser}>
             <img
-              src="/images/NigreCliente.jpg"
+              src="/images/Users/NigreCliente.jpg"
               alt=""
               className={styles.widgetLgImg}
             />

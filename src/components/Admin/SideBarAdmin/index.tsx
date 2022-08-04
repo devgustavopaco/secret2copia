@@ -53,16 +53,28 @@ export function SideBarAdmin() {
                 <span className={styles.sidebarText}>Usuários</span>
               </li>
             </Link>
-            <Link href="/adminUsers/">
-              <li className={styles.sidebarListItem}>
+            <Link href="/adminCryptos/">
+              <li
+                className={
+                  router.pathname == '/adminCryptos'
+                    ? styles.sidebarListItem + ' ' + styles.active
+                    : styles.sidebarListItem
+                }
+              >
                 <AttachMoney className={styles.sidebarIcon} />
                 <span className={styles.sidebarText}>Cryptos</span>
               </li>
             </Link>
-            <Link href="/adminUsers/">
-              <li className={styles.sidebarListItem}>
+            <Link href="/adminExchanges/">
+              <li
+                className={
+                  router.pathname == '/adminExchanges'
+                    ? styles.sidebarListItem + ' ' + styles.active
+                    : styles.sidebarListItem
+                }
+              >
                 <Storefront className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Corretoras</span>
+                <span className={styles.sidebarText}>Exchanges</span>
               </li>
             </Link>
           </ul>

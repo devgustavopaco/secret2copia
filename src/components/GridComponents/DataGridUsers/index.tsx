@@ -1,36 +1,35 @@
 import { Box } from '@mui/material'
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid'
-import { UserCirclePlus } from 'phosphor-react'
-import { Trash } from 'phosphor-react'
-import { useState } from 'react'
-import { DeleteModal } from '../Modal/DeleteModal'
 
 import styles from './styles.module.scss'
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 90 },
   {
     field: 'PrimeiroNome',
     headerName: 'Primeiro Nome',
     width: 200,
     editable: true,
+    sortable: false,
   },
   {
     field: 'UltimoNome',
     headerName: 'Último Nome',
     width: 200,
     editable: true,
+    sortable: false,
   },
   {
     field: 'NomeDeUsuario',
     headerName: 'Nome de Usuário',
     width: 200,
     editable: true,
+    sortable: false,
   },
   {
     field: 'Telefone',
     headerName: 'Telefone',
     width: 200,
     editable: true,
+    sortable: false,
   },
   {
     field: 'NomeCompleto',
@@ -38,12 +37,14 @@ const columns: GridColDef[] = [
     width: 200,
     valueGetter: (params: GridValueGetterParams) =>
       `${params.row.PrimeiroNome || ''} ${params.row.UltimoNome || ''}`,
+    sortable: false,
   },
   {
     field: 'ValorPago',
     headerName: 'Valor Pago',
     width: 200,
     editable: true,
+    sortable: false,
   },
 ]
 
@@ -146,29 +147,9 @@ const rows = [
   },
 ]
 
-export function DataGridComponent() {
-  const [openModal, setOpenModal] = useState(false)
-
+export function DataGridUsers() {
   return (
     <div className={styles.userList}>
-      <div className={styles.buttonList}>
-        <button type="button" className={styles.addButton}>
-          Adicionar
-          <UserCirclePlus size={24} />
-        </button>
-        <button
-          type="button"
-          className={styles.deleteButton}
-          onClick={() => {
-            setOpenModal(true)
-          }}
-        >
-          Excluir
-          <Trash size={24} />
-        </button>
-        {openModal && <DeleteModal closeModal={setOpenModal} />}
-      </div>
-
       <Box className={styles.box} sx={{ height: 700, width: '100%' }}>
         <DataGrid
           rows={rows}
