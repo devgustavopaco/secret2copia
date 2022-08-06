@@ -1,6 +1,6 @@
 import styles from './styles.module.scss'
 
-export function ModalInativarExchange({ setOpenModal }: any) {
+export function ModalDesativarExchange({ setOpenModal }: any) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
@@ -29,7 +29,7 @@ export function ModalInativarExchange({ setOpenModal }: any) {
           >
             Voltar
           </button>
-          <button className={styles.excluirBtn}>Inativar</button>
+          <button className={styles.excluirBtn}>Desativar</button>
         </div>
       </div>
     </div>

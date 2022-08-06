@@ -6,7 +6,7 @@ import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined'
 import styles from './styles.module.scss'
 import { useState } from 'react'
 import { ModalAtivarCrypto } from '../../Modals/Cryptos/ModalAtivarCrypto'
-import { ModalInativarCrypto } from '../../Modals/Cryptos/ModalInativarCrypto'
+import { ModalDesativarCrypto } from '../../Modals/Cryptos/ModalDesativarCrypto'
 
 let ativo = false
 
@@ -37,10 +37,10 @@ export function DataGridCryptos() {
             variant="outlined"
             startIcon={<ThumbDownAltOutlinedIcon />}
             onClick={() => {
-              setModalInativarOpen(true)
+              setModalDesativarOpen(true)
             }}
           >
-            Inativar
+            Desativar
           </Button>
         )}
       </strong>
@@ -74,7 +74,7 @@ export function DataGridCryptos() {
     },
     {
       field: 'Ativar',
-      headerName: 'Ativar / Inativar',
+      headerName: 'Ativar / Desativar',
       width: 300,
       renderCell: renderDetailsButton,
       sortable: false,
@@ -169,14 +169,14 @@ export function DataGridCryptos() {
   ]
 
   const [modalAtivarOpen, setModalAtivarOpen] = useState(false)
-  const [modalInativarOpen, setModalInativarOpen] = useState(false)
+  const [modalDesativarOpen, setModalDesativarOpen] = useState(false)
   return (
     <>
       {modalAtivarOpen && (
         <ModalAtivarCrypto setOpenModal={setModalAtivarOpen} />
       )}
-      {modalInativarOpen && (
-        <ModalInativarCrypto setOpenModal={setModalInativarOpen} />
+      {modalDesativarOpen && (
+        <ModalDesativarCrypto setOpenModal={setModalDesativarOpen} />
       )}
       <div className={styles.cryptosList}>
         <Box className={styles.box} sx={{ height: 700 }}>

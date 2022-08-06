@@ -6,7 +6,7 @@ import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined'
 import styles from './styles.module.scss'
 import { useState } from 'react'
 import { ModalAtivarExchange } from '../../Modals/Exchange/ModalAtivarExchange'
-import { ModalInativarExchange } from '../../Modals/Exchange/ModalInativarExchange'
+import { ModalDesativarExchange } from '../../Modals/Exchange/ModalDesativarExchange'
 
 let ativo = false
 
@@ -37,10 +37,10 @@ export function DataGridExchanges() {
             variant="outlined"
             startIcon={<ThumbDownAltOutlinedIcon />}
             onClick={() => {
-              setModalInativarOpen(true)
+              setModalDesativarOpen(true)
             }}
           >
-            Inativar
+            Desativar
           </Button>
         )}
       </strong>
@@ -71,7 +71,7 @@ export function DataGridExchanges() {
     },
     {
       field: 'Ativar',
-      headerName: 'Ativar / Inativar',
+      headerName: 'Ativar / Desativar',
       width: 300,
       renderCell: renderDetailsButton,
       sortable: false,
@@ -166,14 +166,14 @@ export function DataGridExchanges() {
   ]
 
   const [modalAtivarOpen, setModalAtivarOpen] = useState(false)
-  const [modalInativarOpen, setModalInativarOpen] = useState(false)
+  const [modalDesativarOpen, setModalDesativarOpen] = useState(false)
   return (
     <>
       {modalAtivarOpen && (
         <ModalAtivarExchange setOpenModal={setModalAtivarOpen} />
       )}
-      {modalInativarOpen && (
-        <ModalInativarExchange setOpenModal={setModalInativarOpen} />
+      {modalDesativarOpen && (
+        <ModalDesativarExchange setOpenModal={setModalDesativarOpen} />
       )}
       <div className={styles.exchangeList}>
         <Box className={styles.box} sx={{ height: 700 }}>
