@@ -48,7 +48,9 @@ model User {
   password      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  phone         String?
   sessions      Session[]
+  pricePaid     Float?
   Account       Account[]
 }
 
@@ -61,20 +63,35 @@ model VerificationToken {
 }
 
 model Exchange {
-  id        String  @id @default(cuid())
-  tag       String  @unique
-  name      String
-  fee       Float
-  image_url String?
-  convert   Boolean
+  id              String            @id @default(cuid())
+  tag             String            @unique
+  name            String
+  fee             Float
+  image_url       String?
+  convert         Boolean
+  ExchangeCoinTax ExchangeCoinTax[]
 }
 
 model Coin {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  ticker    String
-  image_url String?
-  active    Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String            @id @default(cuid())
+  name            String            @unique
+  ticker          String
+  image_url       String?
+  active          Boolean
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ExchangeCoinTax ExchangeCoinTax[]
+}
+
+model ExchangeCoinTax {
+  id            String   @id @default(cuid())
+  exchangeId    String
+  exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  coinId        String
+  coin          Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+  tax           Float
+  confirmations Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
