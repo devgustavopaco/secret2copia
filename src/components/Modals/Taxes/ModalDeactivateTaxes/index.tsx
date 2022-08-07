@@ -1,6 +1,6 @@
 import styles from './styles.module.scss'
 
-export function ModalDesativarCrypto({ setOpenModal }: any) {
+export function ModalDeactivateTaxes({ setOpenModal }: any) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
@@ -15,7 +15,7 @@ export function ModalDesativarCrypto({ setOpenModal }: any) {
           </button>
         </div>
         <div className={styles.title}>
-          <h1>Tem certeza que deseja desativar a moeda?</h1>
+          <h1>Tem certeza que deseja desativar a taxa?</h1>
         </div>
         <div className={styles.body}>
           <p>Esses dados serão salvos no banco de dados!</p>

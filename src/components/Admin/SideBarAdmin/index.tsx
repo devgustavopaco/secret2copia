@@ -1,85 +1,78 @@
-import styles from './styles.module.scss'
-import {
-  LineStyle,
-  Timeline,
-  PermIdentity,
-  Storefront,
-  AttachMoney,
-} from '@material-ui/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import {
+  Bank,
+  ChartLineUp,
+  CurrencyBtc,
+  Monitor,
+  Percent,
+  Users,
+} from 'phosphor-react'
+import styles from './styles.module.scss'
 
-export function SideBarAdmin() {
+interface SidebarAdminProps {}
+
+export function SidebarAdmin({}: SidebarAdminProps) {
   const router = useRouter()
 
   return (
-    <div className={styles.sidebar}>
-      <div className={styles.sidebarWrapper}>
-        <div className={styles.sidebarMenu}>
-          <h3 className={styles.sidebarTitle}>Painel</h3>
-          <ul className={styles.sidebarList}>
-            <Link href="/monitor/">
-              <li className={styles.sidebarListItem}>
-                <LineStyle className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Home</span>
-              </li>
-            </Link>
-            <Link href="/admin/sales/">
-              <li
-                className={
-                  router.pathname === '/admin/sales'
-                    ? styles.sidebarListItem + ' ' + styles.active
-                    : styles.sidebarListItem
-                }
-              >
-                <Timeline className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Vendas</span>
-              </li>
-            </Link>
-          </ul>
-        </div>
-        <div className={styles.sidebarMenu}>
-          <h3 className={styles.sidebarTitle}>Menu Rápido</h3>
-          <ul className={styles.sidebarList}>
-            <Link href="/admin/users/">
-              <li
-                className={
-                  router.pathname == '/admin/users'
-                    ? styles.sidebarListItem + ' ' + styles.active
-                    : styles.sidebarListItem
-                }
-              >
-                <PermIdentity className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Usuários</span>
-              </li>
-            </Link>
-            <Link href="/admin/cryptos/">
-              <li
-                className={
-                  router.pathname == '/admin/cryptos'
-                    ? styles.sidebarListItem + ' ' + styles.active
-                    : styles.sidebarListItem
-                }
-              >
-                <AttachMoney className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Cryptos</span>
-              </li>
-            </Link>
-            <Link href="/admin/exchanges/">
-              <li
-                className={
-                  router.pathname == '/admin/exchanges'
-                    ? styles.sidebarListItem + ' ' + styles.active
-                    : styles.sidebarListItem
-                }
-              >
-                <Storefront className={styles.sidebarIcon} />
-                <span className={styles.sidebarText}>Exchanges</span>
-              </li>
-            </Link>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <aside className={styles.sidebar}>
+      <section>
+        <h2>Painel</h2>
+
+        <nav className={styles.sidebarList}>
+          <Link href="/monitor/">
+            <a className={styles.sidebarListItem}>
+              <Monitor className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Monitor</span>
+            </a>
+          </Link>
+
+          <Link href="/admin/sales/">
+            <a className={router.pathname === '/admin/sales' ? 'active' : ''}>
+              <ChartLineUp className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Vendas</span>
+            </a>
+          </Link>
+        </nav>
+      </section>
+
+      <section>
+        <h2>Dashboard</h2>
+
+        <nav className={styles.sidebarList}>
+          <Link href="/admin/users/">
+            <a className={router.pathname == '/admin/users' ? 'active' : ''}>
+              <Users className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Usuários</span>
+            </a>
+          </Link>
+          <Link href="/admin/cryptos/">
+            <a className={router.pathname == '/admin/cryptos' ? 'active' : ''}>
+              <CurrencyBtc className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Cryptos</span>
+            </a>
+          </Link>
+          <Link href="/admin/exchanges/">
+            <a
+              className={
+                router.pathname == '/admin/exchanges'
+                  ? styles.sidebarListItem + ' ' + styles.active
+                  : styles.sidebarListItem
+              }
+            >
+              <Bank className={styles.sidebarIcon} />
+              <span className={styles.sidebarText}>Exchanges</span>
+            </a>
+          </Link>
+          <Link href="/admin/tax/">
+            <a className={router.pathname == '/admin/tax' ? 'active' : ''}>
+              <Percent className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Taxas</span>
+            </a>
+          </Link>
+        </nav>
+      </section>
+    </aside>
   )
 }

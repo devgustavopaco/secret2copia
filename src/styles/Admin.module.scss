@@ -1,158 +1,171 @@
-.container{
-    display: flex;
-    padding: 20px;
-}
-
-
-.right{
-    flex:4;
-}
-
-.homeWidgets{
-    display: flex;
-    margin: 20px;
-}
-
-
-
-.buttonList{
-    display: flex;
-    justify-content: flex-end;    
-    margin: 30px 10px;
-}
-
-.buttonCryptoList{
+.content {
   display: flex;
-  justify-content: flex-end;    
-  margin: 20px 60px;
+  // max-height: calc(100vh - 2rem - 3rem - 1px);
+  padding-block: 2rem;
+  gap: 1.75rem;
+  align-items: flex-start;
+
+  margin-inline: auto;
+
+  main {
+    flex: 1;
+  }
 }
 
+.container {
+  display: flex;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.right {
+  flex: 4;
+}
+
+.homeWidgets {
+  display: flex;
+  margin: 20px;
+}
+
+.buttonList {
+  display: flex;
+  justify-content: flex-end;
+  margin: 30px 10px;
+}
+
+.buttonCryptoList {
+  display: flex;
+  justify-content: flex-end;
+}
 
 .deleteButton {
-    display: flex;
-    margin-right: 7rem;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: transparent;
-    color: var(--white);    
-    border-radius: 4px;
-    transition: filter 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 0 0 1.5px var(--white);
-
-    &:hover{
-        color: var(--purple-200);
-        transition: filter 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 0 0 1.5px var(--purple-200);
-    }
-}
-
-
-.addButton{
-    margin-right: 30px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;   
-    background-color: transparent;
-    color: var(--white);    
-    border-radius: 4px;
-    transition: filter 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 0 0 1.5px var(--white);
-
-    &:hover{
-        color: var(--purple-200);
-        transition: filter 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 0 0 1.5px var(--purple-200);
-    }
-}
-
-.addCryptoButton{
-  margin-right: 60px;
   display: flex;
+  margin-right: 7rem;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;   
+  padding: 0.5rem 1rem;
   background-color: transparent;
-  color: var(--white);    
+  color: var(--white);
   border-radius: 4px;
   transition: filter 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 0 0 1.5px var(--white);
 
-  &:hover{
-      color: var(--purple-200);
-      transition: filter 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 0 0 1.5px var(--purple-200);
+  &:hover {
+    color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
+}
+
+.addButton {
+  margin-right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--white);
+
+  &:hover {
+    color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
+}
+
+.addCryptoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--white);
+
+  &:hover {
+    color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
   }
 }
 
 .modalBackground {
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(200, 200, 200);
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .modalContainer {
-    width: 500px;
-    height: 500px;
-    border-radius: 12px;
-    background-color: white;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    display: flex;
-    flex-direction: column;
-    padding: 25px;
-  }
-  
-  .modalContainer .title {
-    display: inline-block;
-    text-align: center;
-    margin-top: 10px;
-  }
-  
-  .titleCloseBtn {
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .titleCloseBtn button {
-    background-color: transparent;
-    border: none;
-    font-size: 25px;
-    cursor: pointer;
-  }
-  
-  .modalContainer .body {
-    flex: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.7rem;
-    text-align: center;
-  }
-  
-  .modalContainer .footer {
-    flex: 20%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .modalContainer .footer button {
-    width: 150px;
-    height: 45px;
-    margin: 10px;
-    border: none;
-    background-color: cornflowerblue;
-    color: white;
-    border-radius: 8px;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  
-  #cancelBtn {
-    background-color: crimson;
-  }
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(200, 200, 200);
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContainer {
+  width: 500px;
+  height: 500px;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+}
+
+.modalContainer .title {
+  display: inline-block;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.titleCloseBtn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.titleCloseBtn button {
+  background-color: transparent;
+  border: none;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.modalContainer .body {
+  flex: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.7rem;
+  text-align: center;
+}
+
+.modalContainer .footer {
+  flex: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContainer .footer button {
+  width: 150px;
+  height: 45px;
+  margin: 10px;
+  border: none;
+  background-color: cornflowerblue;
+  color: white;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#cancelBtn {
+  background-color: crimson;
+}

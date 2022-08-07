@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
-import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
 import { CurrencyEth } from 'phosphor-react'
@@ -37,22 +37,30 @@ const AdminExchanges: NextPage = () => {
           onSubmit={handleCryptoCreate}
         />
       )}
-      <TopBarAdmin />
-      <div className={styles.buttonCryptoList}>
-        <button
-          type="button"
-          className={styles.addCryptoButton}
-          onClick={() => {
-            setModalOpen(true)
-          }}
-        >
-          Adicionar
-          <CurrencyEth size={24} />
-        </button>
-      </div>
-      <div className={styles.container}>
-        <SideBarAdmin />
-        <DataGridCryptos />
+      <HeaderAdmin />
+      <div className={`${styles.content} container`}>
+        <SidebarAdmin />
+        <main>
+          <div className={styles.pageHeader}>
+            <h1>Cryptos</h1>
+
+            <div className={styles.buttonCryptoList}>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
+                onClick={() => {
+                  setModalOpen(true)
+                }}
+              >
+                Adicionar
+                <CurrencyEth size={24} />
+              </button>
+            </div>
+          </div>
+          <div className={styles.container}>
+            <DataGridCryptos />
+          </div>
+        </main>
       </div>
     </>
   )

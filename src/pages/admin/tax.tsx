@@ -1,12 +1,14 @@
 import type { NextPage } from 'next'
-import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
-import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
+import { DataGridTaxes } from '../../components/GridComponents/DataGridTaxes'
 import { CurrencyEth } from 'phosphor-react'
 import { useState } from 'react'
 import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
+import { ModalAddTax } from '../../components/Modals/Taxes/ModalAddTax'
+import Head from 'next/head'
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -22,48 +24,58 @@ const AdminTaxPage: NextPage = () => {
 
   const { data: taxes, isLoading } = trpc.useQuery(['tax.getTaxes'])
 
-  const createCryptoMutation = trpc.useMutation('coin.create', {
-    onSuccess() {
-      console.log('success')
-    },
-    onError(error) {
-      console.error(error.message)
-    },
-  })
-
-  const handleCryptoCreate = (ticker: string, name: string, image: File) => {
-    createCryptoMutation.mutate({
-      active: true,
-      image_url: 'teste',
-      name,
-      ticker,
+  const handleTaxCreate = (
+    exchangeId: string,
+    coinId: string,
+    tax: number,
+    confirmations: number
+  ) => {
+    createTaxMutation.mutate({
+      exchangeId,
+      coinId,
+      tax,
+      confirmations,
     })
+  }
+
+  const handleClose = () => {
+    setModalOpen(false)
   }
 
   return (
     <>
+      <Head>
+        <title>Taxas</title>
+        <meta name="description" content="Taxas" />
+      </Head>
+
       {modalOpen && (
-        <ModalAddCrypto
-          setOpenModal={setModalOpen}
-          onSubmit={handleCryptoCreate}
-        />
+        <ModalAddTax onClose={handleClose} onSubmit={handleTaxCreate} />
       )}
-      <TopBarAdmin />
-      <div className={styles.buttonCryptoList}>
-        <button
-          type="button"
-          className={styles.addCryptoButton}
-          onClick={() => {
-            setModalOpen(true)
-          }}
-        >
-          Adicionar
-          <CurrencyEth size={24} />
-        </button>
-      </div>
-      <div className={styles.container}>
-        <SideBarAdmin />
-        <DataGridCryptos />
+      <HeaderAdmin />
+      <div className={`${styles.content} container`}>
+        <SidebarAdmin />
+        <main>
+          <div className={styles.pageHeader}>
+            <h1>Taxas</h1>
+
+            <div className={styles.buttonCryptoList}>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
+                onClick={() => {
+                  setModalOpen(true)
+                }}
+              >
+                Adicionar
+                <CurrencyEth size={24} />
+              </button>
+            </div>
+          </div>
+          <div className={styles.container}>
+            <DataGridTaxes data={taxes || []} />
+          </div>
+        </main>
       </div>
     </>
   )

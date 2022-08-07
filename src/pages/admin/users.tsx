@@ -1,8 +1,8 @@
 import type { NextPage } from 'next'
 import { Trash, UserCirclePlus } from 'phosphor-react'
 import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
-import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { useState } from 'react'
 import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
@@ -15,33 +15,35 @@ const AdminUsers: NextPage = () => {
     <>
       {modalOpenDelete && <ModalDeleteUser setOpenModal={setModalOpenDelete} />}
       {modalOpenAdd && <ModalAddUser setOpenModal={setModalOpenAdd} />}
-      <TopBarAdmin />
-      <div className={styles.buttonList}>
-        <button
-          type="button"
-          className={styles.addButton}
-          onClick={() => {
-            setModalOpenAdd(true)
-          }}
-        >
-          Adicionar
-          <UserCirclePlus size={24} />
-        </button>
-        <button
-          type="button"
-          className={styles.deleteButton}
-          onClick={() => {
-            setModalOpenDelete(true)
-          }}
-        >
-          Excluir
-          <Trash size={24} />
-        </button>
-      </div>
-      <div className={styles.container}>
-        <SideBarAdmin />
-        <DataGridUsers />
-      </div>
+      <HeaderAdmin />
+      <main className="container">
+        <div className={styles.buttonList}>
+          <button
+            type="button"
+            className={styles.addButton}
+            onClick={() => {
+              setModalOpenAdd(true)
+            }}
+          >
+            Adicionar
+            <UserCirclePlus size={24} />
+          </button>
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={() => {
+              setModalOpenDelete(true)
+            }}
+          >
+            Excluir
+            <Trash size={24} />
+          </button>
+        </div>
+        <div className={styles.container}>
+          <SidebarAdmin />
+          <DataGridUsers />
+        </div>
+      </main>
     </>
   )
 }

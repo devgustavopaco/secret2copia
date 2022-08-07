@@ -1,13 +1,17 @@
 import styles from './styles.module.scss'
 
-export function ModalDesativarCrypto({ setOpenModal }: any) {
+interface ModalActivateTaxesProps {
+  onToggle: (open: boolean) => void
+}
+
+export function ModalActivateTaxes({ onToggle }: ModalActivateTaxesProps) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
         <div className={styles.titleCloseBtn}>
           <button
             onClick={() => {
-              setOpenModal(false)
+              onToggle(false)
             }}
             className={styles.xBtn}
           >
@@ -15,7 +19,7 @@ export function ModalDesativarCrypto({ setOpenModal }: any) {
           </button>
         </div>
         <div className={styles.title}>
-          <h1>Tem certeza que deseja desativar a moeda?</h1>
+          <h1>Tem certeza que deseja ativar a taxa?</h1>
         </div>
         <div className={styles.body}>
           <p>Esses dados serão salvos no banco de dados!</p>
@@ -24,12 +28,12 @@ export function ModalDesativarCrypto({ setOpenModal }: any) {
           <button
             className={styles.voltarBtn}
             onClick={() => {
-              setOpenModal(false)
+              onToggle(false)
             }}
           >
             Voltar
           </button>
-          <button className={styles.excluirBtn}>Desativar</button>
+          <button className={styles.excluirBtn}>Ativar</button>
         </div>
       </div>
     </div>

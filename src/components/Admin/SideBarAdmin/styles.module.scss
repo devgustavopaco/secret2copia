@@ -1,70 +1,71 @@
-.sidebar{
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2rem 2.5rem;
+  gap: 2rem;
+
+  min-width: 240px;
+  max-height: 80vh;
+
+  background: var(--gray-800);
+  border-radius: 8px;
+
+  section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 2rem 2rem;
-    min-width: 290px;
-    height: 500px;
-    margin-left: 20px;
-    margin-right: 20px;
-    background: var(--gray-800);
-    border-radius: 15px;
-    -webkit-box-shadow: 3px 5px 10px 6px rgba(0,0,0,0.27); 
-    box-shadow: 3px 5px 10px 6px rgba(0,0,0,0.27);
+    gap: 0.75rem;
+
+    width: 100%;
+  }
 }
 
-.sidebarWrapper{
-    margin-left: -10px;
-    color: rgb(243, 243, 243);
-}
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 
-.sidebarMenu{
-    margin-bottom: 20px;
-}
-
-.sidebarTitle{
-    font-size: 21px;
-}
-
-
-.sidebarList{
-    margin-left: 10px;
-    list-style: none;
-    padding: 5px;
-}
-
-.sidebarListItem{
-    padding: 5px;
-    cursor: pointer;    
+  a {
+    display: block;
+    padding: 0.5rem;
     display: flex;
     align-items: center;
-    border-radius: 10px;    
-}
+    border-radius: 8px;
 
-.sidebarListItem:active{
-    background-color: var(--purple-500);
-    color: whitesmoke !important;
-    .sidebarIcon{
-        color: whitesmoke !important;
+    transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+
+    &:hover,
+    &:focus {
+      color: var(--purple-500);
+      background-color: var(--gray-700);
+
+      .sidebarIcon {
+        color: var(--purple-500);
+      }
     }
-}
 
+    &:active {
+      filter: brightness(0.8);
 
-.sidebarListItem.active, .sidebarListItem:hover{
-    background-color: var(--purple-500);
-    color: whitesmoke !important;
-    .sidebarIcon{
-        color: whitesmoke !important;
+      .sidebarIcon {
+        color: var(--purple-500);
+      }
     }
+
+    &:global(.active) {
+      color: var(--purple-500);
+
+      .sidebarIcon {
+        color: var(--purple-500);
+      }
+    }
+  }
 }
 
+.sidebarIcon {
+  margin-right: 5px;
+  color: var(--white);
+  font-size: var(--fs-500);
 
-.sidebarIcon{
-    margin-right: 5px;
-    color: var(--purple-200);
-    font-size: 24px !important;
-}
-
-.sidebarText{
-    font-size: 19px;        
+  transition: color 0.2s ease;
 }

@@ -15,7 +15,7 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
           </button>
         </div>
         <div className={styles.title}>
-          <h1>Tem certeza que deseja ativar a moeda ?</h1>
+          <h1>Tem certeza que deseja ativar a moeda?</h1>
         </div>
         <div className={styles.body}>
           <p>Esses dados serão salvos no banco de dados!</p>
