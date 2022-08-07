@@ -2,9 +2,9 @@ import styles from './styles.module.scss'
 
 import { NotificationsNone, Language, Settings } from '@material-ui/icons'
 
-export function TopBarAdmin() {
+export function HeaderAdmin() {
   return (
-    <div className={styles.topbar}>
+    <div className={`${styles.topbar} container`}>
       <div className={styles.topBarWrapper}>
         <div className="topLeft">
           <span className={styles.logo}>Nigre Admin</span>

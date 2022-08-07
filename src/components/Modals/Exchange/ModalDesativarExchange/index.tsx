@@ -1,6 +1,6 @@
 import styles from './styles.module.scss'
 
-export function ModalAtivarCrypto({ setOpenModal }: any) {
+export function ModalDesativarExchange({ setOpenModal }: any) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
@@ -15,7 +15,7 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
           </button>
         </div>
         <div className={styles.title}>
-          <h1>Tem certeza que deseja ativar a moeda?</h1>
+          <h1>Tem certeza que deseja desativar a corretora ?</h1>
         </div>
         <div className={styles.body}>
           <p>Esses dados serão salvos no banco de dados!</p>
@@ -29,7 +29,7 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
           >
             Voltar
           </button>
-          <button className={styles.excluirBtn}>Ativar</button>
+          <button className={styles.excluirBtn}>Desativar</button>
         </div>
       </div>
     </div>

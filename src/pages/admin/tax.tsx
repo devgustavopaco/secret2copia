@@ -2,16 +2,18 @@ import type { NextPage } from 'next'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
-import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
+import { DataGridTaxes } from '../../components/GridComponents/DataGridTaxes'
 import { CurrencyEth } from 'phosphor-react'
 import { useState } from 'react'
 import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
+import { ModalAddTax } from '../../components/Modals/Taxes/ModalAddTax'
+import Head from 'next/head'
 
-const AdminExchanges: NextPage = () => {
+const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
 
-  const createCryptoMutation = trpc.useMutation('coin.create', {
+  const createTaxMutation = trpc.useMutation('tax.create', {
     onSuccess() {
       console.log('success')
     },
@@ -20,29 +22,42 @@ const AdminExchanges: NextPage = () => {
     },
   })
 
-  const handleCryptoCreate = (ticker: string, name: string, image: File) => {
-    createCryptoMutation.mutate({
-      active: true,
-      image_url: 'teste',
-      name,
-      ticker,
+  const { data: taxes, isLoading } = trpc.useQuery(['tax.getTaxes'])
+
+  const handleTaxCreate = (
+    exchangeId: string,
+    coinId: string,
+    tax: number,
+    confirmations: number
+  ) => {
+    createTaxMutation.mutate({
+      exchangeId,
+      coinId,
+      tax,
+      confirmations,
     })
+  }
+
+  const handleClose = () => {
+    setModalOpen(false)
   }
 
   return (
     <>
+      <Head>
+        <title>Taxas</title>
+        <meta name="description" content="Taxas" />
+      </Head>
+
       {modalOpen && (
-        <ModalAddCrypto
-          setOpenModal={setModalOpen}
-          onSubmit={handleCryptoCreate}
-        />
+        <ModalAddTax onClose={handleClose} onSubmit={handleTaxCreate} />
       )}
       <HeaderAdmin />
       <div className={`${styles.content} container`}>
         <SidebarAdmin />
         <main>
           <div className={styles.pageHeader}>
-            <h1>Cryptos</h1>
+            <h1>Taxas</h1>
 
             <div className={styles.buttonCryptoList}>
               <button
@@ -58,7 +73,7 @@ const AdminExchanges: NextPage = () => {
             </div>
           </div>
           <div className={styles.container}>
-            <DataGridCryptos />
+            <DataGridTaxes data={taxes || []} />
           </div>
         </main>
       </div>
@@ -66,4 +81,4 @@ const AdminExchanges: NextPage = () => {
   )
 }
 
-export default AdminExchanges
+export default AdminTaxPage
