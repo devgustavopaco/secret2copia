@@ -189,8 +189,8 @@ const fetchArbitrageOpportunity = async (
     ticker,
     lowestAsk,
     highestBid,
-    tax: (lowestAskTax?.tax ?? 0) + (highestBidTax?.tax ?? 0),
-    fee: (lowestAskTax?.exchange.fee ?? 0) + (highestBidTax?.exchange.fee ?? 0),
+    tax: (lowestAskTax?.tax || 0) + (highestBidTax?.tax || 0),
+    fee: (lowestAskTax?.exchange.fee || 0) + (highestBidTax?.exchange.fee || 0),
   }
 }
 
