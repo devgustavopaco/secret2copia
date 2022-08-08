@@ -6,19 +6,55 @@ import { Sidebar } from '../components/Sidebar'
 import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
 import { CoinNotFound } from '../components/CoinNotFound'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 
-interface SelectedExchanges {
-  name: string
-  buy: boolean
-  sell: boolean
-}
+const defaultExchanges = [
+  'Binance',
+  'Bitso',
+  'BrasilBitcoin',
+  'BitcoinTrade',
+  'Coinbase',
+  'Chiliz',
+  'Coinext',
+  'Crypto.com',
+  'FTX',
+  'Foxbit',
+  'Gemini',
+  'Huobi',
+  'Kraken',
+  'KuCoin',
+  'NovaDAX',
+  'Mercado Bitcoin',
+  'HitBTC',
+  'Bitfinex',
+  'HotBit',
+]
 
 const Monitoring: NextPage = () => {
-  const [buyExchanges, setBuyExchanges] = useState<string[]>([])
-  const [sellExchanges, setSellExchanges] = useState<string[]>([])
+  const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedExchanges = localStorage.getItem('buyExchanges')
+      const initialValue = savedExchanges
+        ? JSON.parse(savedExchanges)
+        : defaultExchanges
+      return initialValue
+    }
+
+    return defaultExchanges
+  })
+  const [sellExchanges, setSellExchanges] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedExchanges = localStorage.getItem('sellExchanges')
+      const initialValue = savedExchanges
+        ? JSON.parse(savedExchanges)
+        : defaultExchanges
+      return initialValue
+    }
+
+    return defaultExchanges
+  })
 
   const { data } = trpc.useQuery(
     [
@@ -33,7 +69,18 @@ const Monitoring: NextPage = () => {
     }
   )
 
-  const operationsCount = data?.length || 0
+  const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('buyExchanges', JSON.stringify(buyExchanges))
+    }
+  }, [buyExchanges])
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sellExchanges', JSON.stringify(sellExchanges))
+    }
+  }, [sellExchanges])
 
   const onSelectBuyExchange = useCallback((exchange: string) => {
     setBuyExchanges((exchanges) => {
@@ -63,6 +110,8 @@ const Monitoring: NextPage = () => {
     })
   }, [])
 
+  const operationsCount = data?.length || 0
+
   return (
     <>
       <Head>
@@ -73,6 +122,10 @@ const Monitoring: NextPage = () => {
         <Header />
         <div className={`${styles.content} container`}>
           <Sidebar
+            dollarPrice={dollarPrice}
+            defaultExchanges={defaultExchanges}
+            buyExchanges={buyExchanges}
+            sellExchanges={sellExchanges}
             onSelectBuyExchange={onSelectBuyExchange}
             onSelectSellExchange={onSelectSellExchange}
           />
@@ -96,6 +149,7 @@ const Monitoring: NextPage = () => {
                   (operation) =>
                     operation && (
                       <OperationCard
+                        key={operation.coin}
                         coin={{
                           image: '/Ethereum.png',
                           name: operation.coin,
@@ -107,8 +161,11 @@ const Monitoring: NextPage = () => {
                             exchange: operation.highestBid.exchange,
                             price: operation.highestBid.price,
                           },
+                          fee: operation.fee,
+                          tax: operation.tax,
                           symbol: operation.ticker,
                         }}
+                        dollarPrice={dollarPrice}
                         onClick={() => {}}
                       />
                     )

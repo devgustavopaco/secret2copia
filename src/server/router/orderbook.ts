@@ -17,8 +17,12 @@ import {
   MercadoBitcoinStrategy,
   NovaDAXStrategy,
 } from '../modules/exchanges/Exchanges'
-import type { ExchangeStrategy } from '../modules/exchanges/ExchangeStrategy'
+import type {
+  Exchange,
+  ExchangeStrategy,
+} from '../modules/exchanges/ExchangeStrategy'
 import { z } from 'zod'
+import { ServerSingleton } from '../ServerSingleton'
 
 interface Operation {
   coin: {
@@ -47,19 +51,11 @@ interface Operation {
   spread: number
 }
 
-interface Exchange {
-  name: string
-  bid: {
-    price: number
-    amount: number
-  }
-  ask: {
-    price: number
-    amount: number
-  }
+interface StrategyObject {
+  [key: string]: ExchangeStrategy
 }
 
-const exchangeStrategies: { [key: string]: ExchangeStrategy } = {
+const exchangeStrategies: StrategyObject = {
   binance: new BinanceStrategy(),
   bitso: new BitsoStrategy(),
   brasilbitcoin: new BrasilBitcoinStrategy(),
@@ -71,7 +67,7 @@ const exchangeStrategies: { [key: string]: ExchangeStrategy } = {
   huobi: new HuobiStrategy(),
   kraken: new KrakenStrategy(),
   kucoin: new KuCoinStratefy(),
-  // novadax: new NovaDAXStrategy(),
+  // novada: new NovaDAXStrategy(),
   mercadobitcoin: new MercadoBitcoinStrategy(),
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
@@ -91,6 +87,8 @@ interface ArbitrageOpportunity {
     price: number
     amount: number
   }
+  tax: number
+  fee: number
 }
 
 const fetchArbitrageOpportunity = async (
@@ -99,7 +97,11 @@ const fetchArbitrageOpportunity = async (
     ticker: string
   },
   buyExchanges: string[],
-  sellExchanges: string[]
+  sellExchanges: string[],
+  taxes: {
+    exchange: { name: string; fee: number; convert: boolean }
+    tax: number
+  }[]
 ): Promise<ArbitrageOpportunity> => {
   const { name, ticker } = coin
 
@@ -125,12 +127,23 @@ const fetchArbitrageOpportunity = async (
     }
   })
 
+  const dollarPrice = await ServerSingleton.getInstance().getDollar()
+
   // Lowest buy price
   const lowestAsk = orderBooks.reduce(
     (acc, exchange) => {
-      if (buyExchanges.includes(exchange?.name.toLowerCase() ?? '')) {
+      const isContained = buyExchanges.some(
+        (element) =>
+          element.toLowerCase().replace(/\s/g, '') ===
+          (exchange?.name.toLowerCase() ?? '')
+      )
+      if (isContained) {
         if (exchange?.ask) {
-          if (exchange.ask.price < acc.price) {
+          const priceInUSD = exchange.isUSD
+            ? exchange.ask.price
+            : exchange.ask.price / dollarPrice
+
+          if (priceInUSD < acc.price) {
             return { exchange: exchange.name, ...exchange.ask }
           }
         }
@@ -143,9 +156,18 @@ const fetchArbitrageOpportunity = async (
   // Highest sell price
   const highestBid = orderBooks.reduce(
     (acc, exchange) => {
-      if (sellExchanges.includes(exchange?.name.toLowerCase() ?? '')) {
+      const isContained = buyExchanges.some(
+        (element) =>
+          element.toLowerCase().replace(/\s/g, '') ===
+          (exchange?.name.toLowerCase() ?? '')
+      )
+      if (isContained) {
         if (exchange?.bid) {
-          if (exchange.bid.price > acc.price) {
+          const priceInUSD = exchange.isUSD
+            ? exchange.bid.price
+            : exchange.bid.price / dollarPrice
+
+          if (priceInUSD > acc.price) {
             return { exchange: exchange.name, ...exchange.bid }
           }
         }
@@ -155,65 +177,98 @@ const fetchArbitrageOpportunity = async (
     { exchange: '', price: 0, amount: 0 }
   )
 
+  const lowestAskTax = taxes.find(
+    (tax) => tax.exchange.name === lowestAsk.exchange
+  )
+  const highestBidTax = taxes.find(
+    (tax) => tax.exchange.name === highestBid.exchange
+  )
+
   return {
     coin: name,
     ticker,
     lowestAsk,
     highestBid,
+    tax: (lowestAskTax?.tax ?? 0) + (highestBidTax?.tax ?? 0),
+    fee: (lowestAskTax?.exchange.fee ?? 0) + (highestBidTax?.exchange.fee ?? 0),
   }
 }
 
-export const orderbookRouter = createRouter().query('getAll', {
-  input: z
-    .object({
-      buyExchanges: z.string().array(),
-      sellExchanges: z.string().array(),
-    })
-    .optional(),
-  async resolve({ ctx, input }) {
-    if (!input) {
-      return []
-    }
-
-    const { buyExchanges, sellExchanges } = input
-
-    if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-      return []
-    }
-
-    const activeCoins = await ctx.prisma.coin.findMany({
-      where: {
-        active: true,
-      },
-    })
-
-    if (activeCoins.length === 0) {
-      return []
-    }
-
-    const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] = []
-
-    for (const coin of activeCoins) {
-      arbitrageOpportunitiesPromises.push(
-        fetchArbitrageOpportunity(
-          {
-            name: coin.name,
-            ticker: coin.ticker,
-          },
-          buyExchanges,
-          sellExchanges
-        )
-      )
-    }
-
-    const results = await Promise.allSettled(arbitrageOpportunitiesPromises)
-
-    const arbitrageOpportunities = results.map((result) => {
-      if (result.status === 'fulfilled') {
-        return result.value
+export const orderbookRouter = createRouter()
+  .query('getAll', {
+    input: z
+      .object({
+        buyExchanges: z.string().array(),
+        sellExchanges: z.string().array(),
+      })
+      .optional(),
+    async resolve({ ctx, input }) {
+      if (!input) {
+        return []
       }
-    })
 
-    return arbitrageOpportunities
-  },
-})
+      const { buyExchanges, sellExchanges } = input
+
+      if (buyExchanges.length === 0 || sellExchanges.length === 0) {
+        return []
+      }
+
+      const activeCoins = await ctx.prisma.coin.findMany({
+        where: {
+          active: true,
+        },
+        include: {
+          ExchangeCoinTax: {
+            where: {
+              active: true,
+            },
+            select: {
+              tax: true,
+              exchange: {
+                select: {
+                  name: true,
+                  fee: true,
+                  convert: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (activeCoins.length === 0) {
+        return []
+      }
+
+      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] = []
+
+      for (const coin of activeCoins) {
+        arbitrageOpportunitiesPromises.push(
+          fetchArbitrageOpportunity(
+            {
+              name: coin.name,
+              ticker: coin.ticker,
+            },
+            buyExchanges,
+            sellExchanges,
+            coin.ExchangeCoinTax
+          )
+        )
+      }
+
+      const results = await Promise.allSettled(arbitrageOpportunitiesPromises)
+
+      const arbitrageOpportunities = results.map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value
+        }
+      })
+
+      return arbitrageOpportunities
+    },
+  })
+  .query('getDollar', {
+    async resolve({ ctx }) {
+      return await ServerSingleton.getInstance().getDollar()
+    },
+  })

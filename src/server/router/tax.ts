@@ -13,7 +13,12 @@ export const taxRouter = createRouter()
   })
   .query('getTaxes', {
     resolve({ ctx }) {
-      const taxes = ctx.prisma.exchangeCoinTax.findMany()
+      const taxes = ctx.prisma.exchangeCoinTax.findMany({
+        include: {
+          coin: true,
+          exchange: true,
+        },
+      })
 
       return taxes
     },

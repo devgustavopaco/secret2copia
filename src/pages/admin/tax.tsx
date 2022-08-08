@@ -73,7 +73,7 @@ const AdminTaxPage: NextPage = () => {
             </div>
           </div>
           <div className={styles.container}>
-            <DataGridTaxes data={taxes || []} />
+            <DataGridTaxes data={taxes || []} isLoading={isLoading} />
           </div>
         </main>
       </div>

@@ -55,6 +55,7 @@ export class BinanceStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -133,6 +134,7 @@ export class BitsoStrategy implements ExchangeStrategy {
         price: Number(json.payload.asks[0]!.price),
         amount: Number(json.payload.asks[0]!.amount),
       },
+      isUSD: true,
     }
   }
 }
@@ -191,6 +193,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
         price: Number(json.sell[0]!.preco),
         amount: Number(json.sell[0]!.quantidade),
       },
+      isUSD: false,
     }
   }
 }
@@ -239,6 +242,7 @@ export class CoinBaseStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -287,6 +291,7 @@ export class ChilizStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -343,6 +348,7 @@ export class CoinextStrategy implements ExchangeStrategy {
         price: Number(json[10]![6]),
         amount: Number(json[10]![9]),
       },
+      isUSD: false,
     }
   }
 }
@@ -399,6 +405,7 @@ export class CryptoComStrategy implements ExchangeStrategy {
         price: Number(json.result.data[0]!.asks[0]![0]),
         amount: Number(json.result.data[0]!.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -455,6 +462,7 @@ export class GeminiStategy implements ExchangeStrategy {
         price: Number(json.asks[0]!.price),
         amount: Number(json.asks[0]!.amount),
       },
+      isUSD: true,
     }
   }
 }
@@ -508,6 +516,7 @@ export class HuobiStrategy implements ExchangeStrategy {
         price: Number(json.tick.asks[0]![0]),
         amount: Number(json.tick.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -548,6 +557,7 @@ export class KrakenStrategy implements ExchangeStrategy {
         price: Number(json.result[pairResult]!.asks[0]![0]),
         amount: Number(json.result[pairResult]!.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -584,6 +594,7 @@ export class KuCoinStratefy implements ExchangeStrategy {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -620,6 +631,7 @@ export class NovaDAXStrategy implements ExchangeStrategy {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -654,6 +666,7 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -688,6 +701,7 @@ export class HitBTCStrategy implements ExchangeStrategy {
         price: Number(json.ask[0]![0]),
         amount: Number(json.ask[0]![1]),
       },
+      isUSD: true,
     }
   }
 }
@@ -723,6 +737,7 @@ export class BitfinexStrategy implements ExchangeStrategy {
         price: Number(json[0]![0]),
         amount: Number(json[0]![2]),
       },
+      isUSD: true,
     }
   }
 }
@@ -759,6 +774,7 @@ export class HotBitStrategy implements ExchangeStrategy {
         price: Number(json.result.asks[0]![0]),
         amount: Number(json.result.asks[0]![1]),
       },
+      isUSD: true,
     }
   }
 }

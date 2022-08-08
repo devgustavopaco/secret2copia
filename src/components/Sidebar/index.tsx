@@ -1,33 +1,24 @@
 import styles from './styles.module.scss'
 
-const exchanges = [
-  'Binance',
-  'Bitso',
-  'BrasilBitcoin',
-  'BitcoinTrade',
-  'Coinbase',
-  'Chiliz',
-  'Coinext',
-  'Crypto.com',
-  'FTX',
-  'Foxbit',
-  'Gemini',
-  'Huobi',
-  'Kraken',
-  'KuCoin',
-  'NovaDAX',
-  'Mercado Bitcoin',
-  'HitBTC',
-  'Bitfinex',
-  'HotBit',
-]
-
 interface SidebarProps {
+  dollarPrice?: number
+  defaultExchanges: string[]
+  buyExchanges: string[]
+  sellExchanges: string[]
   onSelectBuyExchange: (exchange: string) => void
   onSelectSellExchange: (exchange: string) => void
 }
 
+const numberFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'decimal',
+  maximumFractionDigits: 3,
+})
+
 export function Sidebar({
+  dollarPrice,
+  defaultExchanges,
+  buyExchanges,
+  sellExchanges,
   onSelectBuyExchange,
   onSelectSellExchange,
 }: SidebarProps) {
@@ -38,7 +29,7 @@ export function Sidebar({
       <section className={styles['text-section']}>
         <legend>Cotação Dólar</legend>
         <p>
-          <span>R$</span> 5,42
+          <span>R$</span> {numberFormatter.format(dollarPrice ?? -1)}
         </p>
       </section>
 
@@ -46,12 +37,13 @@ export function Sidebar({
         <legend>Exchanges Compra</legend>
 
         <div className={styles['filter-options']}>
-          {exchanges.map((exchange) => (
+          {defaultExchanges.map((exchange) => (
             <label key={exchange}>
               <input
                 type="checkbox"
+                checked={buyExchanges.includes(exchange)}
                 onChange={() => {
-                  onSelectBuyExchange(exchange.toLowerCase())
+                  onSelectBuyExchange(exchange)
                 }}
               />
               {exchange}
@@ -59,17 +51,17 @@ export function Sidebar({
           ))}
         </div>
       </section>
-
       <section className={styles['filter-section']}>
         <legend>Exchanges Venda</legend>
 
         <div className={styles['filter-options']}>
-          {exchanges.map((exchange) => (
+          {defaultExchanges.map((exchange) => (
             <label key={exchange}>
               <input
                 type="checkbox"
+                checked={sellExchanges.includes(exchange)}
                 onChange={() => {
-                  onSelectSellExchange(exchange.toLowerCase())
+                  onSelectSellExchange(exchange)
                 }}
               />
               {exchange}

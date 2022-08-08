@@ -41,10 +41,12 @@
 
 .card-header {
   display: flex;
+  align-items: center;
   gap: 0.25rem;
 
   img {
     width: 2rem;
+    height: 2rem;
     aspect-ratio: 1 / 1;
   }
 
@@ -91,6 +93,7 @@
 
       img {
         width: 1.5rem;
+        height: 1.5rem;
         aspect-ratio: 1 / 1;
       }
 

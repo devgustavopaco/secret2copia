@@ -138,16 +138,17 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
           </div>
           <div className={styles.inputsRow}>
             <div className={styles.inputBox}>
-              <span className={styles.details}>Código</span>
+              <span className={styles.details}>Taxa</span>
               <input
                 type="number"
                 placeholder="Taxa"
+                step="any"
                 required
                 onChange={handleTaxChange}
               />
             </div>
             <div className={styles.inputBox}>
-              <span className={styles.details}>Nome</span>
+              <span className={styles.details}>Confirmações</span>
               <input
                 type="number"
                 placeholder="Confirmações"

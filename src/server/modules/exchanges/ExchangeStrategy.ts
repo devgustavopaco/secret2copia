@@ -28,6 +28,7 @@ export interface Exchange {
     price: number
     amount: number
   }
+  isUSD: boolean
 }
 
 export interface Ticker {

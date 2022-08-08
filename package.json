@@ -27,6 +27,7 @@
     "@trpc/react": "^9.26.2",
     "@trpc/server": "^9.26.2",
     "bcrypt": "^5.0.1",
+    "dayjs": "^1.11.4",
     "next": "12.2.1",
     "next-auth": "^4.10.1",
     "nextjs-progressbar": "^0.0.14",

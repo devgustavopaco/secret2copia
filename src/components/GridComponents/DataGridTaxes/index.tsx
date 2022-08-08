@@ -34,26 +34,51 @@ const DetailsButton = ({ isActive, onClick }: DetailsButtonProps) => {
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[]
+  isLoading?: boolean
 }
 
-export function DataGridTaxes({ data }: DataGridTaxesProps) {
+export function DataGridTaxes({ data, isLoading = false }: DataGridTaxesProps) {
   const [modalAtivarOpen, setModalAtivarOpen] = useState(false)
   const [modalDesativarOpen, setModalDesativarOpen] = useState(false)
 
   const columns: GridColumns = [
     {
-      field: 'Codigo',
-      headerName: 'Código',
-      width: 400,
+      field: 'exchangeName',
+      headerName: 'Exchange',
+      width: 250,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return params.row.exchange.name
+      },
+    },
+    {
+      field: 'coinName',
+      headerName: 'Moeda',
+      width: 250,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return params.row.coin.name
+      },
+    },
+    {
+      field: 'tax',
+      headerName: 'Taxa',
+      width: 200,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
     {
-      field: 'Nome',
-      headerName: 'Nome',
-      width: 400,
+      field: 'confirmations',
+      headerName: 'Confirmações',
+      width: 200,
       editable: false,
       sortable: false,
       filterable: false,
@@ -95,6 +120,7 @@ export function DataGridTaxes({ data }: DataGridTaxesProps) {
             pageSize={20}
             rowsPerPageOptions={[20]}
             className={styles.grid}
+            loading={isLoading}
           />
         </Box>
       </div>
