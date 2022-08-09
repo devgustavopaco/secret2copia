@@ -73,8 +73,8 @@ export function DataGridUsers({
   }
 
   return (
-    <div className={styles.userList}>
-      <Box className={styles.box} sx={{ height: 700, width: '100%' }}>
+    <div className={styles.tableContainer}>
+      <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}
           columns={columns}
@@ -86,7 +86,6 @@ export function DataGridUsers({
           checkboxSelection
           disableSelectionOnClick
           onSelectionModelChange={handleDelete}
-          className={styles.grid}
         />
       </Box>
     </div>

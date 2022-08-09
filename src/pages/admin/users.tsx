@@ -1,13 +1,14 @@
 import type { NextPage } from 'next'
 import { Trash, UserCirclePlus } from 'phosphor-react'
 import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
-import { SideBarAdmin } from '../../components/Admin/SideBarAdmin'
-import { TopBarAdmin } from '../../components/Admin/TopBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { useEffect, useState } from 'react'
 import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
 import { ModalAddUser } from '../../components/Modals/ModalAddUser'
 import { trpc } from '../../utils/trpc'
+import Head from 'next/head'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)
@@ -70,6 +71,11 @@ const AdminUsers: NextPage = () => {
 
   return (
     <>
+      <Head>
+        <title>Usuários</title>
+        <meta name="description" content="Usuários" />
+      </Head>
+
       {modalOpenDelete && (
         <ModalDeleteUser
           setOpenModal={setModalOpenDelete}
@@ -82,36 +88,45 @@ const AdminUsers: NextPage = () => {
           onSubmit={handleUserCreate}
         />
       )}
-      <TopBarAdmin />
-      <div className={styles.buttonList}>
-        <button
-          type="button"
-          className={styles.addButton}
-          onClick={() => {
-            setModalOpenAdd(true)
-          }}
-        >
-          Adicionar
-          <UserCirclePlus size={24} />
-        </button>
-        <button
-          type="button"
-          className={styles.deleteButton}
-          onClick={() => {
-            setModalOpenDelete(true)
-          }}
-        >
-          Excluir
-          <Trash size={24} />
-        </button>
-      </div>
-      <div className={styles.container}>
-        <SideBarAdmin />
-        <DataGridUsers
-          onDelete={handleUserDelete}
-          data={users || []}
-          isLoading={isLoading}
-        />
+      <HeaderAdmin />
+      <div className={`${styles.content} container`}>
+        <SidebarAdmin />
+        <main>
+          <div className={styles.pageHeader}>
+            <h1>Usuários</h1>
+
+            <div className={styles.buttonCryptoList}>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
+                onClick={() => {
+                  setModalOpenDelete(true)
+                }}
+                datatype="remove"
+              >
+                Excluir
+                <Trash size={24} />
+              </button>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
+                onClick={() => {
+                  setModalOpenAdd(true)
+                }}
+              >
+                Adicionar
+                <UserCirclePlus size={24} />
+              </button>
+            </div>
+          </div>
+          <div className={styles.container}>
+            <DataGridUsers
+              onDelete={handleUserDelete}
+              data={users || []}
+              isLoading={isLoading}
+            />
+          </div>
+        </main>
       </div>
     </>
   )
