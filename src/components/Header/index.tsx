@@ -1,8 +1,19 @@
+import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { SignOut } from 'phosphor-react'
 import styles from './styles.module.scss'
 
 export function Header() {
+  const router = useRouter()
+
+  const handleSignOut = () => {
+    signOut({
+      redirect: false,
+    })
+    router.push('/')
+  }
+
   return (
     <header className={styles.header}>
       <div className="container">
@@ -32,7 +43,11 @@ export function Header() {
           </ul>
         </nav>
 
-        <button type="button" className={styles['logout-button']}>
+        <button
+          type="button"
+          className={styles['logout-button']}
+          onClick={handleSignOut}
+        >
           Sair
           <SignOut size={24} />
         </button>
