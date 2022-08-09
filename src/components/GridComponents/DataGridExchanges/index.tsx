@@ -1,191 +1,94 @@
-import { Box, Button } from '@mui/material'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined'
-import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined'
+import { Box } from '@mui/material'
+import {
+  DataGrid,
+  GridCellEditCommitParams,
+  GridColumns,
+  GridSelectionModel,
+} from '@mui/x-data-grid'
 
 import styles from './styles.module.scss'
-import { useState } from 'react'
-import { ModalAtivarExchange } from '../../Modals/Exchange/ModalAtivarExchange'
-import { ModalDesativarExchange } from '../../Modals/Exchange/ModalDesativarExchange'
 
-let ativo = false
+import { trpc } from '../../../utils/trpc'
+import type { Exchange } from '@prisma/client'
 
-export function DataGridExchanges() {
-  const renderDetailsButton = (params: any) => {
-    if (params.row.Ativar === false) {
-      ativo = false
-    } else {
-      ativo = true
-    }
+interface DataGridExchangesProps {
+  data: Exchange[]
+  isLoading?: boolean
+}
 
-    return (
-      <strong>
-        {ativo ? (
-          <Button
-            className={styles.BtnAtivar}
-            variant="outlined"
-            startIcon={<ThumbUpAltOutlinedIcon />}
-            onClick={() => {
-              setModalAtivarOpen(true)
-            }}
-          >
-            Ativar
-          </Button>
-        ) : (
-          <Button
-            className={styles.BtnAtivar}
-            variant="outlined"
-            startIcon={<ThumbDownAltOutlinedIcon />}
-            onClick={() => {
-              setModalDesativarOpen(true)
-            }}
-          >
-            Desativar
-          </Button>
-        )}
-      </strong>
-    )
-  }
-
-  const columns: GridColDef[] = [
+export function DataGridExchanges({
+  data,
+  isLoading = false,
+}: DataGridExchangesProps) {
+  const columns: GridColumns = [
     {
-      field: 'Codigo',
-      headerName: 'Código',
-      width: 400,
+      field: 'name',
+      headerName: 'Exchange',
+      width: 250,
       editable: false,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
     },
     {
-      field: 'Nome',
-      headerName: 'Nome',
-      width: 400,
+      field: 'tag',
+      headerName: 'Tag',
+      width: 250,
       editable: false,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
     },
     {
-      field: 'Taxa',
+      field: 'fee',
       headerName: 'Taxa',
-      width: 300,
+      width: 200,
       editable: true,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
     },
     {
-      field: 'Ativar',
-      headerName: 'Ativar / Desativar',
-      width: 300,
-      renderCell: renderDetailsButton,
+      field: 'convert',
+      headerName: 'Converte',
+      type: 'boolean',
+      width: 200,
+      editable: false,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
     },
   ]
 
-  const rows = [
-    {
-      id: 1,
-      Codigo: 'BRZL',
-      Nome: 'Braziliex',
-      Taxa: '0.5',
-      Ativar: false,
+  const updateTaxMutation = trpc.useMutation('exchange.update', {
+    onSuccess() {
+      console.log('success')
     },
-    {
-      id: 2,
-      Codigo: 'BNB',
-      Nome: 'Binance',
-      Taxa: '0.1',
-      Ativar: false,
+    onError(error) {
+      console.error(error.message)
     },
-    {
-      id: 3,
-      Codigo: 'MBT',
-      Nome: 'Mercado Bitcoin',
-      Taxa: '0.7',
-      Ativar: true,
-    },
-    {
-      id: 4,
-      Codigo: 'HBT',
-      Nome: 'HitBTC',
-      Taxa: '	0.1',
-      Ativar: true,
-    },
-    {
-      id: 5,
-      Codigo: 'BTT',
-      Nome: 'BitcoinTrade',
-      Taxa: '0.5',
-      Ativar: false,
-    },
-    {
-      id: 6,
-      Codigo: 'NVD',
-      Nome: 'NovaDAX',
-      Taxa: '	0.5',
-      Ativar: true,
-    },
-    {
-      id: 7,
-      Codigo: 'BTY',
-      Nome: 'Bitcointoyou',
-      Taxa: '0.5',
-      Ativar: false,
-    },
-    {
-      id: 8,
-      Codigo: 'BFN',
-      Nome: 'Bitfinex',
-      Taxa: '	0.1',
-      Ativar: true,
-    },
-    {
-      id: 9,
-      Codigo: 'HBG',
-      Nome: 'Huobi Global',
-      Taxa: '0.2',
-      Ativar: false,
-    },
-    {
-      id: 10,
-      Codigo: 'HOT',
-      Nome: 'Hotbit',
-      Taxa: '0.2',
-      Ativar: true,
-    },
-    {
-      id: 11,
-      Codigo: 'CHZ',
-      Nome: 'Chiliz',
-      Taxa: '0.6',
-      Ativar: false,
-    },
-    {
-      id: 12,
-      Codigo: 'KCS',
-      Nome: 'Kucoin',
-      Taxa: '0.1',
-      Ativar: true,
-    },
-  ]
+  })
 
-  const [modalAtivarOpen, setModalAtivarOpen] = useState(false)
-  const [modalDesativarOpen, setModalDesativarOpen] = useState(false)
+  const handleEditCommit = (cell: GridCellEditCommitParams) => {
+    updateTaxMutation.mutate({
+      id: String(cell.id),
+      [cell.field]: cell.value,
+    })
+  }
+
   return (
-    <>
-      {modalAtivarOpen && (
-        <ModalAtivarExchange setOpenModal={setModalAtivarOpen} />
-      )}
-      {modalDesativarOpen && (
-        <ModalDesativarExchange setOpenModal={setModalDesativarOpen} />
-      )}
-      <div className={styles.exchangeList}>
-        <Box className={styles.box} sx={{ height: 700 }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSize={20}
-            rowsPerPageOptions={[20]}
-            className={styles.grid}
-          />
-        </Box>
-      </div>
-    </>
+    <div className={styles.tableContainer}>
+      <Box className={styles.box} sx={{ height: 700 }}>
+        <DataGrid
+          rows={data}
+          columns={columns}
+          pageSize={20}
+          rowsPerPageOptions={[20]}
+          className={styles.grid}
+          loading={isLoading}
+          onCellEditCommit={handleEditCommit}
+        />
+      </Box>
+    </div>
   )
 }

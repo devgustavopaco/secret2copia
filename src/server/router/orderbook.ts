@@ -23,6 +23,7 @@ import type {
 } from '../modules/exchanges/ExchangeStrategy'
 import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
+import { PrismaClient } from '@prisma/client'
 
 interface Operation {
   coin: {
@@ -92,6 +93,7 @@ interface ArbitrageOpportunity {
 }
 
 const fetchArbitrageOpportunity = async (
+  prisma: PrismaClient,
   coin: {
     name: string
     ticker: string
@@ -184,13 +186,29 @@ const fetchArbitrageOpportunity = async (
     (tax) => tax.exchange.name === highestBid.exchange
   )
 
+  const exchanges = await prisma.exchange.findMany({
+    where: {
+      name: {
+        in: [lowestAsk.exchange, highestBid.exchange],
+      },
+    },
+  })
+
+  const lowestAskFee =
+    exchanges.find((exchange) => exchange.name === lowestAsk.exchange)?.fee ?? 0
+  const highestBidFee =
+    exchanges.find((exchange) => exchange.name === highestBid.exchange)?.fee ??
+    0
+
   return {
     coin: name,
     ticker,
     lowestAsk,
     highestBid,
-    tax: (lowestAskTax?.tax || 0) + (highestBidTax?.tax || 0),
-    fee: (lowestAskTax?.exchange.fee || 0) + (highestBidTax?.exchange.fee || 0),
+    tax:
+      (lowestAskTax?.tax ?? 0) * lowestAsk.price +
+      (highestBidTax?.tax ?? 0) * highestBid.price,
+    fee: lowestAskFee + highestBidFee,
   }
 }
 
@@ -245,6 +263,7 @@ export const orderbookRouter = createRouter()
       for (const coin of activeCoins) {
         arbitrageOpportunitiesPromises.push(
           fetchArbitrageOpportunity(
+            ctx.prisma,
             {
               name: coin.name,
               ticker: coin.ticker,

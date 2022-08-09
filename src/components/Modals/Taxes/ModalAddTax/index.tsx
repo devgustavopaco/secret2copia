@@ -27,7 +27,7 @@ const StyledSelect = ({
         border: 'none',
         boxShadow: 'none',
         outline: state.isFocused ? 'var(--purple-500) solid 2px' : 'none',
-        'outline-offset': '1px',
+        outlineOffset: '1px',
       }),
       option: (provided, state) => ({
         ...provided,
@@ -144,6 +144,7 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
                 placeholder="Taxa"
                 step="any"
                 required
+                value={tax}
                 onChange={handleTaxChange}
               />
             </div>
@@ -153,6 +154,7 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
                 type="number"
                 placeholder="Confirmações"
                 required
+                value={confirmations}
                 onChange={handleConfirmationsChange}
               />
             </div>
