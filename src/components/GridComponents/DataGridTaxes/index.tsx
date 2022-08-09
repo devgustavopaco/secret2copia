@@ -1,46 +1,28 @@
-import { Box, Button } from '@mui/material'
+import { Box } from '@mui/material'
 import {
   DataGrid,
+  GridCellEditCommitParams,
   GridColumns,
+  GridSelectionModel,
   type GridRenderCellParams,
 } from '@mui/x-data-grid'
 
 import styles from './styles.module.scss'
 import { useState } from 'react'
 import type { ExchangeCoinTax } from '@prisma/client'
-import { ThumbsDown, ThumbsUp } from 'phosphor-react'
-import { ModalActivateTaxes } from '../../Modals/Taxes/ModalActivateTaxes'
-import { ModalDeactivateTaxes } from '../../Modals/Taxes/ModalDeactivateTaxes'
-
-interface DetailsButtonProps {
-  isActive: boolean
-  onClick: () => void
-}
-
-const DetailsButton = ({ isActive, onClick }: DetailsButtonProps) => {
-  return (
-    <Button
-      className={styles.BtnAtivar}
-      variant="outlined"
-      startIcon={
-        isActive ? <ThumbsDown weight="bold" /> : <ThumbsUp weight="bold" />
-      }
-      onClick={onClick}
-    >
-      {isActive ? 'Desativar' : 'Ativar'}
-    </Button>
-  )
-}
+import { trpc } from '../../../utils/trpc'
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[]
   isLoading?: boolean
+  onSelect: (ids: string[]) => void
 }
 
-export function DataGridTaxes({ data, isLoading = false }: DataGridTaxesProps) {
-  const [modalAtivarOpen, setModalAtivarOpen] = useState(false)
-  const [modalDesativarOpen, setModalDesativarOpen] = useState(false)
-
+export function DataGridTaxes({
+  data,
+  isLoading = false,
+  onSelect,
+}: DataGridTaxesProps) {
   const columns: GridColumns = [
     {
       field: 'exchangeName',
@@ -70,7 +52,7 @@ export function DataGridTaxes({ data, isLoading = false }: DataGridTaxesProps) {
       field: 'tax',
       headerName: 'Taxa',
       width: 200,
-      editable: false,
+      editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -79,51 +61,60 @@ export function DataGridTaxes({ data, isLoading = false }: DataGridTaxesProps) {
       field: 'confirmations',
       headerName: 'Confirmações',
       width: 200,
-      editable: false,
+      editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
     {
-      field: 'Ativar',
-      headerName: 'Ativar / Desativar',
+      field: 'active',
+      headerName: 'Ativo',
       width: 300,
-      renderCell: ({ row }: GridRenderCellParams<any, ExchangeCoinTax>) => (
-        <DetailsButton
-          isActive={row.active}
-          onClick={() => {
-            if (row.active) {
-              setModalDesativarOpen(true)
-            } else {
-              setModalAtivarOpen(true)
-            }
-          }}
-        />
-      ),
+      type: 'boolean',
+      editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
   ]
 
+  const updateTaxMutation = trpc.useMutation('tax.update', {
+    onSuccess() {
+      console.log('success')
+    },
+    onError(error) {
+      console.error(error.message)
+    },
+  })
+
+  const handleEditCommit = (cell: GridCellEditCommitParams) => {
+    updateTaxMutation.mutate({
+      id: String(cell.id),
+      [cell.field]: cell.value,
+    })
+  }
+
+  const handleSelectionChanged = (ids: GridSelectionModel) => {
+    onSelect(ids as string[])
+  }
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
   return (
-    <>
-      {modalAtivarOpen && <ModalActivateTaxes onToggle={setModalAtivarOpen} />}
-      {modalDesativarOpen && (
-        <ModalDeactivateTaxes setOpenModal={setModalDesativarOpen} />
-      )}
-      <div className={styles.tableContainer}>
-        <Box className={styles.box} sx={{ height: 700 }}>
-          <DataGrid
-            rows={data}
-            columns={columns}
-            pageSize={20}
-            rowsPerPageOptions={[20]}
-            className={styles.grid}
-            loading={isLoading}
-          />
-        </Box>
-      </div>
-    </>
+    <div className={styles.tableContainer}>
+      <Box className={styles.box} sx={{ height: 700 }}>
+        <DataGrid
+          rows={data}
+          columns={columns}
+          pageSize={20}
+          rowsPerPageOptions={[20]}
+          className={styles.grid}
+          loading={isLoading}
+          onCellEditCommit={handleEditCommit}
+          checkboxSelection
+          onSelectionModelChange={handleSelectionChanged}
+        />
+      </Box>
+    </div>
   )
 }

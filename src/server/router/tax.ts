@@ -43,14 +43,24 @@ export const taxRouter = createRouter()
       return tax
     },
   })
-  .mutation('delete', {
+  .mutation('update', {
     input: z.object({
-      id: z.string().uuid(),
+      id: z.string().cuid(),
+      tax: z.union([z.string(), z.number()]).optional(),
+      confirmations: z.union([z.string(), z.number()]).optional(),
+      active: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
-      const tax = await ctx.prisma.exchangeCoinTax.delete({
+      const tax = await ctx.prisma.exchangeCoinTax.update({
         where: {
           id: input.id,
+        },
+        data: {
+          tax: input.tax ? Number(input.tax) : undefined,
+          confirmations: input.confirmations
+            ? Number(input.confirmations)
+            : undefined,
+          active: input.active,
         },
       })
 
@@ -65,18 +75,16 @@ export const taxRouter = createRouter()
       }
     },
   })
-  .mutation('updateActive', {
+  .mutation('delete', {
     input: z.object({
-      id: z.string().uuid(),
-      active: z.boolean(),
+      ids: z.string().cuid().array(),
     }),
     async resolve({ ctx, input }) {
-      const tax = await ctx.prisma.exchangeCoinTax.update({
+      const tax = await ctx.prisma.exchangeCoinTax.deleteMany({
         where: {
-          id: input.id,
-        },
-        data: {
-          active: input.active,
+          id: {
+            in: input.ids,
+          },
         },
       })
 

@@ -3,9 +3,8 @@ import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { DataGridTaxes } from '../../components/GridComponents/DataGridTaxes'
-import { CurrencyEth } from 'phosphor-react'
+import { CurrencyEth, Trash } from 'phosphor-react'
 import { useState } from 'react'
-import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
 import { ModalAddTax } from '../../components/Modals/Taxes/ModalAddTax'
 import Head from 'next/head'
@@ -15,14 +14,23 @@ const AdminTaxPage: NextPage = () => {
 
   const createTaxMutation = trpc.useMutation('tax.create', {
     onSuccess() {
-      console.log('success')
+      refetch()
     },
     onError(error) {
       console.error(error.message)
     },
   })
 
-  const { data: taxes, isLoading } = trpc.useQuery(['tax.getTaxes'])
+  const { data: taxes, isLoading, refetch } = trpc.useQuery(['tax.getTaxes'])
+
+  const deleteMutation = trpc.useMutation('tax.delete', {
+    onSuccess() {
+      refetch()
+    },
+    onError(error) {
+      console.error(error.message)
+    },
+  })
 
   const handleTaxCreate = (
     exchangeId: string,
@@ -40,6 +48,18 @@ const AdminTaxPage: NextPage = () => {
 
   const handleClose = () => {
     setModalOpen(false)
+  }
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids)
+  }
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
+    })
   }
 
   return (
@@ -63,6 +83,15 @@ const AdminTaxPage: NextPage = () => {
               <button
                 type="button"
                 className={styles.addCryptoButton}
+                onClick={handleDeletion}
+                datatype="remove"
+              >
+                Remover
+                <Trash size={24} />
+              </button>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
                 onClick={() => {
                   setModalOpen(true)
                 }}
@@ -73,7 +102,11 @@ const AdminTaxPage: NextPage = () => {
             </div>
           </div>
           <div className={styles.container}>
-            <DataGridTaxes data={taxes || []} isLoading={isLoading} />
+            <DataGridTaxes
+              data={taxes || []}
+              isLoading={isLoading}
+              onSelect={handleSelection}
+            />
           </div>
         </main>
       </div>

@@ -27,7 +27,7 @@ const StyledSelect = ({
         border: 'none',
         boxShadow: 'none',
         outline: state.isFocused ? 'var(--purple-500) solid 2px' : 'none',
-        'outline-offset': '1px',
+        outlineOffset: '1px',
       }),
       option: (provided, state) => ({
         ...provided,
