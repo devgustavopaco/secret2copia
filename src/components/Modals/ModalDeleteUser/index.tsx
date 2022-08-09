@@ -1,6 +1,14 @@
 import styles from './styles.module.scss'
 
-export function ModalDeleteUser({ setOpenModal }: any) {
+interface ModalDeleteUserProps {
+  setOpenModal: (open: boolean) => void
+  deleted: (deleted: boolean) => void
+}
+
+export function ModalDeleteUser({
+  setOpenModal,
+  deleted,
+}: ModalDeleteUserProps) {
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
@@ -29,7 +37,14 @@ export function ModalDeleteUser({ setOpenModal }: any) {
           >
             Voltar
           </button>
-          <button className={styles.excluirBtn}>Excluir</button>
+          <button
+            onClick={() => {
+              deleted(true), setOpenModal(false)
+            }}
+            className={styles.excluirBtn}
+          >
+            Excluir
+          </button>
         </div>
       </div>
     </div>
