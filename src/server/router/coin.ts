@@ -34,7 +34,6 @@ export const coinRouter = createRouter()
       name: z.string(),
       ticker: z.string(),
       active: z.boolean(),
-      image_url: z.string(),
     }),
     async resolve({ ctx, input }) {
       const coin = await ctx.prisma.coin.create({
@@ -42,7 +41,6 @@ export const coinRouter = createRouter()
           name: input.name,
           ticker: input.ticker,
           active: input.active,
-          image_url: input.image_url,
         },
       })
 
@@ -51,12 +49,14 @@ export const coinRouter = createRouter()
   })
   .mutation('delete', {
     input: z.object({
-      id: z.string().uuid(),
+      ids: z.string().cuid().array(),
     }),
     async resolve({ ctx, input }) {
-      const coin = await ctx.prisma.coin.delete({
+      const coin = await ctx.prisma.coin.deleteMany({
         where: {
-          id: input.id,
+          id: {
+            in: input.ids,
+          },
         },
       })
 
@@ -71,9 +71,9 @@ export const coinRouter = createRouter()
       }
     },
   })
-  .mutation('updateActive', {
+  .mutation('update', {
     input: z.object({
-      id: z.string().uuid(),
+      id: z.string().cuid(),
       active: z.boolean(),
     }),
     async resolve({ ctx, input }) {

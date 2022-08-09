@@ -25,7 +25,7 @@ export function Header() {
               <a href="#">Contato</a>
             </li>
             <li>
-              <Link href="/adminSales">
+              <Link href="/admin/sales">
                 <a>Dashboard</a>
               </Link>
             </li>

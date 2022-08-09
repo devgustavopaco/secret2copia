@@ -104,7 +104,7 @@ const AdminUsers: NextPage = () => {
                 }}
                 datatype="remove"
               >
-                Excluir
+                Remover
                 <Trash size={24} />
               </button>
               <button

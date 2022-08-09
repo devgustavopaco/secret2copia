@@ -6,7 +6,7 @@ import styles from './styles.module.scss'
 
 interface ModalAddCryptoProps {
   setOpenModal: (open: boolean) => void
-  onSubmit: (ticker: string, name: string, image: File) => void
+  onSubmit: (ticker: string, name: string) => void
 }
 
 export function ModalAddCrypto({
@@ -15,15 +15,6 @@ export function ModalAddCrypto({
 }: ModalAddCryptoProps) {
   const [name, setName] = useState('')
   const [ticker, setTicker] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-
-  const handleImageDrop = (files: File[]) => {
-    const selectedImage = files[0]
-
-    if (selectedImage) {
-      setImage(selectedImage)
-    }
-  }
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value)
@@ -36,12 +27,8 @@ export function ModalAddCrypto({
   const handleFormSubmit = (event: FormEvent) => {
     event.preventDefault()
 
-    if (image) {
-      onSubmit(ticker, name, image)
-      setOpenModal(false)
-    } else {
-      console.error('Image is required')
-    }
+    onSubmit(ticker, name)
+    setOpenModal(false)
   }
 
   return (
@@ -80,10 +67,6 @@ export function ModalAddCrypto({
               required
               onChange={handleNameChange}
             />
-          </div>
-          <div className={styles.inputBoxFile}>
-            <span className={styles.details}>Foto</span>
-            <ImageDropzone onDrop={handleImageDrop} />
           </div>
         </div>
         <footer className={styles.footer}>

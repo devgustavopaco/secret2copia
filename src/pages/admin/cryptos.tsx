@@ -3,7 +3,7 @@ import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
 import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
-import { CurrencyEth } from 'phosphor-react'
+import { CurrencyEth, Trash } from 'phosphor-react'
 import { useState } from 'react'
 import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
@@ -11,21 +11,43 @@ import { trpc } from '../../utils/trpc'
 const AdminExchanges: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
 
-  const createCryptoMutation = trpc.useMutation('coin.create', {
+  const { data: coins, isLoading, refetch } = trpc.useQuery(['coin.getCoins'])
+
+  const deleteMutation = trpc.useMutation('coin.delete', {
     onSuccess() {
-      console.log('success')
+      refetch()
     },
     onError(error) {
       console.error(error.message)
     },
   })
 
-  const handleCryptoCreate = (ticker: string, name: string, image: File) => {
+  const createCryptoMutation = trpc.useMutation('coin.create', {
+    onSuccess() {
+      refetch()
+    },
+    onError(error) {
+      console.error(error.message)
+    },
+  })
+
+  const handleCryptoCreate = (ticker: string, name: string) => {
     createCryptoMutation.mutate({
       active: true,
-      image_url: 'teste',
       name,
       ticker,
+    })
+  }
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids)
+  }
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
     })
   }
 
@@ -48,6 +70,15 @@ const AdminExchanges: NextPage = () => {
               <button
                 type="button"
                 className={styles.addCryptoButton}
+                onClick={handleDeletion}
+                datatype="remove"
+              >
+                Remover
+                <Trash size={24} />
+              </button>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
                 onClick={() => {
                   setModalOpen(true)
                 }}
@@ -58,7 +89,11 @@ const AdminExchanges: NextPage = () => {
             </div>
           </div>
           <div className={styles.container}>
-            <DataGridCryptos />
+            <DataGridCryptos
+              data={coins || []}
+              isLoading={isLoading}
+              onSelect={handleSelection}
+            />
           </div>
         </main>
       </div>
