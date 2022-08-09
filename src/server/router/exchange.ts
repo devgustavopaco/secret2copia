@@ -3,17 +3,6 @@ import { z } from 'zod'
 import { createRouter } from './context'
 
 export const exchangeRouter = createRouter()
-  // .query('getActiveExchanges', {
-  //   resolve({ ctx }) {
-  //     const exchanges = ctx.prisma.exchange.findMany({
-  //       where: {
-
-  //       },
-  //     })
-
-  //     return exchanges
-  //   },
-  // })
   .query('getExchanges', {
     resolve({ ctx }) {
       const exchanges = ctx.prisma.exchange.findMany()
@@ -29,10 +18,40 @@ export const exchangeRouter = createRouter()
     }
     return next()
   })
-  .mutation('updateFee', {
+  .mutation('create', {
     input: z.object({
-      id: z.string().uuid(),
       fee: z.number().nonnegative(),
+      name: z.string(),
+      tag: z.string(),
+      convert: z.boolean(),
+    }),
+    async resolve({ ctx, input }) {
+      const exchange = await ctx.prisma.exchange.create({
+        data: {
+          fee: input.fee,
+          name: input.name,
+          tag: input.tag,
+          convert: input.convert,
+        },
+      })
+
+      if (exchange) {
+        return {
+          success: true,
+        }
+      }
+
+      return {
+        success: false,
+      }
+    },
+  })
+  .mutation('update', {
+    input: z.object({
+      id: z.string().cuid(),
+      fee: z.union([z.string(), z.number()]).optional(),
+      name: z.string().optional(),
+      tag: z.string().optional(),
     }),
     async resolve({ ctx, input }) {
       const exchange = await ctx.prisma.exchange.update({
@@ -40,7 +59,9 @@ export const exchangeRouter = createRouter()
           id: input.id,
         },
         data: {
-          fee: input.fee,
+          fee: input.fee ? Number(input.fee) : undefined,
+          name: input.name,
+          tag: input.tag,
         },
       })
 

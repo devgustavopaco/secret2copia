@@ -144,6 +144,7 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
                 placeholder="Taxa"
                 step="any"
                 required
+                value={tax}
                 onChange={handleTaxChange}
               />
             </div>
@@ -153,6 +154,7 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
                 type="number"
                 placeholder="Confirmações"
                 required
+                value={confirmations}
                 onChange={handleConfirmationsChange}
               />
             </div>

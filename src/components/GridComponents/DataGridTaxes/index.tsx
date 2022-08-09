@@ -98,8 +98,6 @@ export function DataGridTaxes({
     onSelect(ids as string[])
   }
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-
   return (
     <div className={styles.tableContainer}>
       <Box className={styles.box} sx={{ height: 700 }}>

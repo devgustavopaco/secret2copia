@@ -1,44 +1,55 @@
-.exchangeList{
-    margin: 0px 80px;
-    display: flex;
-    flex-direction: column;
-    align-items:flex-end;
-    width: 100%;
-    height: 100%;
-}
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
 
-.BtnAtivar{
-    color: #fff;
-    border:none;
-
-    &:hover{
-        color: #fff;
-        border-color: var(--purple-200);
-        transition: filter 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 0 0 1.5px var(--purple-200);
-    }
-}
-
-
-.box{
-    padding: 5px;
-    width: 100%;
-    
-    background: var(--gray-800);
-    color: red !important;
-    border-radius: 15px;
-    box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
-    border:none !important;
-    svg{
-        color: var(--purple-500) !important;
-    }
-}
-
-.grid{
+  :global(.MuiDataGrid-overlay) {
+    background-color: var(--gray-700);
+  }
+  :global(.MuiDataGrid-root) {
+    color: var(--white);
     border: none;
-    color: whitesmoke !important;
-    p{
-        color: whitesmoke !important;
-    }
+  }
 }
 
+.BtnAtivar {
+  color: #fff;
+  border: none;
+
+  &:hover {
+    color: #fff;
+    border-color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
+}
+
+.box {
+  width: 100%;
+
+  background: var(--gray-800);
+  border-radius: 8px;
+  box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
+
+  svg {
+    color: var(--purple-500) !important;
+  }
+}
+
+.grid {
+  border: none;
+  color: var(--white);
+  background-color: var(--gray-800);
+  p {
+    color: var(--white);
+  }
+}
+
+.imgStyle {
+  padding: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
