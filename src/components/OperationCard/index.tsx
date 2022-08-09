@@ -8,10 +8,12 @@ interface OperationCardProps {
     ask: {
       exchange: string
       price: number
+      isUSD: boolean
     }
     bid: {
       exchange: string
       price: number
+      isUSD: boolean
     }
     symbol: string
     fee: number
@@ -36,7 +38,14 @@ export function OperationCard({
   dollarPrice = 1,
   onClick,
 }: OperationCardProps) {
-  const spread = coin.bid.price / coin.ask.price - 1
+  const bidPrice = coin.bid.isUSD
+    ? coin.bid.price * dollarPrice
+    : coin.bid.price
+  const askPrice = coin.ask.isUSD
+    ? coin.ask.price * dollarPrice
+    : coin.ask.price
+
+  const spread = bidPrice / askPrice - 1
 
   return (
     <section className={styles.card}>
@@ -63,7 +72,7 @@ export function OperationCard({
           <p>
             <span>R$</span>
             &nbsp;
-            {numberFormatter.format(coin.ask.price * dollarPrice)}
+            {numberFormatter.format(askPrice)}
           </p>
         </div>
 
@@ -78,7 +87,7 @@ export function OperationCard({
           <p>
             <span>R$</span>
             &nbsp;
-            {numberFormatter.format(coin.bid.price * dollarPrice)}
+            {numberFormatter.format(bidPrice)}
           </p>
         </div>
       </div>

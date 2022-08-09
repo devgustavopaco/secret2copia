@@ -156,10 +156,12 @@ const Monitoring: NextPage = () => {
                           ask: {
                             exchange: operation.lowestAsk.exchange,
                             price: operation.lowestAsk.price,
+                            isUSD: operation.lowestAsk.isUSD,
                           },
                           bid: {
                             exchange: operation.highestBid.exchange,
                             price: operation.highestBid.price,
+                            isUSD: operation.highestBid.isUSD,
                           },
                           fee: operation.fee,
                           tax: operation.tax,

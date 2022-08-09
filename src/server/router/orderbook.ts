@@ -82,11 +82,13 @@ interface ArbitrageOpportunity {
     exchange: string
     price: number
     amount: number
+    isUSD: boolean
   }
   highestBid: {
     exchange: string
     price: number
     amount: number
+    isUSD: boolean
   }
   tax: number
   fee: number
@@ -146,13 +148,17 @@ const fetchArbitrageOpportunity = async (
             : exchange.ask.price / dollarPrice
 
           if (priceInUSD < acc.price) {
-            return { exchange: exchange.name, ...exchange.ask }
+            return {
+              exchange: exchange.name,
+              isUSD: exchange.isUSD,
+              ...exchange.ask,
+            }
           }
         }
       }
       return acc
     },
-    { exchange: '', price: 9999999999999, amount: 0 }
+    { exchange: '', price: 9999999999999, amount: 0, isUSD: true }
   )
 
   // Highest sell price
@@ -170,13 +176,17 @@ const fetchArbitrageOpportunity = async (
             : exchange.bid.price / dollarPrice
 
           if (priceInUSD > acc.price) {
-            return { exchange: exchange.name, ...exchange.bid }
+            return {
+              exchange: exchange.name,
+              isUSD: exchange.isUSD,
+              ...exchange.bid,
+            }
           }
         }
       }
       return acc
     },
-    { exchange: '', price: 0, amount: 0 }
+    { exchange: '', price: 0, amount: 0, isUSD: true }
   )
 
   const lowestAskTax = taxes.find(
