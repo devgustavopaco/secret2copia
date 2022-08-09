@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next'
 import { Trash, UserCirclePlus } from 'phosphor-react'
 import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
+
 import styles from '../../styles/Admin.module.scss'
 import { useEffect, useState } from 'react'
 import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
@@ -11,6 +11,7 @@ import { trpc } from '../../utils/trpc'
 import Head from 'next/head'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { Header } from '../../components/Header'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)
@@ -90,7 +91,7 @@ const AdminUsers: NextPage = () => {
           onSubmit={handleUserCreate}
         />
       )}
-      <HeaderAdmin />
+      <Header />
       <div className={`${styles.content} container`}>
         <SidebarAdmin />
         <main>

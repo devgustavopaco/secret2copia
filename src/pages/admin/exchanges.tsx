@@ -1,6 +1,6 @@
 import type { GetServerSideProps, NextPage } from 'next'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
+
 import styles from '../../styles/Admin.module.scss'
 
 import { Plus, Trash } from 'phosphor-react'
@@ -11,6 +11,7 @@ import Head from 'next/head'
 import { DataGridExchanges } from '../../components/GridComponents/DataGridExchanges'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { Header } from '../../components/Header'
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -70,7 +71,7 @@ const AdminTaxPage: NextPage = () => {
           onSubmit={handleExchangeCreate}
         />
       )}
-      <HeaderAdmin />
+      <Header />
       <div className={`${styles.content} container`}>
         <SidebarAdmin />
         <main>

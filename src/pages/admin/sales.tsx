@@ -2,17 +2,18 @@ import type { GetServerSideProps, NextPage } from 'next'
 import { Chart } from '../../components/Admin/Chart'
 import { FeaturedInfo } from '../../components/Admin/FeaturedInfo'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
+
 import { WidgetLg } from '../../components/Admin/WidgetLg'
 import { WidgetSm } from '../../components/Admin/WidgetSm'
 import styles from '../../styles/Admin.module.scss'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { Header } from '../../components/Header'
 
 const AdminSales: NextPage = () => {
   return (
     <>
-      <HeaderAdmin />
+      <Header />
       <main className="container">
         <div className={styles.container}>
           <SidebarAdmin />

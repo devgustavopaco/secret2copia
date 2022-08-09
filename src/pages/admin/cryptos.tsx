@@ -1,6 +1,6 @@
 import type { GetServerSideProps, NextPage } from 'next'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
+
 import styles from '../../styles/Admin.module.scss'
 import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
 import { CurrencyEth, Trash } from 'phosphor-react'
@@ -9,6 +9,7 @@ import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
 import { trpc } from '../../utils/trpc'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { Header } from '../../components/Header'
 
 const AdminExchanges: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -61,7 +62,7 @@ const AdminExchanges: NextPage = () => {
           onSubmit={handleCryptoCreate}
         />
       )}
-      <HeaderAdmin />
+      <Header />
       <div className={`${styles.content} container`}>
         <SidebarAdmin />
         <main>

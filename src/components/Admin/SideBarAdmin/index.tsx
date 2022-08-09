@@ -55,13 +55,9 @@ export function SidebarAdmin({}: SidebarAdminProps) {
           </Link>
           <Link href="/admin/exchanges/">
             <a
-              className={
-                router.pathname == '/admin/exchanges'
-                  ? styles.sidebarListItem + ' ' + styles.active
-                  : styles.sidebarListItem
-              }
+              className={router.pathname == '/admin/exchanges' ? 'active' : ''}
             >
-              <Bank className={styles.sidebarIcon} />
+              <Bank className={styles.sidebarIcon} weight="bold" />
               <span className={styles.sidebarText}>Exchanges</span>
             </a>
           </Link>

@@ -1,6 +1,6 @@
 import type { GetServerSideProps, NextPage } from 'next'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
+
 import styles from '../../styles/Admin.module.scss'
 import { DataGridTaxes } from '../../components/GridComponents/DataGridTaxes'
 import { CurrencyEth, Trash } from 'phosphor-react'
@@ -10,6 +10,7 @@ import { ModalAddTax } from '../../components/Modals/Taxes/ModalAddTax'
 import Head from 'next/head'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { Header } from '../../components/Header'
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -74,7 +75,7 @@ const AdminTaxPage: NextPage = () => {
       {modalOpen && (
         <ModalAddTax onClose={handleClose} onSubmit={handleTaxCreate} />
       )}
-      <HeaderAdmin />
+      <Header />
       <div className={`${styles.content} container`}>
         <SidebarAdmin />
         <main>

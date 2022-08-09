@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, useState } from 'react'
 import { X } from 'phosphor-react'
 import { MaskedInput, createDefaultMaskGenerator } from 'react-hook-mask'
 
-const maskGenerator = createDefaultMaskGenerator('(11) 99999-9999')
+const phoneMask = createDefaultMaskGenerator('(99) 99999-9999')
 
 interface ModalAddUserProps {
   setOpenModal: (open: boolean) => void
@@ -82,7 +82,7 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
             <div className={styles.inputBox}>
               <span className={styles.details}>Telefone</span>
               <MaskedInput
-                maskGenerator={maskGenerator}
+                maskGenerator={phoneMask}
                 value={value}
                 onChange={setValue}
                 placeholder="Telefone"
