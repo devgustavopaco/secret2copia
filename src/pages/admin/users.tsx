@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import { Trash, UserCirclePlus } from 'phosphor-react'
 import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
@@ -9,6 +9,8 @@ import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
 import { ModalAddUser } from '../../components/Modals/ModalAddUser'
 import { trpc } from '../../utils/trpc'
 import Head from 'next/head'
+import { unstable_getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)
@@ -133,3 +135,24 @@ const AdminUsers: NextPage = () => {
 }
 
 export default AdminUsers
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  )
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: true,
+      },
+    }
+  }
+
+  return {
+    props: {},
+  }
+}

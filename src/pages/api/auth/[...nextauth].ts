@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
           }
         )
           .then((response) => response.json())
-          .catch((err) => null)
+          .catch((err) => console.error(err))
 
         if (user) {
           return user
@@ -72,6 +72,9 @@ export const authOptions: NextAuthOptions = {
 
       return session
     },
+  },
+  pages: {
+    signIn: '/',
   },
 }
 

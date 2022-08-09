@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { HeaderAdmin } from '../../components/Admin/HeaderAdmin'
 import styles from '../../styles/Admin.module.scss'
@@ -9,6 +9,8 @@ import { trpc } from '../../utils/trpc'
 import { ModalAddExchange } from '../../components/Modals/Exchange/ModalAddExchange'
 import Head from 'next/head'
 import { DataGridExchanges } from '../../components/GridComponents/DataGridExchanges'
+import { unstable_getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]'
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -98,3 +100,24 @@ const AdminTaxPage: NextPage = () => {
 }
 
 export default AdminTaxPage
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  )
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: true,
+      },
+    }
+  }
+
+  return {
+    props: {},
+  }
+}
