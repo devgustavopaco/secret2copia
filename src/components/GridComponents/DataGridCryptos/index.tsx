@@ -10,6 +10,8 @@ import {
 import styles from './styles.module.scss'
 import type { Coin } from '@prisma/client'
 import { trpc } from '../../../utils/trpc'
+import { toast } from 'react-toastify'
+import { CheckCircle, XCircle } from 'phosphor-react'
 
 interface DataGridCryptosProps {
   data: Coin[]
@@ -70,12 +72,24 @@ export function DataGridCryptos({
     },
   ]
 
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      })
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      })
+    }
+  }
+
   const updateTaxMutation = trpc.useMutation('tax.update', {
     onSuccess() {
-      console.log('success')
+      notify('Taxa alterada com sucesso!', true)
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 

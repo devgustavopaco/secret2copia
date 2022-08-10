@@ -1,9 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-
 import styles from '../../styles/Admin.module.scss'
 
-import { Plus, Trash } from 'phosphor-react'
+import { CheckCircle, Plus, Trash, XCircle } from 'phosphor-react'
 import { useState } from 'react'
 import { trpc } from '../../utils/trpc'
 import { ModalAddExchange } from '../../components/Modals/Exchange/ModalAddExchange'
@@ -12,16 +10,31 @@ import { DataGridExchanges } from '../../components/GridComponents/DataGridExcha
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
+import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
+import { toast } from 'react-toastify'
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
 
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      })
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      })
+    }
+  }
+
   const createExchangeMutation = trpc.useMutation('exchange.create', {
     onSuccess() {
+      notify('Exchange criada com sucesso!', true)
       refetch()
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 

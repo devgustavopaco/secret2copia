@@ -6,6 +6,8 @@ import {
   GridSelectionModel,
 } from '@mui/x-data-grid'
 import { User } from '@prisma/client'
+import { CheckCircle, XCircle } from 'phosphor-react'
+import { toast } from 'react-toastify'
 import { trpc } from '../../../utils/trpc'
 
 import styles from './styles.module.scss'
@@ -40,6 +42,18 @@ const columns: GridColDef[] = [
   },
 ]
 
+const notify = (text: string, success: boolean) => {
+  if (success) {
+    toast.dark(text, {
+      icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+    })
+  } else {
+    toast.dark(text, {
+      icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+    })
+  }
+}
+
 interface DataGridUsersProps {
   data: Partial<User>[]
   isLoading?: boolean
@@ -53,10 +67,10 @@ export function DataGridUsers({
 }: DataGridUsersProps) {
   const updateMutation = trpc.useMutation('user.update', {
     onSuccess() {
-      console.log('success')
+      notify('Usuário alterado com sucesso!', true)
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 

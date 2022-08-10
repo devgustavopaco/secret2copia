@@ -6,6 +6,8 @@ import type { AppRouter } from '../server/router'
 import type { AppType } from 'next/dist/shared/lib/utils'
 import superjson from 'superjson'
 import { SessionProvider } from 'next-auth/react'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import '../styles/globals.scss'
 
 const MyApp: AppType = ({
@@ -16,6 +18,7 @@ const MyApp: AppType = ({
     <SessionProvider session={session}>
       <NextNProgress color="#7158e2" />
       <Component {...pageProps} />
+      <ToastContainer />
     </SessionProvider>
   )
 }

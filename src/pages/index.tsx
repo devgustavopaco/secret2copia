@@ -5,9 +5,9 @@ import Link from 'next/link'
 import Router from 'next/router'
 import { InstagramLogo } from 'phosphor-react'
 import { useState } from 'react'
+import { authOptions } from './api/auth/[...nextauth]'
 
 import styles from '../styles/Login.module.scss'
-import { authOptions } from './api/auth/[...nextauth]'
 
 const Login: NextPage = () => {
   const [email, setEmail] = useState('')

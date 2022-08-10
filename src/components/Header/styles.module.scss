@@ -28,9 +28,13 @@
         transition: filter 0.2s ease;
         font-weight: 300;
 
-        &[data-active] {
-          color: var(--purple-500);
+        &:active {
+          color: var(--purple-500) !important;
           font-weight: 700;
+        }
+
+        &:global(.active) {
+          color: var(--purple-500) ;
         }
       }
 

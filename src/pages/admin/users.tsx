@@ -1,7 +1,6 @@
 import type { GetServerSideProps, NextPage } from 'next'
-import { Trash, UserCirclePlus } from 'phosphor-react'
+import { CheckCircle, Trash, UserCirclePlus, XCircle } from 'phosphor-react'
 import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 
 import styles from '../../styles/Admin.module.scss'
 import { useEffect, useState } from 'react'
@@ -12,12 +11,26 @@ import Head from 'next/head'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
+import { toast } from 'react-toastify'
+import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)
   const [modalOpenAdd, setModalOpenAdd] = useState(false)
   const [itemDeleted, setItemDeleted] = useState(false)
   const [idsFromGrid, setIds] = useState<string[]>([])
+
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      })
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      })
+    }
+  }
 
   const {
     data: users,
@@ -34,21 +47,21 @@ const AdminUsers: NextPage = () => {
 
   const createUserMutation = trpc.useMutation('user.create', {
     onSuccess() {
-      console.log('success')
+      notify('Usuário criado com sucesso!', true)
       refetch()
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 
   const deleteUserMutation = trpc.useMutation('user.delete', {
     onSuccess() {
-      console.log('success')
+      notify('Usuário deletado com sucesso!', true)
       refetch()
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
   // Create

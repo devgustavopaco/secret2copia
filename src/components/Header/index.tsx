@@ -8,9 +8,7 @@ export function Header() {
   const router = useRouter()
 
   const handleSignOut = () => {
-    signOut({
-      redirect: false,
-    })
+    signOut({})
     router.push('/')
   }
 
@@ -22,12 +20,16 @@ export function Header() {
         <nav aria-label="Principal" className={styles['navigation-links']}>
           <ul role="list">
             <li>
-              <a href="#" data-active>
-                Monitor
-              </a>
+              <Link href="/monitor">
+                <a className={router.pathname === '/monitor' ? 'active' : ''}>
+                  Monitor
+                </a>
+              </Link>
             </li>
             <li>
-              <a href="#">Vídeos</a>
+              <a className={router.pathname === '/videos' ? 'active' : ''}>
+                Vídeos
+              </a>
             </li>
             <li>
               <a href="#">Sobre Nós</a>
@@ -36,8 +38,12 @@ export function Header() {
               <a href="#">Contato</a>
             </li>
             <li>
-              <Link href="/admin/sales">
-                <a>Dashboard</a>
+              <Link href="/admin/users">
+                <a
+                  className={router.pathname === '/admin/users' ? 'active' : ''}
+                >
+                  Dashboard
+                </a>
               </Link>
             </li>
           </ul>
