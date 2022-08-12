@@ -28,6 +28,16 @@ export interface Exchange {
     price: number
     amount: number
   }
+  orderbook: {
+    bids: {
+      price: number
+      amount: number
+    }[]
+    asks: {
+      price: number
+      amount: number
+    }[]
+  }
   isUSD: boolean
 }
 

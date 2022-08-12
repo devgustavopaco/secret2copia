@@ -25,33 +25,6 @@ import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
 import { PrismaClient } from '@prisma/client'
 
-interface Operation {
-  coin: {
-    name: string
-    symbol: string
-  }
-  buyExchange: {
-    name: string
-    price: number
-    bids: {
-      price: number
-      amount: number
-      value: number
-    }[]
-  }
-  sellExchange: {
-    name: string
-    price: number
-    asks: {
-      price: number
-      amount: number
-      value: number
-    }[]
-  }
-  taxes: string
-  spread: number
-}
-
 interface StrategyObject {
   [key: string]: ExchangeStrategy
 }
@@ -75,6 +48,17 @@ const exchangeStrategies: StrategyObject = {
   hotbit: new HotBitStrategy(),
 }
 
+interface Orderbook {
+  bids: {
+    price: number
+    amount: number
+  }[]
+  asks: {
+    price: number
+    amount: number
+  }[]
+}
+
 interface ArbitrageOpportunity {
   coin: string
   ticker: string
@@ -83,15 +67,25 @@ interface ArbitrageOpportunity {
     price: number
     amount: number
     isUSD: boolean
+    orderbook: Orderbook
   }
   highestBid: {
     exchange: string
     price: number
     amount: number
     isUSD: boolean
+    orderbook: Orderbook
   }
   tax: number
   fee: number
+}
+
+interface FilteredOrderbook {
+  exchange: string
+  price: number
+  amount: number
+  isUSD: boolean
+  orderbook: Orderbook
 }
 
 const fetchArbitrageOpportunity = async (
@@ -151,6 +145,7 @@ const fetchArbitrageOpportunity = async (
             return {
               exchange: exchange.name,
               isUSD: exchange.isUSD,
+              orderbook: exchange.orderbook,
               ...exchange.ask,
             }
           }
@@ -158,7 +153,13 @@ const fetchArbitrageOpportunity = async (
       }
       return acc
     },
-    { exchange: '', price: 9999999999999, amount: 0, isUSD: true }
+    {
+      exchange: '',
+      price: 9999999999999,
+      amount: 0,
+      isUSD: true,
+      orderbook: {},
+    } as FilteredOrderbook
   )
 
   // Highest sell price
@@ -179,6 +180,7 @@ const fetchArbitrageOpportunity = async (
             return {
               exchange: exchange.name,
               isUSD: exchange.isUSD,
+              orderbook: exchange.orderbook,
               ...exchange.bid,
             }
           }
@@ -186,7 +188,13 @@ const fetchArbitrageOpportunity = async (
       }
       return acc
     },
-    { exchange: '', price: 0, amount: 0, isUSD: true }
+    {
+      exchange: '',
+      price: 0,
+      amount: 0,
+      isUSD: true,
+      orderbook: {},
+    } as FilteredOrderbook
   )
 
   const lowestAskTax = taxes.find(

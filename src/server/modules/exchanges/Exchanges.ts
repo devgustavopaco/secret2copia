@@ -45,6 +45,14 @@ export class BinanceStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as BinanceOrderbook
 
+    const bids = json.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'Binance',
       bid: {
@@ -54,6 +62,10 @@ export class BinanceStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -124,6 +136,14 @@ export class BitsoStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as BitsoOrderbook
 
+    const bids = json.payload.bids.map((bid) => {
+      return { price: Number(bid.price), amount: Number(bid.amount) }
+    })
+
+    const asks = json.payload.asks.map((ask) => {
+      return { price: Number(ask.price), amount: Number(ask.amount) }
+    })
+
     return {
       name: 'Bitso',
       bid: {
@@ -133,6 +153,10 @@ export class BitsoStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.payload.asks[0]!.price),
         amount: Number(json.payload.asks[0]!.amount),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -183,6 +207,14 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as BrasilBitcoinOrderbook
 
+    const bids = json.sell.map((bid) => {
+      return { price: Number(bid.preco), amount: Number(bid.quantidade) }
+    })
+
+    const asks = json.buy.map((ask) => {
+      return { price: Number(ask.preco), amount: Number(ask.quantidade) }
+    })
+
     return {
       name: 'BrasilBitcoin',
       bid: {
@@ -192,6 +224,10 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.sell[0]!.preco),
         amount: Number(json.sell[0]!.quantidade),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: false,
     }
@@ -232,6 +268,14 @@ export class CoinBaseStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as CoinBaseOrderbook
 
+    const bids = json.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'CoinBase',
       bid: {
@@ -241,6 +285,10 @@ export class CoinBaseStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -281,6 +329,14 @@ export class ChilizStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as ChilizOrderbook
 
+    const bids = json.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'Chiliz',
       bid: {
@@ -290,6 +346,10 @@ export class ChilizStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -338,6 +398,8 @@ export class CoinextStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as CoinextOrderbook
 
+    // TODO: Map até metade
+
     return {
       name: 'Coinext',
       bid: {
@@ -347,6 +409,10 @@ export class CoinextStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json[10]![6]),
         amount: Number(json[10]![9]),
+      },
+      orderbook: {
+        asks: [],
+        bids: [],
       },
       isUSD: false,
     }
@@ -395,6 +461,14 @@ export class CryptoComStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as CryptoComOrderbook
 
+    const bids = json.result.data[0]!.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.result.data[0]!.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'CryptoCom',
       bid: {
@@ -404,6 +478,10 @@ export class CryptoComStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result.data[0]!.asks[0]![0]),
         amount: Number(json.result.data[0]!.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -452,6 +530,14 @@ export class GeminiStategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as GeminiOrderbook
 
+    const bids = json.bids.map((bid) => {
+      return { price: Number(bid.price), amount: Number(bid.amount) }
+    })
+
+    const asks = json.asks.map((ask) => {
+      return { price: Number(ask.price), amount: Number(ask.amount) }
+    })
+
     return {
       name: 'Gamini',
       bid: {
@@ -461,6 +547,10 @@ export class GeminiStategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]!.price),
         amount: Number(json.asks[0]!.amount),
+      },
+      orderbook: {
+        asks,
+        bids,
       },
       isUSD: true,
     }
@@ -506,6 +596,14 @@ export class HuobiStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as HuobiOrderbook
 
+    const bids = json.tick.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.tick.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'Huobi',
       bid: {
@@ -515,6 +613,10 @@ export class HuobiStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.tick.asks[0]![0]),
         amount: Number(json.tick.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -547,6 +649,14 @@ export class KrakenStrategy implements ExchangeStrategy {
 
     const pairResult = Object.keys(json.result)[0]!
 
+    const bids = json.result[pairResult]!.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.result[pairResult]!.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'Kraken',
       bid: {
@@ -556,6 +666,10 @@ export class KrakenStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result[pairResult]!.asks[0]![0]),
         amount: Number(json.result[pairResult]!.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -584,6 +698,14 @@ export class KuCoinStratefy implements ExchangeStrategy {
     )
     const json = (await response.json()) as KuCoinOrderbook
 
+    const bids = json.data.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.data.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'KuCoin',
       bid: {
@@ -593,6 +715,10 @@ export class KuCoinStratefy implements ExchangeStrategy {
       ask: {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -621,6 +747,14 @@ export class NovaDAXStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as NovaDAXOrderbook
 
+    const bids = json.data.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.data.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'NovaDAX',
       bid: {
@@ -630,6 +764,10 @@ export class NovaDAXStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -656,6 +794,14 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as MercadoBitcoinOrderbook
 
+    const bids = json.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'Mercado Bitcoin',
       bid: {
@@ -665,6 +811,10 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      orderbook: {
+        bids,
+        asks,
       },
       isUSD: true,
     }
@@ -691,6 +841,14 @@ export class HitBTCStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as HitBTCOrderbook
 
+    const bids = json.bid.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.ask.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'HitBTC',
       bid: {
@@ -700,6 +858,10 @@ export class HitBTCStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.ask[0]![0]),
         amount: Number(json.ask[0]![1]),
+      },
+      orderbook: {
+        asks,
+        bids,
       },
       isUSD: true,
     }
@@ -727,6 +889,28 @@ export class BitfinexStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as BitfinexOrderbook
 
+    const book = json.reduce(
+      (acc, result, index) => {
+        if (index < 25) {
+          acc.bids.push({
+            price: Number(result[0]),
+            amount: Number(result[2]),
+          })
+          return acc
+        } else {
+          acc.asks.push({
+            price: Number(result[0]),
+            amount: -1 * Number(result[2]),
+          })
+          return acc
+        }
+      },
+      { asks: [], bids: [] } as {
+        asks: { price: number; amount: number }[]
+        bids: { price: number; amount: number }[]
+      }
+    )
+
     return {
       name: 'Bitfinex',
       bid: {
@@ -734,8 +918,12 @@ export class BitfinexStrategy implements ExchangeStrategy {
         amount: Number(json[0]![2]),
       },
       ask: {
-        price: Number(json[0]![0]),
-        amount: Number(json[0]![2]),
+        price: Number(json[25]![0]),
+        amount: -1 * Number(json[25]![2]),
+      },
+      orderbook: {
+        asks: book.asks,
+        bids: book.bids,
       },
       isUSD: true,
     }
@@ -764,6 +952,14 @@ export class HotBitStrategy implements ExchangeStrategy {
     )
     const json = (await response.json()) as HotBitOrderbook
 
+    const bids = json.result.bids.map((bid) => {
+      return { price: Number(bid[0]), amount: Number(bid[1]) }
+    })
+
+    const asks = json.result.asks.map((ask) => {
+      return { price: Number(ask[0]), amount: Number(ask[1]) }
+    })
+
     return {
       name: 'HotBit',
       bid: {
@@ -773,6 +969,10 @@ export class HotBitStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result.asks[0]![0]),
         amount: Number(json.result.asks[0]![1]),
+      },
+      orderbook: {
+        asks,
+        bids,
       },
       isUSD: true,
     }
