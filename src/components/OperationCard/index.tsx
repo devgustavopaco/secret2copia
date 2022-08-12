@@ -1,4 +1,6 @@
 import { ArrowRight } from 'phosphor-react'
+import { useState } from 'react'
+import { ModalOrderBook } from '../Modals/ModalOrderBook'
 import styles from './styles.module.scss'
 
 interface OperationCardProps {
@@ -38,6 +40,8 @@ export function OperationCard({
   dollarPrice = 1,
   onClick,
 }: OperationCardProps) {
+  const [modalOpenOrderBook, setmodalOpenOrderBook] = useState(false)
+
   const bidPrice = coin.bid.isUSD
     ? coin.bid.price * dollarPrice
     : coin.bid.price
@@ -49,6 +53,9 @@ export function OperationCard({
 
   return (
     <section className={styles.card}>
+      {modalOpenOrderBook && (
+        <ModalOrderBook setOpenModal={setmodalOpenOrderBook} />
+      )}
       <header className={styles['card-header']}>
         <img
           src={`https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`}
@@ -106,7 +113,7 @@ export function OperationCard({
         </p>
       </div>
 
-      <button type="button" onClick={onClick}>
+      <button type="button" onClick={() => setmodalOpenOrderBook(true)}>
         Order Book
       </button>
     </section>

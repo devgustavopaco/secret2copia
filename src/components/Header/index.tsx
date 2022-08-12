@@ -15,8 +15,9 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className="container">
-        <h1>Logo</h1>
-
+        <Link href="/monitor">
+          <img className={styles.logo} src="/images/NG1.png"></img>
+        </Link>
         <nav aria-label="Principal" className={styles['navigation-links']}>
           <ul role="list">
             <li>

@@ -9,6 +9,7 @@ import { CoinNotFound } from '../components/CoinNotFound'
 import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
+import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
 
 const defaultExchanges = [
   'Binance',
@@ -33,6 +34,7 @@ const defaultExchanges = [
 ]
 
 const Monitoring: NextPage = () => {
+  const [modalOpenOrderBook, setmodalOpenOrderBook] = useState(false)
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('buyExchanges')
