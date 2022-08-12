@@ -67,6 +67,7 @@ export interface ArbitrageOpportunity {
     price: number
     amount: number
     isUSD: boolean
+    image_url?: string
     orderbook: Orderbook
   }
   highestBid: {
@@ -74,6 +75,7 @@ export interface ArbitrageOpportunity {
     price: number
     amount: number
     isUSD: boolean
+    image_url?: string
     orderbook: Orderbook
   }
   tax: number
@@ -85,6 +87,7 @@ interface FilteredOrderbook {
   price: number
   amount: number
   isUSD: boolean
+  image_url?: string
   orderbook: Orderbook
 }
 
@@ -97,7 +100,12 @@ const fetchArbitrageOpportunity = async (
   buyExchanges: string[],
   sellExchanges: string[],
   taxes: {
-    exchange: { name: string; fee: number; convert: boolean }
+    exchange: {
+      name: string
+      fee: number
+      image_url?: string
+      convert: boolean
+    }
     tax: number
   }[]
 ): Promise<ArbitrageOpportunity> => {
@@ -145,6 +153,7 @@ const fetchArbitrageOpportunity = async (
             return {
               exchange: exchange.name,
               isUSD: exchange.isUSD,
+              image_url: exchange.image_url,
               orderbook: exchange.orderbook,
               ...exchange.ask,
             }
@@ -157,6 +166,7 @@ const fetchArbitrageOpportunity = async (
       exchange: '',
       price: 9999999999999,
       amount: 0,
+      image_url: undefined,
       isUSD: true,
       orderbook: {},
     } as FilteredOrderbook
@@ -180,6 +190,7 @@ const fetchArbitrageOpportunity = async (
             return {
               exchange: exchange.name,
               isUSD: exchange.isUSD,
+              image_url: exchange.image_url,
               orderbook: exchange.orderbook,
               ...exchange.bid,
             }
@@ -192,6 +203,7 @@ const fetchArbitrageOpportunity = async (
       exchange: '',
       price: 0,
       amount: 0,
+      image_url: undefined,
       isUSD: true,
       orderbook: {},
     } as FilteredOrderbook
@@ -265,6 +277,7 @@ export const orderbookRouter = createRouter()
                   name: true,
                   fee: true,
                   convert: true,
+                  image_url: true,
                 },
               },
             },

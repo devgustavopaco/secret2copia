@@ -174,11 +174,13 @@ const Monitoring: NextPage = () => {
                           name: operation.coin,
                           ask: {
                             exchange: operation.lowestAsk.exchange,
+                            image_url: operation.lowestAsk.image_url,
                             price: operation.lowestAsk.price,
                             isUSD: operation.lowestAsk.isUSD,
                           },
                           bid: {
                             exchange: operation.highestBid.exchange,
+                            image_url: operation.highestBid.image_url,
                             price: operation.highestBid.price,
                             isUSD: operation.highestBid.isUSD,
                           },

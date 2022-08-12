@@ -23,6 +23,7 @@ export const exchangeRouter = createRouter()
       fee: z.number().nonnegative(),
       name: z.string(),
       tag: z.string(),
+      image_url: z.string().url(),
       convert: z.boolean(),
     }),
     async resolve({ ctx, input }) {
@@ -32,6 +33,7 @@ export const exchangeRouter = createRouter()
           name: input.name,
           tag: input.tag,
           convert: input.convert,
+          image_url: input.image_url,
         },
       })
 

@@ -10,10 +10,13 @@ import { DataGridExchanges } from '../../components/GridComponents/DataGridExcha
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { toast } from 'react-toastify'
+import { useS3Upload } from 'next-s3-upload'
 
 const AdminTaxPage: NextPage = () => {
+  let { uploadToS3 } = useS3Upload()
+
   const [modalOpen, setModalOpen] = useState(false)
 
   const notify = (text: string, success: boolean) => {
@@ -53,18 +56,21 @@ const AdminTaxPage: NextPage = () => {
     },
   })
 
-  const handleExchangeCreate = (
+  const handleExchangeCreate = async (
     fee: number,
     tag: string,
     name: string,
     image: File,
     convert: boolean
   ) => {
+    const { url } = await uploadToS3(image)
+
     createExchangeMutation.mutate({
       name,
       tag,
       fee,
       convert,
+      image_url: url,
     })
   }
 

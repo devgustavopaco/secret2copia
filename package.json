@@ -30,6 +30,7 @@
     "dayjs": "^1.11.4",
     "next": "12.2.1",
     "next-auth": "^4.10.1",
+    "next-s3-upload": "^0.2.2",
     "nextjs-progressbar": "^0.0.14",
     "node-fetch": "^3.2.9",
     "phosphor-react": "^1.4.1",

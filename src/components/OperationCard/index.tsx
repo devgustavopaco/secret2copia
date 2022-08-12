@@ -8,11 +8,13 @@ interface OperationCardProps {
     ask: {
       exchange: string
       price: number
+      image_url?: string
       isUSD: boolean
     }
     bid: {
       exchange: string
       price: number
+      image_url?: string
       isUSD: boolean
     }
     symbol: string
@@ -66,7 +68,9 @@ export function OperationCard({
         <div>
           <h3>Compra</h3>
           <div>
-            {/* <img src={coin.image} alt={coin.name} /> */}
+            {coin.ask.image_url && (
+              <img src={coin.ask.image_url} alt={coin.ask.exchange} />
+            )}
             {coin.ask.exchange}
           </div>
           <p>
@@ -81,7 +85,9 @@ export function OperationCard({
         <div>
           <h3>Venda</h3>
           <div>
-            {/* <img src={coin.image} alt={coin.name} /> */}
+            {coin.bid.image_url && (
+              <img src={coin.bid.image_url} alt={coin.bid.exchange} />
+            )}
             {coin.bid.exchange}
           </div>
           <p>

@@ -38,6 +38,7 @@ export interface Exchange {
       amount: number
     }[]
   }
+  image_url?: string
   isUSD: boolean
 }
 
