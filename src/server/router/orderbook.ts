@@ -48,7 +48,7 @@ const exchangeStrategies: StrategyObject = {
   hotbit: new HotBitStrategy(),
 }
 
-interface Orderbook {
+export interface Orderbook {
   bids: {
     price: number
     amount: number
@@ -59,7 +59,7 @@ interface Orderbook {
   }[]
 }
 
-interface ArbitrageOpportunity {
+export interface ArbitrageOpportunity {
   coin: string
   ticker: string
   lowestAsk: {

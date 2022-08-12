@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
+import { Orderbook } from '../server/router/orderbook'
 
 const defaultExchanges = [
   'Binance',
@@ -34,7 +35,8 @@ const defaultExchanges = [
 ]
 
 const Monitoring: NextPage = () => {
-  const [modalOpenOrderBook, setmodalOpenOrderBook] = useState(false)
+  const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false)
+
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('buyExchanges')
@@ -57,6 +59,13 @@ const Monitoring: NextPage = () => {
 
     return defaultExchanges
   })
+
+  const [selectedOrderbookBid, setSelectedOrderbookBid] = useState<Orderbook>(
+    {} as Orderbook
+  )
+  const [selectedOrderbookSell, setSelectedOrderbookSell] = useState<Orderbook>(
+    {} as Orderbook
+  )
 
   const { data } = trpc.useQuery(
     [
@@ -122,6 +131,14 @@ const Monitoring: NextPage = () => {
       </Head>
       <div>
         <Header />
+        {modalOpenOrderBook && (
+          <ModalOrderBook
+            orderbookBid={selectedOrderbookBid}
+            orderbookSell={selectedOrderbookSell}
+            setOpenModal={setModalOpenOrderBook}
+            dollarPrice={dollarPrice ?? 0}
+          />
+        )}
         <div className={`${styles.content} container`}>
           <Sidebar
             dollarPrice={dollarPrice}
@@ -170,7 +187,15 @@ const Monitoring: NextPage = () => {
                           symbol: operation.ticker,
                         }}
                         dollarPrice={dollarPrice}
-                        onClick={() => {}}
+                        onClick={() => {
+                          setSelectedOrderbookSell(
+                            operation.lowestAsk.orderbook
+                          )
+                          setSelectedOrderbookBid(
+                            operation.highestBid.orderbook
+                          )
+                          setModalOpenOrderBook(true)
+                        }}
                       />
                     )
                 )}

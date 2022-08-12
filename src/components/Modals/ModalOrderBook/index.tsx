@@ -1,14 +1,23 @@
 import styles from './styles.module.scss'
 import { X } from 'phosphor-react'
 import { useState } from 'react'
-import { DataGridPurchase } from '../../GridComponents/DataGridPurchase'
-import { DataGridSale } from '../../GridComponents/DataGridSale'
+import { DataGridBid } from '../../GridComponents/DataGridBid'
+import { DataGridSell } from '../../GridComponents/DataGridSell'
+import type { Orderbook } from '../../../server/router/orderbook'
 
 interface ModalOrderBookProps {
+  dollarPrice: number
+  orderbookBid: Orderbook
+  orderbookSell: Orderbook
   setOpenModal: (open: boolean) => void
 }
 
-export function ModalOrderBook({ setOpenModal }: ModalOrderBookProps) {
+export function ModalOrderBook({
+  dollarPrice,
+  orderbookBid,
+  orderbookSell,
+  setOpenModal,
+}: ModalOrderBookProps) {
   const [toggleState, setToggleState] = useState(1)
 
   const toggleTab = (index: any) => {
@@ -45,25 +54,10 @@ export function ModalOrderBook({ setOpenModal }: ModalOrderBookProps) {
           </div>
 
           <div className={styles.contentTabs}>
-            <div
-              className={
-                toggleState === 1
-                  ? styles.content + ' ' + styles.activeContent
-                  : styles.content
-              }
-            >
-              <DataGridPurchase />
-            </div>
-
-            <div
-              className={
-                toggleState === 2
-                  ? styles.content + ' ' + styles.activeContent
-                  : styles.content
-              }
-            >
-              <DataGridSale />
-            </div>
+            <DataGridBid
+              data={toggleState === 1 ? orderbookSell.bids : orderbookBid.asks}
+              dollarPrice={dollarPrice}
+            />
           </div>
         </div>
 
