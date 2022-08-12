@@ -1,11 +1,18 @@
 import { X } from 'phosphor-react'
 import { ChangeEvent, FormEvent, useState } from 'react'
+import { ImageDropzone } from '../../../ImageDropzone'
 
 import styles from './styles.module.scss'
 
 interface ModalAddExchangeProps {
   onClose: () => void
-  onSubmit: (fee: number, tag: string, name: string, convert: boolean) => void
+  onSubmit: (
+    fee: number,
+    tag: string,
+    name: string,
+    image: File,
+    convert: boolean
+  ) => void
 }
 
 export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
@@ -13,6 +20,15 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
   const [name, setName] = useState('')
   const [fee, setFee] = useState(0)
   const [convert, setConvert] = useState(false)
+  const [image, setImage] = useState<File | null>(null)
+
+  const handleImageDrop = (files: File[]) => {
+    const selectedImage = files[0]
+
+    if (selectedImage) {
+      setImage(selectedImage)
+    }
+  }
 
   const handleFeeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFee(Number(event.target.value))
@@ -33,8 +49,12 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
   const handleFormSubmit = (event: FormEvent) => {
     event.preventDefault()
 
-    onSubmit(fee, tag, name, convert)
-    onClose()
+    if (image) {
+      onSubmit(fee, tag, name, image, convert)
+      onClose()
+    } else {
+      console.error('Image is required')
+    }
   }
 
   return (
@@ -81,6 +101,10 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
               value={fee}
               onChange={handleFeeChange}
             />
+          </div>
+          <div className={styles.inputBoxFile}>
+            <span className={styles.details}>Foto</span>
+            <ImageDropzone onDrop={handleImageDrop} />
           </div>
           <div className={styles.inputBoxInline}>
             <span className={styles.details}>Converte?</span>

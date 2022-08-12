@@ -57,6 +57,7 @@ const AdminTaxPage: NextPage = () => {
     fee: number,
     tag: string,
     name: string,
+    image: File,
     convert: boolean
   ) => {
     createExchangeMutation.mutate({
