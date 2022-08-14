@@ -10,7 +10,8 @@
     "prepare": "husky install",
     "commit": "git-cz",
     "commit:hook": "exec < /dev/tty && git-cz --hook || true",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
@@ -40,6 +41,7 @@
     "react-hook-mask": "^1.1.8",
     "react-query": "3.39.2",
     "react-select": "^5.4.0",
+    "react-spinners": "^0.13.4",
     "react-toastify": "^9.0.8",
     "recharts": "2.0.0-beta.8",
     "sass": "^1.53.0",

@@ -1,3 +1,4 @@
+import { BeatLoader } from 'react-spinners'
 import styles from './styles.module.scss'
 
 interface SidebarProps {
@@ -29,7 +30,13 @@ export function Sidebar({
       <section className={styles['text-section']}>
         <legend>Cotação Dólar</legend>
         <p>
-          <span>R$</span> {numberFormatter.format(dollarPrice ?? -1)}
+          {dollarPrice ? (
+            <>
+              <span>R$</span> {numberFormatter.format(dollarPrice ?? -1)}
+            </>
+          ) : (
+            <BeatLoader color="#7158e2" size="0.5rem" />
+          )}
         </p>
       </section>
 
