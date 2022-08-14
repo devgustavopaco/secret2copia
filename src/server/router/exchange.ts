@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
+import { ExchangesSingleton } from '../ExchangesSingleton'
 import { createRouter } from './context'
 
 export const exchangeRouter = createRouter()
@@ -38,6 +39,8 @@ export const exchangeRouter = createRouter()
       })
 
       if (exchange) {
+        ExchangesSingleton.getInstance().updateExchanges()
+
         return {
           success: true,
         }

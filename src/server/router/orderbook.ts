@@ -24,6 +24,7 @@ import type {
 import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
 import { PrismaClient } from '@prisma/client'
+import { ExchangesSingleton } from '../ExchangesSingleton'
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy
@@ -210,13 +211,13 @@ const fetchArbitrageOpportunity = async (
     } as FilteredOrderbook
   )
 
-  const lowestAskExchange = formatExchangeName(lowestAsk.exchange)
+  const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange)
   lowestAsk.orderbook =
-    exchangeStrategies[lowestAskExchange]!.convertOrderbook()
+    exchangeStrategies[lowestAskExchangeName]!.convertOrderbook()
 
-  const highestBidExchange = formatExchangeName(lowestAsk.exchange)
+  const highestBidExchangeName = formatExchangeName(lowestAsk.exchange)
   highestBid.orderbook =
-    exchangeStrategies[highestBidExchange]!.convertOrderbook()
+    exchangeStrategies[highestBidExchangeName]!.convertOrderbook()
 
   const lowestAskTax = taxes.find(
     (tax) => tax.exchange.name === lowestAsk.exchange
@@ -225,19 +226,20 @@ const fetchArbitrageOpportunity = async (
     (tax) => tax.exchange.name === highestBid.exchange
   )
 
-  const exchanges = await prisma.exchange.findMany({
-    where: {
-      name: {
-        in: [lowestAsk.exchange, highestBid.exchange],
-      },
-    },
-  })
+  const exchanges = ExchangesSingleton.getInstance().exchanges
 
-  const lowestAskFee =
-    exchanges.find((exchange) => exchange.name === lowestAsk.exchange)?.fee ?? 0
-  const highestBidFee =
-    exchanges.find((exchange) => exchange.name === highestBid.exchange)?.fee ??
-    0
+  const lowestAskExchange = exchanges.find(
+    (exchange) => exchange.name === lowestAsk.exchange
+  )
+  const highestBidExchange = exchanges.find(
+    (exchange) => exchange.name === highestBid.exchange
+  )
+
+  const lowestAskFee = lowestAskExchange?.fee ?? 0
+  const highestBidFee = highestBidExchange?.fee ?? 0
+
+  lowestAsk.image_url = lowestAskExchange?.image_url ?? ''
+  highestBid.image_url = highestBidExchange?.image_url ?? ''
 
   return {
     coin: name,
