@@ -25,6 +25,7 @@ import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
 import { PrismaClient } from '@prisma/client'
 import { ExchangesSingleton } from '../ExchangesSingleton'
+import { CoinsSingleton } from '../CoinsSingleton'
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy
@@ -272,29 +273,7 @@ export const orderbookRouter = createRouter()
         return []
       }
 
-      const activeCoins = await ctx.prisma.coin.findMany({
-        where: {
-          active: true,
-        },
-        include: {
-          ExchangeCoinTax: {
-            where: {
-              active: true,
-            },
-            select: {
-              tax: true,
-              exchange: {
-                select: {
-                  name: true,
-                  fee: true,
-                  convert: true,
-                  image_url: true,
-                },
-              },
-            },
-          },
-        },
-      })
+      const activeCoins = CoinsSingleton.getInstance().coins
 
       if (activeCoins.length === 0) {
         return []

@@ -39,7 +39,7 @@ export const exchangeRouter = createRouter()
       })
 
       if (exchange) {
-        ExchangesSingleton.getInstance().updateExchanges()
+        await ExchangesSingleton.getInstance().updateExchanges()
 
         return {
           success: true,
@@ -71,6 +71,8 @@ export const exchangeRouter = createRouter()
       })
 
       if (exchange) {
+        await ExchangesSingleton.getInstance().updateExchanges()
+
         return {
           success: true,
         }
