@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import { Orderbook } from '../../router/orderbook'
 import { Exchange, ExchangeStrategy, Ticker } from './ExchangeStrategy'
 
 interface BinanceOrderbook {
@@ -6,33 +7,21 @@ interface BinanceOrderbook {
   asks: string[][]
 }
 
-interface BinanceTicker {
-  symbol: string
-  price: string
-}
-
-type BinanceTickers = BinanceTicker[]
-
 export class BinanceStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/price?symbol=${pair}`
-    )
-    const json = (await response.json()) as BinanceTicker
+  orderbook?: BinanceOrderbook
 
-    const ticker = {
-      symbol: json.symbol,
-      price: json.price,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
 
-    return ticker
-  }
+    const asks =
+      this.orderbook?.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
 
-  async fetchTickers(): Promise<Ticker[]> {
-    const response = await fetch(`https://api.binance.com/api/v3/ticker/price`)
-    const json = (await response.json()) as BinanceTickers
-
-    return json
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -44,14 +33,7 @@ export class BinanceStrategy implements ExchangeStrategy {
       `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`
     )
     const json = (await response.json()) as BinanceOrderbook
-
-    const bids = json.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Binance',
@@ -62,10 +44,6 @@ export class BinanceStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -87,43 +65,21 @@ interface BitsoOrderbook {
   }
 }
 
-interface BitsoTicker {
-  payload: {
-    last: string
-    book: string
-  }
-}
-
-interface BitsoTickers {
-  payload: {
-    last: string
-    book: string
-  }[]
-}
-
 export class BitsoStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.bitso.com/v3/ticker/?book=${pair}`
-    )
-    const json = (await response.json()) as BitsoTicker
+  orderbook?: BitsoOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: json.payload.last,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.payload.bids.map((bid) => {
+        return { price: Number(bid.price), amount: Number(bid.amount) }
+      }) ?? []
 
-    return ticker
-  }
+    const asks =
+      this.orderbook?.payload.asks.map((ask) => {
+        return { price: Number(ask.price), amount: Number(ask.amount) }
+      }) ?? []
 
-  async fetchTickers(): Promise<Ticker[]> {
-    const response = await fetch(`https://api.bitso.com/v3/ticker/`)
-    const json = (await response.json()) as BitsoTickers
-
-    return json.payload.map((ticker) => ({
-      symbol: ticker.book,
-      price: ticker.last,
-    }))
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -135,14 +91,7 @@ export class BitsoStrategy implements ExchangeStrategy {
       `https://api.bitso.com/v3/order_book/?book=${pair}`
     )
     const json = (await response.json()) as BitsoOrderbook
-
-    const bids = json.payload.bids.map((bid) => {
-      return { price: Number(bid.price), amount: Number(bid.amount) }
-    })
-
-    const asks = json.payload.asks.map((ask) => {
-      return { price: Number(ask.price), amount: Number(ask.amount) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Bitso',
@@ -153,10 +102,6 @@ export class BitsoStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.payload.asks[0]!.price),
         amount: Number(json.payload.asks[0]!.amount),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -176,25 +121,21 @@ interface BrasilBitcoinOrderbook {
   }[]
 }
 
-interface BrasilBitcoinTicker {
-  ticker: {
-    last: string
-  }
-}
-
 export class BrasilBitcoinStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://www.mercadobitcoin.net/api/${pair}/ticker/`
-    )
-    const json = (await response.json()) as BrasilBitcoinTicker
+  orderbook?: BrasilBitcoinOrderbook
 
-    const tokens = {
-      symbol: pair,
-      price: json.ticker.last,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.sell.map((bid) => {
+        return { price: Number(bid.preco), amount: Number(bid.quantidade) }
+      }) ?? []
 
-    return tokens
+    const asks =
+      this.orderbook?.buy.map((ask) => {
+        return { price: Number(ask.preco), amount: Number(ask.quantidade) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -206,14 +147,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
       `https://brasilbitcoin.com.br/API/orderbook/${pair}`
     )
     const json = (await response.json()) as BrasilBitcoinOrderbook
-
-    const bids = json.sell.map((bid) => {
-      return { price: Number(bid.preco), amount: Number(bid.quantidade) }
-    })
-
-    const asks = json.buy.map((ask) => {
-      return { price: Number(ask.preco), amount: Number(ask.quantidade) }
-    })
+    this.orderbook = json
 
     return {
       name: 'BrasilBitcoin',
@@ -225,10 +159,6 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
         price: Number(json.sell[0]!.preco),
         amount: Number(json.sell[0]!.quantidade),
       },
-      orderbook: {
-        bids,
-        asks,
-      },
       isUSD: false,
     }
   }
@@ -239,23 +169,21 @@ interface CoinBaseOrderbook {
   asks: (string | number)[][]
 }
 
-interface CoinBaseTicker {
-  price: string
-}
-
 export class CoinBaseStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.exchange.coinbase.com/products/${pair}/ticker`
-    )
-    const json = (await response.json()) as CoinBaseTicker
+  orderbook?: CoinBaseOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: json.price,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
 
-    return ticker
+    const asks =
+      this.orderbook?.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -267,14 +195,7 @@ export class CoinBaseStrategy implements ExchangeStrategy {
       `https://api.exchange.coinbase.com/products/${pair}/book?level=2`
     )
     const json = (await response.json()) as CoinBaseOrderbook
-
-    const bids = json.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'CoinBase',
@@ -286,10 +207,6 @@ export class CoinBaseStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
-      orderbook: {
-        bids,
-        asks,
-      },
       isUSD: true,
     }
   }
@@ -300,23 +217,21 @@ interface ChilizOrderbook {
   asks: string[][]
 }
 
-interface ChilizTicker {
-  price: string
-}
-
 export class ChilizStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.chiliz.net/openapi/quote/v1/ticker/price&symbol=${pair}`
-    )
-    const json = (await response.json()) as ChilizTicker
+  orderbook?: ChilizOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: json.price,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
 
-    return ticker
+    const asks =
+      this.orderbook?.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -328,14 +243,7 @@ export class ChilizStrategy implements ExchangeStrategy {
       `https://api.chiliz.net/openapi/quote/v1/depth?limit=10&symbol=${pair}`
     )
     const json = (await response.json()) as ChilizOrderbook
-
-    const bids = json.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Chiliz',
@@ -347,10 +255,6 @@ export class ChilizStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
-      orderbook: {
-        bids,
-        asks,
-      },
       isUSD: true,
     }
   }
@@ -360,25 +264,20 @@ type CoinextOrderbook = number[][]
 
 // TODO - Implementar InstrumentId de cada moeda
 export class CoinextStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.coinext.com.br:8443/AP/GetL2Snapshot`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ OMSId: 1, InstrumentId: 1, Depth: 1 }),
-      }
-    )
-    const json = (await response.json()) as CoinextOrderbook
+  orderbook?: CoinextOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: '222222220',
-    }
+  convertOrderbook(): Orderbook {
+    // const bids =
+    //   this.orderbook?.bids.map((bid) => {
+    //     return { price: Number(bid[0]), amount: Number(bid[1]) }
+    //   }) ?? []
 
-    return ticker
+    // const asks =
+    //   this.orderbook?.asks.map((ask) => {
+    //     return { price: Number(ask[0]), amount: Number(ask[1]) }
+    //   }) ?? []
+
+    return { bids: [], asks: [] }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -397,6 +296,7 @@ export class CoinextStrategy implements ExchangeStrategy {
       }
     )
     const json = (await response.json()) as CoinextOrderbook
+    this.orderbook = json
 
     // TODO: Map até metade
 
@@ -409,10 +309,6 @@ export class CoinextStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json[10]![6]),
         amount: Number(json[10]![9]),
-      },
-      orderbook: {
-        asks: [],
-        bids: [],
       },
       isUSD: false,
     }
@@ -428,27 +324,21 @@ interface CryptoComOrderbook {
   }
 }
 
-interface CryptoComTicker {
-  result: {
-    data: {
-      a: number
-    }
-  }
-}
-
 export class CryptoComStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(
-      `https://api.crypto.com/v2/public/get-ticker?instrument_name=${pair}`
-    )
-    const json = (await response.json()) as CryptoComTicker
+  orderbook?: CryptoComOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: String(json.result.data.a),
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.result.data[0]!.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
 
-    return ticker
+    const asks =
+      this.orderbook?.result.data[0]!.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -460,14 +350,7 @@ export class CryptoComStrategy implements ExchangeStrategy {
       `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`
     )
     const json = (await response.json()) as CryptoComOrderbook
-
-    const bids = json.result.data[0]!.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.result.data[0]!.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'CryptoCom',
@@ -478,10 +361,6 @@ export class CryptoComStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result.data[0]!.asks[0]![0]),
         amount: Number(json.result.data[0]!.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -499,21 +378,21 @@ interface GeminiOrderbook {
   }[]
 }
 
-interface GeminiTicker {
-  close: string
-}
-
 export class GeminiStategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(`https://api.gemini.com/v2/ticker/${pair}`)
-    const json = (await response.json()) as GeminiTicker
+  orderbook?: GeminiOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: json.close,
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bids.map((bid) => {
+        return { price: Number(bid.price), amount: Number(bid.amount) }
+      }) ?? []
 
-    return ticker
+    const asks =
+      this.orderbook?.asks.map((ask) => {
+        return { price: Number(ask.price), amount: Number(ask.amount) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -529,14 +408,7 @@ export class GeminiStategy implements ExchangeStrategy {
       `https://api.gemini.com/v1/book/${pair}?limit_bids=10&limit_asks=10`
     )
     const json = (await response.json()) as GeminiOrderbook
-
-    const bids = json.bids.map((bid) => {
-      return { price: Number(bid.price), amount: Number(bid.amount) }
-    })
-
-    const asks = json.asks.map((ask) => {
-      return { price: Number(ask.price), amount: Number(ask.amount) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Gamini',
@@ -547,10 +419,6 @@ export class GeminiStategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]!.price),
         amount: Number(json.asks[0]!.amount),
-      },
-      orderbook: {
-        asks,
-        bids,
       },
       isUSD: true,
     }
@@ -564,26 +432,21 @@ interface HuobiOrderbook {
   }
 }
 
-interface HuobiTicker {
-  data: {
-    symbol: string
-    close: number
-  }[]
-}
-
 export class HuobiStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    const response = await fetch(`https://api.huobi.pro/market/tickers?symbol`)
-    const json = (await response.json()) as HuobiTicker
+  orderbook?: HuobiOrderbook
 
-    const ticker = {
-      symbol: pair,
-      price: String(
-        json.data.filter((ticker) => ticker.symbol === pair)[0]!.close
-      ),
-    }
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.tick.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
 
-    return ticker
+    const asks =
+      this.orderbook?.tick.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -595,14 +458,7 @@ export class HuobiStrategy implements ExchangeStrategy {
       `https://api.huobi.pro/market/depth?symbol=${pair}&type=step0&depth=10`
     )
     const json = (await response.json()) as HuobiOrderbook
-
-    const bids = json.tick.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.tick.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Huobi',
@@ -613,10 +469,6 @@ export class HuobiStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.tick.asks[0]![0]),
         amount: Number(json.tick.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -633,8 +485,21 @@ interface KrakenOrderbook {
 }
 
 export class KrakenStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: KrakenOrderbook
+  pairResult: string = ''
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.result[this.pairResult]!.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.result[this.pairResult]!.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -646,30 +511,19 @@ export class KrakenStrategy implements ExchangeStrategy {
       `https://api.kraken.com/0/public/Depth?pair=${pair}&count=10`
     )
     const json = (await response.json()) as KrakenOrderbook
+    this.orderbook = json
 
-    const pairResult = Object.keys(json.result)[0]!
-
-    const bids = json.result[pairResult]!.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.result[pairResult]!.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.pairResult = Object.keys(json.result)[0]!
 
     return {
       name: 'Kraken',
       bid: {
-        price: Number(json.result[pairResult]!.bids[0]![0]),
-        amount: Number(json.result[pairResult]!.bids[0]![1]),
+        price: Number(json.result[this.pairResult]!.bids[0]![0]),
+        amount: Number(json.result[this.pairResult]!.bids[0]![1]),
       },
       ask: {
-        price: Number(json.result[pairResult]!.asks[0]![0]),
-        amount: Number(json.result[pairResult]!.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
+        price: Number(json.result[this.pairResult]!.asks[0]![0]),
+        amount: Number(json.result[this.pairResult]!.asks[0]![1]),
       },
       isUSD: true,
     }
@@ -684,8 +538,20 @@ interface KuCoinOrderbook {
 }
 
 export class KuCoinStratefy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: KuCoinOrderbook
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.data.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.data.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -697,14 +563,7 @@ export class KuCoinStratefy implements ExchangeStrategy {
       `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`
     )
     const json = (await response.json()) as KuCoinOrderbook
-
-    const bids = json.data.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.data.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'KuCoin',
@@ -715,10 +574,6 @@ export class KuCoinStratefy implements ExchangeStrategy {
       ask: {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -733,8 +588,20 @@ interface NovaDAXOrderbook {
 }
 
 export class NovaDAXStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: NovaDAXOrderbook
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.data.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.data.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -746,14 +613,7 @@ export class NovaDAXStrategy implements ExchangeStrategy {
       `https://api.novadax.com/v1/market/depth?symbol=${pair}&limit=10`
     )
     const json = (await response.json()) as NovaDAXOrderbook
-
-    const bids = json.data.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.data.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'NovaDAX',
@@ -764,10 +624,6 @@ export class NovaDAXStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -780,8 +636,20 @@ interface MercadoBitcoinOrderbook {
 }
 
 export class MercadoBitcoinStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: MercadoBitcoinOrderbook
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -793,14 +661,7 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
       `https://www.mercadobitcoin.net/api/${pair}/orderbook/`
     )
     const json = (await response.json()) as MercadoBitcoinOrderbook
-
-    const bids = json.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'Mercado Bitcoin',
@@ -811,10 +672,6 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
-      },
-      orderbook: {
-        bids,
-        asks,
       },
       isUSD: true,
     }
@@ -827,8 +684,20 @@ interface HitBTCOrderbook {
 }
 
 export class HitBTCStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: HitBTCOrderbook
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.bid.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.ask.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -840,14 +709,7 @@ export class HitBTCStrategy implements ExchangeStrategy {
       `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`
     )
     const json = (await response.json()) as HitBTCOrderbook
-
-    const bids = json.bid.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.ask.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'HitBTC',
@@ -859,10 +721,6 @@ export class HitBTCStrategy implements ExchangeStrategy {
         price: Number(json.ask[0]![0]),
         amount: Number(json.ask[0]![1]),
       },
-      orderbook: {
-        asks,
-        bids,
-      },
       isUSD: true,
     }
   }
@@ -871,25 +729,10 @@ export class HitBTCStrategy implements ExchangeStrategy {
 type BitfinexOrderbook = number[][]
 
 export class BitfinexStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
-  }
+  orderbook?: BitfinexOrderbook
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    if (destinationToken.toUpperCase() === 'USDT') {
-      destinationToken = 'USD'
-    }
-
-    return `t${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api-pub.bitfinex.com/v2/book/${pair}/P0?len=25`
-    )
-    const json = (await response.json()) as BitfinexOrderbook
-
-    const book = json.reduce(
+  convertOrderbook(): Orderbook {
+    const book = this.orderbook?.reduce(
       (acc, result, index) => {
         if (index < 25) {
           acc.bids.push({
@@ -909,7 +752,25 @@ export class BitfinexStrategy implements ExchangeStrategy {
         asks: { price: number; amount: number }[]
         bids: { price: number; amount: number }[]
       }
+    ) ?? { asks: [], bids: [] }
+
+    return book
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === 'USDT') {
+      destinationToken = 'USD'
+    }
+
+    return `t${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const response = await fetch(
+      `https://api-pub.bitfinex.com/v2/book/${pair}/P0?len=25`
     )
+    const json = (await response.json()) as BitfinexOrderbook
+    this.orderbook = json
 
     return {
       name: 'Bitfinex',
@@ -920,10 +781,6 @@ export class BitfinexStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json[25]![0]),
         amount: -1 * Number(json[25]![2]),
-      },
-      orderbook: {
-        asks: book.asks,
-        bids: book.bids,
       },
       isUSD: true,
     }
@@ -938,8 +795,20 @@ interface HotBitOrderbook {
 }
 
 export class HotBitStrategy implements ExchangeStrategy {
-  async fetchTicker(pair: string): Promise<Ticker> {
-    throw new Error('Method not implemented.')
+  orderbook?: HotBitOrderbook
+
+  convertOrderbook(): Orderbook {
+    const bids =
+      this.orderbook?.result.bids.map((bid) => {
+        return { price: Number(bid[0]), amount: Number(bid[1]) }
+      }) ?? []
+
+    const asks =
+      this.orderbook?.result.asks.map((ask) => {
+        return { price: Number(ask[0]), amount: Number(ask[1]) }
+      }) ?? []
+
+    return { bids, asks }
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
@@ -951,14 +820,7 @@ export class HotBitStrategy implements ExchangeStrategy {
       `https://api.hotbit.io/api/v1/order.depth?market=${pair}&limit=10&interval=1e-8`
     )
     const json = (await response.json()) as HotBitOrderbook
-
-    const bids = json.result.bids.map((bid) => {
-      return { price: Number(bid[0]), amount: Number(bid[1]) }
-    })
-
-    const asks = json.result.asks.map((ask) => {
-      return { price: Number(ask[0]), amount: Number(ask[1]) }
-    })
+    this.orderbook = json
 
     return {
       name: 'HotBit',
@@ -969,10 +831,6 @@ export class HotBitStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result.asks[0]![0]),
         amount: Number(json.result.asks[0]![1]),
-      },
-      orderbook: {
-        asks,
-        bids,
       },
       isUSD: true,
     }

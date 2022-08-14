@@ -1,3 +1,5 @@
+import { Orderbook } from '../../router/orderbook'
+
 export class OrderbookContext {
   private strategy: ExchangeStrategy
 
@@ -28,16 +30,6 @@ export interface Exchange {
     price: number
     amount: number
   }
-  orderbook: {
-    bids: {
-      price: number
-      amount: number
-    }[]
-    asks: {
-      price: number
-      amount: number
-    }[]
-  }
   image_url?: string
   isUSD: boolean
 }
@@ -50,6 +42,5 @@ export interface Ticker {
 export interface ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string
   fetchOrderbook(pair: string): Promise<Exchange>
-  fetchTicker(pair: string): Promise<Ticker>
-  fetchTickers?(): Promise<Ticker[]>
+  convertOrderbook(): Orderbook
 }

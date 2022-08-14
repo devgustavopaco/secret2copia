@@ -91,6 +91,10 @@ interface FilteredOrderbook {
   orderbook: Orderbook
 }
 
+const formatExchangeName = (exchange: string): string => {
+  return exchange.toLowerCase().replace(/\s/g, '')
+}
+
 const fetchArbitrageOpportunity = async (
   prisma: PrismaClient,
   coin: {
@@ -103,7 +107,7 @@ const fetchArbitrageOpportunity = async (
     exchange: {
       name: string
       fee: number
-      image_url?: string
+      image_url: string | null
       convert: boolean
     }
     tax: number
@@ -115,7 +119,7 @@ const fetchArbitrageOpportunity = async (
 
   var uniqueExchanges = Array.from(
     new Set([...buyExchanges, ...sellExchanges])
-  ).map((exchange) => exchange.toLowerCase().replace(/\s/g, ''))
+  ).map((exchange) => formatExchangeName(exchange))
 
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
@@ -140,8 +144,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          element.toLowerCase().replace(/\s/g, '') ===
-          (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
       )
       if (isContained) {
         if (exchange?.ask) {
@@ -154,7 +157,7 @@ const fetchArbitrageOpportunity = async (
               exchange: exchange.name,
               isUSD: exchange.isUSD,
               image_url: exchange.image_url,
-              orderbook: exchange.orderbook,
+              orderbook: acc.orderbook,
               ...exchange.ask,
             }
           }
@@ -168,7 +171,6 @@ const fetchArbitrageOpportunity = async (
       amount: 0,
       image_url: undefined,
       isUSD: true,
-      orderbook: {},
     } as FilteredOrderbook
   )
 
@@ -177,8 +179,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          element.toLowerCase().replace(/\s/g, '') ===
-          (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
       )
       if (isContained) {
         if (exchange?.bid) {
@@ -191,7 +192,7 @@ const fetchArbitrageOpportunity = async (
               exchange: exchange.name,
               isUSD: exchange.isUSD,
               image_url: exchange.image_url,
-              orderbook: exchange.orderbook,
+              orderbook: acc.orderbook,
               ...exchange.bid,
             }
           }
@@ -208,6 +209,14 @@ const fetchArbitrageOpportunity = async (
       orderbook: {},
     } as FilteredOrderbook
   )
+
+  const lowestAskExchange = formatExchangeName(lowestAsk.exchange)
+  lowestAsk.orderbook =
+    exchangeStrategies[lowestAskExchange]!.convertOrderbook()
+
+  const highestBidExchange = formatExchangeName(lowestAsk.exchange)
+  highestBid.orderbook =
+    exchangeStrategies[highestBidExchange]!.convertOrderbook()
 
   const lowestAskTax = taxes.find(
     (tax) => tax.exchange.name === lowestAsk.exchange
