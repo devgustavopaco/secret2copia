@@ -24,6 +24,8 @@ import type {
 import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
 import { PrismaClient } from '@prisma/client'
+import { ExchangesSingleton } from '../ExchangesSingleton'
+import { CoinsSingleton } from '../CoinsSingleton'
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy
@@ -91,6 +93,10 @@ interface FilteredOrderbook {
   orderbook: Orderbook
 }
 
+const formatExchangeName = (exchange: string): string => {
+  return exchange.toLowerCase().replace(/\s/g, '')
+}
+
 const fetchArbitrageOpportunity = async (
   prisma: PrismaClient,
   coin: {
@@ -103,7 +109,7 @@ const fetchArbitrageOpportunity = async (
     exchange: {
       name: string
       fee: number
-      image_url?: string
+      image_url: string | null
       convert: boolean
     }
     tax: number
@@ -115,7 +121,7 @@ const fetchArbitrageOpportunity = async (
 
   var uniqueExchanges = Array.from(
     new Set([...buyExchanges, ...sellExchanges])
-  ).map((exchange) => exchange.toLowerCase().replace(/\s/g, ''))
+  ).map((exchange) => formatExchangeName(exchange))
 
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
@@ -140,8 +146,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          element.toLowerCase().replace(/\s/g, '') ===
-          (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
       )
       if (isContained) {
         if (exchange?.ask) {
@@ -154,7 +159,7 @@ const fetchArbitrageOpportunity = async (
               exchange: exchange.name,
               isUSD: exchange.isUSD,
               image_url: exchange.image_url,
-              orderbook: exchange.orderbook,
+              orderbook: acc.orderbook,
               ...exchange.ask,
             }
           }
@@ -168,7 +173,6 @@ const fetchArbitrageOpportunity = async (
       amount: 0,
       image_url: undefined,
       isUSD: true,
-      orderbook: {},
     } as FilteredOrderbook
   )
 
@@ -177,8 +181,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          element.toLowerCase().replace(/\s/g, '') ===
-          (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
       )
       if (isContained) {
         if (exchange?.bid) {
@@ -191,7 +194,7 @@ const fetchArbitrageOpportunity = async (
               exchange: exchange.name,
               isUSD: exchange.isUSD,
               image_url: exchange.image_url,
-              orderbook: exchange.orderbook,
+              orderbook: acc.orderbook,
               ...exchange.bid,
             }
           }
@@ -209,6 +212,14 @@ const fetchArbitrageOpportunity = async (
     } as FilteredOrderbook
   )
 
+  const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange)
+  lowestAsk.orderbook =
+    exchangeStrategies[lowestAskExchangeName]!.convertOrderbook()
+
+  const highestBidExchangeName = formatExchangeName(lowestAsk.exchange)
+  highestBid.orderbook =
+    exchangeStrategies[highestBidExchangeName]!.convertOrderbook()
+
   const lowestAskTax = taxes.find(
     (tax) => tax.exchange.name === lowestAsk.exchange
   )
@@ -216,19 +227,20 @@ const fetchArbitrageOpportunity = async (
     (tax) => tax.exchange.name === highestBid.exchange
   )
 
-  const exchanges = await prisma.exchange.findMany({
-    where: {
-      name: {
-        in: [lowestAsk.exchange, highestBid.exchange],
-      },
-    },
-  })
+  const exchanges = ExchangesSingleton.getInstance().exchanges
 
-  const lowestAskFee =
-    exchanges.find((exchange) => exchange.name === lowestAsk.exchange)?.fee ?? 0
-  const highestBidFee =
-    exchanges.find((exchange) => exchange.name === highestBid.exchange)?.fee ??
-    0
+  const lowestAskExchange = exchanges.find(
+    (exchange) => exchange.name === lowestAsk.exchange
+  )
+  const highestBidExchange = exchanges.find(
+    (exchange) => exchange.name === highestBid.exchange
+  )
+
+  const lowestAskFee = lowestAskExchange?.fee ?? 0
+  const highestBidFee = highestBidExchange?.fee ?? 0
+
+  lowestAsk.image_url = lowestAskExchange?.image_url ?? ''
+  highestBid.image_url = highestBidExchange?.image_url ?? ''
 
   return {
     coin: name,
@@ -261,29 +273,7 @@ export const orderbookRouter = createRouter()
         return []
       }
 
-      const activeCoins = await ctx.prisma.coin.findMany({
-        where: {
-          active: true,
-        },
-        include: {
-          ExchangeCoinTax: {
-            where: {
-              active: true,
-            },
-            select: {
-              tax: true,
-              exchange: {
-                select: {
-                  name: true,
-                  fee: true,
-                  convert: true,
-                  image_url: true,
-                },
-              },
-            },
-          },
-        },
-      })
+      const activeCoins = CoinsSingleton.getInstance().coins
 
       if (activeCoins.length === 0) {
         return []

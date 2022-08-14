@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
+import { CoinsSingleton } from '../CoinsSingleton'
 import { createRouter } from './context'
 
 export const coinRouter = createRouter()
@@ -44,6 +45,8 @@ export const coinRouter = createRouter()
         },
       })
 
+      await CoinsSingleton.getInstance().updateCoins()
+
       return coin
     },
   })
@@ -61,6 +64,8 @@ export const coinRouter = createRouter()
       })
 
       if (coin) {
+        await CoinsSingleton.getInstance().updateCoins()
+
         return {
           success: true,
         }
@@ -87,6 +92,8 @@ export const coinRouter = createRouter()
       })
 
       if (coin) {
+        await CoinsSingleton.getInstance().updateCoins()
+
         return {
           success: true,
         }

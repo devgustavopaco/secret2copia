@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         const user = await fetch(
-          `${process.env.NEXTAUTH_URL}/api/user/checkCredentials`,
+          `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
           {
             method: 'POST',
             headers: {
