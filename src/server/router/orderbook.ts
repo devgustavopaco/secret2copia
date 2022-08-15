@@ -213,12 +213,20 @@ const fetchArbitrageOpportunity = async (
   )
 
   const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange)
+  const lowestAskPair = exchangeStrategies[lowestAskExchangeName]!.formatPair(
+    ticker,
+    'usdt'
+  )
   lowestAsk.orderbook =
-    exchangeStrategies[lowestAskExchangeName]!.convertOrderbook()
+    exchangeStrategies[lowestAskExchangeName]!.convertOrderbook(lowestAskPair)
 
   const highestBidExchangeName = formatExchangeName(lowestAsk.exchange)
+  const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
+    ticker,
+    'usdt'
+  )
   highestBid.orderbook =
-    exchangeStrategies[highestBidExchangeName]!.convertOrderbook()
+    exchangeStrategies[highestBidExchangeName]!.convertOrderbook(highestBidPair)
 
   const lowestAskTax = taxes.find(
     (tax) => tax.exchange.name === lowestAsk.exchange
