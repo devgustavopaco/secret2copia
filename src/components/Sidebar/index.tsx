@@ -35,7 +35,7 @@ export function Sidebar({
               <span>R$</span> {numberFormatter.format(dollarPrice ?? -1)}
             </>
           ) : (
-            <BeatLoader color="#7158e2" size="0.5rem" />
+            <BeatLoader color="#969696" size="0.5rem" />
           )}
         </p>
       </section>

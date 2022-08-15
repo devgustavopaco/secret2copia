@@ -82,6 +82,7 @@ export interface ArbitrageOpportunity {
   }
   tax: number
   fee: number
+  spread: number
 }
 
 interface FilteredOrderbook {
@@ -220,7 +221,7 @@ const fetchArbitrageOpportunity = async (
   lowestAsk.orderbook =
     exchangeStrategies[lowestAskExchangeName]!.convertOrderbook(lowestAskPair)
 
-  const highestBidExchangeName = formatExchangeName(lowestAsk.exchange)
+  const highestBidExchangeName = formatExchangeName(highestBid.exchange)
   const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
     ticker,
     'usdt'
@@ -250,6 +251,15 @@ const fetchArbitrageOpportunity = async (
   lowestAsk.image_url = lowestAskExchange?.image_url ?? ''
   highestBid.image_url = highestBidExchange?.image_url ?? ''
 
+  const bidPrice = highestBid.isUSD
+    ? highestBid.price * dollarPrice
+    : highestBid.price
+  const askPrice = lowestAsk.isUSD
+    ? lowestAsk.price * dollarPrice
+    : lowestAsk.price
+
+  const spread = (bidPrice - askPrice) / askPrice
+
   return {
     coin: name,
     ticker,
@@ -259,6 +269,7 @@ const fetchArbitrageOpportunity = async (
       (lowestAskTax?.tax ?? 0) * lowestAsk.price +
       (highestBidTax?.tax ?? 0) * highestBid.price,
     fee: lowestAskFee + highestBidFee,
+    spread,
   }
 }
 

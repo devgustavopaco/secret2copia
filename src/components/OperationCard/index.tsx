@@ -20,6 +20,7 @@ interface OperationCardProps {
     symbol: string
     fee: number
     tax: number
+    spread: number
   }
   dollarPrice?: number
   onClick: () => void
@@ -46,8 +47,6 @@ export function OperationCard({
   const askPrice = coin.ask.isUSD
     ? coin.ask.price * dollarPrice
     : coin.ask.price
-
-  const spread = bidPrice / askPrice - 1
 
   return (
     <section className={styles.card}>
@@ -103,7 +102,7 @@ export function OperationCard({
       <div className={styles['card-footer']}>
         <p>
           <span>Spread</span>
-          {percentageFormatter.format(spread)}
+          {percentageFormatter.format(coin.spread)}
         </p>
         <p>
           <span>Taxas</span>

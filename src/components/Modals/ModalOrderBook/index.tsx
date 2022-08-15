@@ -1,27 +1,25 @@
 import styles from './styles.module.scss'
-import { X } from 'phosphor-react'
 import { useState } from 'react'
-import { DataGridBid } from '../../GridComponents/DataGridBid'
-import { DataGridSell } from '../../GridComponents/DataGridSell'
+import { DataGridOrderbook } from '../../GridComponents/DataGridOrderbook'
 import type { Orderbook } from '../../../server/router/orderbook'
 
 interface ModalOrderBookProps {
   dollarPrice: number
   orderbookBid: Orderbook
-  orderbookSell: Orderbook
+  orderbookAsk: Orderbook
   setOpenModal: (open: boolean) => void
 }
 
 export function ModalOrderBook({
   dollarPrice,
   orderbookBid,
-  orderbookSell,
+  orderbookAsk,
   setOpenModal,
 }: ModalOrderBookProps) {
-  const [toggleState, setToggleState] = useState(1)
+  const [toggleState, setToggleState] = useState<'compra' | 'venda'>('compra')
 
-  const toggleTab = (index: any) => {
-    setToggleState(index)
+  const toggleTab = (tab: 'compra' | 'venda') => {
+    setToggleState(tab)
   }
 
   return (
@@ -32,30 +30,28 @@ export function ModalOrderBook({
         <div className={styles.container}>
           <div className={styles.blocTabs}>
             <button
-              className={
-                toggleState === 1
-                  ? styles.tabs + ' ' + styles.activeTabs
-                  : styles.tabs
-              }
-              onClick={() => toggleTab(1)}
+              className={`${styles.tabs} ${
+                toggleState === 'compra' ? 'active' : ''
+              }`}
+              onClick={() => toggleTab('compra')}
             >
               Compra
             </button>
             <button
-              className={
-                toggleState === 2
-                  ? styles.tabs + ' ' + styles.activeTabs
-                  : styles.tabs
-              }
-              onClick={() => toggleTab(2)}
+              className={`${styles.tabs} ${
+                toggleState === 'venda' ? 'active' : ''
+              }`}
+              onClick={() => toggleTab('venda')}
             >
               Venda
             </button>
           </div>
 
           <div className={styles.contentTabs}>
-            <DataGridBid
-              data={toggleState === 1 ? orderbookSell.bids : orderbookBid.asks}
+            <DataGridOrderbook
+              data={
+                toggleState === 'compra' ? orderbookAsk.asks : orderbookBid.bids
+              }
               dollarPrice={dollarPrice}
             />
           </div>
