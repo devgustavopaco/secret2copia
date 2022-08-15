@@ -8,16 +8,18 @@ interface BinanceOrderbook {
 }
 
 export class BinanceStrategy implements ExchangeStrategy {
-  orderbook?: BinanceOrderbook
+  orderbook: {
+    [key: string]: BinanceOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bids.map((bid) => {
+      this.orderbook[pair]?.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.asks.map((ask) => {
+      this.orderbook[pair]?.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -33,7 +35,7 @@ export class BinanceStrategy implements ExchangeStrategy {
       `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`
     )
     const json = (await response.json()) as BinanceOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Binance',
@@ -66,16 +68,18 @@ interface BitsoOrderbook {
 }
 
 export class BitsoStrategy implements ExchangeStrategy {
-  orderbook?: BitsoOrderbook
+  orderbook: {
+    [key: string]: BitsoOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.payload.bids.map((bid) => {
+      this.orderbook[pair]?.payload.bids.map((bid) => {
         return { price: Number(bid.price), amount: Number(bid.amount) }
       }) ?? []
 
     const asks =
-      this.orderbook?.payload.asks.map((ask) => {
+      this.orderbook[pair]?.payload.asks.map((ask) => {
         return { price: Number(ask.price), amount: Number(ask.amount) }
       }) ?? []
 
@@ -91,7 +95,7 @@ export class BitsoStrategy implements ExchangeStrategy {
       `https://api.bitso.com/v3/order_book/?book=${pair}`
     )
     const json = (await response.json()) as BitsoOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Bitso',
@@ -122,16 +126,18 @@ interface BrasilBitcoinOrderbook {
 }
 
 export class BrasilBitcoinStrategy implements ExchangeStrategy {
-  orderbook?: BrasilBitcoinOrderbook
+  orderbook: {
+    [key: string]: BrasilBitcoinOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.sell.map((bid) => {
+      this.orderbook[pair]?.sell.map((bid) => {
         return { price: Number(bid.preco), amount: Number(bid.quantidade) }
       }) ?? []
 
     const asks =
-      this.orderbook?.buy.map((ask) => {
+      this.orderbook[pair]?.buy.map((ask) => {
         return { price: Number(ask.preco), amount: Number(ask.quantidade) }
       }) ?? []
 
@@ -147,7 +153,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
       `https://brasilbitcoin.com.br/API/orderbook/${pair}`
     )
     const json = (await response.json()) as BrasilBitcoinOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'BrasilBitcoin',
@@ -170,16 +176,18 @@ interface CoinBaseOrderbook {
 }
 
 export class CoinBaseStrategy implements ExchangeStrategy {
-  orderbook?: CoinBaseOrderbook
+  orderbook: {
+    [key: string]: CoinBaseOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bids.map((bid) => {
+      this.orderbook[pair]?.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.asks.map((ask) => {
+      this.orderbook[pair]?.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -195,7 +203,7 @@ export class CoinBaseStrategy implements ExchangeStrategy {
       `https://api.exchange.coinbase.com/products/${pair}/book?level=2`
     )
     const json = (await response.json()) as CoinBaseOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'CoinBase',
@@ -218,16 +226,18 @@ interface ChilizOrderbook {
 }
 
 export class ChilizStrategy implements ExchangeStrategy {
-  orderbook?: ChilizOrderbook
+  orderbook: {
+    [key: string]: ChilizOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bids.map((bid) => {
+      this.orderbook[pair]?.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.asks.map((ask) => {
+      this.orderbook[pair]?.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -243,7 +253,7 @@ export class ChilizStrategy implements ExchangeStrategy {
       `https://api.chiliz.net/openapi/quote/v1/depth?limit=10&symbol=${pair}`
     )
     const json = (await response.json()) as ChilizOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Chiliz',
@@ -264,16 +274,18 @@ type CoinextOrderbook = number[][]
 
 // TODO - Implementar InstrumentId de cada moeda
 export class CoinextStrategy implements ExchangeStrategy {
-  orderbook?: CoinextOrderbook
+  orderbook: {
+    [key: string]: CoinextOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     // const bids =
-    //   this.orderbook?.bids.map((bid) => {
+    //   this.orderbook[pair]?.bids.map((bid) => {
     //     return { price: Number(bid[0]), amount: Number(bid[1]) }
     //   }) ?? []
 
     // const asks =
-    //   this.orderbook?.asks.map((ask) => {
+    //   this.orderbook[pair]?.asks.map((ask) => {
     //     return { price: Number(ask[0]), amount: Number(ask[1]) }
     //   }) ?? []
 
@@ -296,7 +308,7 @@ export class CoinextStrategy implements ExchangeStrategy {
       }
     )
     const json = (await response.json()) as CoinextOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     // TODO: Map até metade
 
@@ -325,16 +337,18 @@ interface CryptoComOrderbook {
 }
 
 export class CryptoComStrategy implements ExchangeStrategy {
-  orderbook?: CryptoComOrderbook
+  orderbook: {
+    [key: string]: CryptoComOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.result.data[0]!.bids.map((bid) => {
+      this.orderbook[pair]?.result.data[0]!.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.result.data[0]!.asks.map((ask) => {
+      this.orderbook[pair]?.result.data[0]!.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -350,7 +364,7 @@ export class CryptoComStrategy implements ExchangeStrategy {
       `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`
     )
     const json = (await response.json()) as CryptoComOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'CryptoCom',
@@ -379,16 +393,18 @@ interface GeminiOrderbook {
 }
 
 export class GeminiStategy implements ExchangeStrategy {
-  orderbook?: GeminiOrderbook
+  orderbook: {
+    [key: string]: GeminiOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bids.map((bid) => {
+      this.orderbook[pair]?.bids.map((bid) => {
         return { price: Number(bid.price), amount: Number(bid.amount) }
       }) ?? []
 
     const asks =
-      this.orderbook?.asks.map((ask) => {
+      this.orderbook[pair]?.asks.map((ask) => {
         return { price: Number(ask.price), amount: Number(ask.amount) }
       }) ?? []
 
@@ -408,7 +424,7 @@ export class GeminiStategy implements ExchangeStrategy {
       `https://api.gemini.com/v1/book/${pair}?limit_bids=10&limit_asks=10`
     )
     const json = (await response.json()) as GeminiOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Gamini',
@@ -433,16 +449,18 @@ interface HuobiOrderbook {
 }
 
 export class HuobiStrategy implements ExchangeStrategy {
-  orderbook?: HuobiOrderbook
+  orderbook: {
+    [key: string]: HuobiOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.tick.bids.map((bid) => {
+      this.orderbook[pair]?.tick.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.tick.asks.map((ask) => {
+      this.orderbook[pair]?.tick.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -458,7 +476,7 @@ export class HuobiStrategy implements ExchangeStrategy {
       `https://api.huobi.pro/market/depth?symbol=${pair}&type=step0&depth=10`
     )
     const json = (await response.json()) as HuobiOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Huobi',
@@ -485,17 +503,19 @@ interface KrakenOrderbook {
 }
 
 export class KrakenStrategy implements ExchangeStrategy {
-  orderbook?: KrakenOrderbook
+  orderbook: {
+    [key: string]: KrakenOrderbook
+  } = {}
   pairResult: string = ''
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.result[this.pairResult]!.bids.map((bid) => {
+      this.orderbook[pair]?.result[this.pairResult]!.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.result[this.pairResult]!.asks.map((ask) => {
+      this.orderbook[pair]?.result[this.pairResult]!.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -511,7 +531,7 @@ export class KrakenStrategy implements ExchangeStrategy {
       `https://api.kraken.com/0/public/Depth?pair=${pair}&count=10`
     )
     const json = (await response.json()) as KrakenOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     this.pairResult = Object.keys(json.result)[0]!
 
@@ -538,16 +558,18 @@ interface KuCoinOrderbook {
 }
 
 export class KuCoinStratefy implements ExchangeStrategy {
-  orderbook?: KuCoinOrderbook
+  orderbook: {
+    [key: string]: KuCoinOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.data.bids.map((bid) => {
+      this.orderbook[pair]?.data.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.data.asks.map((ask) => {
+      this.orderbook[pair]?.data.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -563,7 +585,7 @@ export class KuCoinStratefy implements ExchangeStrategy {
       `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`
     )
     const json = (await response.json()) as KuCoinOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'KuCoin',
@@ -588,16 +610,18 @@ interface NovaDAXOrderbook {
 }
 
 export class NovaDAXStrategy implements ExchangeStrategy {
-  orderbook?: NovaDAXOrderbook
+  orderbook: {
+    [key: string]: NovaDAXOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.data.bids.map((bid) => {
+      this.orderbook[pair]?.data.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.data.asks.map((ask) => {
+      this.orderbook[pair]?.data.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -613,7 +637,7 @@ export class NovaDAXStrategy implements ExchangeStrategy {
       `https://api.novadax.com/v1/market/depth?symbol=${pair}&limit=10`
     )
     const json = (await response.json()) as NovaDAXOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'NovaDAX',
@@ -636,16 +660,18 @@ interface MercadoBitcoinOrderbook {
 }
 
 export class MercadoBitcoinStrategy implements ExchangeStrategy {
-  orderbook?: MercadoBitcoinOrderbook
+  orderbook: {
+    [key: string]: MercadoBitcoinOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bids.map((bid) => {
+      this.orderbook[pair]?.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.asks.map((ask) => {
+      this.orderbook[pair]?.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -661,7 +687,7 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
       `https://www.mercadobitcoin.net/api/${pair}/orderbook/`
     )
     const json = (await response.json()) as MercadoBitcoinOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Mercado Bitcoin',
@@ -684,16 +710,18 @@ interface HitBTCOrderbook {
 }
 
 export class HitBTCStrategy implements ExchangeStrategy {
-  orderbook?: HitBTCOrderbook
+  orderbook: {
+    [key: string]: HitBTCOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.bid.map((bid) => {
+      this.orderbook[pair]?.bid.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.ask.map((ask) => {
+      this.orderbook[pair]?.ask.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -709,7 +737,7 @@ export class HitBTCStrategy implements ExchangeStrategy {
       `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`
     )
     const json = (await response.json()) as HitBTCOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'HitBTC',
@@ -729,10 +757,12 @@ export class HitBTCStrategy implements ExchangeStrategy {
 type BitfinexOrderbook = number[][]
 
 export class BitfinexStrategy implements ExchangeStrategy {
-  orderbook?: BitfinexOrderbook
+  orderbook: {
+    [key: string]: BitfinexOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
-    const book = this.orderbook?.reduce(
+  convertOrderbook(pair: string): Orderbook {
+    const book = this.orderbook[pair]?.reduce(
       (acc, result, index) => {
         if (index < 25) {
           acc.bids.push({
@@ -770,7 +800,7 @@ export class BitfinexStrategy implements ExchangeStrategy {
       `https://api-pub.bitfinex.com/v2/book/${pair}/P0?len=25`
     )
     const json = (await response.json()) as BitfinexOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'Bitfinex',
@@ -795,16 +825,18 @@ interface HotBitOrderbook {
 }
 
 export class HotBitStrategy implements ExchangeStrategy {
-  orderbook?: HotBitOrderbook
+  orderbook: {
+    [key: string]: HotBitOrderbook
+  } = {}
 
-  convertOrderbook(): Orderbook {
+  convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook?.result.bids.map((bid) => {
+      this.orderbook[pair]?.result.bids.map((bid) => {
         return { price: Number(bid[0]), amount: Number(bid[1]) }
       }) ?? []
 
     const asks =
-      this.orderbook?.result.asks.map((ask) => {
+      this.orderbook[pair]?.result.asks.map((ask) => {
         return { price: Number(ask[0]), amount: Number(ask[1]) }
       }) ?? []
 
@@ -820,7 +852,7 @@ export class HotBitStrategy implements ExchangeStrategy {
       `https://api.hotbit.io/api/v1/order.depth?market=${pair}&limit=10&interval=1e-8`
     )
     const json = (await response.json()) as HotBitOrderbook
-    this.orderbook = json
+    this.orderbook[pair] = json
 
     return {
       name: 'HotBit',

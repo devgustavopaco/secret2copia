@@ -1,4 +1,4 @@
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { SignOut } from 'phosphor-react'
@@ -6,6 +6,7 @@ import styles from './styles.module.scss'
 
 export function Header() {
   const router = useRouter()
+  const { data: auth } = useSession()
 
   const handleSignOut = () => {
     signOut({})
@@ -38,15 +39,19 @@ export function Header() {
             <li>
               <a href="#">Contato</a>
             </li>
-            <li>
-              <Link href="/admin/users">
-                <a
-                  className={router.pathname === '/admin/users' ? 'active' : ''}
-                >
-                  Dashboard
-                </a>
-              </Link>
-            </li>
+            {auth?.role === 'admin' && (
+              <li>
+                <Link href="/admin/users">
+                  <a
+                    className={
+                      router.pathname === '/admin/users' ? 'active' : ''
+                    }
+                  >
+                    Dashboard
+                  </a>
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 

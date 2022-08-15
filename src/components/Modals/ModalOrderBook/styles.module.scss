@@ -49,26 +49,26 @@
   box-sizing: content-box;
   position: relative;
   outline: none;
+
+  &:global(.active) {
+    background-color: var(--gray-800) !important;
+    border-bottom: 1px solid transparent;
+
+    &::before {
+      content: '';
+      display: block;
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% + 2px);
+      height: 5px;
+      background: var(--purple-500);
+    }
+  }
 }
 .tabs:not(:last-child) {
   border-right: 1px solid rgba(0, 0, 0, 0.274);
-}
-
-.activeTabs {
-  background-color: var(--gray-800) !important;
-  border-bottom: 1px solid transparent;
-}
-
-.activeTabs::before {
-  content: '';
-  display: block;
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% + 2px);
-  height: 5px;
-  background: var(--purple-500);
 }
 
 .contentTabs {

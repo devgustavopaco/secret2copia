@@ -10,7 +10,7 @@ import { v4 as uuidV4 } from 'uuid'
 
 import styles from './styles.module.scss'
 
-interface DataGridBidProps {
+interface DataGridOrderbookProps {
   data: { price: number; amount: number }[]
   isLoading?: boolean
   dollarPrice: number
@@ -18,14 +18,14 @@ interface DataGridBidProps {
 
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'decimal',
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 4,
 })
 
-export function DataGridBid({
+export function DataGridOrderbook({
   data,
   isLoading,
   dollarPrice,
-}: DataGridBidProps) {
+}: DataGridOrderbookProps) {
   const columns: GridColumns = [
     {
       field: 'price',

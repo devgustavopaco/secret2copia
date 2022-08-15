@@ -10,7 +10,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
-import { Orderbook } from '../server/router/orderbook'
+import { ArbitrageOpportunity } from '../server/router/orderbook'
+import { BeatLoader, BounceLoader } from 'react-spinners'
 
 const defaultExchanges = [
   'Binance',
@@ -60,14 +61,10 @@ const Monitoring: NextPage = () => {
     return defaultExchanges
   })
 
-  const [selectedOrderbookBid, setSelectedOrderbookBid] = useState<Orderbook>(
-    {} as Orderbook
-  )
-  const [selectedOrderbookSell, setSelectedOrderbookSell] = useState<Orderbook>(
-    {} as Orderbook
-  )
+  const [selectedOperation, setSelectedOperation] =
+    useState<ArbitrageOpportunity>({} as ArbitrageOpportunity)
 
-  const { data } = trpc.useQuery(
+  const { data, isLoading, isRefetching } = trpc.useQuery(
     [
       'orderBook.getAll',
       {
@@ -123,6 +120,19 @@ const Monitoring: NextPage = () => {
 
   const operationsCount = data?.length || 0
 
+  const sortedOperations = data?.sort((a, b) => {
+    if (a && b) {
+      if (a?.spread < b?.spread) {
+        return 1
+      }
+      if (a?.spread > b?.spread) {
+        return -1
+      }
+      return 0
+    }
+    return 0
+  })
+
   return (
     <>
       <Head>
@@ -133,8 +143,8 @@ const Monitoring: NextPage = () => {
         <Header />
         {modalOpenOrderBook && (
           <ModalOrderBook
-            orderbookBid={selectedOrderbookBid}
-            orderbookSell={selectedOrderbookSell}
+            orderbookBid={selectedOperation.highestBid.orderbook}
+            orderbookAsk={selectedOperation.lowestAsk.orderbook}
             setOpenModal={setModalOpenOrderBook}
             dollarPrice={dollarPrice ?? 0}
           />
@@ -150,9 +160,12 @@ const Monitoring: NextPage = () => {
           />
 
           <main>
-            <h1>Operações</h1>
+            <h1>
+              Operações
+              {isRefetching && <BeatLoader color="#969696" size="0.5rem" />}
+            </h1>
 
-            {operationsCount === 0 ? (
+            {!isLoading && operationsCount === 0 ? (
               <div className={styles.notFound}>
                 <CoinNotFound />
                 <div>
@@ -162,9 +175,13 @@ const Monitoring: NextPage = () => {
                   </p>
                 </div>
               </div>
+            ) : isLoading ? (
+              <div className={styles.loading}>
+                <BounceLoader color="#969696" size="6rem" />
+              </div>
             ) : (
               <div className={styles.operations}>
-                {data?.map(
+                {sortedOperations?.map(
                   (operation) =>
                     operation && (
                       <OperationCard
@@ -187,15 +204,11 @@ const Monitoring: NextPage = () => {
                           fee: operation.fee,
                           tax: operation.tax,
                           symbol: operation.ticker,
+                          spread: operation.spread,
                         }}
                         dollarPrice={dollarPrice}
                         onClick={() => {
-                          setSelectedOrderbookSell(
-                            operation.lowestAsk.orderbook
-                          )
-                          setSelectedOrderbookBid(
-                            operation.highestBid.orderbook
-                          )
+                          setSelectedOperation(operation)
                           setModalOpenOrderBook(true)
                         }}
                       />
