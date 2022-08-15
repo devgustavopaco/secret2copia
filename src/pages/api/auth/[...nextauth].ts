@@ -40,6 +40,7 @@ export const authOptions: NextAuthOptions = {
           .catch((err) => console.error(err))
 
         if (user) {
+          console.log(user)
           return user
         }
 
@@ -58,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.email = user.email
         token.name = user.name
+        token.role = user.role.name
       }
 
       return token
@@ -68,6 +70,7 @@ export const authOptions: NextAuthOptions = {
         session.id = token.id
         session.email = token.email
         session.name = token.name
+        session.role = token.role
       }
 
       return session

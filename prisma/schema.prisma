@@ -52,6 +52,14 @@ model User {
   sessions      Session[]
   pricePaid     Float?
   Account       Account[]
+  role          Role      @relation(fields: [roleId], references: [id])
+  roleId        String
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+  User User[]
 }
 
 model VerificationToken {

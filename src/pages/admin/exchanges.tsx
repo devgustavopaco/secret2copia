@@ -129,7 +129,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     authOptions
   )
 
-  if (!session) {
+  if (!session && !session.role === 'admin') {
     return {
       redirect: {
         destination: '/',

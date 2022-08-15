@@ -4,6 +4,14 @@ import { z } from 'zod'
 import { createRouter } from './context'
 
 export const userRouter = createRouter()
+  .middleware(async ({ ctx, next }) => {
+    // Any queries or mutations after this middleware will
+    // raise an error unless there is a current session
+    if (!ctx.session) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' })
+    }
+    return next()
+  })
   .query('getAllUsers', {
     resolve({ ctx }) {
       const allUsers = ctx.prisma.user.findMany({
@@ -14,18 +22,15 @@ export const userRouter = createRouter()
           pricePaid: true,
           phone: true,
         },
+        where: {
+          email: {
+            not: 'admin@solid.dev.br',
+          },
+        },
       })
 
       return allUsers
     },
-  })
-  .middleware(async ({ ctx, next }) => {
-    // Any queries or mutations after this middleware will
-    // raise an error unless there is a current session
-    if (!ctx.session) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' })
-    }
-    return next()
   })
   .mutation('create', {
     input: z.object({
@@ -36,6 +41,12 @@ export const userRouter = createRouter()
       password: z.string(),
     }),
     async resolve({ ctx, input }) {
+      const userRole = await ctx.prisma.role.findFirst({
+        where: {
+          name: 'user',
+        },
+      })
+
       const passwordHash = await hash(input.password, 8)
       const user = await ctx.prisma.user.create({
         data: {
@@ -44,6 +55,7 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid,
           phone: input.phone,
           password: passwordHash,
+          roleId: userRole!.id,
         },
       })
 
