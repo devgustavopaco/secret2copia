@@ -11,7 +11,7 @@ import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
 import { ArbitrageOpportunity } from '../server/router/orderbook'
-import { BeatLoader, BounceLoader } from 'react-spinners'
+import { BeatLoader, PacmanLoader, RingLoader } from 'react-spinners'
 
 const defaultExchanges = [
   'Binance',
@@ -177,7 +177,7 @@ const Monitoring: NextPage = () => {
               </div>
             ) : isLoading ? (
               <div className={styles.loading}>
-                <BounceLoader color="#969696" size="6rem" />
+                <PacmanLoader color="#957dff" size="4rem" />
               </div>
             ) : (
               <div className={styles.operations}>

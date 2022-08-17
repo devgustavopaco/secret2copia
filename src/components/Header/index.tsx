@@ -1,12 +1,15 @@
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { SignOut } from 'phosphor-react'
+import { List, SignOut, X } from 'phosphor-react'
+import { useState } from 'react'
 import styles from './styles.module.scss'
 
 export function Header() {
   const router = useRouter()
   const { data: auth } = useSession()
+
+  const [toggle, settoggle] = useState(true)
 
   const handleSignOut = () => {
     signOut({})
@@ -20,7 +23,14 @@ export function Header() {
           <img className={styles.logo} src="/images/NG1.png"></img>
         </Link>
         <nav aria-label="Principal" className={styles['navigation-links']}>
-          <ul role="list">
+          <ul
+            role="list"
+            className={
+              toggle
+                ? styles.navigation
+                : styles.navigation + ' ' + styles.active
+            }
+          >
             <li>
               <Link href="/monitor">
                 <a className={router.pathname === '/monitor' ? 'active' : ''}>
@@ -54,7 +64,23 @@ export function Header() {
             )}
           </ul>
         </nav>
-
+        <div className={styles.nav_toggle}>
+          {toggle ? (
+            <List
+              size={35}
+              color="#969696"
+              weight="bold"
+              onClick={() => settoggle(false)}
+            />
+          ) : (
+            <X
+              size={35}
+              color="#957dff"
+              weight="bold"
+              onClick={() => settoggle(true)}
+            />
+          )}
+        </div>
         <button
           type="button"
           className={styles['logout-button']}
