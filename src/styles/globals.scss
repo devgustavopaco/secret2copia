@@ -37,8 +37,6 @@
   --red-500: #ff3838;
   --red-200: #ff8080;
 
-
-
   // TOASTIFY
 
   --toastify-color-light: #fff;
@@ -90,7 +88,6 @@
   --toastify-color-progress-success: var(--toastify-color-success);
   --toastify-color-progress-warning: var(--toastify-color-warning);
   --toastify-color-progress-error: var(--toastify-color-error);
-
 }
 
 html,
@@ -161,9 +158,13 @@ button {
   --max-width: auto;
 
   max-width: var(--max-width);
-  padding-inline: 4rem;
+  padding-inline: 1rem;
 
   margin-inline: auto;
+
+  @media screen and (min-width: 768px) {
+    padding-inline: 4rem;
+  }
 
   @media only screen and (min-width: 1280px) {
     --max-width: 1536px;
