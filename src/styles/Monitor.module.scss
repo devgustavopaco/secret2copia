@@ -4,8 +4,14 @@
   padding-block: 2rem;
   gap: 1.75rem;
   align-items: flex-start;
+  flex-direction: column;
 
   margin-inline: auto;
+
+  @media screen and (min-width: 968px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 
   main {
     flex: 1;
@@ -67,4 +73,3 @@
     }
   }
 }
-

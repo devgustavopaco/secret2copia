@@ -22,14 +22,15 @@ export function Header() {
         <Link href="/monitor">
           <img className={styles.logo} src="/images/NG1.png"></img>
         </Link>
-        <nav aria-label="Principal" className={styles['navigation-links']}>
+        <nav
+          aria-label="Principal"
+          className={`${styles['navigation-links']} ${styles['desktop-navigation']}`}
+        >
           <ul
             role="list"
-            className={
-              toggle
-                ? styles.navigation
-                : styles.navigation + ' ' + styles.active
-            }
+            className={`${styles['mobile-navigation']} ${
+              toggle ? '' : 'active'
+            }`}
           >
             <li>
               <Link href="/monitor">
@@ -90,6 +91,44 @@ export function Header() {
           <SignOut size={24} />
         </button>
       </div>
+      <nav
+        aria-label="Principal"
+        className={`${styles['navigation-links']} ${
+          styles['mobile-navigation']
+        } ${toggle ? '' : 'active'}`}
+      >
+        <ul role="list">
+          <li>
+            <Link href="/monitor">
+              <a className={router.pathname === '/monitor' ? 'active' : ''}>
+                Monitor
+              </a>
+            </Link>
+          </li>
+          <li>
+            <a className={router.pathname === '/videos' ? 'active' : ''}>
+              Vídeos
+            </a>
+          </li>
+          <li>
+            <a href="#">Sobre Nós</a>
+          </li>
+          <li>
+            <a href="#">Contato</a>
+          </li>
+          {auth?.role === 'admin' && (
+            <li>
+              <Link href="/admin/users">
+                <a
+                  className={router.pathname === '/admin/users' ? 'active' : ''}
+                >
+                  Dashboard
+                </a>
+              </Link>
+            </li>
+          )}
+        </ul>
+      </nav>
     </header>
   )
 }
