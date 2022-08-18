@@ -655,8 +655,8 @@ export class NovaDAXStrategy implements ExchangeStrategy {
 }
 
 interface MercadoBitcoinOrderbook {
-  bids: string[][]
-  asks: string[][]
+  bids: number[][]
+  asks: number[][]
 }
 
 export class MercadoBitcoinStrategy implements ExchangeStrategy {

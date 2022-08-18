@@ -184,6 +184,7 @@ const fetchArbitrageOpportunity = async (
         (element) =>
           formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
       )
+      // TODO: Ignorar exchange já selecionada para compra
       if (isContained) {
         if (exchange?.bid) {
           const priceInUSD = exchange.isUSD
