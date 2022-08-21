@@ -87,7 +87,7 @@ export class BitsoStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}_${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -145,7 +145,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -195,7 +195,7 @@ export class CoinBaseStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}-${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}-${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -252,8 +252,14 @@ export class ChilizStrategy implements ExchangeStrategy {
     return { bids, asks }
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+  formatPair(
+    baseToken: string,
+    destinationToken: string,
+    isFanToken: boolean = false
+  ): string {
+    return `${baseToken.toUpperCase()}${
+      isFanToken ? 'CHZ' : destinationToken.toUpperCase()
+    }`
   }
 
   async fetchOrderbook(
@@ -438,7 +444,7 @@ export class GeminiStategy implements ExchangeStrategy {
       destinationToken = 'USD'
     }
 
-    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -490,7 +496,7 @@ export class HuobiStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -700,8 +706,12 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
     return { bids, asks }
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}`
+  formatPair(
+    baseToken: string,
+    destinationToken: string,
+    isFanToken: boolean = false
+  ): string {
+    return `${baseToken.toLowerCase()}${isFanToken ? 'ft' : ''}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {

@@ -143,8 +143,8 @@ const Monitoring: NextPage = () => {
         <Header />
         {modalOpenOrderBook && (
           <ModalOrderBook
-            orderbookBid={selectedOperation.highestBid.orderbook}
-            orderbookAsk={selectedOperation.lowestAsk.orderbook}
+            orderbookBid={selectedOperation.highestBid}
+            orderbookAsk={selectedOperation.lowestAsk}
             setOpenModal={setModalOpenOrderBook}
             dollarPrice={dollarPrice ?? 0}
           />

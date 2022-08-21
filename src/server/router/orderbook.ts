@@ -129,11 +129,7 @@ const fetchArbitrageOpportunity = async (
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
     if (exchangeStrategy) {
-      const isChiliz = exchange === 'chiliz'
-      const coinPair = exchangeStrategy.formatPair(
-        ticker,
-        isChiliz && isFanToken ? 'chz' : 'usdt'
-      )
+      const coinPair = exchangeStrategy.formatPair(ticker, 'usdt', isFanToken)
 
       orderBookPromises.push(
         exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
@@ -227,20 +223,20 @@ const fetchArbitrageOpportunity = async (
   )
 
   const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange)
-  let isChiliz = lowestAskExchangeName === 'chiliz'
   const lowestAskPair = exchangeStrategies[lowestAskExchangeName]!.formatPair(
     ticker,
-    isChiliz && isFanToken ? 'chz' : 'usdt'
+    'usdt',
+    isFanToken
   )
   lowestAsk.orderbook = exchangeStrategies[
     lowestAskExchangeName
   ]!.convertOrderbook(lowestAskPair, isFanToken)
 
   const highestBidExchangeName = formatExchangeName(highestBid.exchange)
-  isChiliz = highestBidExchangeName === 'chiliz'
   const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
     ticker,
-    isChiliz && isFanToken ? 'chz' : 'usdt'
+    'usdt',
+    isFanToken
   )
   highestBid.orderbook = exchangeStrategies[
     highestBidExchangeName
