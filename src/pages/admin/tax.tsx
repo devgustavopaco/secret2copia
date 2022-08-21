@@ -10,7 +10,7 @@ import Head from 'next/head'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { toast } from 'react-toastify'
 
 const AdminTaxPage: NextPage = () => {

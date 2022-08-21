@@ -41,6 +41,6 @@ export interface Ticker {
 
 export interface ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string
-  fetchOrderbook(pair: string): Promise<Exchange>
-  convertOrderbook(pair: string): Orderbook
+  fetchOrderbook(pair: string, isFanToken?: boolean): Promise<Exchange>
+  convertOrderbook(pair: string, isFanToken?: boolean): Orderbook
 }

@@ -35,6 +35,8 @@ export const coinRouter = createRouter()
       name: z.string(),
       ticker: z.string(),
       active: z.boolean(),
+      isFanToken: z.boolean(),
+      imageUrl: z.string().optional(),
     }),
     async resolve({ ctx, input }) {
       const coin = await ctx.prisma.coin.create({
@@ -42,6 +44,8 @@ export const coinRouter = createRouter()
           name: input.name,
           ticker: input.ticker,
           active: input.active,
+          isFanToken: input.isFanToken,
+          image_url: input.imageUrl,
         },
       })
 
@@ -79,7 +83,8 @@ export const coinRouter = createRouter()
   .mutation('update', {
     input: z.object({
       id: z.string().cuid(),
-      active: z.boolean(),
+      active: z.boolean().optional(),
+      isFanToken: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       const coin = await ctx.prisma.coin.update({
@@ -88,6 +93,7 @@ export const coinRouter = createRouter()
         },
         data: {
           active: input.active,
+          isFanToken: input.isFanToken,
         },
       })
 

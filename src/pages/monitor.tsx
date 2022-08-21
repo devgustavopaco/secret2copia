@@ -11,7 +11,7 @@ import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
 import { ArbitrageOpportunity } from '../server/router/orderbook'
-import { BeatLoader, PacmanLoader, RingLoader } from 'react-spinners'
+import { BeatLoader, PacmanLoader } from 'react-spinners'
 
 const defaultExchanges = [
   'Binance',
@@ -187,7 +187,7 @@ const Monitoring: NextPage = () => {
                       <OperationCard
                         key={operation.coin}
                         coin={{
-                          image: '/Ethereum.png',
+                          image: operation.coinImage,
                           name: operation.coin,
                           ask: {
                             exchange: operation.lowestAsk.exchange,

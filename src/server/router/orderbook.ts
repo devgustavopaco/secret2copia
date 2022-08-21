@@ -63,6 +63,7 @@ export interface Orderbook {
 
 export interface ArbitrageOpportunity {
   coin: string
+  coinImage?: string
   ticker: string
   lowestAsk: {
     exchange: string
@@ -99,10 +100,11 @@ const formatExchangeName = (exchange: string): string => {
 }
 
 const fetchArbitrageOpportunity = async (
-  prisma: PrismaClient,
   coin: {
     name: string
     ticker: string
+    isFanToken: boolean
+    imageUrl?: string
   },
   buyExchanges: string[],
   sellExchanges: string[],
@@ -116,7 +118,7 @@ const fetchArbitrageOpportunity = async (
     tax: number
   }[]
 ): Promise<ArbitrageOpportunity> => {
-  const { name, ticker } = coin
+  const { name, ticker, isFanToken, imageUrl } = coin
 
   const orderBookPromises: Promise<Exchange>[] = []
 
@@ -127,18 +129,26 @@ const fetchArbitrageOpportunity = async (
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange]
     if (exchangeStrategy) {
-      const coinPair = exchangeStrategy.formatPair(ticker, 'usdt')
-      orderBookPromises.push(exchangeStrategy.fetchOrderbook(coinPair))
+      const isChiliz = exchange === 'chiliz'
+      const coinPair = exchangeStrategy.formatPair(
+        ticker,
+        isChiliz && isFanToken ? 'chz' : 'usdt'
+      )
+
+      orderBookPromises.push(
+        exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
+      )
     }
   }
 
   const results = await Promise.allSettled(orderBookPromises)
 
-  const orderBooks = results.map((result) => {
+  const orderBooks = results.reduce((acc, result) => {
     if (result.status === 'fulfilled') {
-      return result.value
+      acc.push(result.value)
     }
-  })
+    return acc
+  }, [] as Exchange[])
 
   const dollarPrice = await ServerSingleton.getInstance().getDollar()
 
@@ -147,22 +157,21 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) ===
+          formatExchangeName(exchange.name.toLowerCase())
       )
       if (isContained) {
-        if (exchange?.ask) {
-          const priceInUSD = exchange.isUSD
-            ? exchange.ask.price
-            : exchange.ask.price / dollarPrice
+        const priceInUSD = exchange.isUSD
+          ? exchange.ask.price
+          : exchange.ask.price / dollarPrice
 
-          if (priceInUSD < acc.price) {
-            return {
-              exchange: exchange.name,
-              isUSD: exchange.isUSD,
-              image_url: exchange.image_url,
-              orderbook: acc.orderbook,
-              ...exchange.ask,
-            }
+        if (priceInUSD < acc.price) {
+          return {
+            exchange: exchange.name,
+            isUSD: exchange.isUSD,
+            image_url: exchange.image_url,
+            orderbook: acc.orderbook,
+            ...exchange.ask,
           }
         }
       }
@@ -180,25 +189,28 @@ const fetchArbitrageOpportunity = async (
   // Highest sell price
   const highestBid = orderBooks.reduce(
     (acc, exchange) => {
-      const isContained = buyExchanges.some(
+      const isContained = sellExchanges.some(
         (element) =>
-          formatExchangeName(element) === (exchange?.name.toLowerCase() ?? '')
+          formatExchangeName(element) ===
+          formatExchangeName(exchange.name.toLowerCase())
       )
-      // TODO: Ignorar exchange já selecionada para compra
-      if (isContained) {
-        if (exchange?.bid) {
-          const priceInUSD = exchange.isUSD
-            ? exchange.bid.price
-            : exchange.bid.price / dollarPrice
 
-          if (priceInUSD > acc.price) {
-            return {
-              exchange: exchange.name,
-              isUSD: exchange.isUSD,
-              image_url: exchange.image_url,
-              orderbook: acc.orderbook,
-              ...exchange.bid,
-            }
+      const notSelectedBuyExchange =
+        formatExchangeName(lowestAsk.exchange) !==
+        formatExchangeName(exchange.name)
+
+      if (isContained && notSelectedBuyExchange) {
+        const priceInUSD = exchange.isUSD
+          ? exchange.bid.price
+          : exchange.bid.price / dollarPrice
+
+        if (priceInUSD > acc.price) {
+          return {
+            exchange: exchange.name,
+            isUSD: exchange.isUSD,
+            image_url: exchange.image_url,
+            orderbook: acc.orderbook,
+            ...exchange.bid,
           }
         }
       }
@@ -215,20 +227,24 @@ const fetchArbitrageOpportunity = async (
   )
 
   const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange)
+  let isChiliz = lowestAskExchangeName === 'chiliz'
   const lowestAskPair = exchangeStrategies[lowestAskExchangeName]!.formatPair(
     ticker,
-    'usdt'
+    isChiliz && isFanToken ? 'chz' : 'usdt'
   )
-  lowestAsk.orderbook =
-    exchangeStrategies[lowestAskExchangeName]!.convertOrderbook(lowestAskPair)
+  lowestAsk.orderbook = exchangeStrategies[
+    lowestAskExchangeName
+  ]!.convertOrderbook(lowestAskPair, isFanToken)
 
   const highestBidExchangeName = formatExchangeName(highestBid.exchange)
+  isChiliz = highestBidExchangeName === 'chiliz'
   const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
     ticker,
-    'usdt'
+    isChiliz && isFanToken ? 'chz' : 'usdt'
   )
-  highestBid.orderbook =
-    exchangeStrategies[highestBidExchangeName]!.convertOrderbook(highestBidPair)
+  highestBid.orderbook = exchangeStrategies[
+    highestBidExchangeName
+  ]!.convertOrderbook(highestBidPair, isFanToken)
 
   const lowestAskTax = taxes.find(
     (tax) => tax.exchange.name === lowestAsk.exchange
@@ -263,6 +279,7 @@ const fetchArbitrageOpportunity = async (
 
   return {
     coin: name,
+    coinImage: imageUrl,
     ticker,
     lowestAsk,
     highestBid,
@@ -304,10 +321,11 @@ export const orderbookRouter = createRouter()
       for (const coin of activeCoins) {
         arbitrageOpportunitiesPromises.push(
           fetchArbitrageOpportunity(
-            ctx.prisma,
             {
               name: coin.name,
               ticker: coin.ticker,
+              isFanToken: coin.isFanToken,
+              imageUrl: coin.image_url ?? undefined,
             },
             buyExchanges,
             sellExchanges,
