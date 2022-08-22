@@ -12,7 +12,7 @@ import styles from './styles.module.scss'
 
 interface SidebarAdminProps {}
 
-export function SidebarAdmin({}: SidebarAdminProps) {
+export function SidebarAdmin() {
   const router = useRouter()
 
   return (
