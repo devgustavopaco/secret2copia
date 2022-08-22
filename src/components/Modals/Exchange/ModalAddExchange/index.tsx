@@ -111,7 +111,6 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
             <input
               type="checkbox"
               checked={convert}
-              required
               onChange={handleConvertChange}
             />
           </div>

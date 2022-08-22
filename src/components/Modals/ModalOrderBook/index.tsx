@@ -5,8 +5,14 @@ import type { Orderbook } from '../../../server/router/orderbook'
 
 interface ModalOrderBookProps {
   dollarPrice: number
-  orderbookBid: Orderbook
-  orderbookAsk: Orderbook
+  orderbookBid: {
+    isUSD: boolean
+    orderbook: Orderbook
+  }
+  orderbookAsk: {
+    isUSD: boolean
+    orderbook: Orderbook
+  }
   setOpenModal: (open: boolean) => void
 }
 
@@ -50,9 +56,16 @@ export function ModalOrderBook({
           <div className={styles.contentTabs}>
             <DataGridOrderbook
               data={
-                toggleState === 'compra' ? orderbookAsk.asks : orderbookBid.bids
+                toggleState === 'compra'
+                  ? orderbookAsk.orderbook.asks
+                  : orderbookBid.orderbook.bids
               }
               dollarPrice={dollarPrice}
+              isUSD={
+                toggleState === 'compra'
+                  ? orderbookAsk.isUSD
+                  : orderbookBid.isUSD
+              }
             />
           </div>
         </div>

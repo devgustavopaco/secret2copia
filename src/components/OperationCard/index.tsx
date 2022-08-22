@@ -3,7 +3,7 @@ import styles from './styles.module.scss'
 
 interface OperationCardProps {
   coin: {
-    image: string
+    image?: string
     name: string
     ask: {
       exchange: string
@@ -33,7 +33,7 @@ const percentageFormatter = new Intl.NumberFormat('pt-BR', {
 
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'decimal',
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 4,
 })
 
 export function OperationCard({
@@ -52,7 +52,10 @@ export function OperationCard({
     <section className={styles.card}>
       <header className={styles['card-header']}>
         <img
-          src={`https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`}
+          src={
+            coin.image ??
+            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+          }
           alt={coin.name}
         />
 

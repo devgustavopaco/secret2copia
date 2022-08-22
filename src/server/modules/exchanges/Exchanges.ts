@@ -87,7 +87,7 @@ export class BitsoStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}_${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -145,7 +145,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -195,7 +195,7 @@ export class CoinBaseStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}-${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}-${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -230,25 +230,53 @@ export class ChilizStrategy implements ExchangeStrategy {
     [key: string]: ChilizOrderbook
   } = {}
 
-  convertOrderbook(pair: string): Orderbook {
+  chzPrice = 0
+
+  convertOrderbook(pair: string, isFanToken: boolean = false): Orderbook {
     const bids =
       this.orderbook[pair]?.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
+        return {
+          price: Number(bid[0]) * (isFanToken ? this.chzPrice : 1),
+          amount: Number(bid[1]),
+        }
       }) ?? []
 
     const asks =
       this.orderbook[pair]?.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
+        return {
+          price: Number(ask[0]) * (isFanToken ? this.chzPrice : 1),
+          amount: Number(ask[1]),
+        }
       }) ?? []
 
     return { bids, asks }
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+  formatPair(
+    baseToken: string,
+    destinationToken: string,
+    isFanToken: boolean = false
+  ): string {
+    return `${baseToken.toUpperCase()}${
+      isFanToken ? 'CHZ' : destinationToken.toUpperCase()
+    }`
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    isFanToken: boolean = false
+  ): Promise<Exchange> {
+    if (isFanToken) {
+      // fetch price from chiliz using this url https://api.chiliz.net/openapi/quote/v1/ticker/price?symbol=CHZUSDT
+      const response = await fetch(
+        `https://api.chiliz.net/openapi/quote/v1/ticker/price?symbol=CHZUSDT`
+      )
+      const chzPriceJson = (await response.json()) as {
+        symbol: string
+        price: string
+      }
+      this.chzPrice = Number(chzPriceJson.price)
+    }
     const response = await fetch(
       `https://api.chiliz.net/openapi/quote/v1/depth?limit=10&symbol=${pair}`
     )
@@ -258,11 +286,11 @@ export class ChilizStrategy implements ExchangeStrategy {
     return {
       name: 'Chiliz',
       bid: {
-        price: Number(json.bids[0]![0]),
+        price: Number(json.bids[0]![0]) * (isFanToken ? this.chzPrice : 1),
         amount: Number(json.bids[0]![1]),
       },
       ask: {
-        price: Number(json.asks[0]![0]),
+        price: Number(json.asks[0]![0]) * (isFanToken ? this.chzPrice : 1),
         amount: Number(json.asks[0]![1]),
       },
       isUSD: true,
@@ -416,7 +444,7 @@ export class GeminiStategy implements ExchangeStrategy {
       destinationToken = 'USD'
     }
 
-    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -427,7 +455,7 @@ export class GeminiStategy implements ExchangeStrategy {
     this.orderbook[pair] = json
 
     return {
-      name: 'Gamini',
+      name: 'Gemini',
       bid: {
         price: Number(json.bids[0]!.price),
         amount: Number(json.bids[0]!.amount),
@@ -468,7 +496,7 @@ export class HuobiStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -655,8 +683,8 @@ export class NovaDAXStrategy implements ExchangeStrategy {
 }
 
 interface MercadoBitcoinOrderbook {
-  bids: string[][]
-  asks: string[][]
+  bids: number[][]
+  asks: number[][]
 }
 
 export class MercadoBitcoinStrategy implements ExchangeStrategy {
@@ -678,8 +706,12 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
     return { bids, asks }
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}`
+  formatPair(
+    baseToken: string,
+    destinationToken: string,
+    isFanToken: boolean = false
+  ): string {
+    return `${baseToken.toLowerCase()}${isFanToken ? 'ft' : ''}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -699,7 +731,7 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
       },
-      isUSD: true,
+      isUSD: false,
     }
   }
 }

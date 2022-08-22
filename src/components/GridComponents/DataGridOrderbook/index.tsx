@@ -14,6 +14,7 @@ interface DataGridOrderbookProps {
   data: { price: number; amount: number }[]
   isLoading?: boolean
   dollarPrice: number
+  isUSD: boolean
 }
 
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
@@ -25,6 +26,7 @@ export function DataGridOrderbook({
   data,
   isLoading,
   dollarPrice,
+  isUSD,
 }: DataGridOrderbookProps) {
   const columns: GridColumns = [
     {
@@ -36,7 +38,9 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(params.row.price * dollarPrice)
+        return numberFormatter.format(
+          params.row.price * (isUSD ? dollarPrice : 1)
+        )
       },
     },
     {
@@ -58,7 +62,7 @@ export function DataGridOrderbook({
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
         return numberFormatter.format(
-          params.row.price * dollarPrice * params.row.amount
+          params.row.price * (isUSD ? dollarPrice : 1) * params.row.amount
         )
       },
     },
