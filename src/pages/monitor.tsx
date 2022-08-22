@@ -5,7 +5,6 @@ import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
 import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
-import { CoinNotFound } from '../components/CoinNotFound'
 import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
@@ -64,7 +63,7 @@ const Monitoring: NextPage = () => {
   const [selectedOperation, setSelectedOperation] =
     useState<ArbitrageOpportunity>({} as ArbitrageOpportunity)
 
-  const { data, isLoading, isRefetching } = trpc.useQuery(
+  const { refetch, data, isLoading, isFetching } = trpc.useQuery(
     [
       'orderBook.getAll',
       {
@@ -74,10 +73,21 @@ const Monitoring: NextPage = () => {
     ],
     {
       refetchInterval: 30 * 1000,
+      retry(failureCount, error) {
+        if (failureCount > 3) {
+          return false
+        }
+        return true
+      },
     }
   )
 
   const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'])
+  useEffect(() => {
+    if (data?.length === 0) {
+      refetch()
+    }
+  }, [data, refetch])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -117,8 +127,6 @@ const Monitoring: NextPage = () => {
       return newExchanges
     })
   }, [])
-
-  const operationsCount = data?.length || 0
 
   const sortedOperations = data?.sort((a, b) => {
     if (a && b) {
@@ -162,20 +170,10 @@ const Monitoring: NextPage = () => {
           <main>
             <h1>
               Operações
-              {isRefetching && <BeatLoader color="#969696" size="0.5rem" />}
+              {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 
-            {!isLoading && operationsCount === 0 ? (
-              <div className={styles.notFound}>
-                <CoinNotFound />
-                <div>
-                  <h2>Nenhuma oportunidade de operação foi encontrada!</h2>
-                  <p>
-                    Altere seus filtros de busca para realizar uma nova pesquisa
-                  </p>
-                </div>
-              </div>
-            ) : isLoading ? (
+            {isLoading ? (
               <div className={styles.loading}>
                 <PacmanLoader color="#957dff" size="4rem" />
               </div>
