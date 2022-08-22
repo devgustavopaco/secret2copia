@@ -23,6 +23,11 @@
   flex-direction: column;
   padding: 0px;
   gap: 1rem;
+
+  @media screen and (max-width: 968px) {
+    width: 80vw;
+  }
+
 }
 
 .container {

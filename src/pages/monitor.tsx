@@ -182,18 +182,22 @@ const Monitoring: NextPage = () => {
     []
   )
 
-  const sortedOperations = data?.sort((a, b) => {
-    if (a && b) {
-      if (a?.spread < b?.spread) {
-        return 1
-      }
-      if (a?.spread > b?.spread) {
-        return -1
+  const sortedOperations = data
+    ?.sort((a, b) => {
+      if (a && b) {
+        if (a?.spread < b?.spread) {
+          return 1
+        }
+        if (a?.spread > b?.spread) {
+          return -1
+        }
+        return 0
       }
       return 0
-    }
-    return 0
-  })
+    })
+    .filter((operation) => {
+      return operation?.spread > 0
+    })
 
   return (
     <>
