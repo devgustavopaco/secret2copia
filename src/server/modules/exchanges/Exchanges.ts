@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { Orderbook } from '../../router/orderbook'
+import { Orderbook, OrderbookOperation } from '../../router/orderbook'
 import { Exchange, ExchangeStrategy, Ticker } from './ExchangeStrategy'
 
 interface BinanceOrderbook {
@@ -14,14 +14,40 @@ export class BinanceStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -74,14 +100,40 @@ export class BitsoStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.payload.bids.map((bid) => {
-        return { price: Number(bid.price), amount: Number(bid.amount) }
-      }) ?? []
+      this.orderbook[pair]?.payload.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.amount)
+        } else {
+          sumVolume = Number(bid.amount)
+        }
+
+        acc.push({
+          price: Number(bid.price),
+          amount: Number(bid.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.payload.asks.map((ask) => {
-        return { price: Number(ask.price), amount: Number(ask.amount) }
-      }) ?? []
+      this.orderbook[pair]?.payload.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.amount)
+        } else {
+          sumVolume = Number(ask.amount)
+        }
+
+        acc.push({
+          price: Number(ask.price),
+          amount: Number(ask.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -132,14 +184,40 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.sell.map((bid) => {
-        return { price: Number(bid.preco), amount: Number(bid.quantidade) }
-      }) ?? []
+      this.orderbook[pair]?.sell.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + bid.quantidade
+        } else {
+          sumVolume = bid.quantidade
+        }
+
+        acc.push({
+          price: Number(bid.preco),
+          amount: Number(bid.quantidade),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.buy.map((ask) => {
-        return { price: Number(ask.preco), amount: Number(ask.quantidade) }
-      }) ?? []
+      this.orderbook[pair]?.buy.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + ask.quantidade
+        } else {
+          sumVolume = ask.quantidade
+        }
+
+        acc.push({
+          price: Number(ask.preco),
+          amount: Number(ask.quantidade),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -182,14 +260,40 @@ export class CoinBaseStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -234,20 +338,40 @@ export class ChilizStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string, isFanToken: boolean = false): Orderbook {
     const bids =
-      this.orderbook[pair]?.bids.map((bid) => {
-        return {
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
           price: Number(bid[0]) * (isFanToken ? this.chzPrice : 1),
           amount: Number(bid[1]),
-        }
-      }) ?? []
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.map((ask) => {
-        return {
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
           price: Number(ask[0]) * (isFanToken ? this.chzPrice : 1),
           amount: Number(ask[1]),
-        }
-      }) ?? []
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -371,14 +495,40 @@ export class CryptoComStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.result.data[0]!.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result.data[0]!.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.result.data[0]!.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result.data[0]!.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -427,14 +577,40 @@ export class GeminiStategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.bids.map((bid) => {
-        return { price: Number(bid.price), amount: Number(bid.amount) }
-      }) ?? []
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.amount)
+        } else {
+          sumVolume = Number(bid.amount)
+        }
+
+        acc.push({
+          price: Number(bid.price),
+          amount: Number(bid.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.map((ask) => {
-        return { price: Number(ask.price), amount: Number(ask.amount) }
-      }) ?? []
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.amount)
+        } else {
+          sumVolume = Number(ask.amount)
+        }
+
+        acc.push({
+          price: Number(ask.price),
+          amount: Number(ask.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -483,14 +659,40 @@ export class HuobiStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.tick.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.tick.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.tick.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.tick.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -538,14 +740,46 @@ export class KrakenStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.result[this.pairResult]!.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result[this.pairResult]!.bids.reduce(
+        (acc, bid, index) => {
+          let sumVolume = 0
+          if (index - 1 >= 0) {
+            sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+          } else {
+            sumVolume = Number(bid[1])
+          }
+
+          acc.push({
+            price: Number(bid[0]),
+            amount: Number(bid[1]),
+            sumVolume,
+          })
+
+          return acc
+        },
+        [] as OrderbookOperation[]
+      ) ?? []
 
     const asks =
-      this.orderbook[pair]?.result[this.pairResult]!.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result[this.pairResult]!.asks.reduce(
+        (acc, ask, index) => {
+          let sumVolume = 0
+          if (index - 1 >= 0) {
+            sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+          } else {
+            sumVolume = Number(ask[1])
+          }
+
+          acc.push({
+            price: Number(ask[0]),
+            amount: Number(ask[1]),
+            sumVolume,
+          })
+
+          return acc
+        },
+        [] as OrderbookOperation[]
+      ) ?? []
 
     return { bids, asks }
   }
@@ -592,14 +826,40 @@ export class KuCoinStratefy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.data.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.data.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -644,14 +904,40 @@ export class NovaDAXStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.data.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.data.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -694,14 +980,40 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -748,14 +1060,40 @@ export class HitBTCStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.bid.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.bid.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.ask.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.ask.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }
@@ -797,22 +1135,38 @@ export class BitfinexStrategy implements ExchangeStrategy {
     const book = this.orderbook[pair]?.reduce(
       (acc, result, index) => {
         if (index < 25) {
+          let sumVolume = 0
+          if (index - 1 >= 0) {
+            sumVolume = acc.bids[index - 1]!.sumVolume + Number(result[2])
+          } else {
+            sumVolume = Number(result[2])
+          }
+
           acc.bids.push({
             price: Number(result[0]),
             amount: Number(result[2]),
+            sumVolume,
           })
           return acc
         } else {
+          let sumVolume = 0
+          if (index - 1 >= 0) {
+            sumVolume = acc.asks[index - 1]!.sumVolume + Number(result[2])
+          } else {
+            sumVolume = Number(result[2])
+          }
+
           acc.asks.push({
             price: Number(result[0]),
             amount: -1 * Number(result[2]),
+            sumVolume,
           })
           return acc
         }
       },
       { asks: [], bids: [] } as {
-        asks: { price: number; amount: number }[]
-        bids: { price: number; amount: number }[]
+        asks: OrderbookOperation[]
+        bids: OrderbookOperation[]
       }
     ) ?? { asks: [], bids: [] }
 
@@ -863,14 +1217,40 @@ export class HotBitStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.result.bids.map((bid) => {
-        return { price: Number(bid[0]), amount: Number(bid[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.result.asks.map((ask) => {
-        return { price: Number(ask[0]), amount: Number(ask[1]) }
-      }) ?? []
+      this.orderbook[pair]?.result.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
 
     return { bids, asks }
   }

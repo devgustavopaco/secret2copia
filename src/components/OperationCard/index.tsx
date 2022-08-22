@@ -86,7 +86,7 @@ export function OperationCard({
 
         <div>
           <h3>Venda</h3>
-          <div>
+          <div className={styles.textEnd}>
             {coin.bid.image_url && (
               <img src={coin.bid.image_url} alt={coin.bid.exchange} />
             )}

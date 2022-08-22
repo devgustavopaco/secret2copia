@@ -17,9 +17,14 @@ interface DataGridOrderbookProps {
   isUSD: boolean
 }
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  maximumFractionDigits: 4,
+})
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'decimal',
-  maximumFractionDigits: 4,
+  maximumFractionDigits: 6,
 })
 
 export function DataGridOrderbook({
@@ -38,7 +43,7 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(
+        return currencyFormatter.format(
           params.row.price * (isUSD ? dollarPrice : 1)
         )
       },
@@ -46,24 +51,39 @@ export function DataGridOrderbook({
     {
       field: 'amount',
       headerName: 'Volume',
-      width: 200,
-      editable: false,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: 'total',
-      headerName: 'Total',
-      width: 250,
+      width: 150,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(
+        return numberFormatter.format(params.row.amount)
+      },
+    },
+    {
+      field: 'total',
+      headerName: 'Total',
+      width: 180,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return currencyFormatter.format(
           params.row.price * (isUSD ? dollarPrice : 1) * params.row.amount
         )
+      },
+    },
+    {
+      field: 'sumVolume',
+      headerName: 'Soma Volume',
+      width: 150,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return numberFormatter.format(params.row.sumVolume)
       },
     },
   ]

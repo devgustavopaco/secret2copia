@@ -50,15 +50,15 @@ const exchangeStrategies: StrategyObject = {
   hotbit: new HotBitStrategy(),
 }
 
+export interface OrderbookOperation {
+  price: number
+  amount: number
+  sumVolume: number
+}
+
 export interface Orderbook {
-  bids: {
-    price: number
-    amount: number
-  }[]
-  asks: {
-    price: number
-    amount: number
-  }[]
+  bids: OrderbookOperation[]
+  asks: OrderbookOperation[]
 }
 
 export interface ArbitrageOpportunity {
