@@ -37,7 +37,7 @@ const exchangeStrategies: StrategyObject = {
   brasilbitcoin: new BrasilBitcoinStrategy(),
   coinbase: new CoinBaseStrategy(),
   chiliz: new ChilizStrategy(),
-  coinext: new CoinextStrategy(),
+  // coinext: new CoinextStrategy(),
   crypto: new CryptoComStrategy(),
   gemini: new GeminiStategy(),
   huobi: new HuobiStrategy(),
