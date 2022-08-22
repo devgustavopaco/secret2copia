@@ -1,9 +1,14 @@
 import { BeatLoader } from 'react-spinners'
 import styles from './styles.module.scss'
 
+interface exchangesType {
+  value: string
+  label: string
+}
+
 interface SidebarProps {
   dollarPrice?: number
-  defaultExchanges: string[]
+  defaultExchanges: exchangesType[]
   buyExchanges: string[]
   sellExchanges: string[]
   onSelectBuyExchange: (exchange: string) => void
@@ -45,15 +50,17 @@ export function Sidebar({
 
         <div className={styles['filter-options']}>
           {defaultExchanges.map((exchange) => (
-            <label key={exchange}>
-              <input
-                type="checkbox"
-                checked={buyExchanges.includes(exchange)}
-                onChange={() => {
-                  onSelectBuyExchange(exchange)
-                }}
-              />
-              {exchange}
+            <label key={exchange.value}>
+              <>
+                <input
+                  type="checkbox"
+                  checked={buyExchanges.includes(exchange.value)}
+                  onChange={() => {
+                    onSelectBuyExchange(exchange.value)
+                  }}
+                />
+                {exchange.value}
+              </>
             </label>
           ))}
         </div>
@@ -63,15 +70,17 @@ export function Sidebar({
 
         <div className={styles['filter-options']}>
           {defaultExchanges.map((exchange) => (
-            <label key={exchange}>
-              <input
-                type="checkbox"
-                checked={sellExchanges.includes(exchange)}
-                onChange={() => {
-                  onSelectSellExchange(exchange)
-                }}
-              />
-              {exchange}
+            <label key={exchange.value}>
+              <>
+                <input
+                  type="checkbox"
+                  checked={sellExchanges.includes(exchange.value)}
+                  onChange={() => {
+                    onSelectSellExchange(exchange.value)
+                  }}
+                />
+                {exchange.value}
+              </>
             </label>
           ))}
         </div>

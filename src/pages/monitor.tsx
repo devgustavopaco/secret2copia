@@ -12,27 +12,33 @@ import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
 import { ArbitrageOpportunity } from '../server/router/orderbook'
 import { BeatLoader, PacmanLoader, RingLoader } from 'react-spinners'
+import { BuyExchangeMobile } from '../components/Mobile/BuyExchangeMobile'
+import { SellExchangeMobile } from '../components/Mobile/SellExchangeMobile'
 
-const defaultExchanges = [
-  'Binance',
-  'Bitso',
-  'BrasilBitcoin',
-  'BitcoinTrade',
-  'Coinbase',
-  'Chiliz',
-  'Coinext',
-  'Crypto.com',
-  'FTX',
-  'Foxbit',
-  'Gemini',
-  'Huobi',
-  'Kraken',
-  'KuCoin',
-  'NovaDAX',
-  'Mercado Bitcoin',
-  'HitBTC',
-  'Bitfinex',
-  'HotBit',
+interface exchangesType {
+  value: string
+  label: string
+}
+
+const defaultExchanges: exchangesType[] = [
+  { value: 'Binance', label: 'Binance' },
+  { value: 'Bitso', label: 'Bitso' },
+  { value: 'BrasilBitcoin', label: 'BrasilBitcoin' },
+  { value: 'BitcoinTrade', label: 'BitcoinTrade' },
+  { value: 'Coinbase', label: 'Coinbase' },
+  { value: 'Chiliz', label: 'Chiliz' },
+  { value: 'Coinext', label: 'Coinext' },
+  { value: 'Crypto.com', label: 'Crypto.com' },
+  { value: 'FTX', label: 'FTX' },
+  { value: 'Gemini', label: 'Gemini' },
+  { value: 'Huobi', label: 'Huobi' },
+  { value: 'Kraken', label: 'Kraken' },
+  { value: 'KuCoin', label: 'KuCoin' },
+  { value: 'NovaDAX', label: 'NovaDAX' },
+  { value: 'Mercado Bitcoin', label: 'Mercado Bitcoin' },
+  { value: 'HitBTC', label: 'HitBTC' },
+  { value: 'Bitfinex', label: 'Bitfinex' },
+  { value: 'HotBit', label: 'HotBit' },
 ]
 
 const Monitoring: NextPage = () => {
@@ -49,6 +55,7 @@ const Monitoring: NextPage = () => {
 
     return defaultExchanges
   })
+
   const [sellExchanges, setSellExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('sellExchanges')
@@ -104,6 +111,29 @@ const Monitoring: NextPage = () => {
     })
   }, [])
 
+  // Mobile
+  const onSelectBuyExchangeMobile = useCallback(
+    (completeExchanges: readonly exchangesType[] | undefined) => {
+      if (completeExchanges !== undefined) {
+        let exchangeValue = completeExchanges.map((x) => x.value)
+        exchangeValue.forEach((value) => {
+          setBuyExchanges((exchanges) => {
+            const newExchanges = [...exchanges]
+            const i = newExchanges.indexOf(value)
+            if (i === -1) {
+              newExchanges.push(value)
+            } else {
+              newExchanges.splice(i, 1)
+            }
+
+            return newExchanges
+          })
+        })
+      }
+    },
+    []
+  )
+
   const onSelectSellExchange = useCallback((exchange: string) => {
     setSellExchanges((exchanges) => {
       const newExchanges = [...exchanges]
@@ -117,6 +147,29 @@ const Monitoring: NextPage = () => {
       return newExchanges
     })
   }, [])
+
+  // Mobile
+  const onSelectSellExchangeMobile = useCallback(
+    (completeExchanges: readonly exchangesType[] | undefined) => {
+      if (completeExchanges !== undefined) {
+        let exchangeValue = completeExchanges.map((x) => x.value)
+        exchangeValue.forEach((value) => {
+          setSellExchanges((exchanges) => {
+            const newExchanges = [...exchanges]
+            const i = newExchanges.indexOf(value)
+            if (i === -1) {
+              newExchanges.push(value)
+            } else {
+              newExchanges.splice(i, 1)
+            }
+
+            return newExchanges
+          })
+        })
+      }
+    },
+    []
+  )
 
   const operationsCount = data?.length || 0
 
@@ -141,6 +194,20 @@ const Monitoring: NextPage = () => {
       </Head>
       <div>
         <Header />
+        <div className={styles.mobileFilter}>
+          <span>Exchanges Compra</span>
+          <BuyExchangeMobile
+            defaultExchanges={defaultExchanges}
+            onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
+          />
+        </div>
+        <div className={styles.mobileFilter}>
+          <span>Exchanges Venda</span>
+          <SellExchangeMobile
+            defaultExchanges={defaultExchanges}
+            onSelectSellExchangeMobile={onSelectSellExchangeMobile}
+          />
+        </div>
         {modalOpenOrderBook && (
           <ModalOrderBook
             orderbookBid={selectedOperation.highestBid.orderbook}
@@ -149,6 +216,7 @@ const Monitoring: NextPage = () => {
             dollarPrice={dollarPrice ?? 0}
           />
         )}
+
         <div className={`${styles.content} container`}>
           <Sidebar
             dollarPrice={dollarPrice}
@@ -158,7 +226,6 @@ const Monitoring: NextPage = () => {
             onSelectBuyExchange={onSelectBuyExchange}
             onSelectSellExchange={onSelectSellExchange}
           />
-
           <main>
             <h1>
               Operações
