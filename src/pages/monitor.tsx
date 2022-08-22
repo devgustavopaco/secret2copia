@@ -196,7 +196,10 @@ const Monitoring: NextPage = () => {
       return 0
     })
     .filter((operation) => {
-      return operation?.spread > 0
+      if (operation) {
+        return operation.spread > 0
+      }
+      return false
     })
 
   return (
