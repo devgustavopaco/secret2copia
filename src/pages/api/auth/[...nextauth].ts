@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         const user = await fetch(
-          `${process.env.NEXTAUTH_URL}/api/user/checkCredentials`,
+          `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
           {
             method: 'POST',
             headers: {
@@ -37,9 +37,10 @@ export const authOptions: NextAuthOptions = {
           }
         )
           .then((response) => response.json())
-          .catch((err) => null)
+          .catch((err) => console.error(err))
 
         if (user) {
+          console.log(user)
           return user
         }
 
@@ -51,6 +52,32 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+        token.name = user.name
+        token.role = user.role.name
+      }
+
+      return token
+    },
+
+    async session({ session, token }) {
+      if (token) {
+        session.id = token.id
+        session.email = token.email
+        session.name = token.name
+        session.role = token.role
+      }
+
+      return session
+    },
+  },
+  pages: {
+    signIn: '/',
   },
 }
 
