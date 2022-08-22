@@ -207,6 +207,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Compra</span>
           <BuyExchangeMobile
             defaultExchanges={defaultExchanges}
+            selectedExchanges={buyExchanges}
             onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
           />
         </div>
@@ -214,6 +215,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Venda</span>
           <SellExchangeMobile
             defaultExchanges={defaultExchanges}
+            selectedExchanges={sellExchanges}
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
           />
         </div>

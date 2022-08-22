@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import Select, { components, OnChangeValue } from 'react-select'
+import { useId } from 'react'
+import Select, { OnChangeValue } from 'react-select'
 import styles from './styles.module.scss'
 
 interface exchangesType {
@@ -9,6 +9,7 @@ interface exchangesType {
 
 interface SelectProps {
   defaultExchanges: exchangesType[]
+  selectedExchanges: string[]
   onSelectBuyExchangeMobile: (
     exchange: readonly exchangesType[] | undefined
   ) => void
@@ -88,22 +89,23 @@ const customStyles = {
 
 export function BuyExchangeMobile({
   defaultExchanges,
+  selectedExchanges,
   onSelectBuyExchangeMobile,
 }: SelectProps) {
-  const [selectedExchange, setSelectedExchange] =
-    useState<readonly exchangesType[]>()
-
   const handleExchangeBuyChange = (
     newValue: OnChangeValue<exchangesType, true>
   ) => {
-    setSelectedExchange(newValue)
-    onSelectBuyExchangeMobile(selectedExchange)
+    onSelectBuyExchangeMobile(newValue)
   }
 
   return (
     <Select
+      value={defaultExchanges.filter((exchange) =>
+        selectedExchanges.includes(exchange.value)
+      )}
       options={defaultExchanges}
       isMulti
+      instanceId={useId()}
       className={styles.select}
       components={{
         MultiValueContainer: multiValueContainer,
