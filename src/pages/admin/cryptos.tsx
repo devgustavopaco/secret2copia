@@ -8,10 +8,13 @@ import { trpc } from '../../utils/trpc'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { toast } from 'react-toastify'
+import { useS3Upload } from 'next-s3-upload'
 
 const AdminExchanges: NextPage = () => {
+  let { uploadToS3 } = useS3Upload()
+
   const [modalOpen, setModalOpen] = useState(false)
 
   const { data: coins, isLoading, refetch } = trpc.useQuery(['coin.getCoins'])
@@ -48,11 +51,23 @@ const AdminExchanges: NextPage = () => {
     },
   })
 
-  const handleCryptoCreate = (ticker: string, name: string) => {
+  const handleCryptoCreate = async (
+    ticker: string,
+    name: string,
+    isFanToken: boolean,
+    image?: File | null
+  ) => {
+    let imageUrl
+    if (image) {
+      const { url } = await uploadToS3(image)
+      imageUrl = url
+    }
     createCryptoMutation.mutate({
       active: true,
       name,
       ticker,
+      isFanToken,
+      imageUrl,
     })
   }
 

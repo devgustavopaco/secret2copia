@@ -5,13 +5,13 @@ import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
 import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
-import { CoinNotFound } from '../components/CoinNotFound'
 import { useCallback, useEffect, useState } from 'react'
 import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
 import { ArbitrageOpportunity } from '../server/router/orderbook'
-import { BeatLoader, PacmanLoader, RingLoader } from 'react-spinners'
+
+import { BeatLoader, PacmanLoader } from 'react-spinners'
 import { BuyExchangeMobile } from '../components/Mobile/BuyExchangeMobile'
 import { SellExchangeMobile } from '../components/Mobile/SellExchangeMobile'
 
@@ -71,7 +71,7 @@ const Monitoring: NextPage = () => {
   const [selectedOperation, setSelectedOperation] =
     useState<ArbitrageOpportunity>({} as ArbitrageOpportunity)
 
-  const { data, isLoading, isRefetching } = trpc.useQuery(
+  const { refetch, data, isLoading, isFetching } = trpc.useQuery(
     [
       'orderBook.getAll',
       {
@@ -81,10 +81,21 @@ const Monitoring: NextPage = () => {
     ],
     {
       refetchInterval: 30 * 1000,
+      retry(failureCount, error) {
+        if (failureCount > 3) {
+          return false
+        }
+        return true
+      },
     }
   )
 
   const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'])
+  useEffect(() => {
+    if (data?.length === 0) {
+      refetch()
+    }
+  }, [data, refetch])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -171,8 +182,6 @@ const Monitoring: NextPage = () => {
     []
   )
 
-  const operationsCount = data?.length || 0
-
   const sortedOperations = data?.sort((a, b) => {
     if (a && b) {
       if (a?.spread < b?.spread) {
@@ -210,8 +219,8 @@ const Monitoring: NextPage = () => {
         </div>
         {modalOpenOrderBook && (
           <ModalOrderBook
-            orderbookBid={selectedOperation.highestBid.orderbook}
-            orderbookAsk={selectedOperation.lowestAsk.orderbook}
+            orderbookBid={selectedOperation.highestBid}
+            orderbookAsk={selectedOperation.lowestAsk}
             setOpenModal={setModalOpenOrderBook}
             dollarPrice={dollarPrice ?? 0}
           />
@@ -229,20 +238,10 @@ const Monitoring: NextPage = () => {
           <main>
             <h1>
               Operações
-              {isRefetching && <BeatLoader color="#969696" size="0.5rem" />}
+              {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 
-            {!isLoading && operationsCount === 0 ? (
-              <div className={styles.notFound}>
-                <CoinNotFound />
-                <div>
-                  <h2>Nenhuma oportunidade de operação foi encontrada!</h2>
-                  <p>
-                    Altere seus filtros de busca para realizar uma nova pesquisa
-                  </p>
-                </div>
-              </div>
-            ) : isLoading ? (
+            {isLoading ? (
               <div className={styles.loading}>
                 <PacmanLoader color="#957dff" size="4rem" />
               </div>
@@ -254,7 +253,7 @@ const Monitoring: NextPage = () => {
                       <OperationCard
                         key={operation.coin}
                         coin={{
-                          image: '/Ethereum.png',
+                          image: operation.coinImage,
                           name: operation.coin,
                           ask: {
                             exchange: operation.lowestAsk.exchange,

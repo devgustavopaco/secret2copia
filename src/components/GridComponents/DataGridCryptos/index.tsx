@@ -34,9 +34,13 @@ export function DataGridCryptos({
       filterable: false,
       disableColumnMenu: true,
       renderCell(params: GridRenderCellParams) {
+        const imageUrl = params.row.image_url
         return (
           <img
-            src={`https://assets.coincap.io/assets/icons/${params.row.ticker.toLowerCase()}@2x.png`}
+            src={
+              imageUrl ??
+              `https://assets.coincap.io/assets/icons/${params.row.ticker.toLowerCase()}@2x.png`
+            }
             className={styles.imgStyle}
           />
         )
@@ -56,6 +60,16 @@ export function DataGridCryptos({
       headerName: 'Código',
       width: 250,
       editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+    },
+    {
+      field: 'isFanToken',
+      headerName: 'Fan Token',
+      width: 300,
+      type: 'boolean',
+      editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -84,9 +98,9 @@ export function DataGridCryptos({
     }
   }
 
-  const updateTaxMutation = trpc.useMutation('tax.update', {
+  const updateCryptoMutation = trpc.useMutation('coin.update', {
     onSuccess() {
-      notify('Taxa alterada com sucesso!', true)
+      notify('Moeda alterada com sucesso!', true)
     },
     onError(error) {
       notify('Não foi possível realizar a operação!', false)
@@ -94,7 +108,7 @@ export function DataGridCryptos({
   })
 
   const handleEditCommit = (cell: GridCellEditCommitParams) => {
-    updateTaxMutation.mutate({
+    updateCryptoMutation.mutate({
       id: String(cell.id),
       [cell.field]: cell.value,
     })

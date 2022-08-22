@@ -12,7 +12,7 @@ import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 import { Header } from '../../components/Header'
 import { toast } from 'react-toastify'
-import { SidebarAdmin } from '../../components/Admin/SideBarAdmin'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false)

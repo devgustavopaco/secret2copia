@@ -86,6 +86,7 @@ model Coin {
   ticker          String
   image_url       String?
   active          Boolean
+  isFanToken      Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   ExchangeCoinTax ExchangeCoinTax[]

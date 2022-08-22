@@ -14,17 +14,24 @@ interface DataGridOrderbookProps {
   data: { price: number; amount: number }[]
   isLoading?: boolean
   dollarPrice: number
+  isUSD: boolean
 }
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  maximumFractionDigits: 4,
+})
 const numberFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'decimal',
-  maximumFractionDigits: 4,
+  maximumFractionDigits: 6,
 })
 
 export function DataGridOrderbook({
   data,
   isLoading,
   dollarPrice,
+  isUSD,
 }: DataGridOrderbookProps) {
   const columns: GridColumns = [
     {
@@ -36,30 +43,47 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(params.row.price * dollarPrice)
+        return currencyFormatter.format(
+          params.row.price * (isUSD ? dollarPrice : 1)
+        )
       },
     },
     {
       field: 'amount',
       headerName: 'Volume',
-      width: 200,
-      editable: false,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: 'total',
-      headerName: 'Total',
-      width: 250,
+      width: 150,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(
-          params.row.price * dollarPrice * params.row.amount
+        return numberFormatter.format(params.row.amount)
+      },
+    },
+    {
+      field: 'total',
+      headerName: 'Total',
+      width: 180,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return currencyFormatter.format(
+          params.row.price * (isUSD ? dollarPrice : 1) * params.row.amount
         )
+      },
+    },
+    {
+      field: 'sumVolume',
+      headerName: 'Soma Volume',
+      width: 150,
+      editable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      valueGetter(params: GridRenderCellParams) {
+        return numberFormatter.format(params.row.sumVolume)
       },
     },
   ]
