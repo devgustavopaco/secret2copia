@@ -49,7 +49,7 @@ const Monitoring: NextPage = () => {
       const savedExchanges = localStorage.getItem('buyExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges)
-        : defaultExchanges
+        : defaultExchanges.map(({ value }) => value)
       return initialValue
     }
 
@@ -61,7 +61,7 @@ const Monitoring: NextPage = () => {
       const savedExchanges = localStorage.getItem('sellExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges)
-        : defaultExchanges
+        : defaultExchanges.map(({ value }) => value)
       return initialValue
     }
 
