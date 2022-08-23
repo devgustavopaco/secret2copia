@@ -14,11 +14,13 @@ import type { Exchange } from '@prisma/client'
 interface DataGridExchangesProps {
   data: Exchange[]
   isLoading?: boolean
+  onSelect: (ids: string[]) => void
 }
 
 export function DataGridExchanges({
   data,
   isLoading = false,
+  onSelect,
 }: DataGridExchangesProps) {
   const columns: GridColumns = [
     {
@@ -76,6 +78,10 @@ export function DataGridExchanges({
     })
   }
 
+  const handleSelectionChanged = (ids: GridSelectionModel) => {
+    onSelect(ids as string[])
+  }
+
   return (
     <div className={styles.tableContainer}>
       <Box className={styles.box} sx={{ height: 700 }}>
@@ -87,6 +93,8 @@ export function DataGridExchanges({
           className={styles.grid}
           loading={isLoading}
           onCellEditCommit={handleEditCommit}
+          checkboxSelection
+          onSelectionModelChange={handleSelectionChanged}
         />
       </Box>
     </div>

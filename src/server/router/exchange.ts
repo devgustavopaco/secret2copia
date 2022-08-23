@@ -51,6 +51,32 @@ export const exchangeRouter = createRouter()
       }
     },
   })
+  .mutation('delete', {
+    input: z.object({
+      ids: z.string().cuid().array(),
+    }),
+    async resolve({ ctx, input }) {
+      const exchange = await ctx.prisma.exchange.deleteMany({
+        where: {
+          id: {
+            in: input.ids,
+          },
+        },
+      })
+
+      if (exchange) {
+        await ExchangesSingleton.getInstance().updateExchanges()
+
+        return {
+          success: true,
+        }
+      }
+
+      return {
+        success: false,
+      }
+    },
+  })
   .mutation('update', {
     input: z.object({
       id: z.string().cuid(),
