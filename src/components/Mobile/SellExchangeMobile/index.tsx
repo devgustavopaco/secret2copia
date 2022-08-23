@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useMemo } from 'react'
 import Select, { OnChangeValue } from 'react-select'
 import styles from './styles.module.scss'
 
@@ -10,9 +10,7 @@ interface exchangesType {
 interface SelectProps {
   defaultExchanges: exchangesType[]
   selectedExchanges: string[]
-  onSelectSellExchangeMobile: (
-    exchange: readonly exchangesType[] | undefined
-  ) => void
+  onSelectSellExchangeMobile: (exchange: readonly exchangesType[]) => void
 }
 
 const groupStyles = {
@@ -98,11 +96,13 @@ export function SellExchangeMobile({
     onSelectSellExchangeMobile(newValue)
   }
 
+  const exchanges = defaultExchanges.filter((exchange) => {
+    return selectedExchanges.includes(exchange.value)
+  })
+
   return (
     <Select
-      value={defaultExchanges.filter((exchange) =>
-        selectedExchanges.includes(exchange.value)
-      )}
+      value={exchanges}
       options={defaultExchanges}
       isMulti
       instanceId={useId()}

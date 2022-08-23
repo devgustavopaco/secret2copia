@@ -124,22 +124,12 @@ const Monitoring: NextPage = () => {
 
   // Mobile
   const onSelectBuyExchangeMobile = useCallback(
-    (completeExchanges: readonly exchangesType[] | undefined) => {
-      if (completeExchanges !== undefined) {
-        let exchangeValue = completeExchanges.map((x) => x.value)
-        exchangeValue.forEach((value) => {
-          setBuyExchanges((exchanges) => {
-            const newExchanges = [...exchanges]
-            const i = newExchanges.indexOf(value)
-            if (i === -1) {
-              newExchanges.push(value)
-            } else {
-              newExchanges.splice(i, 1)
-            }
-
-            return newExchanges
-          })
-        })
+    (selectedExchanges: readonly exchangesType[]) => {
+      if (selectedExchanges !== undefined) {
+        const selectedExchangesNames = selectedExchanges.map(
+          (exchange) => exchange.value
+        )
+        setBuyExchanges(selectedExchangesNames)
       }
     },
     []
@@ -161,22 +151,12 @@ const Monitoring: NextPage = () => {
 
   // Mobile
   const onSelectSellExchangeMobile = useCallback(
-    (completeExchanges: readonly exchangesType[] | undefined) => {
-      if (completeExchanges !== undefined) {
-        let exchangeValue = completeExchanges.map((x) => x.value)
-        exchangeValue.forEach((value) => {
-          setSellExchanges((exchanges) => {
-            const newExchanges = [...exchanges]
-            const i = newExchanges.indexOf(value)
-            if (i === -1) {
-              newExchanges.push(value)
-            } else {
-              newExchanges.splice(i, 1)
-            }
-
-            return newExchanges
-          })
-        })
+    (selectedExchanges: readonly exchangesType[]) => {
+      if (selectedExchanges !== undefined) {
+        const selectedExchangesNames = selectedExchanges.map(
+          (exchange) => exchange.value
+        )
+        setSellExchanges(selectedExchangesNames)
       }
     },
     []
