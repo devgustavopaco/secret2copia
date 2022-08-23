@@ -10,9 +10,7 @@ interface exchangesType {
 interface SelectProps {
   defaultExchanges: exchangesType[]
   selectedExchanges: string[]
-  onSelectBuyExchangeMobile: (
-    exchange: readonly exchangesType[] | undefined
-  ) => void
+  onSelectBuyExchangeMobile: (exchange: readonly exchangesType[]) => void
 }
 
 const groupStyles = {
@@ -98,11 +96,13 @@ export function BuyExchangeMobile({
     onSelectBuyExchangeMobile(newValue)
   }
 
+  const exchanges = defaultExchanges.filter((exchange) => {
+    return selectedExchanges.includes(exchange.value)
+  })
+
   return (
     <Select
-      value={defaultExchanges.filter((exchange) =>
-        selectedExchanges.includes(exchange.value)
-      )}
+      value={exchanges}
       options={defaultExchanges}
       isMulti
       instanceId={useId()}
