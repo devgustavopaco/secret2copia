@@ -47,12 +47,13 @@ const AdminTaxPage: NextPage = () => {
     refetch,
   } = trpc.useQuery(['exchange.getExchanges'])
 
-  const deleteMutation = trpc.useMutation('tax.delete', {
+  const deleteMutation = trpc.useMutation('exchange.delete', {
     onSuccess() {
+      notify('Exchange deletada com sucesso!', true)
       refetch()
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 
@@ -76,6 +77,18 @@ const AdminTaxPage: NextPage = () => {
 
   const handleClose = () => {
     setModalOpen(false)
+  }
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids)
+  }
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
+    })
   }
 
   return (
@@ -102,6 +115,15 @@ const AdminTaxPage: NextPage = () => {
               <button
                 type="button"
                 className={styles.addCryptoButton}
+                onClick={handleDeletion}
+                datatype="remove"
+              >
+                Remover
+                <Trash size={24} />
+              </button>
+              <button
+                type="button"
+                className={styles.addCryptoButton}
                 onClick={() => {
                   setModalOpen(true)
                 }}
@@ -112,7 +134,11 @@ const AdminTaxPage: NextPage = () => {
             </div>
           </div>
           <div className={styles.container}>
-            <DataGridExchanges data={exchanges || []} isLoading={isLoading} />
+            <DataGridExchanges
+              data={exchanges || []}
+              isLoading={isLoading}
+              onSelect={handleSelection}
+            />
           </div>
         </main>
       </div>

@@ -172,6 +172,32 @@
   }
 }
 
+.cleanImageBlock{
+  display: flex;
+  justify-content: center;
+}
+
+.cleanImage{  
+  padding: 10px;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
+
+  border: 1px solid var(--white);
+
+  &:hover,
+  &:focus {
+    color: var(--purple-200);
+    border-color: var(--purple-200);
+    filter: brightness(0.8);
+  }
+
+  &:active {
+    filter: brightness(0.7);
+  }
+}
+
 @keyframes fadein {
   from {
     opacity: 0;
