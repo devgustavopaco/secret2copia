@@ -87,18 +87,23 @@ const Monitoring: NextPage = () => {
         }
         return true
       },
+      keepPreviousData: true,
+      onSuccess(data) {
+        if (data?.length === 0 && !isFetching) {
+          refetch()
+        }
+      },
+      onError(error) {
+        if (!isFetching) {
+          refetch()
+        }
+      },
     }
   )
 
   const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'], {
     refetchInterval: 19 * 1000,
   })
-
-  useEffect(() => {
-    if (data?.length === 0) {
-      refetch()
-    }
-  }, [data, refetch])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -233,7 +238,7 @@ const Monitoring: NextPage = () => {
               {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 
-            {isLoading ? (
+            {isFetching ? (
               <div className={styles.loading}>
                 <PacmanLoader color="#957dff" size="4rem" />
               </div>
