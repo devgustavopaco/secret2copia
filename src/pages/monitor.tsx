@@ -90,7 +90,10 @@ const Monitoring: NextPage = () => {
     }
   )
 
-  const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'])
+  const { data: dollarPrice } = trpc.useQuery(['orderBook.getDollar'], {
+    refetchInterval: 19 * 1000,
+  })
+
   useEffect(() => {
     if (data?.length === 0) {
       refetch()

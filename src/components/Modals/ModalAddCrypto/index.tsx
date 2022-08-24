@@ -63,6 +63,12 @@ export function ModalAddCrypto({
     setOpenModal(false)
   }
 
+  const handleCleanImage = () => {
+    if (previewImageUrl) {
+      setPreviewImageUrl('')
+    }
+  }
+
   return (
     <div className={styles.modalBackground}>
       <form
@@ -104,12 +110,27 @@ export function ModalAddCrypto({
             />
           </div>
           {previewImageUrl != '' ? (
-            <div className={styles.inputImage}>
-              <img src={previewImageUrl} alt={name} />
-            </div>
+            <>
+              <div className={styles.inputImage}>
+                <img src={previewImageUrl} alt={name} />
+              </div>
+              <div className={styles.cleanImageBlock}>
+                <button
+                  className={styles.cleanImage}
+                  onClick={handleCleanImage}
+                >
+                  Limpar imagem
+                </button>
+              </div>
+            </>
           ) : (
             <ImageDropzone onDrop={handleImageDrop} />
           )}
+          {/* <div className={styles.cleanImageBlock}>
+            <button className={styles.cleanImage} onClick={handleCleanImage}>
+              Limpar imagem
+            </button>
+          </div> */}
           <div className={styles.inputBoxInline}>
             <span className={styles.details}>Fan Token?</span>
             <input
