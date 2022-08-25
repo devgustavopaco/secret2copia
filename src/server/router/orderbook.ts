@@ -297,18 +297,21 @@ export const orderbookRouter = createRouter()
       .optional(),
     async resolve({ ctx, input }) {
       if (!input) {
+        console.log('Sending empty orderbook')
         return []
       }
 
       const { buyExchanges, sellExchanges } = input
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
+        console.log('Sending empty orderbook: empty buy or sell exchanges')
         return []
       }
 
       const activeCoins = CoinsSingleton.getInstance().coins
 
       if (activeCoins.length === 0) {
+        console.log('Sending empty orderbook: no active coins')
         return []
       }
 
