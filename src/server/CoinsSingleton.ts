@@ -32,7 +32,7 @@ export class CoinsSingleton {
       where: {
         active: true,
       },
-      take: 40,
+      take: 35,
       include: {
         ExchangeCoinTax: {
           where: {
