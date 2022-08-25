@@ -238,7 +238,7 @@ const Monitoring: NextPage = () => {
               {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 
-            {isFetching ? (
+            {isLoading || data?.length === 0 ? (
               <div className={styles.loading}>
                 <PacmanLoader color="#957dff" size="4rem" />
               </div>
