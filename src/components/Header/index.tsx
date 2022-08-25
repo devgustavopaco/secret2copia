@@ -12,8 +12,10 @@ export function Header() {
   const [toggle, settoggle] = useState(true)
 
   const handleSignOut = () => {
-    signOut({})
-    router.push('/')
+    signOut({
+      callbackUrl: '/',
+    })
+    // router.push('/')
   }
 
   return (
