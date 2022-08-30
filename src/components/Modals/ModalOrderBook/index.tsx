@@ -23,21 +23,25 @@ export function ModalOrderBook({
   setOpenModal,
 }: ModalOrderBookProps) {
   const [toggleState, setToggleState] = useState<'compra' | 'venda'>('compra')
+  const [isPurchase, isPurchaseState] = useState<boolean>(false)
 
   const toggleTab = (tab: 'compra' | 'venda') => {
     setToggleState(tab)
+    if (toggleState == 'compra') {
+      isPurchaseState(true)
+    } else {
+      isPurchaseState(false)
+    }
   }
 
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
-        {/* Começar aqui */}
-
         <div className={styles.container}>
           <div className={styles.blocTabs}>
             <button
               className={`${styles.tabs} ${
-                toggleState === 'compra' ? 'active' : ''
+                toggleState === 'compra' ? 'activeCompra' : ''
               }`}
               onClick={() => toggleTab('compra')}
             >
@@ -45,7 +49,7 @@ export function ModalOrderBook({
             </button>
             <button
               className={`${styles.tabs} ${
-                toggleState === 'venda' ? 'active' : ''
+                toggleState === 'venda' ? 'activeVenda' : ''
               }`}
               onClick={() => toggleTab('venda')}
             >
@@ -66,11 +70,10 @@ export function ModalOrderBook({
                   ? orderbookAsk.isUSD
                   : orderbookBid.isUSD
               }
+              isPurchase={isPurchase}
             />
           </div>
         </div>
-
-        {/* Terminar Aqui */}
 
         <footer className={styles.footer}>
           <button

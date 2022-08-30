@@ -61,12 +61,35 @@
   }
 }
 
-.grid {
+.gridCompra {
   border: none;
   color: var(--white);
   background-color: var(--gray-800);
+  font-size: 17px !important;
   p {
     color: var(--white);
+  }
+
+  :global(.MuiDataGrid-columnHeaderTitle) {
+    color: rgb(255, 58, 58);
+    font-weight: bold;
+  }
+
+  overflow-x: hidden !important;
+}
+
+.gridVenda {
+  border: none;
+  color: var(--white);
+  background-color: var(--gray-800);
+  font-size: 17px !important;
+  p {
+    color: var(--white);
+  }
+
+  :global(.MuiDataGrid-columnHeaderTitle) {
+    color: rgb(58, 255, 78);
+    font-weight: bold;
   }
 
   overflow-x: hidden !important;
