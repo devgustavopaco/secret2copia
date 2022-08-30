@@ -15,6 +15,7 @@ interface DataGridOrderbookProps {
   isLoading?: boolean
   dollarPrice: number
   isUSD: boolean
+  isPurchase: boolean
 }
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -32,6 +33,7 @@ export function DataGridOrderbook({
   isLoading,
   dollarPrice,
   isUSD,
+  isPurchase,
 }: DataGridOrderbookProps) {
   const columns: GridColumns = [
     {
@@ -95,18 +97,33 @@ export function DataGridOrderbook({
   return (
     <div className={styles.tableContainer}>
       <Box className={styles.box} sx={{ height: 500 }}>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10]}
-          className={styles.grid}
-          autoPageSize
-          loading={isLoading}
-          getRowId={createRowId}
-          hideFooterPagination
-          hideFooter
-        />
+        {isPurchase ? (
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            className={styles.gridCompra}
+            autoPageSize
+            loading={isLoading}
+            getRowId={createRowId}
+            hideFooterPagination
+            hideFooter
+          />
+        ) : (
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            className={styles.gridVenda}
+            autoPageSize
+            loading={isLoading}
+            getRowId={createRowId}
+            hideFooterPagination
+            hideFooter
+          />
+        )}
       </Box>
     </div>
   )
