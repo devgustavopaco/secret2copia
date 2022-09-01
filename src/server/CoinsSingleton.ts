@@ -27,6 +27,9 @@ export class CoinsSingleton {
     return CoinsSingleton.instance
   }
 
+
+
+
   public async updateCoins(): Promise<void> {
     this.coins = await prisma.coin.findMany({
       where: {
