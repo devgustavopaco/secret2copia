@@ -5,9 +5,12 @@ import styles from '../../styles/Videos.module.scss'
 import { VideoComponent } from '../../components/VideosPage/Video'
 import { ClassScheduleComponent } from '../../components/VideosPage/ClassSchedule'
 import { trpc } from '../../utils/trpc'
+import { Videos } from '@prisma/client'
 
 const Videos: NextPage = () => {
   const { data: videos } = trpc.useQuery(['videos.getVideos'])
+
+  const firstClass = videos ? videos[0] : ({} as Videos)
 
   return (
     <>
@@ -17,7 +20,7 @@ const Videos: NextPage = () => {
       </Head>
       <Header />
       <section className={styles.container}>
-        <VideoComponent aula={videos || []} />
+        <VideoComponent aula={firstClass} />
         <ClassScheduleComponent data={videos || []} />
       </section>
     </>

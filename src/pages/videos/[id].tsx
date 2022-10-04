@@ -1,3 +1,4 @@
+import { Videos } from '@prisma/client'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -12,23 +13,11 @@ const Videos: NextPage = () => {
   const router = useRouter()
   //pegando o id do youtube
 
-  let { id } = router.query
+  let { id } = router.query as { id: string }
 
-  console.log('ROUTER', id)
+  const { data: singleVideo } = trpc.useQuery(['videos.getVideoById', { id }])
 
-  if (id === undefined) id = ''
-
-  const {
-    data: singleVideo,
-    refetch,
-    isFetching,
-  } = trpc.useQuery(['videos.getVideoById', { id: id.toString() }])
-
-  const aula = singleVideo?.filter((aula) => aula.id === id)
-
-  const { data: aulas } = trpc.useQuery(['videos.getVideos'], {
-    refetchInterval: 10 * 1000,
-  })
+  const { data: aulas } = trpc.useQuery(['videos.getVideos'])
 
   return (
     <>
@@ -38,7 +27,7 @@ const Videos: NextPage = () => {
       </Head>
       <Header />
       <section className={styles.container}>
-        <VideoComponent aula={aula || []} />
+        <VideoComponent aula={singleVideo ? singleVideo : undefined} />
         <ClassScheduleComponent data={aulas || []} />
       </section>
     </>

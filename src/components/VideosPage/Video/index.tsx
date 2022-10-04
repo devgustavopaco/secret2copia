@@ -9,6 +9,7 @@ import {
 import { Videos } from '@prisma/client'
 import styles from './styles.module.scss'
 import { PlayerProps } from '../Player/Player'
+import { PacmanLoader } from 'react-spinners'
 
 const PlayerComponent = dynamic<PlayerProps>(
   () => import('../Player/Player').then((module) => module.PlayerComponent),
@@ -18,19 +19,23 @@ const PlayerComponent = dynamic<PlayerProps>(
 )
 
 interface videoProps {
-  aula: Partial<Videos>[]
+  aula?: Videos
 }
 
 export function VideoComponent({ aula }: videoProps) {
-  const firtClass = aula[0]
-
   return (
     <div className={styles.videoSection}>
-      <PlayerComponent aula={aula} />
+      <div className={styles.videoContainer}>
+        {aula ? (
+          <PlayerComponent aula={aula} />
+        ) : (
+          <PacmanLoader color="#957dff" />
+        )}
+      </div>
       <div className={styles.classDescription}>
         <div className={styles.classText}>
-          <h2>Aula 01 - {firtClass ? firtClass.title : ''}</h2>
-          <p>{firtClass ? firtClass.description : ''}</p>
+          <h2>Aula 01 - {aula ? aula.title : ''}</h2>
+          <p>{aula ? aula.description : ''}</p>
         </div>
         <div className={styles.btnList}>
           <button className={styles.discordBtn}>

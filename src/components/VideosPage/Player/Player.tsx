@@ -10,35 +10,19 @@ import '@vime/core/themes/light.css'
 import { useRouter } from 'next/router'
 
 export interface PlayerProps {
-  aula: Partial<Videos>[]
+  aula: Videos
 }
 
 export const PlayerComponent = ({ aula }: PlayerProps) => {
-  let idYoutube = aula[0]?.idYoutube
+  let videoId = aula.idYoutube
 
-  if (idYoutube === undefined) {
-    console.log('de cima')
-    return (
-      <div className={styles.videoStyle}>
-        <Player theme="dark" autoplay={true}>
-          <LoadingScreen>
-            {/* Pass in content here such as a logo (optional). */}
-          </LoadingScreen>
+  return (
+    <div className={styles.videoStyle}>
+      <Player theme="dark">
+        <Vimeo videoId={videoId} />
 
-          <DefaultUi />
-        </Player>
-      </div>
-    )
-  } else {
-    console.log('de baixo')
-    return (
-      <div className={styles.videoStyle}>
-        <Player theme="dark">
-          <Vimeo videoId={idYoutube} />
-
-          <DefaultUi />
-        </Player>
-      </div>
-    )
-  }
+        <DefaultUi />
+      </Player>
+    </div>
+  )
 }

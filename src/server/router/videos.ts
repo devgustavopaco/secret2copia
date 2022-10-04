@@ -15,7 +15,7 @@ export const videosRouter = createRouter()
             id: z.string().cuid(),
         }),
         async resolve({ ctx, input }) {
-            const video = ctx.prisma.videos.findMany({
+            const video = ctx.prisma.videos.findUnique({
                 where: {
                     id: input.id,
                 },
