@@ -8,8 +8,9 @@ import {
 } from 'phosphor-react'
 import { Videos } from '@prisma/client'
 import styles from './styles.module.scss'
+import { PlayerProps } from '../Player/Player'
 
-const PlayerComponent = dynamic(
+const PlayerComponent = dynamic<PlayerProps>(
   () => import('../Player/Player').then((module) => module.PlayerComponent),
   {
     ssr: false,

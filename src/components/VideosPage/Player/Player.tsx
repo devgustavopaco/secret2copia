@@ -9,11 +9,11 @@ import '@vime/core/themes/light.css'
 
 import { useRouter } from 'next/router'
 
-interface playerProps {
+export interface PlayerProps {
   aula: Partial<Videos>[]
 }
 
-export const PlayerComponent = ({ aula }: playerProps) => {
+export const PlayerComponent = ({ aula }: PlayerProps) => {
   let idYoutube = aula[0]?.idYoutube
 
   if (idYoutube === undefined) {
