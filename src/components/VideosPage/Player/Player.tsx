@@ -15,11 +15,10 @@ export interface PlayerProps {
 
 export const PlayerComponent = ({ aula }: PlayerProps) => {
   let videoId = aula.idYoutube
-  console.log('videoId', videoId)
 
   return (
     <div className={styles.videoStyle}>
-      <Player theme="dark">
+      <Player theme="dark" autoplay>
         <Vimeo videoId={videoId} />
 
         <DefaultUi />

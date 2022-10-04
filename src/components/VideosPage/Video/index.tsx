@@ -23,16 +23,10 @@ interface videoProps {
 }
 
 export function VideoComponent({ aula }: videoProps) {
-  console.log(aula)
-
   return (
     <div className={styles.videoSection}>
       <div className={styles.videoContainer}>
-        {aula ? (
-          <PlayerComponent aula={aula} />
-        ) : (
-          <PacmanLoader color="#957dff" />
-        )}
+        {aula && <PlayerComponent aula={aula} />}
       </div>
       <div className={styles.classDescription}>
         <div className={styles.classText}>
