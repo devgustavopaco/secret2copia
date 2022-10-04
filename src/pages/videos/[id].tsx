@@ -9,7 +9,7 @@ import { VideoComponent } from '../../components/VideosPage/Video'
 import styles from '../../styles/SingleVideo.module.scss'
 import { trpc } from '../../utils/trpc'
 
-const Videos: NextPage = () => {
+const VideoPage: NextPage = () => {
   const router = useRouter()
   //pegando o id do youtube
 
@@ -34,4 +34,4 @@ const Videos: NextPage = () => {
   )
 }
 
-export default Videos
+export default VideoPage
