@@ -23,6 +23,8 @@ interface videoProps {
 }
 
 export function VideoComponent({ aula }: videoProps) {
+  console.log(aula)
+
   return (
     <div className={styles.videoSection}>
       <div className={styles.videoContainer}>
