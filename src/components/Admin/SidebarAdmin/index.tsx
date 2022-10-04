@@ -7,10 +7,9 @@ import {
   Monitor,
   Percent,
   Users,
+  YoutubeLogo,
 } from 'phosphor-react'
 import styles from './styles.module.scss'
-
-interface SidebarAdminProps {}
 
 export function SidebarAdmin() {
   const router = useRouter()
@@ -65,6 +64,12 @@ export function SidebarAdmin() {
             <a className={router.pathname == '/admin/tax' ? 'active' : ''}>
               <Percent className={styles.sidebarIcon} weight="bold" />
               <span className={styles.sidebarText}>Taxas</span>
+            </a>
+          </Link>
+          <Link href="/admin/videos/">
+            <a className={router.pathname == '/admin/videos' ? 'active' : ''}>
+              <YoutubeLogo className={styles.sidebarIcon} weight="bold" />
+              <span className={styles.sidebarText}>Videos</span>
             </a>
           </Link>
         </nav>

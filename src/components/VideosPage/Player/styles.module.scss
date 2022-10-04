@@ -1,0 +1,6 @@
+.videoStyle {
+  margin-bottom: 4rem;
+  :global(vm-player) {
+    --vm-player-theme: #7158e2;
+  }
+}

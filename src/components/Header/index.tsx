@@ -42,15 +42,11 @@ export function Header() {
               </Link>
             </li>
             <li>
-              <a className={router.pathname === '/videos' ? 'active' : ''}>
-                Vídeos
-              </a>
-            </li>
-            <li>
-              <a href="#">Sobre Nós</a>
-            </li>
-            <li>
-              <a href="#">Contato</a>
+              <Link href="/videos">
+                <a className={router.pathname === '/videos' ? 'active' : ''}>
+                  Vídeos
+                </a>
+              </Link>
             </li>
             {auth?.role === 'admin' && (
               <li>

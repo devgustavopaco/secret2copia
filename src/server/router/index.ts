@@ -9,6 +9,7 @@ import { coinRouter } from './coin'
 import { exchangeRouter } from './exchange'
 import { taxRouter } from './tax'
 import { orderbookRouter } from './orderbook'
+import { videosRouter } from './videos'
 
 export const appRouter = createRouter()
   .transformer(superjson)
@@ -19,6 +20,7 @@ export const appRouter = createRouter()
   .merge('coin.', coinRouter)
   .merge('exchange.', exchangeRouter)
   .merge('tax.', taxRouter)
+  .merge('videos.', videosRouter)
 
 // export type definition of API
 export type AppRouter = typeof appRouter

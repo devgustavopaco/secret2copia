@@ -27,6 +27,7 @@ model Account {
   id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videosId          String?
 
   @@unique([provider, providerAccountId])
 }
@@ -37,6 +38,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videosId     String?
 }
 
 model User {
@@ -54,6 +56,16 @@ model User {
   Account       Account[]
   role          Role      @relation(fields: [roleId], references: [id])
   roleId        String
+}
+
+model Videos {
+  id                 String   @id @default(cuid())
+  title              String
+  description        String   @db.VarChar(1000)
+  additionalMaterial String?
+  idYoutube          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model Role {

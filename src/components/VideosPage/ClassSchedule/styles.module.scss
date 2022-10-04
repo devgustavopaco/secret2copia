@@ -1,0 +1,110 @@
+.cronogramaSection {
+  justify-content: center;
+  margin-left: 0.05rem;
+  border-left: 1px solid var(--gray-500);
+  min-width: 25rem;
+  padding: 1.5rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: normal;
+  }
+}
+
+.divisor {
+  &::before {
+    content: '';
+    display: block;
+    width: 100%;
+    background-color: var(--gray-500);
+    height: 1px;
+    border-radius: 100vw;
+    margin-top: 1.3rem;
+  }
+}
+
+.containerTriangle {
+  display: flex;
+  align-items: center;
+  margin-left: -10px;
+
+  .triangle {
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid #00875f;
+  }
+}
+
+.classContainer {
+  margin-block: 2rem;
+}
+
+.date {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #8d8d99;
+}
+
+.classRoomSection {
+  display: flex;
+  flex-direction: column;
+  padding: 0.8rem;
+  border: 1px solid var(--gray-500);
+  border-radius: 5px;
+  margin-top: 0.6rem;
+
+  .classRoom {
+    margin-top: 0.5rem;
+  }
+
+  .content {
+    display: flex;
+    gap: 0.7rem;
+    font-size: 14px;
+    span,
+    svg {
+      color: var(--purple-200);
+    }
+  }
+
+  .classRoomContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    h6 {
+      padding: 3px;
+      border: 1px solid #00875f;
+      border-radius: 3px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+  }
+
+  .className {
+    font-size: 15px;
+    margin-top: 0.8rem;
+  }
+
+  // CASO ESTEJA ATIVO
+
+  &:global(.active),
+  &:hover {
+    cursor: pointer;
+    background: #00875f;
+    border: 1px solid #00875f;
+
+    h6 {
+      border: 1px solid var(--white);
+    }
+
+    .content {
+      color: var(--white);
+      span,
+      svg {
+        color: var(--white) !important;
+      }
+    }
+  }
+}

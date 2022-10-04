@@ -9,6 +9,11 @@ import { SessionProvider } from 'next-auth/react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import '../styles/globals.scss'
+// Default theme. ~960B
+import '@vime/core/themes/default.css'
+
+// Optional light theme (extends default). ~400B
+import '@vime/core/themes/light.css'
 
 const MyApp: AppType = ({
   Component,

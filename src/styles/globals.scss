@@ -9,7 +9,7 @@
   --fs-700: 2.5rem;
   --fs-800: 3rem;
 
-  --gray-900: #292929;
+  --gray-900: #242424;
   --gray-800: #333333;
   --gray-700: #3d3d3d;
   --gray-600: #444444;
@@ -167,10 +167,9 @@ button {
   }
 
   @media only screen and (min-width: 1280px) {
-    --max-width: 1536px;
+    --max-width: 1440px;
   }
   @media only screen and (min-width: 1536px) {
     --max-width: 1920px;
   }
-  
 }

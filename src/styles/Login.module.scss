@@ -11,8 +11,6 @@
   align-items: center;
   width: 100%;
   height: 100%;
-
-  
 }
 
 .formBox {
@@ -71,8 +69,6 @@
 
     width: 100%;
   }
-
-  
 }
 
 .inputBox {
@@ -138,9 +134,8 @@
   }
 }
 
-
 @media screen and (max-width: 968px) {
-  .formBox{
+  .formBox {
     width: 90vw;
   }
 }
