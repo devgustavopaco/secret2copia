@@ -1,9 +1,16 @@
-import styles from './styles.module.scss'
 import { useState } from 'react'
-import { DataGridOrderbook } from '../../GridComponents/DataGridOrderbook'
 import type { Orderbook } from '../../../server/router/orderbook'
+import { DataGridOrderbook } from '../../GridComponents/DataGridOrderbook'
+import styles from './styles.module.scss'
 
 interface ModalOrderBookProps {
+  coin: string | undefined
+
+  coinImage: string | undefined
+  buyWhere: string | undefined
+  buyEchangeName: string
+  sellEchangeName: string
+  sellWhere: string | undefined
   dollarPrice: number
   orderbookBid: {
     isUSD: boolean
@@ -20,6 +27,12 @@ export function ModalOrderBook({
   dollarPrice,
   orderbookBid,
   orderbookAsk,
+  buyWhere,
+  coinImage,
+  sellWhere,
+  buyEchangeName,
+  sellEchangeName,
+  coin,
   setOpenModal,
 }: ModalOrderBookProps) {
   const [toggleState, setToggleState] = useState<'compra' | 'venda'>('compra')
@@ -55,6 +68,13 @@ export function ModalOrderBook({
             >
               Venda
             </button>
+          </div>
+          <div className={styles.buyAndSell}>
+            <img src={`${coinImage}`} />
+            <p>{coin}</p>
+            <span>|</span>
+            <p>{toggleState === 'compra' ? sellEchangeName : buyEchangeName}</p>
+            <img src={`${toggleState === 'compra' ? sellWhere : buyWhere}`} />
           </div>
 
           <div className={styles.contentTabs}>

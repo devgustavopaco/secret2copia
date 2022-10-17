@@ -1,8 +1,21 @@
 .body {
   background-image: url('/images/loginImg.png');
   width: 100%;
-  height: 100vh;
+  // height: 100vh;
+  padding-block: 10rem;
   display: flex;
+  overflow: hidden;
+}
+
+.header {
+  background: #000;
+  text-align: center;
+  padding-block: 0.5rem;
+  img {
+    width: 200px;
+    object-fit: cover;
+    margin-left: -17px;
+  }
 }
 
 .contentBox {
@@ -29,6 +42,13 @@
     color: var(--white);
     text-align: center;
     font-weight: 500;
+  }
+
+  p {
+    color: var(--white);
+    text-align: center;
+    font-weight: 500;
+    margin-top: 2rem;
   }
 
   h1 {

@@ -1,15 +1,15 @@
 import type { GetServerSideProps, NextPage } from 'next'
+import { unstable_getServerSession } from 'next-auth'
 import Head from 'next/head'
-import { OperationCard } from '../components/OperationCard'
+import { useCallback, useEffect, useState } from 'react'
 import { Header } from '../components/Header'
+import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
+import { OperationCard } from '../components/OperationCard'
 import { Sidebar } from '../components/Sidebar'
+import { ArbitrageOpportunity } from '../server/router/orderbook'
 import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
-import { useCallback, useEffect, useState } from 'react'
-import { unstable_getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
-import { ModalOrderBook } from '../components/Modals/ModalOrderBook'
-import { ArbitrageOpportunity } from '../server/router/orderbook'
 
 import { BeatLoader, PacmanLoader } from 'react-spinners'
 import { BuyExchangeMobile } from '../components/Mobile/BuyExchangeMobile'
@@ -218,6 +218,12 @@ const Monitoring: NextPage = () => {
           <ModalOrderBook
             orderbookBid={selectedOperation.highestBid}
             orderbookAsk={selectedOperation.lowestAsk}
+            buyWhere={selectedOperation.lowestAsk.image_url}
+            sellWhere={selectedOperation.highestBid.image_url}
+            buyEchangeName={selectedOperation.lowestAsk.exchange}
+            sellEchangeName={selectedOperation.highestBid.exchange}
+            coin={selectedOperation.coin}
+            coinImage={selectedOperation.coinImage}
             setOpenModal={setModalOpenOrderBook}
             dollarPrice={dollarPrice ?? 0}
           />

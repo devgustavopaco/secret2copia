@@ -109,8 +109,8 @@ export function OperationCard({
         </p>
         <p>
           <span>Taxas</span>
-          {percentageFormatter.format(coin.fee)} + R$
-          {numberFormatter.format(coin.tax * dollarPrice)}
+          {coin.fee.toFixed(2)} + R$
+          {(coin.tax * dollarPrice).toFixed(2)}
         </p>
       </div>
 

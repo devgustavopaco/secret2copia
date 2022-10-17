@@ -4,6 +4,8 @@
   border-left: 1px solid var(--gray-500);
   min-width: 25rem;
   padding: 1.5rem;
+  // overflow-y: hidden;
+  // max-height: 350px;
 
   h2 {
     font-size: 1.5rem;
@@ -23,6 +25,30 @@
   }
 }
 
+.content {
+  overflow-y: auto;
+  max-height: 800px;
+  &::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--gray-500);
+    border-radius: 100vw;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--white);
+    border-radius: 100vw;
+
+    transition: filter 0.2s ease;
+
+    &:hover {
+      filter: brightness(0.8);
+    }
+  }
+}
+
 .containerTriangle {
   display: flex;
   align-items: center;
@@ -39,6 +65,7 @@
 
 .classContainer {
   margin-block: 2rem;
+  margin-right: 1.5rem;
 }
 
 .date {

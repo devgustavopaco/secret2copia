@@ -4,14 +4,6 @@
   position: relative;
 }
 
-.videoContainer {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: black;
-  display: grid;
-  place-items: center;
-}
-
 .classDescription {
   margin-top: 2rem;
   display: flex;
@@ -161,8 +153,7 @@
 }
 
 .footer {
-  position: absolute;
-  bottom: 0;
+  margin-top: 10rem;
   text-align: center;
   width: 100%;
   span {

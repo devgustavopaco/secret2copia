@@ -1,15 +1,14 @@
+import { Videos } from '@prisma/client'
 import dynamic from 'next/dynamic'
 import {
   CaretRight,
   DiscordLogo,
   FileArrowDown,
-  Lightning,
   Image,
+  Lightning,
 } from 'phosphor-react'
-import { Videos } from '@prisma/client'
-import styles from './styles.module.scss'
 import { PlayerProps } from '../Player/Player'
-import { PacmanLoader } from 'react-spinners'
+import styles from './styles.module.scss'
 
 const PlayerComponent = dynamic<PlayerProps>(
   () => import('../Player/Player').then((module) => module.PlayerComponent),
@@ -25,12 +24,10 @@ interface videoProps {
 export function VideoComponent({ aula }: videoProps) {
   return (
     <div className={styles.videoSection}>
-      <div className={styles.videoContainer}>
-        {aula && <PlayerComponent aula={aula} />}
-      </div>
+      {aula && <PlayerComponent aula={aula} />}
       <div className={styles.classDescription}>
         <div className={styles.classText}>
-          <h2>Aula 01 - {aula ? aula.title : ''}</h2>
+          <h2>{aula ? aula.title : ''}</h2>
           <p>{aula ? aula.description : ''}</p>
         </div>
         <div className={styles.btnList}>

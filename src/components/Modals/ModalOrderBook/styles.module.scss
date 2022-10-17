@@ -12,6 +12,21 @@
   align-items: center;
 }
 
+.buyAndSell {
+  margin-block: 1rem;
+  padding-inline: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+
+  img {
+    width: 30px;
+    object-fit: cover;
+    border-radius: 50px;
+  }
+}
+
 .modalContainer {
   width: 700px;
   height: auto;

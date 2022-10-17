@@ -38,44 +38,50 @@ const Login: NextPage = () => {
   }
 
   return (
-    <section className={styles.body}>
-      <div className={styles.contentBox}>
-        <div className={styles.formBox}>
-          <h1>Login</h1>
-          <form action="" onSubmit={handleSubmit}>
-            <div className={styles.inputBox}>
-              <span>Email</span>
-              <input type="text" value={email} onChange={handleEmailChange} />
-            </div>
-            <div className={styles.inputBox}>
-              <span>Senha</span>
-              <input
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-              />
-            </div>
+    <>
+      <header className={styles.header}>
+        <img src="images/NG1.png" />
+      </header>
+      <section className={styles.body}>
+        <div className={styles.contentBox}>
+          <div className={styles.formBox}>
+            <h1>Login</h1>
+            <form action="" onSubmit={handleSubmit}>
+              <div className={styles.inputBox}>
+                <span>Email</span>
+                <input type="text" value={email} onChange={handleEmailChange} />
+              </div>
+              <div className={styles.inputBox}>
+                <span>Senha</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                />
+              </div>
 
-            <div className={styles.inputBox}>
-              <button type="submit">Entrar</button>
+              <div className={styles.inputBox}>
+                <button type="submit">Entrar</button>
+              </div>
+            </form>
+
+            <div className={styles.socialMedia}>
+              <h3>Nos acompanhe nas redes sociais!</h3>
+
+              <Link
+                href="https://www.instagram.com/gustavonigre/"
+                target="_blank"
+              >
+                <a target="_blank">
+                  <InstagramLogo className={styles.icon} />
+                </a>
+              </Link>
+              <p>N E X T G A I N ®️ 2022</p>
             </div>
-          </form>
-
-          <div className={styles.socialMedia}>
-            <h3>Nos acompanhe nas redes sociais!</h3>
-
-            <Link
-              href="https://www.instagram.com/gustavonigre/"
-              target="_blank"
-            >
-              <a target="_blank">
-                <InstagramLogo className={styles.icon} />
-              </a>
-            </Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }
 
