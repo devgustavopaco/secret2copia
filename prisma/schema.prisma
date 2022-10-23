@@ -87,6 +87,7 @@ model Exchange {
   tag             String            @unique
   name            String
   fee             Float
+  active          Boolean           @default(true)
   image_url       String?
   convert         Boolean
   ExchangeCoinTax ExchangeCoinTax[]
