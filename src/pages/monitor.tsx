@@ -220,8 +220,8 @@ const Monitoring: NextPage = () => {
             orderbookAsk={selectedOperation.lowestAsk}
             buyWhere={selectedOperation.lowestAsk.image_url}
             sellWhere={selectedOperation.highestBid.image_url}
-            buyEchangeName={selectedOperation.lowestAsk.exchange}
-            sellEchangeName={selectedOperation.highestBid.exchange}
+            buyEchangeName={selectedOperation.highestBid.exchange}
+            sellEchangeName={selectedOperation.lowestAsk.exchange}
             coin={selectedOperation.coin}
             coinImage={selectedOperation.coinImage}
             setOpenModal={setModalOpenOrderBook}
