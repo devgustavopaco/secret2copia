@@ -6,6 +6,7 @@ import styles from './styles.module.scss'
 interface ModalOrderBookProps {
   coin: string | undefined
 
+  symbol: string | undefined
   coinImage: string | undefined
   buyWhere: string | undefined
   buyEchangeName: string
@@ -33,6 +34,7 @@ export function ModalOrderBook({
   buyEchangeName,
   sellEchangeName,
   coin,
+  symbol,
   setOpenModal,
 }: ModalOrderBookProps) {
   const [toggleState, setToggleState] = useState<'compra' | 'venda'>('compra')
@@ -70,7 +72,12 @@ export function ModalOrderBook({
             </button>
           </div>
           <div className={styles.buyAndSell}>
-            <img src={`${coinImage}`} />
+            <img
+              src={`${
+                coinImage ??
+                `https://assets.coincap.io/assets/icons/${symbol?.toLowerCase()}@2x.png`
+              }`}
+            />
             <p>{coin}</p>
             <span>|</span>
             <p>{toggleState === 'compra' ? sellEchangeName : buyEchangeName}</p>

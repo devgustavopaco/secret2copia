@@ -214,20 +214,24 @@ const Monitoring: NextPage = () => {
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
           />
         </div>
-        {modalOpenOrderBook && (
-          <ModalOrderBook
-            orderbookBid={selectedOperation.highestBid}
-            orderbookAsk={selectedOperation.lowestAsk}
-            buyWhere={selectedOperation.highestBid.image_url}
-            sellWhere={selectedOperation.lowestAsk.image_url}
-            buyEchangeName={selectedOperation.highestBid.exchange}
-            sellEchangeName={selectedOperation.lowestAsk.exchange}
-            coin={selectedOperation.coin}
-            coinImage={selectedOperation.coinImage}
-            setOpenModal={setModalOpenOrderBook}
-            dollarPrice={dollarPrice ?? 0}
-          />
-        )}
+        <>
+          {console.log(selectedOperation)}
+          {modalOpenOrderBook && (
+            <ModalOrderBook
+              symbol={selectedOperation.ticker}
+              orderbookBid={selectedOperation.highestBid}
+              orderbookAsk={selectedOperation.lowestAsk}
+              buyWhere={selectedOperation.highestBid.image_url}
+              sellWhere={selectedOperation.lowestAsk.image_url}
+              buyEchangeName={selectedOperation.highestBid.exchange}
+              sellEchangeName={selectedOperation.lowestAsk.exchange}
+              coin={selectedOperation.coin}
+              coinImage={selectedOperation.coinImage}
+              setOpenModal={setModalOpenOrderBook}
+              dollarPrice={dollarPrice ?? 0}
+            />
+          )}
+        </>
 
         <div className={`${styles.content} container`}>
           <Sidebar
@@ -278,6 +282,7 @@ const Monitoring: NextPage = () => {
                         dollarPrice={dollarPrice}
                         onClick={() => {
                           setSelectedOperation(operation)
+                          console.log(sortedOperations)
                           setModalOpenOrderBook(true)
                         }}
                       />
