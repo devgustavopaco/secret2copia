@@ -16,37 +16,11 @@ import { BeatLoader, PacmanLoader } from 'react-spinners'
 import { BuyExchangeMobile } from '../components/Mobile/BuyExchangeMobile'
 import { SellExchangeMobile } from '../components/Mobile/SellExchangeMobile'
 
-interface exchangesType {
-  value: string
-  label: string
-}
-
-const defaultExchanges: exchangesType[] = [
-  { value: 'Binance', label: 'Binance' },
-  { value: 'Bitso', label: 'Bitso' },
-  { value: 'BrasilBitcoin', label: 'BrasilBitcoin' },
-  { value: 'BitcoinTrade', label: 'BitcoinTrade' },
-  { value: 'Coinbase', label: 'Coinbase' },
-  { value: 'Chiliz', label: 'Chiliz' },
-  { value: 'Coinext', label: 'Coinext' },
-  { value: 'Crypto.com', label: 'Crypto.com' },
-  { value: 'FTX', label: 'FTX' },
-  { value: 'Gemini', label: 'Gemini' },
-  { value: 'Huobi', label: 'Huobi' },
-  { value: 'Kraken', label: 'Kraken' },
-  { value: 'KuCoin', label: 'KuCoin' },
-  { value: 'NovaDAX', label: 'NovaDAX' },
-  { value: 'Mercado Bitcoin', label: 'Mercado Bitcoin' },
-  { value: 'HitBTC', label: 'HitBTC' },
-  { value: 'Bitfinex', label: 'Bitfinex' },
-  { value: 'HotBit', label: 'HotBit' },
-]
-
 const Monitoring: NextPage = () => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false)
 
   const { data: ActiveExchanges, isLoading: isLoadingExchanges } =
-    trpc.useQuery(['exchange.getActiveExchanges'])
+    trpc.useQuery(['exchange.getActiveExchanges'] /*, { ssr: true }*/)
 
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
