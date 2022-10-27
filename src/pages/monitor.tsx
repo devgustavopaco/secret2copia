@@ -25,10 +25,9 @@ const Monitoring: NextPage = () => {
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('buyExchanges')
-      const initialValue =
-        savedExchanges !== undefined
-          ? JSON.parse(savedExchanges ? savedExchanges : '')
-          : ActiveExchanges?.map(({ name }) => name)
+      const initialValue = savedExchanges
+        ? JSON.parse(savedExchanges ? savedExchanges : '')
+        : ActiveExchanges?.map(({ name }) => name)
       return initialValue
     }
 
