@@ -39,7 +39,7 @@ const Monitoring: NextPage = () => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('sellExchanges')
       const initialValue = savedExchanges
-        ? JSON.parse(savedExchanges)
+        ? JSON.parse(savedExchanges ? savedExchanges : '')
         : ActiveExchanges?.map(({ name }) => name)
       return initialValue
     }
