@@ -20,7 +20,7 @@ const Monitoring: NextPage = () => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false)
 
   const { data: ActiveExchanges, isLoading: isLoadingExchanges } =
-    trpc.useQuery(['exchange.getActiveExchanges'] /*, { ssr: true }*/)
+    trpc.useQuery(['exchange.getActiveExchanges'], { ssr: true })
 
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
@@ -180,7 +180,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Compra</span>
           <BuyExchangeMobile
             defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={buyExchanges}
+            selectedExchanges={buyExchanges || []}
             onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
           />
         </div>
@@ -188,7 +188,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Venda</span>
           <SellExchangeMobile
             defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={sellExchanges}
+            selectedExchanges={sellExchanges || []}
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
           />
         </div>
@@ -214,8 +214,8 @@ const Monitoring: NextPage = () => {
           <Sidebar
             dollarPrice={dollarPrice}
             defaultExchanges={ActiveExchanges || []}
-            buyExchanges={buyExchanges}
-            sellExchanges={sellExchanges}
+            buyExchanges={buyExchanges || []}
+            sellExchanges={sellExchanges || []}
             onSelectBuyExchange={onSelectBuyExchange}
             onSelectSellExchange={onSelectSellExchange}
           />
