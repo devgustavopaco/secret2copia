@@ -8,8 +8,10 @@ import {
 
 import styles from './styles.module.scss'
 
-import { trpc } from '../../../utils/trpc'
 import type { Exchange } from '@prisma/client'
+import { CheckCircle, XCircle } from 'phosphor-react'
+import { toast } from 'react-toastify'
+import { trpc } from '../../../utils/trpc'
 
 interface DataGridExchangesProps {
   data: Exchange[]
@@ -22,6 +24,7 @@ export function DataGridExchanges({
   isLoading = false,
   onSelect,
 }: DataGridExchangesProps) {
+  // console.log(data)
   const columns: GridColumns = [
     {
       field: 'name',
@@ -60,14 +63,36 @@ export function DataGridExchanges({
       filterable: false,
       disableColumnMenu: true,
     },
+    {
+      field: 'active',
+      headerName: 'Ativo',
+      width: 300,
+      type: 'boolean',
+      editable: true,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+    },
   ]
+
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      })
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      })
+    }
+  }
 
   const updateTaxMutation = trpc.useMutation('exchange.update', {
     onSuccess() {
-      console.log('success')
+      notify('Exchange alterada com sucesso!', true)
     },
     onError(error) {
-      console.error(error.message)
+      notify('Não foi possível realizar a operação!', false)
     },
   })
 

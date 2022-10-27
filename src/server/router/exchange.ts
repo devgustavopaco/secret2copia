@@ -11,6 +11,17 @@ export const exchangeRouter = createRouter()
       return exchanges
     },
   })
+  .query('getActiveExchanges', {
+    resolve({ ctx }) {
+      const exchanges = ctx.prisma.exchange.findMany({
+        where: {
+          active: true,
+        }
+      })
+
+      return exchanges
+    },
+  })
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
     // raise an error unless there is a current session
@@ -80,6 +91,7 @@ export const exchangeRouter = createRouter()
   .mutation('update', {
     input: z.object({
       id: z.string().cuid(),
+      active: z.boolean().optional(),
       fee: z.union([z.string(), z.number()]).optional(),
       name: z.string().optional(),
       tag: z.string().optional(),
@@ -90,6 +102,7 @@ export const exchangeRouter = createRouter()
           id: input.id,
         },
         data: {
+          active: input.active,
           fee: input.fee ? Number(input.fee) : undefined,
           name: input.name,
           tag: input.tag,

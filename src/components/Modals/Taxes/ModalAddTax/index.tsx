@@ -1,5 +1,5 @@
 import { X } from 'phosphor-react'
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import Select from 'react-select'
 import { trpc } from '../../../../utils/trpc'
 
@@ -66,7 +66,7 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
     'coin.getActiveCoins',
   ])
   const { data: exchanges, isLoading: isLoadingExchanges } = trpc.useQuery([
-    'exchange.getExchanges',
+    'exchange.getActiveExchanges',
   ])
 
   const availableCoins =

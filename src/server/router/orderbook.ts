@@ -1,31 +1,27 @@
-import { createRouter } from './context'
+import { z } from 'zod'
+import { CoinsSingleton } from '../CoinsSingleton'
+import { ExchangesSingleton } from '../ExchangesSingleton'
 import {
   BinanceStrategy,
   BitfinexStrategy,
   BitsoStrategy,
   BrasilBitcoinStrategy,
   ChilizStrategy,
-  CoinBaseStrategy,
-  CoinextStrategy,
-  CryptoComStrategy,
+  CoinBaseStrategy, CryptoComStrategy,
   GeminiStategy,
   HitBTCStrategy,
   HotBitStrategy,
   HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy,
-  MercadoBitcoinStrategy,
-  NovaDAXStrategy,
+  MercadoBitcoinStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
-  ExchangeStrategy,
+  ExchangeStrategy
 } from '../modules/exchanges/ExchangeStrategy'
-import { z } from 'zod'
 import { ServerSingleton } from '../ServerSingleton'
-import { PrismaClient } from '@prisma/client'
-import { ExchangesSingleton } from '../ExchangesSingleton'
-import { CoinsSingleton } from '../CoinsSingleton'
+import { createRouter } from './context'
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy
@@ -251,6 +247,8 @@ const fetchArbitrageOpportunity = async (
 
   const exchanges = ExchangesSingleton.getInstance().exchanges
 
+  // console.log(exchanges)
+
   const lowestAskExchange = exchanges.find(
     (exchange) => exchange.name === lowestAsk.exchange
   )
@@ -297,14 +295,14 @@ export const orderbookRouter = createRouter()
       .optional(),
     async resolve({ ctx, input }) {
       if (!input) {
-        console.log('Sending empty orderbook')
+        // console.log('Sending empty orderbook')
         return []
       }
 
       const { buyExchanges, sellExchanges } = input
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        console.log('Sending empty orderbook: empty buy or sell exchanges')
+        // console.log('Sending empty orderbook: empty buy or sell exchanges')
         return []
       }
 
@@ -317,7 +315,7 @@ export const orderbookRouter = createRouter()
       activeCoins = CoinsSingleton.getInstance().coins
 
       if (activeCoins.length === 0) {
-        console.log('Sending empty orderbook: no active coins')
+        // console.log('Sending empty orderbook: no active coins')
         return []
       }
 

@@ -11,6 +11,7 @@ import styles from '../styles/Monitor.module.scss'
 import { trpc } from '../utils/trpc'
 import { authOptions } from './api/auth/[...nextauth]'
 
+import { Exchange } from '@prisma/client'
 import { BeatLoader, PacmanLoader } from 'react-spinners'
 import { BuyExchangeMobile } from '../components/Mobile/BuyExchangeMobile'
 import { SellExchangeMobile } from '../components/Mobile/SellExchangeMobile'
@@ -44,16 +45,19 @@ const defaultExchanges: exchangesType[] = [
 const Monitoring: NextPage = () => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false)
 
+  const { data: ActiveExchanges, isLoading: isLoadingExchanges } =
+    trpc.useQuery(['exchange.getActiveExchanges'])
+
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const savedExchanges = localStorage.getItem('buyExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges)
-        : defaultExchanges.map(({ value }) => value)
+        : ActiveExchanges?.map(({ name }) => name)
       return initialValue
     }
 
-    return defaultExchanges
+    return ActiveExchanges
   })
 
   const [sellExchanges, setSellExchanges] = useState<string[]>(() => {
@@ -61,11 +65,11 @@ const Monitoring: NextPage = () => {
       const savedExchanges = localStorage.getItem('sellExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges)
-        : defaultExchanges.map(({ value }) => value)
+        : ActiveExchanges?.map(({ name }) => name)
       return initialValue
     }
 
-    return defaultExchanges
+    return ActiveExchanges
   })
 
   const [selectedOperation, setSelectedOperation] =
@@ -132,10 +136,10 @@ const Monitoring: NextPage = () => {
 
   // Mobile
   const onSelectBuyExchangeMobile = useCallback(
-    (selectedExchanges: readonly exchangesType[]) => {
+    (selectedExchanges: readonly Exchange[]) => {
       if (selectedExchanges !== undefined) {
         const selectedExchangesNames = selectedExchanges.map(
-          (exchange) => exchange.value
+          (exchange) => exchange.name
         )
         setBuyExchanges(selectedExchangesNames)
       }
@@ -159,10 +163,10 @@ const Monitoring: NextPage = () => {
 
   // Mobile
   const onSelectSellExchangeMobile = useCallback(
-    (selectedExchanges: readonly exchangesType[]) => {
+    (selectedExchanges: readonly Exchange[]) => {
       if (selectedExchanges !== undefined) {
         const selectedExchangesNames = selectedExchanges.map(
-          (exchange) => exchange.value
+          (exchange) => exchange.name
         )
         setSellExchanges(selectedExchangesNames)
       }
@@ -201,7 +205,7 @@ const Monitoring: NextPage = () => {
         <div className={styles.mobileFilter}>
           <span>Exchanges Compra</span>
           <BuyExchangeMobile
-            defaultExchanges={defaultExchanges}
+            defaultExchanges={ActiveExchanges || []}
             selectedExchanges={buyExchanges}
             onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
           />
@@ -209,13 +213,12 @@ const Monitoring: NextPage = () => {
         <div className={styles.mobileFilter}>
           <span>Exchanges Venda</span>
           <SellExchangeMobile
-            defaultExchanges={defaultExchanges}
+            defaultExchanges={ActiveExchanges || []}
             selectedExchanges={sellExchanges}
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
           />
         </div>
         <>
-          {console.log(selectedOperation)}
           {modalOpenOrderBook && (
             <ModalOrderBook
               symbol={selectedOperation.ticker}
@@ -236,7 +239,7 @@ const Monitoring: NextPage = () => {
         <div className={`${styles.content} container`}>
           <Sidebar
             dollarPrice={dollarPrice}
-            defaultExchanges={defaultExchanges}
+            defaultExchanges={ActiveExchanges || []}
             buyExchanges={buyExchanges}
             sellExchanges={sellExchanges}
             onSelectBuyExchange={onSelectBuyExchange}
@@ -282,7 +285,7 @@ const Monitoring: NextPage = () => {
                         dollarPrice={dollarPrice}
                         onClick={() => {
                           setSelectedOperation(operation)
-                          console.log(sortedOperations)
+                          // console.log(sortedOperations)
                           setModalOpenOrderBook(true)
                         }}
                       />

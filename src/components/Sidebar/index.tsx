@@ -1,14 +1,10 @@
+import { Exchange } from '@prisma/client'
 import { BeatLoader } from 'react-spinners'
 import styles from './styles.module.scss'
 
-interface exchangesType {
-  value: string
-  label: string
-}
-
 interface SidebarProps {
   dollarPrice?: number
-  defaultExchanges: exchangesType[]
+  defaultExchanges: Exchange[]
   buyExchanges: string[]
   sellExchanges: string[]
   onSelectBuyExchange: (exchange: string) => void
@@ -49,40 +45,50 @@ export function Sidebar({
         <legend>Exchanges Compra</legend>
 
         <div className={styles['filter-options']}>
-          {defaultExchanges.map((exchange) => (
-            <label key={exchange.value}>
-              <>
-                <input
-                  type="checkbox"
-                  checked={buyExchanges.includes(exchange.value)}
-                  onChange={() => {
-                    onSelectBuyExchange(exchange.value)
-                  }}
-                />
-                {exchange.value}
-              </>
-            </label>
-          ))}
+          <>
+            {defaultExchanges.length > 0 ? (
+              defaultExchanges.map((exchange) => (
+                <label key={exchange.name}>
+                  <>
+                    <input
+                      type="checkbox"
+                      checked={buyExchanges.includes(exchange.name)}
+                      onChange={() => {
+                        onSelectBuyExchange(exchange.name)
+                      }}
+                    />
+                    {exchange.name}
+                  </>
+                </label>
+              ))
+            ) : (
+              <BeatLoader color="#969696" size="0.5rem" />
+            )}
+          </>
         </div>
       </section>
       <section className={styles['filter-section']}>
         <legend>Exchanges Venda</legend>
 
         <div className={styles['filter-options']}>
-          {defaultExchanges.map((exchange) => (
-            <label key={exchange.value}>
-              <>
-                <input
-                  type="checkbox"
-                  checked={sellExchanges.includes(exchange.value)}
-                  onChange={() => {
-                    onSelectSellExchange(exchange.value)
-                  }}
-                />
-                {exchange.value}
-              </>
-            </label>
-          ))}
+          {defaultExchanges.length > 0 ? (
+            defaultExchanges.map((exchange) => (
+              <label key={exchange.name}>
+                <>
+                  <input
+                    type="checkbox"
+                    checked={sellExchanges.includes(exchange.name)}
+                    onChange={() => {
+                      onSelectSellExchange(exchange.name)
+                    }}
+                  />
+                  {exchange.name}
+                </>
+              </label>
+            ))
+          ) : (
+            <BeatLoader color="#969696" size="0.5rem" />
+          )}
         </div>
       </section>
     </aside>

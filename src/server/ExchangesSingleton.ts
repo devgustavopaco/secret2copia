@@ -18,6 +18,10 @@ export class ExchangesSingleton {
   }
 
   public async updateExchanges(): Promise<void> {
-    this.exchanges = await prisma.exchange.findMany()
+    this.exchanges = await prisma.exchange.findMany({
+      where: {
+        active: true
+      }
+    })
   }
 }

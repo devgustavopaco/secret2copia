@@ -1,16 +1,16 @@
 import type { GetServerSideProps, NextPage } from 'next'
-import styles from '../../styles/Admin.module.scss'
+import { unstable_getServerSession } from 'next-auth'
+import Head from 'next/head'
 import { CheckCircle, Plus, Trash, XCircle } from 'phosphor-react'
 import { useState } from 'react'
-import { trpc } from '../../utils/trpc'
-import Head from 'next/head'
-import { unstable_getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]'
-import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { toast } from 'react-toastify'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { DataGridVideos } from '../../components/GridComponents/DataGridVideos'
+import { Header } from '../../components/Header'
 import { ModalAddVideo } from '../../components/Modals/ModalAddVideo'
+import styles from '../../styles/Admin.module.scss'
+import { trpc } from '../../utils/trpc'
+import { authOptions } from '../api/auth/[...nextauth]'
 
 const VideosPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false)
@@ -43,7 +43,7 @@ const VideosPage: NextPage = () => {
     refetch,
   } = trpc.useQuery(['videos.getVideos'])
 
-  console.log(videos)
+  // console.log(videos)
 
   const deleteMutation = trpc.useMutation('videos.delete', {
     onSuccess() {
@@ -52,7 +52,7 @@ const VideosPage: NextPage = () => {
     },
     onError(error) {
       notify('Não foi possível realizar a operação!', false)
-      console.log(error)
+      // console.log(error)
     },
   })
 

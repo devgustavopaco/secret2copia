@@ -1,16 +1,12 @@
-import { useId, useMemo } from 'react'
+import { Exchange } from '@prisma/client'
+import { useId } from 'react'
 import Select, { OnChangeValue } from 'react-select'
 import styles from './styles.module.scss'
 
-interface exchangesType {
-  value: string
-  label: string
-}
-
 interface SelectProps {
-  defaultExchanges: exchangesType[]
+  defaultExchanges: Exchange[]
   selectedExchanges: string[]
-  onSelectSellExchangeMobile: (exchange: readonly exchangesType[]) => void
+  onSelectSellExchangeMobile: (exchange: readonly Exchange[]) => void
 }
 
 const groupStyles = {
@@ -91,13 +87,13 @@ export function SellExchangeMobile({
   onSelectSellExchangeMobile,
 }: SelectProps) {
   const handleExchangeSellChange = (
-    newValue: OnChangeValue<exchangesType, true>
+    newValue: OnChangeValue<Exchange, true>
   ) => {
     onSelectSellExchangeMobile(newValue)
   }
 
   const exchanges = defaultExchanges.filter((exchange) => {
-    return selectedExchanges.includes(exchange.value)
+    return selectedExchanges.includes(exchange.name)
   })
 
   return (

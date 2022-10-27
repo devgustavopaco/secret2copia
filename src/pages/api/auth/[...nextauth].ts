@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
           .catch((err) => console.error(err))
 
         if (user) {
-          console.log(user)
+          // console.log(user)
           return user
         }
 
