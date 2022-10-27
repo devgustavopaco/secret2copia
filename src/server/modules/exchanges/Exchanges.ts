@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { Orderbook, OrderbookOperation } from '../../router/orderbook'
-import { Exchange, ExchangeStrategy, Ticker } from './ExchangeStrategy'
+import { Exchange, ExchangeStrategy } from './ExchangeStrategy'
 
 interface BinanceOrderbook {
   bids: string[][]
@@ -381,9 +381,8 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${
-      isFanToken ? 'CHZ' : destinationToken.toUpperCase()
-    }`
+    return `${baseToken.toUpperCase()}${isFanToken ? 'CHZ' : destinationToken.toUpperCase()
+      }`
   }
 
   async fetchOrderbook(

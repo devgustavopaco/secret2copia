@@ -24,10 +24,11 @@ const Monitoring: NextPage = () => {
 
   const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
+      console.log(localStorage.getItem('buyExchanges'))
       const savedExchanges = localStorage.getItem('buyExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges ? savedExchanges : '')
-        : ActiveExchanges?.map(({ name }) => name)
+        : ''
       return initialValue
     }
 
@@ -39,7 +40,7 @@ const Monitoring: NextPage = () => {
       const savedExchanges = localStorage.getItem('sellExchanges')
       const initialValue = savedExchanges
         ? JSON.parse(savedExchanges ? savedExchanges : '')
-        : ActiveExchanges?.map(({ name }) => name)
+        : ''
       return initialValue
     }
 
@@ -96,6 +97,7 @@ const Monitoring: NextPage = () => {
 
   const onSelectBuyExchange = useCallback((exchange: string) => {
     setBuyExchanges((exchanges) => {
+      if (exchanges === undefined) exchanges = []
       const newExchanges = [...exchanges]
       const i = newExchanges.indexOf(exchange)
       if (i === -1) {
@@ -123,6 +125,7 @@ const Monitoring: NextPage = () => {
 
   const onSelectSellExchange = useCallback((exchange: string) => {
     setSellExchanges((exchanges) => {
+      if (exchanges === undefined) exchanges = []
       const newExchanges = [...exchanges]
       const i = newExchanges.indexOf(exchange)
       if (i === -1) {

@@ -90,6 +90,7 @@ export function DataGridExchanges({
   const updateTaxMutation = trpc.useMutation('exchange.update', {
     onSuccess() {
       notify('Exchange alterada com sucesso!', true)
+      localStorage.clear()
     },
     onError(error) {
       notify('Não foi possível realizar a operação!', false)
