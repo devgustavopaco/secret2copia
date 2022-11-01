@@ -57,6 +57,10 @@ export class BinanceStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    console.log(pair)
+
+
     const response = await fetch(
       `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`
     )
@@ -184,7 +188,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.sell.reduce((acc, bid, index) => {
+      this.orderbook[pair]?.buy.reduce((acc, bid, index) => {
         let sumVolume = 0
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + bid.quantidade
@@ -202,7 +206,7 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
       }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.buy.reduce((acc, ask, index) => {
+      this.orderbook[pair]?.sell.reduce((acc, ask, index) => {
         let sumVolume = 0
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + ask.quantidade
