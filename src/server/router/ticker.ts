@@ -1,27 +1,22 @@
-import { createRouter } from './context'
-import fetch from 'node-fetch'
 import {
   BinanceStrategy,
   BitfinexStrategy,
   BitsoStrategy,
-  BrasilBitcoinStrategy,
-  ChilizStrategy,
+  BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
   CryptoComStrategy,
   GeminiStategy,
   HitBTCStrategy,
-  HotBitStrategy,
-  HuobiStrategy,
+  HotBitStrategy, HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy,
-  MercadoBitcoinStrategy,
-  NovaDAXStrategy,
+  MercadoBitcoinStrategy
 } from '../modules/exchanges/Exchanges'
 import {
-  ExchangeStrategy,
-  OrderbookContext,
+  ExchangeStrategy
 } from '../modules/exchanges/ExchangeStrategy'
+import { createRouter } from './context'
 
 const exchanges = [
   'Binance', // Feito
@@ -101,6 +96,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HitBTCStrategy(),
   new BitfinexStrategy(),
   new HotBitStrategy(),
+  new ByBitStrategy()
 ]
 
 export const tickerRouter = createRouter().query('getAll', {

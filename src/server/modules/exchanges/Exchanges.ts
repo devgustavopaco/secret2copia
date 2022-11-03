@@ -58,9 +58,6 @@ export class BinanceStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    console.log(pair)
-
-
     const response = await fetch(
       `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`
     )
@@ -1278,6 +1275,87 @@ export class HotBitStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.result.asks[0]![0]),
         amount: Number(json.result.asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+interface ByBitOrderbook {
+  result: {
+    b: string[][]
+    a: string[][]
+  }
+}
+
+export class ByBitStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: ByBitOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.result.b.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.result.a.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    console.log(pair)
+    const response = await fetch(
+      `https://api-testnet.bybit.com/derivatives/v3/public/order-book/L2?category=linear&symbol=${pair}`
+    )
+    const json = (await response.json()) as ByBitOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'ByBit',
+      bid: {
+        price: Number(json.result.b[0]![0]),
+        amount: Number(json.result.b[0]![1]),
+      },
+      ask: {
+        price: Number(json.result.a[0]![0]),
+        amount: Number(json.result.a[0]![1]),
       },
       isUSD: true,
     }

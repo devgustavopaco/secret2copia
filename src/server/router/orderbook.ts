@@ -5,12 +5,12 @@ import {
   BinanceStrategy,
   BitfinexStrategy,
   BitsoStrategy,
-  BrasilBitcoinStrategy,
-  ChilizStrategy,
+  BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
   GeminiStategy,
   HitBTCStrategy,
   HotBitStrategy,
+
   HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy,
@@ -44,6 +44,7 @@ const exchangeStrategies: StrategyObject = {
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
   hotbit: new HotBitStrategy(),
+  bybit: new ByBitStrategy()
 }
 
 export interface OrderbookOperation {
