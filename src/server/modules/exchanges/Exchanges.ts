@@ -1501,7 +1501,6 @@ export class GTOStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    console.log(pair)
     const response = await fetch(
       `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}`
     )
@@ -1590,7 +1589,6 @@ export class PolonieskStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    console.log(pair)
     const response = await fetch(
       `https://api.poloniex.com/markets/${pair}/orderBook`
     )
@@ -1667,7 +1665,7 @@ export class BitmartStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
