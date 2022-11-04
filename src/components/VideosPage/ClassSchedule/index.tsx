@@ -22,10 +22,10 @@ export function ClassScheduleComponent({ data }: videoProps) {
           <Link href={`/videos/${encodeURIComponent(item.id)}`} key={item.id}>
             <a>
               <div className={styles.classContainer}>
-                <span className={styles.date}>
+                {/* <span className={styles.date}>
                   {item.createdAt?.toString()}
                 </span>
-                +
+                + */}
                 <div
                   className={
                     id == item.id
