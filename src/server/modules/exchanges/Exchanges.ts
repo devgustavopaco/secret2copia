@@ -1670,7 +1670,6 @@ export class BitmartStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    console.log(pair)
     const response = await fetch(
       `https://www.bitstamp.net/api/v2/order_book/${pair}`
     )
@@ -1753,8 +1752,6 @@ export class BidgetStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    console.log(pair)
-
     const response = await fetch(
       `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`
     )
@@ -1770,6 +1767,90 @@ export class BidgetStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+// Okx ---------------------------------------------------------------------
+
+interface OkxOrderbook {
+  data: [
+    {
+      bids: string[][]
+      asks: string[][]
+    }
+  ]
+}
+
+export class OkxStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: OkxOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data[0].bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.data[0].asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const response = await fetch(
+      `https://www.okx.com/api/v5/market/books-lite?instId=${pair}`
+    )
+    const json = (await response.json()) as OkxOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'Okx',
+      bid: {
+        price: Number(json.data[0].bids[0]![0]),
+        amount: Number(json.data[0].bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.data[0].asks[0]![0]),
+        amount: Number(json.data[0].asks[0]![1]),
       },
       isUSD: true,
     }

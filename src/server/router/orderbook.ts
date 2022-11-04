@@ -7,7 +7,7 @@ import {
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
   GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
-  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, PolonieskStrategy
+  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, OkxStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
@@ -43,6 +43,7 @@ const exchangeStrategies: StrategyObject = {
   poloniex: new PolonieskStrategy(),
   bistamp: new BitmartStrategy(),
   bidget: new BidgetStrategy(),
+  okx: new OkxStrategy()
 }
 
 export interface OrderbookOperation {
