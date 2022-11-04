@@ -3,8 +3,7 @@ import { CoinsSingleton } from '../CoinsSingleton'
 import { ExchangesSingleton } from '../ExchangesSingleton'
 import {
   BinanceStrategy,
-  BitfinexStrategy,
-  BitsoStrategy,
+  BitfinexStrategy, BitmartStrategy, BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
   GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
@@ -42,7 +41,8 @@ const exchangeStrategies: StrategyObject = {
   bybit: new ByBitStrategy(),
   mexc: new MexcStrategy(),
   gateio: new GTOStrategy(),
-  poloniex: new PolonieskStrategy()
+  poloniex: new PolonieskStrategy(),
+  bistamp: new BitmartStrategy()
 }
 
 export interface OrderbookOperation {

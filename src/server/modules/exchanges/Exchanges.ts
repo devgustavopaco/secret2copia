@@ -1538,6 +1538,13 @@ export class PolonieskStrategy implements ExchangeStrategy {
   } = {}
 
   convertOrderbook(pair: string): Orderbook {
+
+    // let treatAsks = [[]];
+
+    // for (let i = 0; i < this.orderbook[pair]?.asks?.length; i++) {
+    //   treatAsks.push()
+    // }
+
     const bids =
       this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
         let sumVolume = 0
@@ -1599,6 +1606,88 @@ export class PolonieskStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+// Bitmart ---------------------------------------------------------------------
+
+interface BitmartOrderbook {
+  asks: string[][]
+  bids: string[][]
+}
+
+export class BitmartStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitmartOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleLowerCase()}${destinationToken.toLocaleLowerCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    console.log(pair)
+    const response = await fetch(
+      `https://www.bitstamp.net/api/v2/order_book/${pair}`
+    )
+    const json = (await response.json()) as PoloniexOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'Bitstamp',
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
       },
       isUSD: true,
     }

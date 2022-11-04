@@ -1,7 +1,6 @@
 import {
   BinanceStrategy,
-  BitfinexStrategy,
-  BitsoStrategy,
+  BitfinexStrategy, BitmartStrategy, BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
@@ -73,7 +72,8 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HotBitStrategy(),
   new ByBitStrategy(),
   new GTOStrategy(),
-  new PolonieskStrategy()
+  new PolonieskStrategy(),
+  new BitmartStrategy()
 ]
 
 export const tickerRouter = createRouter().query('getAll', {
