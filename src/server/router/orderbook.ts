@@ -2,13 +2,12 @@ import { z } from 'zod'
 import { CoinsSingleton } from '../CoinsSingleton'
 import { ExchangesSingleton } from '../ExchangesSingleton'
 import {
-  BinanceStrategy,
+  BidgetStrategy, BinanceStrategy,
   BitfinexStrategy, BitmartStrategy, BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
   GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
-  KrakenStrategy,
-  KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, PolonieskStrategy
+  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
@@ -42,7 +41,8 @@ const exchangeStrategies: StrategyObject = {
   mexc: new MexcStrategy(),
   gateio: new GTOStrategy(),
   poloniex: new PolonieskStrategy(),
-  bistamp: new BitmartStrategy()
+  bistamp: new BitmartStrategy(),
+  bidget: new BidgetStrategy(),
 }
 
 export interface OrderbookOperation {
