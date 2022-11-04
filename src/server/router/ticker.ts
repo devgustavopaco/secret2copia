@@ -5,40 +5,15 @@ import {
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
-  CryptoComStrategy,
-  GeminiStategy,
-  HitBTCStrategy,
-  HotBitStrategy, HuobiStrategy,
+  CryptoComStrategy, GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
   KrakenStrategy,
-  KuCoinStratefy,
-  MercadoBitcoinStrategy
+  KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import {
   ExchangeStrategy
 } from '../modules/exchanges/ExchangeStrategy'
 import { createRouter } from './context'
 
-const exchanges = [
-  'Binance', // Feito
-  'Bitso', // Feito
-  'BrasilBitcoin', // Feito
-  'BitcoinTrade', // Precisa de um token https://apidocs.bitcointrade.com.br/#operation/GetBookOrders
-  'Coinbase', // Feito
-  'Chiliz', // Feito
-  'Coinext', // Feito, mas muito ruim
-  'Crypto.com', // Feito
-  'FTX', // Precisa de um token https://docs.ftx.com/?python#get-open-orders
-  'Foxbit', // Só por websocket
-  'Gemini', // Feito
-  'Huobi', // Feito
-  'Kraken', // Feito
-  'KuCoin', // Feito
-  'NovaDAX', // Feito
-  'Mercado Bitcoin', // Feito
-  'HitBTC', // Feito
-  'Bitfinex', // Feito
-  'HotBit', // Feito
-]
 
 interface Operation {
   coin: {
@@ -91,12 +66,14 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HuobiStrategy(),
   new KrakenStrategy(),
   new KuCoinStratefy(),
-  // new NovaDAXStrategy(),
+  new MexcStrategy(),
   new MercadoBitcoinStrategy(),
   new HitBTCStrategy(),
   new BitfinexStrategy(),
   new HotBitStrategy(),
-  new ByBitStrategy()
+  new ByBitStrategy(),
+  new GTOStrategy(),
+  new PolonieskStrategy()
 ]
 
 export const tickerRouter = createRouter().query('getAll', {

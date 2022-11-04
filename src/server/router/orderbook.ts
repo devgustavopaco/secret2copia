@@ -7,14 +7,9 @@ import {
   BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
-  GeminiStategy,
-  HitBTCStrategy,
-  HotBitStrategy,
-
-  HuobiStrategy,
+  GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
   KrakenStrategy,
-  KuCoinStratefy,
-  MercadoBitcoinStrategy
+  KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
@@ -44,7 +39,10 @@ const exchangeStrategies: StrategyObject = {
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
   hotbit: new HotBitStrategy(),
-  bybit: new ByBitStrategy()
+  bybit: new ByBitStrategy(),
+  mexc: new MexcStrategy(),
+  gateio: new GTOStrategy(),
+  poloniex: new PolonieskStrategy()
 }
 
 export interface OrderbookOperation {
