@@ -1539,44 +1539,49 @@ export class PolonieskStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
 
-    // let treatAsks = [[]];
-
-    // for (let i = 0; i < this.orderbook[pair]?.asks?.length; i++) {
-    //   treatAsks.push()
-    // }
 
     const bids =
       this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
-        } else {
-          sumVolume = Number(bid[1])
-        }
+        if (index % 2 === 0) {
+          let sumVolume = 0
 
-        acc.push({
-          price: Number(bid[0]),
-          amount: Number(bid[1]),
-          sumVolume,
-        })
+          if (index / 2 - 1 >= 0) {
+            sumVolume = acc[index / 2 - 1]!.sumVolume + Number(bid)
+          } else {
+            sumVolume = Number(bid)
+          }
+
+          acc.push({
+            price: Number(bid),
+            amount: 0,
+            sumVolume,
+          })
+        } else {
+          acc[(index - 1) / 2]!.amount = Number(bid)
+        }
 
         return acc
       }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
-        } else {
-          sumVolume = Number(ask[1])
-        }
+      this.orderbook[pair]?.asks.reduce((acc, bid, index) => {
+        if (index % 2 === 0) {
+          let sumVolume = 0
 
-        acc.push({
-          price: Number(ask[0]),
-          amount: Number(ask[1]),
-          sumVolume,
-        })
+          if (index / 2 - 1 >= 0) {
+            sumVolume = acc[index / 2 - 1]!.sumVolume + Number(bid)
+          } else {
+            sumVolume = Number(bid)
+          }
+
+          acc.push({
+            price: Number(bid),
+            amount: 0,
+            sumVolume,
+          })
+        } else {
+          acc[(index - 1) / 2]!.amount = Number(bid)
+        }
 
         return acc
       }, [] as OrderbookOperation[]) ?? []

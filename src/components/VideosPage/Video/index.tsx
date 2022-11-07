@@ -4,7 +4,6 @@ import {
   CaretRight,
   DiscordLogo,
   FileArrowDown,
-  Image,
   Lightning,
 } from 'phosphor-react'
 import { PlayerProps } from '../Player/Player'
@@ -59,21 +58,6 @@ export function VideoComponent({ aula }: videoProps) {
               <span>
                 Acesse o material complementar para acelerar o seu
                 desenvolvimento
-              </span>
-            </div>
-            <CaretRight size={32} />
-          </div>
-        </div>
-        <div className={styles.material}>
-          <div className={styles.iconBackground}>
-            <Image size={32} />
-          </div>
-          <div className={styles.materialText}>
-            <div className={styles.text}>
-              <h2>Wallpapers exclusivos</h2>
-              <span>
-                Baixe wallpapers exclusivos do Ignite Lab e personalize a sua
-                máquina
               </span>
             </div>
             <CaretRight size={32} />
