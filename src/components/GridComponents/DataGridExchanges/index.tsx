@@ -58,7 +58,7 @@ export function DataGridExchanges({
       headerName: 'Converte',
       type: 'boolean',
       width: 200,
-      editable: false,
+      editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,

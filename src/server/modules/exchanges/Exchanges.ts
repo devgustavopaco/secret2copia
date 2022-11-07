@@ -943,10 +943,11 @@ export class NovaDAXStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`
+    return `${baseToken.toUpperCase()}_BRL`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
+
     const response = await fetch(
       `https://api.novadax.com/v1/market/depth?symbol=${pair}&limit=10`
     )
@@ -963,7 +964,7 @@ export class NovaDAXStrategy implements ExchangeStrategy {
         price: Number(json.data.asks[0]![0]),
         amount: Number(json.data.asks[0]![1]),
       },
-      isUSD: true,
+      isUSD: false,
     }
   }
 }
@@ -1851,6 +1852,179 @@ export class OkxStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.data[0].asks[0]![0]),
         amount: Number(json.data[0].asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+
+// BITCOINTRADE ---------------------------------------------------------------------
+
+interface BitcoinTradeOrderbook {
+  data:
+  {
+    asks: [{
+      amount: number,
+      unit_price: number
+    }],
+    bids: [{
+      amount: number,
+      unit_price: number
+    }],
+  }
+
+}
+
+export class BitcoinTradeStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitcoinTradeOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.amount)
+        } else {
+          sumVolume = Number(bid.amount)
+        }
+
+        acc.push({
+          price: Number(bid.unit_price),
+          amount: Number(bid.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.amount)
+        } else {
+          sumVolume = Number(ask.amount)
+        }
+
+        acc.push({
+          price: Number(ask.unit_price),
+          amount: Number(ask.amount),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+
+    const response = await fetch(
+      `https://api.bitcointrade.com.br/v3/public/USDC${pair}/orders`
+    )
+    const json = (await response.json()) as BitcoinTradeOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'BitcoinTrade',
+      bid: {
+        price: Number(json.data.bids[0].unit_price),
+        amount: Number(json.data.bids[0].amount),
+      },
+      ask: {
+        price: Number(json.data.asks[0].unit_price),
+        amount: Number(json.data.asks[0].amount),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+//FTX -----------------------------
+
+interface FTXOrderbook {
+  result: {
+    bids: number[][]
+    asks: number[][]
+  }
+}
+
+export class FTXStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: FTXOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.result.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.result.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const response = await fetch(
+      `https://ftx.com/api/markets/${pair}/USD/orderbook`
+    )
+    const json = (await response.json()) as FTXOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'FTX',
+      bid: {
+        price: Number(json.result.bids[0]![0]),
+        amount: Number(json.result.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.result.asks[0]![0]),
+        amount: Number(json.result.asks[0]![1]),
       },
       isUSD: true,
     }

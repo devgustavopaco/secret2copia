@@ -1,13 +1,14 @@
 import {
   BidgetStrategy,
   BinanceStrategy,
+  BitcoinTradeStrategy,
   BitfinexStrategy, BitmartStrategy, BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
-  CryptoComStrategy, GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
+  CryptoComStrategy, FTXStrategy, GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
   KrakenStrategy,
-  KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, OkxStrategy, PolonieskStrategy
+  KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, NovaDAXStrategy, OkxStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import {
   ExchangeStrategy
@@ -66,6 +67,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new HuobiStrategy(),
   new KrakenStrategy(),
   new KuCoinStratefy(),
+  new NovaDAXStrategy(),
   new MexcStrategy(),
   new MercadoBitcoinStrategy(),
   new HitBTCStrategy(),
@@ -76,7 +78,9 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new PolonieskStrategy(),
   new BitmartStrategy(),
   new BidgetStrategy(),
-  new OkxStrategy()
+  new OkxStrategy(),
+  new BitcoinTradeStrategy(),
+  new FTXStrategy()
 ]
 
 export const tickerRouter = createRouter().query('getAll', {

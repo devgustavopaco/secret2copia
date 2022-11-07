@@ -3,11 +3,13 @@ import { CoinsSingleton } from '../CoinsSingleton'
 import { ExchangesSingleton } from '../ExchangesSingleton'
 import {
   BidgetStrategy, BinanceStrategy,
+  BitcoinTradeStrategy,
   BitfinexStrategy, BitmartStrategy, BitsoStrategy,
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy, CryptoComStrategy,
+  FTXStrategy,
   GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
-  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, OkxStrategy, PolonieskStrategy
+  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, NovaDAXStrategy, OkxStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
@@ -32,7 +34,7 @@ const exchangeStrategies: StrategyObject = {
   huobi: new HuobiStrategy(),
   kraken: new KrakenStrategy(),
   kucoin: new KuCoinStratefy(),
-  // novada: new NovaDAXStrategy(),
+  novadax: new NovaDAXStrategy(),
   mercadobitcoin: new MercadoBitcoinStrategy(),
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
@@ -43,7 +45,9 @@ const exchangeStrategies: StrategyObject = {
   poloniex: new PolonieskStrategy(),
   bistamp: new BitmartStrategy(),
   bidget: new BidgetStrategy(),
-  okx: new OkxStrategy()
+  okx: new OkxStrategy(),
+  bitcointrade: new BitcoinTradeStrategy(),
+  ftx: new FTXStrategy()
 }
 
 export interface OrderbookOperation {
