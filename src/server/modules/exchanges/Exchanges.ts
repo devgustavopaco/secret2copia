@@ -1564,23 +1564,23 @@ export class PolonieskStrategy implements ExchangeStrategy {
       }, [] as OrderbookOperation[]) ?? []
 
     const asks =
-      this.orderbook[pair]?.asks.reduce((acc, bid, index) => {
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
         if (index % 2 === 0) {
           let sumVolume = 0
 
           if (index / 2 - 1 >= 0) {
-            sumVolume = acc[index / 2 - 1]!.sumVolume + Number(bid)
+            sumVolume = acc[index / 2 - 1]!.sumVolume + Number(ask)
           } else {
-            sumVolume = Number(bid)
+            sumVolume = Number(ask)
           }
 
           acc.push({
-            price: Number(bid),
+            price: Number(ask),
             amount: 0,
             sumVolume,
           })
         } else {
-          acc[(index - 1) / 2]!.amount = Number(bid)
+          acc[(index - 1) / 2]!.amount = Number(ask)
         }
 
         return acc
