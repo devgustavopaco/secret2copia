@@ -7,44 +7,22 @@ interface SelectProps {
   defaultExchanges: Exchange[]
   selectedExchanges: string[]
   onSelectSellExchangeMobile: (exchange: readonly Exchange[]) => void
+  isLoading: boolean
 }
-
-const groupStyles = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}
-const groupBadgeStyles: any = {
-  backgroundColor: '#000000',
-  borderRadius: '2em',
-  color: '#000000',
-  display: 'inline-block',
-  fontSize: 12,
-  fontWeight: 'normal',
-  lineHeight: '1',
-  minWidth: 1,
-  padding: '0.16666666666667em 0.5em',
-  textAlign: 'center',
-}
-
-const formatGroupLabel: any = (data: any) => (
-  <div style={groupStyles}>
-    <span>{data.label}</span>
-    <span style={groupBadgeStyles}>{data.options.length}</span>
-  </div>
-)
 
 const multiValueContainer: any = ({ selectProps, data }: any) => {
-  const label = data.label
+  const exchangeName = data.name
   const allSelected = selectProps.value
   const index = allSelected.findIndex(
-    (selected: any) => selected.label === label
+    (selected: any) => selected.name === exchangeName
   )
   const isLastSelected = index === allSelected.length - 1
   const labelSuffix = isLastSelected ? ` (${allSelected.length})` : ', '
-  const val = `${label}${labelSuffix}`
+  const val = `${exchangeName}${labelSuffix}`
   return val
 }
+
+const getOptionLabel = (option: Exchange) => `${option.name}`
 
 const customStyles = {
   valueContainer: (provided: any, state: any) => ({
@@ -79,12 +57,19 @@ const customStyles = {
       filter: 'brightness(0.8)',
     },
   }),
+  loadingIndicator: (provided: any, state: any) => ({
+    ...provided,
+    '& > *': {
+      fontSize: '8px !important',
+    },
+  }),
 }
 
 export function SellExchangeMobile({
   defaultExchanges,
   selectedExchanges,
   onSelectSellExchangeMobile,
+  isLoading,
 }: SelectProps) {
   const handleExchangeSellChange = (
     newValue: OnChangeValue<Exchange, true>
@@ -96,23 +81,32 @@ export function SellExchangeMobile({
     return selectedExchanges.includes(exchange.name)
   })
 
+  const handleSelectedOption = (
+    selectedOption: Exchange,
+    selectValue: readonly Exchange[]
+  ) => {
+    return selectValue.includes(selectedOption)
+  }
+
   return (
     <Select
       value={exchanges}
       options={defaultExchanges}
-      isMulti
       instanceId={useId()}
       className={styles.select}
+      isMulti
       components={{
         MultiValueContainer: multiValueContainer,
       }}
       placeholder={<div>Selecione uma Exchange</div>}
-      formatGroupLabel={formatGroupLabel}
+      getOptionLabel={getOptionLabel}
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
       styles={customStyles}
       isSearchable={false}
+      isOptionSelected={handleSelectedOption}
       onChange={handleExchangeSellChange}
+      isLoading={isLoading}
     />
   )
 }

@@ -185,6 +185,7 @@ const Monitoring: NextPage = () => {
             defaultExchanges={ActiveExchanges || []}
             selectedExchanges={buyExchanges || []}
             onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
+            isLoading={isLoading}
           />
         </div>
         <div className={styles.mobileFilter}>
@@ -193,6 +194,7 @@ const Monitoring: NextPage = () => {
             defaultExchanges={ActiveExchanges || []}
             selectedExchanges={sellExchanges || []}
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
+            isLoading={isLoading}
           />
         </div>
         <>
