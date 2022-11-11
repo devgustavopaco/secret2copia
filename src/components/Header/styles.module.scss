@@ -11,12 +11,20 @@
   h1 {
     text-transform: uppercase;
   }
+
+  @media only screen and (max-width: 768px) {
+    border: none;
+  }
 }
 
 .logo {
   object-fit: cover;
   width: 240px;
   cursor: pointer;
+
+  @media only screen and (max-width: 768px) {
+    width: 180px;
+  }
 }
 
 .desktop-navigation {
@@ -152,7 +160,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 5;
+    z-index: 60;
     transform: translateX(100%);
     transition: all 0.7s ease;
 

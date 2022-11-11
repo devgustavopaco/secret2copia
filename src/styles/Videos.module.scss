@@ -4,4 +4,9 @@
   max-width: 1440px;
   padding-inline: 4rem;
   margin-inline: auto;
+
+  @media only screen and (max-width: 768px) {
+    padding-inline: 0rem;
+    margin: 0rem;
+  }
 }

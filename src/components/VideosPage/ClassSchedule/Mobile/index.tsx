@@ -8,7 +8,7 @@ interface videoProps {
   data: Videos[]
 }
 
-export function ClassScheduleComponent({ data }: videoProps) {
+export function MobileClassScheduleComponent({ data }: videoProps) {
   const router = useRouter()
 
   const { id } = router.query as { id: string }

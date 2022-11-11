@@ -1,9 +1,10 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { BeatLoader } from 'react-spinners'
 
 import { Header } from '../../components/Header'
-import { ClassScheduleComponent } from '../../components/VideosPage/ClassSchedule'
+import { DesktopClassScheduleComponent } from '../../components/VideosPage/ClassSchedule/Desktop'
 import { VideoComponent } from '../../components/VideosPage/Video'
 import styles from '../../styles/SingleVideo.module.scss'
 import { trpc } from '../../utils/trpc'
@@ -26,8 +27,12 @@ const VideoPage: NextPage = () => {
       </Head>
       <Header />
       <section className={styles.container}>
-        <VideoComponent aula={singleVideo ? singleVideo : undefined} />
-        <ClassScheduleComponent data={aulas || []} />
+        {singleVideo ? (
+          <VideoComponent aula={singleVideo} data={aulas || []} />
+        ) : (
+          <BeatLoader color="#969696" size="0.5rem" />
+        )}
+        <DesktopClassScheduleComponent data={aulas || []} />
       </section>
     </>
   )
