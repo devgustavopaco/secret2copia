@@ -1,11 +1,7 @@
 import { Videos } from '@prisma/client'
 import dynamic from 'next/dynamic'
-import {
-  CaretRight,
-  DiscordLogo,
-  FileArrowDown,
-  Lightning,
-} from 'phosphor-react'
+import Link from 'next/link'
+import { CaretRight, FileArrowDown, WhatsappLogo } from 'phosphor-react'
 import { useState } from 'react'
 import { MobileClassScheduleComponent } from '../../ClassSchedule/Mobile'
 import { PlayerProps } from '../../Player/Player'
@@ -68,14 +64,12 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
               <p>{aula ? aula.description : ''}</p>
             </div>
             <div className={styles.btnList}>
-              <button className={styles.discordBtn}>
-                <DiscordLogo size={20} />
-                COMUNIDADE NO DISCORD
-              </button>
-              <button className={styles.challengeBtn}>
-                <Lightning size={20} />
-                ACESSE O DESAFIO
-              </button>
+              <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+                <button className={styles.discordBtn}>
+                  <WhatsappLogo size={22} />
+                  FALE COM O SUPORTE
+                </button>
+              </Link>
             </div>
           </div>
           <div className={styles.creatorDescription}>

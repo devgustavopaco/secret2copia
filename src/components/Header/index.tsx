@@ -61,6 +61,11 @@ export function Header() {
                 </Link>
               </li>
             )}
+            <li>
+              <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+                Contato
+              </Link>
+            </li>
           </ul>
         </nav>
         <div className={styles.nav_toggle}>
@@ -121,6 +126,11 @@ export function Header() {
               </Link>
             </li>
           )}
+          <li>
+            <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+              Contato
+            </Link>
+          </li>
         </ul>
       </nav>
     </header>

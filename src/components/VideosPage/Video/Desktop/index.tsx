@@ -1,11 +1,7 @@
 import { Videos } from '@prisma/client'
 import dynamic from 'next/dynamic'
-import {
-  CaretRight,
-  DiscordLogo,
-  FileArrowDown,
-  Lightning,
-} from 'phosphor-react'
+import Link from 'next/link'
+import { CaretRight, FileArrowDown, WhatsappLogo } from 'phosphor-react'
 import { PlayerProps } from '../../Player/Player'
 import styles from './styles.module.scss'
 
@@ -23,7 +19,9 @@ interface videoProps {
 }
 
 export function DesktopVideoComponent({ aula, data }: videoProps) {
-  console.log(aula)
+  const additionalMaterial =
+    aula.additionalMaterial !== null ? aula.additionalMaterial : ''
+
   return (
     <div className={styles.videoSection}>
       <PlayerComponent aula={aula} />
@@ -33,14 +31,12 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
           <p>{aula ? aula.description : ''}</p>
         </div>
         <div className={styles.btnList}>
-          <button className={styles.discordBtn}>
-            <DiscordLogo size={20} />
-            COMUNIDADE NO DISCORD
-          </button>
-          <button className={styles.challengeBtn}>
-            <Lightning size={20} />
-            ACESSE O DESAFIO
-          </button>
+          <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+            <button className={styles.discordBtn}>
+              <WhatsappLogo size={22} />
+              FALE COM O SUPORTE
+            </button>
+          </Link>
         </div>
       </div>
       <div className={styles.creatorDescription}>
@@ -55,16 +51,18 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
           <div className={styles.iconBackground}>
             <FileArrowDown size={32} />
           </div>
-          <div className={styles.materialText}>
-            <div className={styles.text}>
-              <h2>Material complementar</h2>
-              <span>
-                Acesse o material complementar para acelerar o seu
-                desenvolvimento
-              </span>
+          <Link href={additionalMaterial}>
+            <div className={styles.materialText}>
+              <div className={styles.text}>
+                <h2>Material complementar</h2>
+                <span>
+                  Acesse o material complementar para acelerar o seu
+                  desenvolvimento
+                </span>
+              </div>
+              <CaretRight size={32} />
             </div>
-            <CaretRight size={32} />
-          </div>
+          </Link>
         </div>
       </div>
       <div className={styles.footer}>
