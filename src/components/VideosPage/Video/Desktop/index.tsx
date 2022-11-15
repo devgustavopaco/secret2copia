@@ -51,7 +51,11 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
           <div className={styles.iconBackground}>
             <FileArrowDown size={32} />
           </div>
-          <Link href={additionalMaterial}>
+          <a
+            target="_blank"
+            href={additionalMaterial}
+            rel="noopener noreferrer"
+          >
             <div className={styles.materialText}>
               <div className={styles.text}>
                 <h2>Material complementar</h2>
@@ -62,7 +66,7 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
               </div>
               <CaretRight size={32} />
             </div>
-          </Link>
+          </a>
         </div>
       </div>
       <div className={styles.footer}>

@@ -21,6 +21,9 @@ interface videoProps {
 }
 
 export function MobileVideoComponent({ aula, data }: videoProps) {
+  const additionalMaterial =
+    aula.additionalMaterial !== null ? aula.additionalMaterial : ''
+
   const [toggleState, setToggleState] = useState<'conteudo' | 'aulas'>(
     'conteudo'
   )
@@ -87,16 +90,22 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
               <div className={styles.iconBackground}>
                 <FileArrowDown size={32} />
               </div>
-              <div className={styles.materialText}>
-                <div className={styles.text}>
-                  <h2>Material complementar</h2>
-                  <span>
-                    Acesse o material complementar para acelerar o seu
-                    desenvolvimento
-                  </span>
+              <a
+                target="_blank"
+                href={additionalMaterial}
+                rel="noopener noreferrer"
+              >
+                <div className={styles.materialText}>
+                  <div className={styles.text}>
+                    <h2>Material complementar</h2>
+                    <span>
+                      Acesse o material complementar para acelerar o seu
+                      desenvolvimento
+                    </span>
+                  </div>
+                  <CaretRight size={32} />
                 </div>
-                <CaretRight size={32} />
-              </div>
+              </a>
             </div>
           </div>
         </>
