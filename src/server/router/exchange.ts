@@ -95,6 +95,7 @@ export const exchangeRouter = createRouter()
       fee: z.union([z.string(), z.number()]).optional(),
       name: z.string().optional(),
       tag: z.string().optional(),
+      convert: z.boolean().optional()
     }),
     async resolve({ ctx, input }) {
       const exchange = await ctx.prisma.exchange.update({
@@ -106,6 +107,7 @@ export const exchangeRouter = createRouter()
           fee: input.fee ? Number(input.fee) : undefined,
           name: input.name,
           tag: input.tag,
+          convert: input.convert
         },
       })
 

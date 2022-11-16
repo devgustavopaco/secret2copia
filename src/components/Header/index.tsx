@@ -44,7 +44,7 @@ export function Header() {
             <li>
               <Link href="/videos">
                 <a className={router.pathname === '/videos' ? 'active' : ''}>
-                  Vídeos
+                  Mentoria
                 </a>
               </Link>
             </li>
@@ -111,7 +111,7 @@ export function Header() {
           <li>
             <Link href="/videos">
               <a className={router.pathname === '/videos' ? 'active' : ''}>
-                Vídeos
+                Mentoria
               </a>
             </Link>
           </li>

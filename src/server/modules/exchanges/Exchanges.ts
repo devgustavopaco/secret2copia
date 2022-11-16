@@ -1601,15 +1601,16 @@ export class PolonieskStrategy implements ExchangeStrategy {
     const json = (await response.json()) as PoloniexOrderbook
     this.orderbook[pair] = json
 
+
     return {
       name: 'Poloniex',
       bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
+        price: Number(json.bids[0]),
+        amount: Number(json.bids[0]),
       },
       ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
+        price: Number(json.asks[0]),
+        amount: Number(json.asks[0]),
       },
       isUSD: true,
     }
@@ -1679,7 +1680,7 @@ export class BitmartStrategy implements ExchangeStrategy {
     const response = await fetch(
       `https://www.bitstamp.net/api/v2/order_book/${pair}`
     )
-    const json = (await response.json()) as PoloniexOrderbook
+    const json = (await response.json()) as BitmartOrderbook
     this.orderbook[pair] = json
 
     return {

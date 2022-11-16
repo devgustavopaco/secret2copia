@@ -76,7 +76,7 @@ const Login: NextPage = () => {
                   <InstagramLogo className={styles.icon} />
                 </a>
               </Link>
-              <p>N E X T G A I N ®️ 2022</p>
+              <p>N E X T G A I N ®️ 2023</p>
             </div>
           </div>
         </div>
