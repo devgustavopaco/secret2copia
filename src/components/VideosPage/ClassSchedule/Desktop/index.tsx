@@ -15,7 +15,7 @@ export function DesktopClassScheduleComponent({ data }: videoProps) {
 
   return (
     <div className={styles.cronogramaSection}>
-      <h2>Cronograma de aulas</h2>
+      <h2>Cronograma de Aulas</h2>
       <div className={styles.divisor}></div>
       <div className={styles.content}>
         {data.map((item, index) => (
