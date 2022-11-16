@@ -1,6 +1,5 @@
 import { Videos } from '@prisma/client'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
 import { CaretRight, FileArrowDown, WhatsappLogo } from 'phosphor-react'
 import { PlayerProps } from '../../Player/Player'
 import styles from './styles.module.scss'
@@ -31,12 +30,16 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
           <p>{aula ? aula.description : ''}</p>
         </div>
         <div className={styles.btnList}>
-          <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+          <a
+            target="_blank"
+            href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+            rel="noopener noreferrer"
+          >
             <button className={styles.discordBtn}>
               <WhatsappLogo size={22} />
               FALE COM O SUPORTE
             </button>
-          </Link>
+          </a>
         </div>
       </div>
       <div className={styles.creatorDescription}>

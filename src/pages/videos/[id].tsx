@@ -22,8 +22,8 @@ const VideoPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Curso de arbitragem</title>
-        <meta name="description" content="Curso de arbitragem" />
+        <title>Treinamento - NEXTGAIN</title>
+        <meta name="description" content="Treinamento - NEXTGAIN" />
       </Head>
       <Header />
       <section className={styles.container}>

@@ -174,8 +174,8 @@ const Monitoring: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Monitoramento de Operações</title>
-        <meta name="description" content="Monitoramento de Operações" />
+        <title>Monitor - NEXTGAIN</title>
+        <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
         <Header />

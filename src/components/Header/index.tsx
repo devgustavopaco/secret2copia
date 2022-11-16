@@ -62,9 +62,13 @@ export function Header() {
               </li>
             )}
             <li>
-              <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+              <a
+                target="_blank"
+                href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+                rel="noopener noreferrer"
+              >
                 Contato
-              </Link>
+              </a>
             </li>
           </ul>
         </nav>
@@ -127,9 +131,13 @@ export function Header() {
             </li>
           )}
           <li>
-            <Link href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20">
+            <a
+              target="_blank"
+              href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+              rel="noopener noreferrer"
+            >
               Contato
-            </Link>
+            </a>
           </li>
         </ul>
       </nav>
