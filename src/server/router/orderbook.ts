@@ -282,8 +282,7 @@ const fetchArbitrageOpportunity = async (
     lowestAsk,
     highestBid,
     tax:
-      (lowestAskTax?.tax ?? 0) * lowestAsk.price +
-      (highestBidTax?.tax ?? 0) * highestBid.price,
+      (lowestAskTax?.tax ?? 0) * lowestAsk.price,
     fee: lowestAskFee + highestBidFee,
     spread,
   }
