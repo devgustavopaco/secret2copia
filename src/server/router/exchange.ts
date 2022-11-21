@@ -14,6 +14,9 @@ export const exchangeRouter = createRouter()
   .query('getActiveExchanges', {
     resolve({ ctx }) {
       const exchanges = ctx.prisma.exchange.findMany({
+        orderBy: {
+          name: 'asc'
+        },
         where: {
           active: true,
         }
@@ -44,8 +47,8 @@ export const exchangeRouter = createRouter()
           fee: input.fee,
           name: input.name,
           tag: input.tag,
-          convert: input.convert,
           image_url: input.image_url,
+          convert: input.convert,
         },
       })
 

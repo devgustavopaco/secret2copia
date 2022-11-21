@@ -1,18 +1,18 @@
 import type { GetServerSideProps, NextPage } from 'next'
 import styles from '../../styles/Admin.module.scss'
 
+import { unstable_getServerSession } from 'next-auth'
+import { useS3Upload } from 'next-s3-upload'
+import Head from 'next/head'
 import { CheckCircle, Plus, Trash, XCircle } from 'phosphor-react'
 import { useState } from 'react'
-import { trpc } from '../../utils/trpc'
-import { ModalAddExchange } from '../../components/Modals/Exchange/ModalAddExchange'
-import Head from 'next/head'
-import { DataGridExchanges } from '../../components/GridComponents/DataGridExchanges'
-import { unstable_getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]'
-import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
 import { toast } from 'react-toastify'
-import { useS3Upload } from 'next-s3-upload'
+import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import { DataGridExchanges } from '../../components/GridComponents/DataGridExchanges'
+import { Header } from '../../components/Header'
+import { ModalAddExchange } from '../../components/Modals/Exchange/ModalAddExchange'
+import { trpc } from '../../utils/trpc'
+import { authOptions } from '../api/auth/[...nextauth]'
 
 const AdminTaxPage: NextPage = () => {
   let { uploadToS3 } = useS3Upload()
@@ -65,6 +65,8 @@ const AdminTaxPage: NextPage = () => {
     convert: boolean
   ) => {
     const { url } = await uploadToS3(image)
+
+    console.log(url)
 
     createExchangeMutation.mutate({
       name,
