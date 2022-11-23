@@ -2,18 +2,34 @@ import { z } from 'zod'
 import { CoinsSingleton } from '../CoinsSingleton'
 import { ExchangesSingleton } from '../ExchangesSingleton'
 import {
-  BidgetStrategy, BinanceStrategy,
+  BidgetStrategy,
+  BinanceStrategy,
   BitcoinTradeStrategy,
-  BitfinexStrategy, BitmartStrategy, BitsoStrategy,
-  BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
-  CoinBaseStrategy, CryptoComStrategy,
+  BitfinexStrategy,
+  BitmartStrategy,
+  BitsoStrategy,
+  BrasilBitcoinStrategy,
+  ByBitStrategy,
+  ChilizStrategy,
+  CoinBaseStrategy,
+  CryptoComStrategy,
   FTXStrategy,
-  GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
-  KrakenStrategy, KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, NovaDAXStrategy, OkxStrategy, PolonieskStrategy
+  GeminiStategy,
+  GTOStrategy,
+  HitBTCStrategy,
+  HotBitStrategy,
+  HuobiStrategy,
+  KrakenStrategy,
+  KuCoinStratefy,
+  MercadoBitcoinStrategy,
+  MexcStrategy,
+  NovaDAXStrategy,
+  OkxStrategy,
+  PolonieskStrategy,
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
-  ExchangeStrategy
+  ExchangeStrategy,
 } from '../modules/exchanges/ExchangeStrategy'
 import { ServerSingleton } from '../ServerSingleton'
 import { createRouter } from './context'
@@ -47,7 +63,7 @@ const exchangeStrategies: StrategyObject = {
   bidget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
-  ftx: new FTXStrategy()
+  ftx: new FTXStrategy(),
 }
 
 export interface OrderbookOperation {
@@ -254,10 +270,14 @@ const fetchArbitrageOpportunity = async (
   // console.log(exchanges)
 
   const lowestAskExchange = exchanges.find(
-    (exchange) => exchange.name === lowestAsk.exchange
+    (exchange) =>
+      exchange.name.toLowerCase().trim() ===
+      lowestAsk.exchange.toLowerCase().trim()
   )
   const highestBidExchange = exchanges.find(
-    (exchange) => exchange.name === highestBid.exchange
+    (exchange) =>
+      exchange.name.toLowerCase().trim() ===
+      highestBid.exchange.toLowerCase().trim()
   )
 
   const lowestAskFee = lowestAskExchange?.fee ?? 0
@@ -281,8 +301,7 @@ const fetchArbitrageOpportunity = async (
     ticker,
     lowestAsk,
     highestBid,
-    tax:
-      (lowestAskTax?.tax ?? 0) * lowestAsk.price,
+    tax: (lowestAskTax?.tax ?? 0) * lowestAsk.price,
     fee: lowestAskFee + highestBidFee,
     spread,
   }

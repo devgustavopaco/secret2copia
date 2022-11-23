@@ -1,19 +1,17 @@
 // src/pages/_app.tsx
 import { withTRPC } from '@trpc/next'
-import 'nprogress/nprogress.css'
-import NextNProgress from 'nextjs-progressbar'
-import type { AppRouter } from '../server/router'
-import type { AppType } from 'next/dist/shared/lib/utils'
-import superjson from 'superjson'
 import { SessionProvider } from 'next-auth/react'
+import type { AppType } from 'next/dist/shared/lib/utils'
+import NextNProgress from 'nextjs-progressbar'
+import 'nprogress/nprogress.css'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import superjson from 'superjson'
+import type { AppRouter } from '../server/router'
 import '../styles/globals.scss'
 // Default theme. ~960B
-import '@vime/core/themes/default.css'
 
 // Optional light theme (extends default). ~400B
-import '@vime/core/themes/light.css'
 
 const MyApp: AppType = ({
   Component,
