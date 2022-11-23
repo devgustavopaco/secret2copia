@@ -25,11 +25,11 @@ import {
   MexcStrategy,
   NovaDAXStrategy,
   OkxStrategy,
-  PolonieskStrategy,
+  PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
-  ExchangeStrategy,
+  ExchangeStrategy
 } from '../modules/exchanges/ExchangeStrategy'
 import { ServerSingleton } from '../ServerSingleton'
 import { createRouter } from './context'
@@ -259,7 +259,7 @@ const fetchArbitrageOpportunity = async (
   ]!.convertOrderbook(highestBidPair, isFanToken)
 
   const lowestAskTax = taxes.find(
-    (tax) => tax.exchange.name === lowestAsk.exchange
+    (tax) => tax.exchange.name.toLowerCase().trim() === lowestAsk.exchange.toLowerCase().trim()
   )
   const highestBidTax = taxes.find(
     (tax) => tax.exchange.name === highestBid.exchange
@@ -267,7 +267,7 @@ const fetchArbitrageOpportunity = async (
 
   const exchanges = ExchangesSingleton.getInstance().exchanges
 
-  // console.log(exchanges)
+  //console.table(exchanges)
 
   const lowestAskExchange = exchanges.find(
     (exchange) =>

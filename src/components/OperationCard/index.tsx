@@ -110,7 +110,7 @@ export function OperationCard({
         <p>
           <span>Taxas</span>
           {percentageFormatter.format(coin.fee)} + R$
-          {(!coin.ask.isUSD ? coin.tax * dollarPrice : coin.tax).toFixed(2)}
+          {(coin.ask.isUSD ? coin.tax * dollarPrice : coin.tax).toFixed(2)}
         </p>
       </div>
 
