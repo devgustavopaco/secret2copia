@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { CheckCircle, XCircle } from 'phosphor-react'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import { toast } from 'react-toastify'
 
 import { Header } from '../components/Header'
@@ -50,7 +50,9 @@ const Privacidade: NextPage = () => {
     setSecondPassword(event.target.value)
   }
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = (event: FormEvent) => {
+    event.preventDefault()
+
     if (
       firstPassword.toLowerCase().trim() === secondPassword.toLowerCase().trim()
     ) {
