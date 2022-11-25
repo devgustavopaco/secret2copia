@@ -48,6 +48,24 @@ export function Header() {
                 </a>
               </Link>
             </li>
+            <li>
+              <Link href="/privacidade">
+                <a
+                  className={router.pathname === '/privacidade' ? 'active' : ''}
+                >
+                  Privacidade
+                </a>
+              </Link>
+            </li>
+            <li>
+              <a
+                target="_blank"
+                href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+                rel="noopener noreferrer"
+              >
+                Contato
+              </a>
+            </li>
             {auth?.role === 'admin' && (
               <li>
                 <Link href="/admin/users">
@@ -61,15 +79,6 @@ export function Header() {
                 </Link>
               </li>
             )}
-            <li>
-              <a
-                target="_blank"
-                href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
-                rel="noopener noreferrer"
-              >
-                Contato
-              </a>
-            </li>
           </ul>
         </nav>
         <div className={styles.nav_toggle}>
@@ -119,6 +128,22 @@ export function Header() {
               </a>
             </Link>
           </li>
+          <li>
+            <Link href="/privacidade">
+              <a className={router.pathname === '/privacidade' ? 'active' : ''}>
+                Privacidade
+              </a>
+            </Link>
+          </li>
+          <li>
+            <a
+              target="_blank"
+              href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+              rel="noopener noreferrer"
+            >
+              Contato
+            </a>
+          </li>
           {auth?.role === 'admin' && (
             <li>
               <Link href="/admin/users">
@@ -130,15 +155,6 @@ export function Header() {
               </Link>
             </li>
           )}
-          <li>
-            <a
-              target="_blank"
-              href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
-              rel="noopener noreferrer"
-            >
-              Contato
-            </a>
-          </li>
         </ul>
       </nav>
     </header>

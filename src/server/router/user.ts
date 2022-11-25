@@ -32,6 +32,19 @@ export const userRouter = createRouter()
       return allUsers
     },
   })
+  .query('getUserByEmail', {
+    input: z.object({
+      email: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = ctx.prisma.user.findUnique({
+        where: {
+          email: input.email,
+        },
+      })
+      return user
+    },
+  })
   .mutation('create', {
     input: z.object({
       name: z.string(),
@@ -80,6 +93,25 @@ export const userRouter = createRouter()
           email: input.email,
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
+        },
+      })
+
+      return user
+    },
+  })
+  .mutation('updatePassword', {
+    input: z.object({
+      id: z.string(),
+      password: z.string()
+    }),
+    async resolve({ ctx, input }) {
+      const passwordHash = await hash(input.password, 8)
+      const user = await ctx.prisma.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          password: passwordHash,
         },
       })
 
