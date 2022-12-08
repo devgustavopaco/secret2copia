@@ -64,6 +64,7 @@ export class BinanceStrategy implements ExchangeStrategy {
     const json = (await response.json()) as BinanceOrderbook
 
     console.log(json)
+
     this.orderbook[pair] = json
 
     return {
