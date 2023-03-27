@@ -3,15 +3,17 @@ import { unstable_getServerSession } from 'next-auth/next'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import Router from 'next/router'
-import { InstagramLogo } from 'phosphor-react'
+import { InstagramLogo, XCircle } from 'phosphor-react'
 import { useState } from 'react'
 import { authOptions } from './api/auth/[...nextauth]'
 
+import { toast } from 'react-toastify'
 import styles from '../styles/Login.module.scss'
 
 const Login: NextPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -31,7 +33,9 @@ const Login: NextPage = () => {
     })
 
     if (response?.error) {
-      console.error(response.error)
+      toast.dark('Email ou senha incorretos. ', {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      })
       return Router.push('/')
     }
     return Router.push('/monitor')
