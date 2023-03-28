@@ -1,9 +1,14 @@
-import NextAuth, { type NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions, Session } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 // Prisma adapter for NextAuth, optional and can be removed
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../../../server/db/client'
+interface CustomSession extends Session {
+  id: string
+  name: string
+  email: string
+}
 
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
@@ -38,12 +43,10 @@ export const authOptions: NextAuthOptions = {
         )
           .then((response) => response.json())
           .catch((err) => console.error(err))
-
         if (user) {
           // console.log(user)
           return user
         }
-
         return null
       },
     }),
@@ -60,24 +63,21 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name
         token.role = user.role.name
       }
-
       return token
     },
-
     async session({ session, token }) {
+      const customSession = session as CustomSession
       if (token) {
-        session.id = token.id
-        session.email = token.email
-        session.name = token.name
-        session.role = token.role
+        customSession.id = token.id as string
+        customSession.email = token.email as string
+        customSession.name = token.name as string
+        customSession.role = token.role as any
       }
-
-      return session
+      return customSession
     },
   },
   pages: {
     signIn: '/',
   },
 }
-
 export default NextAuth(authOptions)
