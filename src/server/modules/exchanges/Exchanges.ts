@@ -1447,86 +1447,6 @@ export class MexcStrategy implements ExchangeStrategy {
 }
 
 
-// Gate.Io ---------------------------------------------------------------------
-
-interface GTOOrderbook {
-  asks: string[][]
-  bids: string[][]
-}
-
-export class GTOStrategy implements ExchangeStrategy {
-  orderbook: {
-    [key: string]: GTOOrderbook
-  } = {}
-
-  convertOrderbook(pair: string): Orderbook {
-    const bids =
-      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
-        } else {
-          sumVolume = Number(bid[1])
-        }
-
-        acc.push({
-          price: Number(bid[0]),
-          amount: Number(bid[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    const asks =
-      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
-        } else {
-          sumVolume = Number(ask[1])
-        }
-
-        acc.push({
-          price: Number(ask[0]),
-          amount: Number(ask[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    return { bids, asks }
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-
-    const response = await fetch(
-      `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}`
-    )
-    const json = (await response.json()) as GTOOrderbook
-    this.orderbook[pair] = json
-
-    return {
-      name: 'Gate.io',
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
-      isUSD: true,
-    }
-  }
-}
-
-
 
 // Poloniex ---------------------------------------------------------------------
 
@@ -1867,6 +1787,9 @@ export class OkxStrategy implements ExchangeStrategy {
       { headers }
     );
     const json = (await response.json()) as OkxOrderbook
+
+    // console.log(json)
+
     this.orderbook[pair] = json
 
     return {
@@ -1976,5 +1899,88 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
   }
 }
 
+// GATE.IO ---------------------------------------------------------------------
 
+interface GateIoTradeOrderbook {
+  asks: string[][]
+  bids: string[][]
+}
 
+export class GateIoTradeStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: GateIoTradeOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const response = await fetch(
+      `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit= 20`,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const json = (await response.json()) as GateIoTradeOrderbook
+
+    this.orderbook[pair] = json
+
+    return {
+      name: 'Gateio',
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}

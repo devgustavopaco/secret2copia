@@ -12,10 +12,7 @@ import {
   ByBitStrategy,
   ChilizStrategy,
   CoinBaseStrategy,
-  CryptoComStrategy,
-  GeminiStategy,
-  GTOStrategy,
-  HitBTCStrategy,
+  CryptoComStrategy, GateIoTradeStrategy, GeminiStategy, HitBTCStrategy,
   HotBitStrategy,
   HuobiStrategy,
   KrakenStrategy,
@@ -56,12 +53,12 @@ const exchangeStrategies: StrategyObject = {
   hotbit: new HotBitStrategy(),
   bybit: new ByBitStrategy(),
   mexc: new MexcStrategy(),
-  gateio: new GTOStrategy(),
   poloniex: new PolonieskStrategy(),
   bistamp: new BitmartStrategy(),
   bidget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
+  gateio: new GateIoTradeStrategy()
 }
 
 export interface OrderbookOperation {

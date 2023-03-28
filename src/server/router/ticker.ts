@@ -6,7 +6,7 @@ import {
   BrasilBitcoinStrategy, ByBitStrategy, ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
-  CryptoComStrategy, GeminiStategy, GTOStrategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
+  CryptoComStrategy, GateIoTradeStrategy, GeminiStategy, HitBTCStrategy, HotBitStrategy, HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy, MercadoBitcoinStrategy, MexcStrategy, NovaDAXStrategy, OkxStrategy, PolonieskStrategy
 } from '../modules/exchanges/Exchanges'
@@ -16,44 +16,6 @@ import {
 import { createRouter } from './context'
 
 
-interface Operation {
-  coin: {
-    name: string
-    symbol: string
-  }
-  buyExchange: {
-    name: string
-    price: number
-    bids: {
-      price: number
-      amount: number
-      value: number
-    }[]
-  }
-  sellExchange: {
-    name: string
-    price: number
-    asks: {
-      price: number
-      amount: number
-      value: number
-    }[]
-  }
-  taxes: string
-  spread: number
-}
-
-interface Exchange {
-  name: string
-  bid: {
-    price: number
-    amount: number
-  }
-  ask: {
-    price: number
-    amount: number
-  }
-}
 
 const exchangeStrategies: ExchangeStrategy[] = [
   new BinanceStrategy(),
@@ -74,17 +36,16 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new BitfinexStrategy(),
   new HotBitStrategy(),
   new ByBitStrategy(),
-  new GTOStrategy(),
   new PolonieskStrategy(),
   new BitmartStrategy(),
   new BidgetStrategy(),
   new OkxStrategy(),
-  new BitcoinTradeStrategy()
+  new BitcoinTradeStrategy(),
+  new GateIoTradeStrategy()
 ]
 
 export const tickerRouter = createRouter().query('getAll', {
   async resolve({ ctx }) {
-    const ticker: Exchange[] = []
 
     const promisesArray = exchangeStrategies.map(async (exchangeStrategy) => {
       const coinPair = exchangeStrategy.formatPair('btc', 'usdt')
