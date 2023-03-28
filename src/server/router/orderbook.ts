@@ -41,7 +41,7 @@ const exchangeStrategies: StrategyObject = {
   coinbase: new CoinBaseStrategy(),
   chiliz: new ChilizStrategy(),
   // coinext: new CoinextStrategy(),
-  crypto: new CryptoComStrategy(),
+  cryptocom: new CryptoComStrategy(),
   gemini: new GeminiStategy(),
   huobi: new HuobiStrategy(),
   kraken: new KrakenStrategy(),

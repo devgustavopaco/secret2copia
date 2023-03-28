@@ -482,85 +482,6 @@ export class CoinextStrategy implements ExchangeStrategy {
   }
 }
 
-interface CryptoComOrderbook {
-  result: {
-    data: {
-      bids: number[][]
-      asks: number[][]
-    }[]
-  }
-}
-
-export class CryptoComStrategy implements ExchangeStrategy {
-  orderbook: {
-    [key: string]: CryptoComOrderbook
-  } = {}
-
-  convertOrderbook(pair: string): Orderbook {
-    const bids =
-      this.orderbook[pair]?.result.data[0]!.bids.reduce((acc, bid, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
-        } else {
-          sumVolume = Number(bid[1])
-        }
-
-        acc.push({
-          price: Number(bid[0]),
-          amount: Number(bid[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    const asks =
-      this.orderbook[pair]?.result.data[0]!.asks.reduce((acc, ask, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
-        } else {
-          sumVolume = Number(ask[1])
-        }
-
-        acc.push({
-          price: Number(ask[0]),
-          amount: Number(ask[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    return { bids, asks }
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`
-    )
-    const json = (await response.json()) as CryptoComOrderbook
-    this.orderbook[pair] = json
-
-    return {
-      name: 'CryptoCom',
-      bid: {
-        price: Number(json.result.data[0]!.bids[0]![0]),
-        amount: Number(json.result.data[0]!.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.data[0]!.asks[0]![0]),
-        amount: Number(json.result.data[0]!.asks[0]![1]),
-      },
-      isUSD: true,
-    }
-  }
-}
 
 interface GeminiOrderbook {
   bids: {
@@ -1979,6 +1900,88 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       ask: {
         price: Number(json.asks[0]![0]),
         amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+    }
+  }
+}
+
+
+interface CryptoComOrderbook {
+  result: {
+    data: {
+      bids: number[][]
+      asks: number[][]
+    }[]
+  }
+}
+
+export class CryptoComStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CryptoComOrderbook
+  } = {}
+
+  convertOrderbook(pair: string): Orderbook {
+
+    const bids =
+      this.orderbook[pair]?.result.data[0]!.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
+        } else {
+          sumVolume = Number(bid[1])
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    const asks =
+      this.orderbook[pair]?.result.data[0]!.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
+        } else {
+          sumVolume = Number(ask[1])
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        })
+
+        return acc
+      }, [] as OrderbookOperation[]) ?? []
+
+    return { bids, asks }
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const response = await fetch(
+      `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`
+    )
+    const json = (await response.json()) as CryptoComOrderbook
+    this.orderbook[pair] = json
+
+    return {
+      name: 'Cryptocom',
+      bid: {
+        price: Number(json.result.data[0]!.bids[0]![0]),
+        amount: Number(json.result.data[0]!.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.result.data[0]!.asks[0]![0]),
+        amount: Number(json.result.data[0]!.asks[0]![1]),
       },
       isUSD: true,
     }
