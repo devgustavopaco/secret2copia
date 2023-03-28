@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions, Session } from 'next-auth'
+import NextAuth, { ISODateString, NextAuthOptions, Session } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 // Prisma adapter for NextAuth, optional and can be removed
@@ -8,6 +8,8 @@ interface CustomSession extends Session {
   id: string
   name: string
   email: string
+  role: string
+  expires: ISODateString
 }
 
 export const authOptions: NextAuthOptions = {
@@ -71,7 +73,7 @@ export const authOptions: NextAuthOptions = {
         customSession.id = token.id as string
         customSession.email = token.email as string
         customSession.name = token.name as string
-        customSession.role = token.role as any
+        customSession.role = token.role as string
       }
       return customSession
     },
