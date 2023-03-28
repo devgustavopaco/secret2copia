@@ -1,6 +1,8 @@
-import fetch from 'node-fetch'
-import { Orderbook, OrderbookOperation } from '../../router/orderbook'
-import { Exchange, ExchangeStrategy } from './ExchangeStrategy'
+import CryptoJS from 'crypto-js';
+import fetch from 'node-fetch';
+import { Orderbook, OrderbookOperation } from '../../router/orderbook';
+import { Exchange, ExchangeStrategy } from './ExchangeStrategy';
+
 
 interface BinanceOrderbook {
   bids: string[][]
@@ -1843,10 +1845,27 @@ export class OkxStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
+    const apiKey = '75c69478-01e0-4000-ad47-15ca3e6d6ca1';
+    const secretKey = '6DCE61E22D667F5C476B9AB7D0159052';
+
+    const timestamp = Math.floor(Date.now() / 1000).toString(); // convert to string
+    const message = `${timestamp}GET/api/v5/market/books-lite?instId=${pair}`;
+
+    const signature = CryptoJS.enc.Base64.stringify(
+      CryptoJS.HmacSHA256(message, secretKey)
+    );
+
+    const headers = {
+      'OK-ACCESS-KEY': apiKey,
+      'OK-ACCESS-SIGN': signature,
+      'OK-ACCESS-TIMESTAMP': timestamp,
+      'OK-ACCESS-PASSPHRASE': 'your_passphrase_here'
+    };
 
     const response = await fetch(
-      `https://www.okx.com/api/v5/market/books-lite?instId=${pair}`
-    )
+      `https://www.okx.com/api/v5/market/books-lite?instId=${pair}`,
+      { headers }
+    );
     const json = (await response.json()) as OkxOrderbook
     this.orderbook[pair] = json
 
@@ -1958,82 +1977,4 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
 }
 
 
-//FTX -----------------------------
 
-interface FTXOrderbook {
-  result: {
-    bids: number[][]
-    asks: number[][]
-  }
-}
-
-export class FTXStrategy implements ExchangeStrategy {
-  orderbook: {
-    [key: string]: FTXOrderbook
-  } = {}
-
-  convertOrderbook(pair: string): Orderbook {
-    const bids =
-      this.orderbook[pair]?.result.bids.reduce((acc, bid, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1])
-        } else {
-          sumVolume = Number(bid[1])
-        }
-
-        acc.push({
-          price: Number(bid[0]),
-          amount: Number(bid[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    const asks =
-      this.orderbook[pair]?.result.asks.reduce((acc, ask, index) => {
-        let sumVolume = 0
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1])
-        } else {
-          sumVolume = Number(ask[1])
-        }
-
-        acc.push({
-          price: Number(ask[0]),
-          amount: Number(ask[1]),
-          sumVolume,
-        })
-
-        return acc
-      }, [] as OrderbookOperation[]) ?? []
-
-    return { bids, asks }
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}`
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://ftx.com/api/markets/${pair}/USD/orderbook`
-    )
-    const json = (await response.json()) as FTXOrderbook
-    this.orderbook[pair] = json
-
-    return {
-      name: 'FTX',
-      bid: {
-        price: Number(json.result.bids[0]![0]),
-        amount: Number(json.result.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.asks[0]![0]),
-        amount: Number(json.result.asks[0]![1]),
-      },
-      isUSD: true,
-    }
-  }
-}

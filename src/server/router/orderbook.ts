@@ -13,7 +13,6 @@ import {
   ChilizStrategy,
   CoinBaseStrategy,
   CryptoComStrategy,
-  FTXStrategy,
   GeminiStategy,
   GTOStrategy,
   HitBTCStrategy,
@@ -63,7 +62,6 @@ const exchangeStrategies: StrategyObject = {
   bidget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
-  ftx: new FTXStrategy(),
 }
 
 export interface OrderbookOperation {
