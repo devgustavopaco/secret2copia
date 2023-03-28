@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials, req) {
+        console.log(credentials)
         const user = await fetch(
           `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
           {
@@ -44,12 +45,12 @@ export const authOptions: NextAuthOptions = {
           }
         )
           .then((response) => response.json())
-          .catch((err) => console.error(err))
-        if (user) {
+          .catch((err) => console.error('Usuário ou senha inválidos'))
+        if (!user) {
           // console.log(user)
-          return user
+          throw new Error('Invalid email or password')
         }
-        return null
+        return user
       },
     }),
   ],

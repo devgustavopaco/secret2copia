@@ -36,6 +36,7 @@ const Login: NextPage = () => {
       toast.dark('Email ou senha incorretos. ', {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       })
+      console.log(response?.error)
       return Router.push('/')
     }
     return Router.push('/monitor')
