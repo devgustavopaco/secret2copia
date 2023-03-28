@@ -45,10 +45,10 @@ export const authOptions: NextAuthOptions = {
           }
         )
           .then((response) => response.json())
-          .catch((err) => console.error('Usuário ou senha inválidos'))
+          .catch((err) => console.error('Email ou senha inválidos'))
         if (!user) {
           // console.log(user)
-          throw new Error('Invalid email or password')
+          throw new Error('Email ou senha inválidos')
         }
         return user
       },
