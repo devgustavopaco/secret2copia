@@ -85,19 +85,11 @@ export class BinanceStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-
-
     const url = `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
-    // const response = await fetch(`https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`);
-
     const json = await response.json() as BinanceOrderbook
-
-    // console.log(json)
-
-
 
     this.orderbook[pair] = json
 
@@ -194,6 +186,8 @@ export class BitsoStrategy implements ExchangeStrategy {
 
 
     const json = (await response.json()) as BitsoOrderbook
+
+    console.log(json)
 
 
     callCount++
