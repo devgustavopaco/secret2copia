@@ -59,11 +59,12 @@ const Monitoring: NextPage = () => {
       },
     ],
     {
-      refetchInterval: 30 * 1000,
+      refetchInterval: 50 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false
         }
+        console.log(error)
         return true
       },
       keepPreviousData: true,
@@ -76,6 +77,7 @@ const Monitoring: NextPage = () => {
         if (!isFetching) {
           refetch()
         }
+        console.log(error)
       },
     }
   )

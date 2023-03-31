@@ -6,22 +6,43 @@ import { Orderbook, OrderbookOperation } from '../../router/orderbook';
 import { Exchange, ExchangeStrategy } from './ExchangeStrategy';
 
 
-async function fetchWithProxy(url: string, proxies: string[]): Promise<any> {
-  const shuffledProxies = shuffle(proxies);
+async function fetchWithProxyBinance(url: string, proxies: string[]): Promise<any> {
+  const shuffledProxies = shuffleBinance(proxies);
   for (const proxy of shuffledProxies) {
     const [host, portStr, username, password] = proxy!.split(':');
     const port = parseInt(portStr || '', 10);
     const auth = `${username}:${password}`;
     const agent = new HttpsProxyAgent({ host, port, auth });
     const response = await fetch(url, { agent });
-    const ipAddress = await fetch('https://api.ipify.org', { agent }).then((res) => res.text());
-    // console.log(`IP address for this request: ${ipAddress}`);
     return response;
   }
   throw new Error('All proxies failed');
 }
 
-function shuffle<T>(arr: (T | undefined)[]): (T | undefined)[] {
+function shuffleBinance<T>(arr: (T | undefined)[]): (T | undefined)[] {
+  const shuffled = arr.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    if (shuffled[i] !== undefined && shuffled[j] !== undefined) {
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+  }
+  return shuffled;
+}
+async function fetchWithProxyKraken(url: string, proxies: string[]): Promise<any> {
+  const shuffledProxies = shuffleBinance(proxies);
+  for (const proxy of shuffledProxies) {
+    const [host, portStr, username, password] = proxy!.split(':');
+    const port = parseInt(portStr || '', 10);
+    const auth = `${username}:${password}`;
+    const agent = new HttpsProxyAgent({ host, port, auth });
+    const response = await fetch(url, { agent });
+    return response;
+  }
+  throw new Error('All proxies failed');
+}
+
+function shuffleKraken<T>(arr: (T | undefined)[]): (T | undefined)[] {
   const shuffled = arr.slice();
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -33,7 +54,29 @@ function shuffle<T>(arr: (T | undefined)[]): (T | undefined)[] {
 }
 
 
+async function fetchWithProxyBitso(url: string, proxies: string[]): Promise<any> {
+  const shuffledProxies = shuffleBitso(proxies);
+  for (const proxy of shuffledProxies) {
+    const [host, portStr, username, password] = proxy!.split(':');
+    const port = parseInt(portStr || '', 10);
+    const auth = `${username}:${password}`;
+    const agent = new HttpsProxyAgent({ host, port, auth });
+    const response = await fetch(url, { agent });
+    return response;
+  }
+  throw new Error('All proxies failed');
+}
 
+function shuffleBitso<T>(arr: (T | undefined)[]): (T | undefined)[] {
+  const shuffled = arr.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    if (shuffled[i] !== undefined && shuffled[j] !== undefined) {
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+  }
+  return shuffled;
+}
 
 
 
@@ -97,22 +140,19 @@ export class BinanceStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    methodCount++;
+
 
     const url = `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`;
 
-    const response = await fetchWithProxy(url, proxies);
+    const response = await fetchWithProxyBinance(url, proxies);
 
     // const response = await fetch(`https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`);
 
     const json = await response.json() as BinanceOrderbook
 
-    console.log(json)
+    // console.log(json)
 
 
-    callCount++
-
-    console.log(`Total responses of method ${callCount} calls: ${methodCount}`)
 
     this.orderbook[pair] = json
 
@@ -195,14 +235,31 @@ export class BitsoStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`
+    return `${baseToken.toLowerCase()}_usd`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.bitso.com/v3/order_book/?book=${pair}`
-    )
+
+    methodCount++;
+
+    const url = `https://api.bitso.com/v3/order_book/?book=${pair}`
+
+    // const response = await fetch(
+    //   `https://api.bitso.com/v3/order_book/?book=${pair}`
+    // )
+
+    const response = await fetchWithProxyBitso(url, proxies);
+
+
     const json = (await response.json()) as BitsoOrderbook
+
+    console.log(json);
+
+    callCount++
+
+    console.log(`Total responses of method ${callCount} calls: ${methodCount}`)
+
+
     this.orderbook[pair] = json
 
     return {
@@ -778,7 +835,7 @@ export class KrakenStrategy implements ExchangeStrategy {
     const url = `https://api.kraken.com/0/public/Depth?pair=${pair}&count=50`;
 
 
-    const response = await fetchWithProxy(url, proxies);
+    const response = await fetchWithProxyKraken(url, proxies);
 
 
     const json = (await response.json()) as KrakenOrderbook
