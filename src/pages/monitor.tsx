@@ -59,7 +59,7 @@ const Monitoring: NextPage = () => {
       },
     ],
     {
-      refetchInterval: 50 * 1000,
+      refetchInterval: 40 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false
