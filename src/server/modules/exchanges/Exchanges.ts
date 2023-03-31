@@ -112,7 +112,7 @@ export class BinanceStrategy implements ExchangeStrategy {
 
     callCount++
 
-    console.log(`Total value after ${callCount} calls: ${methodCount}`)
+    console.log(`Total responses ${callCount} calls: ${methodCount}`)
 
     this.orderbook[pair] = json
 
