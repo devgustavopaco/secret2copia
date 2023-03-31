@@ -1,7 +1,40 @@
 import CryptoJS from 'crypto-js';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import fetch from 'node-fetch';
+import { proxies } from '../../proxies/proxies';
 import { Orderbook, OrderbookOperation } from '../../router/orderbook';
 import { Exchange, ExchangeStrategy } from './ExchangeStrategy';
+
+
+async function fetchWithProxy(url: string, proxies: string[]): Promise<any> {
+  const shuffledProxies = shuffle(proxies);
+  for (const proxy of shuffledProxies) {
+    const [host, portStr, username, password] = proxy!.split(':');
+    const port = parseInt(portStr || '', 10);
+    const auth = `${username}:${password}`;
+    const agent = new HttpsProxyAgent({ host, port, auth });
+    const response = await fetch(url, { agent });
+    const ipAddress = await fetch('https://api.ipify.org', { agent }).then((res) => res.text());
+    // console.log(`IP address for this request: ${ipAddress}`);
+    return response;
+  }
+  throw new Error('All proxies failed');
+}
+
+function shuffle<T>(arr: (T | undefined)[]): (T | undefined)[] {
+  const shuffled = arr.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    if (shuffled[i] !== undefined && shuffled[j] !== undefined) {
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+  }
+  return shuffled;
+}
+
+
+
+
 
 
 interface BinanceOrderbook {
@@ -13,6 +46,7 @@ export class BinanceStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: BinanceOrderbook
   } = {}
+
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
@@ -51,6 +85,9 @@ export class BinanceStrategy implements ExchangeStrategy {
         return acc
       }, [] as OrderbookOperation[]) ?? []
 
+
+
+
     return { bids, asks }
   }
 
@@ -60,10 +97,22 @@ export class BinanceStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    const response = await fetch(
-      `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`
-    )
-    const json = (await response.json()) as BinanceOrderbook
+    methodCount++;
+
+    const url = `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    // const response = await fetch(`https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`);
+
+    const json = await response.json() as BinanceOrderbook
+
+    console.log(json)
+
+
+    callCount++
+
+    console.log(`Total value after ${callCount} calls: ${methodCount}`)
 
     this.orderbook[pair] = json
 
@@ -80,6 +129,9 @@ export class BinanceStrategy implements ExchangeStrategy {
       isUSD: true,
     }
   }
+
+
+
 }
 
 interface BitsoOrderbook {
@@ -656,6 +708,11 @@ interface KrakenOrderbook {
   }
 }
 
+
+let callCount = 0;
+let methodCount = 0;
+
+
 export class KrakenStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: KrakenOrderbook
@@ -663,6 +720,7 @@ export class KrakenStrategy implements ExchangeStrategy {
   pairResult: string = ''
 
   convertOrderbook(pair: string): Orderbook {
+
     const bids =
       this.orderbook[pair]?.result[this.pairResult]!.bids.reduce(
         (acc, bid, index) => {
@@ -709,14 +767,29 @@ export class KrakenStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+    return `${baseToken.toUpperCase()}USD`
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.kraken.com/0/public/Depth?pair=${pair}&count=10`
-    )
+
+
+    // methodCount++;
+
+    const url = `https://api.kraken.com/0/public/Depth?pair=${pair}&count=50`;
+
+
+    const response = await fetchWithProxy(url, proxies);
+
+
     const json = (await response.json()) as KrakenOrderbook
+
+    // console.log(json)
+
+    // callCount++
+
+    // console.log(`Total value after ${callCount} method: ${methodCount}`)
+
+
     this.orderbook[pair] = json
 
     this.pairResult = Object.keys(json.result)[0]!
