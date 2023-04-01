@@ -265,19 +265,11 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    methodCount++;
-
     const url = `https://brasilbitcoin.com.br/API/orderbook/${pair}`
 
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BrasilBitcoinOrderbook
-
-    callCount++
-
-    console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
-
-    // console.log(json)
 
     this.orderbook[pair] = json
 
@@ -351,10 +343,28 @@ export class CoinBaseStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.exchange.coinbase.com/products/${pair}/book?level=2`
-    )
+
+    methodCount++;
+
+    const url = `https://api.exchange.coinbase.com/products/${pair}/book?level=2`;
+
+    // const response = await fetch(
+    //   `https://api.exchange.coinbase.com/products/${pair}/book?level=2`
+    // )
+
+
+    const response = await fetchWithProxy(url, proxies);
+
+
     const json = (await response.json()) as CoinBaseOrderbook
+
+    callCount++
+
+    console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
+
+    // console.log(json)
+
+
     this.orderbook[pair] = json
 
     return {
