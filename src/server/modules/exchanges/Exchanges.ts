@@ -11,8 +11,6 @@ async function fetchWithProxy(url: string, proxies: string[]): Promise<any> {
   const randomIndex = Math.floor(Math.random() * 500);
   const proxy = proxies[randomIndex] || '';
 
-  console.log(`Using proxy: ${proxy}`);
-
   const [host, portStr, username, password] = proxy.split(':');
 
   const port = parseInt(portStr || '', 10);
@@ -177,8 +175,6 @@ export class BitsoStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    methodCount++;
-
     const url = `https://api.bitso.com/v3/order_book/?book=${pair}`
 
 
@@ -186,13 +182,6 @@ export class BitsoStrategy implements ExchangeStrategy {
 
 
     const json = (await response.json()) as BitsoOrderbook
-
-    console.log(json)
-
-
-    callCount++
-
-    console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
 
 
     this.orderbook[pair] = json
@@ -275,10 +264,21 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://brasilbitcoin.com.br/API/orderbook/${pair}`
-    )
+
+    methodCount++;
+
+    const url = `https://brasilbitcoin.com.br/API/orderbook/${pair}`
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as BrasilBitcoinOrderbook
+
+    callCount++
+
+    console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
+
+    // console.log(json)
+
     this.orderbook[pair] = json
 
     return {
