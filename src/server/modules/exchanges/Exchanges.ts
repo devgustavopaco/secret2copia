@@ -344,25 +344,12 @@ export class CoinBaseStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
 
-    methodCount++;
 
     const url = `https://api.exchange.coinbase.com/products/${pair}/book?level=2`;
 
-    // const response = await fetch(
-    //   `https://api.exchange.coinbase.com/products/${pair}/book?level=2`
-    // )
-
-
     const response = await fetchWithProxy(url, proxies);
 
-
     const json = (await response.json()) as CoinBaseOrderbook
-
-    callCount++
-
-    console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
-
-    // console.log(json)
 
 
     this.orderbook[pair] = json
@@ -447,21 +434,35 @@ export class ChilizStrategy implements ExchangeStrategy {
     pair: string,
     isFanToken: boolean = false
   ): Promise<Exchange> {
+
+
+    methodCount++;
+
     if (isFanToken) {
-      // fetch price from chiliz using this url https://api.chiliz.net/openapi/quote/v1/ticker/price?symbol=CHZUSDT
-      const response = await fetch(
-        `https://api.chiliz.net/openapi/quote/v1/ticker/price?symbol=CHZUSDT`
-      )
+
+      const url = `https://api.chiliz.net/openapi/quote/v1/ticker/price?symbol=CHZUSDT`;
+
+      const response = await fetchWithProxy(url, proxies);
+
       const chzPriceJson = (await response.json()) as {
         symbol: string
         price: string
       }
       this.chzPrice = Number(chzPriceJson.price)
     }
-    const response = await fetch(
-      `https://api.chiliz.net/openapi/quote/v1/depth?limit=10&symbol=${pair}`
-    )
+
+    const url = `https://api.chiliz.net/openapi/quote/v1/depth?limit=10&symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as ChilizOrderbook
+
+    callCount++
+
+    // console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
+
+    console.log(json)
+
     this.orderbook[pair] = json
 
     return {
