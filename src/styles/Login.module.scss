@@ -12,6 +12,7 @@
     background-position: center;
     background-repeat: no-repeat;
     height: 100vh;
+    animation: changeBackground 15s ease-in-out infinite;
 
     .contentBox {
       align-items: flex-start;
@@ -205,5 +206,20 @@
     .halfLeft {
       height: 40vh;
     }
+  }
+}
+
+@keyframes changeBackground {
+  0% {
+    background-image: url("/images/login.png");
+  }
+  33.33% {
+    background-image: url("/images/login2.png");
+  }
+  66.66% {
+    background-image: url("/images/login3.png");
+  }
+  100% {
+    background-image: url("/images/login.png");
   }
 }

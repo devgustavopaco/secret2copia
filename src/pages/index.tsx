@@ -11,6 +11,7 @@ import {
 } from "react-google-recaptcha-v3";
 import { toast } from "react-toastify";
 
+import Image from "next/image";
 import { XCircle } from "phosphor-react";
 import styles from "../styles/Login.module.scss";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -36,9 +37,9 @@ const Login: NextPage = () => {
   const [backgroundIndex, setBackgroundIndex] = useState(1);
 
   const backgrounds = [
-    "images/login.png",
+    "/images/login.png",
     "/images/login2.png",
-    "images/login3.png",
+    "/images/login3.png",
   ];
 
   const handleBackgroundChange = useCallback(() => {
@@ -94,13 +95,12 @@ const Login: NextPage = () => {
 
   return (
     <div className={styles.body}>
-      <section
-        className={styles.halfLeft}
-        style={{
-          backgroundImage: `url(${backgrounds[backgroundIndex]})`,
-          transition: "background-image 2s ease-in-out",
-        }}
-      >
+      <div style={{ display: "none" }}>
+        {backgrounds.map((bg, index) => (
+          <Image key={index} src={bg} layout="fill" />
+        ))}
+      </div>
+      <section className={styles.halfLeft}>
         <div className={styles.contentBox}>
           <img src="images/logoBranca.svg" alt="Logo da nextGain" />
         </div>
