@@ -102,7 +102,7 @@ export const userRouter = createRouter()
   .mutation('updatePassword', {
     input: z.object({
       id: z.string(),
-      password: z.string()
+      password: z.string(),
     }),
     async resolve({ ctx, input }) {
       const passwordHash = await hash(input.password, 8)

@@ -46,7 +46,7 @@ export class CoinsSingleton {
                 fee: true,
                 convert: true,
                 image_url: true,
-                active: true
+                active: true,
               },
             },
           },

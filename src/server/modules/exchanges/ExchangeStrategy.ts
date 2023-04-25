@@ -47,6 +47,4 @@ export interface ExchangeStrategy {
   ): string
   fetchOrderbook(pair: string, isFanToken?: boolean): Promise<Exchange>
   convertOrderbook(pair: string, isFanToken?: boolean): Orderbook
-
-
 }

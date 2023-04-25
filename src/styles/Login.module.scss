@@ -1,37 +1,49 @@
 .body {
-  background-image: url('/images/loginImg.png');
   width: 100%;
   // height: 100vh;
-  padding-block: 11rem;
   display: flex;
+  flex-wrap: wrap;
   overflow: hidden;
-}
-
-.header {
-  background: #000;
-  text-align: center;
-  padding-block: 0.5rem;
-  img {
-    width: 200px;
-    object-fit: cover;
-    margin-left: -17px;
-  }
-}
-
-.contentBox {
-  display: flex;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+  .halfLeft {
+    flex: 1;
+    max-width: 42%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+
+    .contentBox {
+      align-items: flex-start;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 2.5rem;
+
+      img {
+        object-fit: cover;
+        width: 185px;
+      }
+    }
+  }
+  .halfRight {
+    flex: 1;
+    width: 100%;
+    background-color: #0d0f12;
+    .contentBox {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 
 .formBox {
   width: 500px;
   padding: 1rem;
   border-radius: 8px;
-  background: rgba(16, 16, 16, 0.9);
-
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -55,22 +67,25 @@
     color: var(--white);
     font-weight: 600;
     font-size: var(--fs-500);
-    text-transform: uppercase;
-    border-bottom: 4px solid var(--purple-500);
     display: inline-block;
   }
 
   button {
-    padding: 0.5rem 1rem;
+    padding: 1rem 1rem;
     color: var(--white);
-
     width: 100%;
-
     background: var(--purple-500);
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0px 10px 30px rgba(123, 97, 255, 0.3);
     border-radius: 8px;
-
     transition: filter 0.2s ease;
+    margin-top: 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
 
     &:hover,
     &:focus {
@@ -96,7 +111,7 @@
     margin-bottom: 0.25rem;
     display: inline-block;
     color: var(--white);
-    font-weight: 300;
+    font-weight: 500;
     font-size: var(--fs-400);
   }
 
@@ -104,12 +119,25 @@
     width: 100%;
     padding: 0.5rem;
     font-weight: 400;
-    border: 1px solid var(--purple-500);
+    border: none;
     font-size: var(--fs-400);
     letter-spacing: 1px;
-    color: var(--white);
-    background: transparent;
+    background: #21202d;
+    color: #fff;
     border-radius: 8px;
+    height: 52px;
+  }
+
+  .inputPassword {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+
+    .eyeIcon {
+      position: absolute;
+      cursor: pointer;
+      margin-right: 15px;
+    }
   }
 }
 
@@ -155,7 +183,27 @@
 }
 
 @media screen and (max-width: 968px) {
+  .body {
+    flex-direction: column;
+    .halfLeft {
+      height: 45vh;
+      flex: auto;
+    }
+    .halfRight {
+      height: 60vh;
+      flex: auto;
+      padding: 3rem 0;
+    }
+  }
   .formBox {
     width: 90vw;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .body {
+    .halfLeft {
+      height: 40vh;
+    }
   }
 }

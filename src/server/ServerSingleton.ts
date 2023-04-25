@@ -1,7 +1,6 @@
-
 interface DolarResponse {
   USDBRL: {
-    bid: string;
+    bid: string
   }
 }
 
@@ -22,14 +21,13 @@ export class ServerSingleton {
   }
 
   private async fetchDollar(): Promise<number> {
-
     const response = await fetch(
       `https://economia.awesomeapi.com.br/json/last/USD-BRL`
     )
 
     const { USDBRL } = (await response.json()) as DolarResponse
 
-    this.dolar = Number(USDBRL.bid);
+    this.dolar = Number(USDBRL.bid)
 
     return this.dolar
   }
@@ -37,5 +35,4 @@ export class ServerSingleton {
   public async getDollar(): Promise<number> {
     return await this.fetchDollar()
   }
-
 }

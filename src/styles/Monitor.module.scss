@@ -16,19 +16,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;      
+      gap: 1rem;
 
       @media screen and (max-width: 968px) {
-        font-size:27px;
+        font-size: 27px;
       }
     }
   }
 
   @media screen and (min-width: 968px) {
     flex-direction: row;
-    align-items: flex-start;        
+    align-items: flex-start;
   }
-  
 }
 
 .operations {
@@ -85,18 +84,17 @@
   }
 }
 
-.mobileFilter{
-
+.mobileFilter {
   padding-left: 15px;
   padding-top: 20px;
   padding-right: 15px;
 
-  span{
+  span {
     margin-left: 1px;
     font-size: 20px;
   }
-  
+
   @media screen and (min-width: 968px) {
-    display:none;
+    display: none;
   }
 }

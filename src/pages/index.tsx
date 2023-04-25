@@ -1,19 +1,62 @@
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { GetServerSideProps, NextPage } from 'next'
 import { unstable_getServerSession } from 'next-auth/next'
 import { signIn } from 'next-auth/react'
-import Link from 'next/link'
 import Router from 'next/router'
-import { InstagramLogo, XCircle } from 'phosphor-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from 'react-google-recaptcha-v3'
+import { toast } from 'react-toastify'
+
+import { XCircle } from 'phosphor-react'
+import styles from '../styles/Login.module.scss'
 import { authOptions } from './api/auth/[...nextauth]'
 
-import { toast } from 'react-toastify'
-import styles from '../styles/Login.module.scss'
+const LoginWithCaptha = () => {
+  const RECAPTCHA_SITE_KEY = '6Lf7sbMlAAAAAP2FYf141iFvvxtf94odSx_kLKBa' // Add your reCAPTCHA site key
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+      <Login />
+    </GoogleReCaptchaProvider>
+  )
+}
+
+export default LoginWithCaptha
 
 const Login: NextPage = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [backgroundIndex, setBackgroundIndex] = useState(1)
+  const [recaptchaTokenState, setRecaptchaTokenState] = useState('')
+
+  const backgrounds = [
+    'images/login.png',
+    '/images/login2.png',
+    'images/login3.png',
+  ]
+
+  const handleBackgroundChange = useCallback(() => {
+    setBackgroundIndex(
+      (backgroundIndex) => (backgroundIndex + 1) % backgrounds.length
+    )
+  }, [])
+
+  useEffect(() => {
+    const intervalId = setInterval(handleBackgroundChange, 5000)
+
+    return () => clearInterval(intervalId)
+  }, [handleBackgroundChange])
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword)
+  }
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -26,71 +69,81 @@ const Login: NextPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    if (!executeRecaptcha) {
+      return
+    }
+
+    const recaptchaToken = await executeRecaptcha('login')
+
     const response = await signIn('credentials', {
       redirect: false,
       email,
       password,
+      recaptchaToken,
     })
 
     if (response?.error) {
-      toast.dark('Email ou senha incorretos. ', {
+      toast.dark(response.error, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       })
-      console.log(response?.error)
+      console.error(response.error)
       return Router.push('/')
     }
+
     return Router.push('/monitor')
   }
 
   return (
-    <>
-      <header className={styles.header}>
-        <img src="images/NG1.png" />
-      </header>
-      <section className={styles.body}>
+    <div className={styles.body}>
+      <section
+        className={styles.halfLeft}
+        style={{
+          backgroundImage: `url(${backgrounds[backgroundIndex]})`,
+          transition: 'background-image 2s ease-in-out',
+        }}
+      >
+        <div className={styles.contentBox}>
+          <img src="images/logoBranca.svg" alt="Logo da nextGain" />
+        </div>
+      </section>
+      <section className={styles.halfRight}>
         <div className={styles.contentBox}>
           <div className={styles.formBox}>
-            <h1>Login</h1>
+            <h1>Bem-vindo à Next Gain</h1>
             <form action="" onSubmit={handleSubmit}>
               <div className={styles.inputBox}>
-                <span>Email</span>
+                <span>Email*</span>
                 <input type="text" value={email} onChange={handleEmailChange} />
               </div>
               <div className={styles.inputBox}>
                 <span>Senha</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                />
+                <div className={styles.inputPassword}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                  <FontAwesomeIcon
+                    className={styles.eyeIcon}
+                    icon={showPassword ? faEyeSlash : faEye}
+                    onClick={toggleShowPassword}
+                    width={24}
+                    height={24}
+                  />
+                </div>
               </div>
-
               <div className={styles.inputBox}>
-                <button type="submit">Entrar</button>
+                <button type="submit">
+                  Entrar <img src="images/arrowLogin.svg" alt="" />
+                </button>
               </div>
             </form>
-
-            <div className={styles.socialMedia}>
-              <h3>Nos acompanhe nas redes sociais!</h3>
-
-              <Link
-                href="https://www.instagram.com/gustavonigre/"
-                target="_blank"
-              >
-                <a target="_blank">
-                  <InstagramLogo className={styles.icon} />
-                </a>
-              </Link>
-              <p>N E X T G A I N ®️ 2023</p>
-            </div>
           </div>
         </div>
       </section>
-    </>
+    </div>
   )
 }
-
-export default Login
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(

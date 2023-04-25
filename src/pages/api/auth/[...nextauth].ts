@@ -1,9 +1,17 @@
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import axios from 'axios' // Import axios
 import NextAuth, { ISODateString, NextAuthOptions, Session } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-
-// Prisma adapter for NextAuth, optional and can be removed
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../../../server/db/client'
+
+// Function to verify the reCAPTCHA token
+async function verifyRecaptchaToken(token: string) {
+  const response = await axios.post(
+    `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+  )
+  return response.data.success
+}
+
 interface CustomSession extends Session {
   id: string
   name: string
@@ -32,7 +40,13 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials, req) {
-        console.log(credentials)
+        // Verify the reCAPTCHA token
+        console.log(req.body)
+        if (!(await verifyRecaptchaToken(req.body?.recaptchaToken))) {
+          throw new Error('Invalid reCAPTCHA token.')
+        }
+
+        // ... (existing code)
         const user = await fetch(
           `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
           {
@@ -47,7 +61,6 @@ export const authOptions: NextAuthOptions = {
           .then((response) => response.json())
           .catch((err) => console.error('Email ou senha inválidos'))
         if (!user) {
-          // console.log(user)
           throw new Error('Email ou senha inválidos')
         }
         return user
@@ -83,4 +96,5 @@ export const authOptions: NextAuthOptions = {
     signIn: '/',
   },
 }
+
 export default NextAuth(authOptions)

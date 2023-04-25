@@ -12,7 +12,10 @@ import {
   ByBitStrategy,
   ChilizStrategy,
   CoinBaseStrategy,
-  CryptoComStrategy, GateIoTradeStrategy, GeminiStategy, HitBTCStrategy,
+  CryptoComStrategy,
+  GateIoTradeStrategy,
+  GeminiStategy,
+  HitBTCStrategy,
   HotBitStrategy,
   HuobiStrategy,
   KrakenStrategy,
@@ -21,11 +24,11 @@ import {
   MexcStrategy,
   NovaDAXStrategy,
   OkxStrategy,
-  PolonieskStrategy
+  PolonieskStrategy,
 } from '../modules/exchanges/Exchanges'
 import type {
   Exchange,
-  ExchangeStrategy
+  ExchangeStrategy,
 } from '../modules/exchanges/ExchangeStrategy'
 import { ServerSingleton } from '../ServerSingleton'
 import { createRouter } from './context'
@@ -58,7 +61,7 @@ const exchangeStrategies: StrategyObject = {
   bidget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
-  gateio: new GateIoTradeStrategy()
+  gateio: new GateIoTradeStrategy(),
 }
 
 export interface OrderbookOperation {
@@ -254,7 +257,9 @@ const fetchArbitrageOpportunity = async (
   ]!.convertOrderbook(highestBidPair, isFanToken)
 
   const lowestAskTax = taxes.find(
-    (tax) => tax.exchange.name.toLowerCase().trim() === lowestAsk.exchange.toLowerCase().trim()
+    (tax) =>
+      tax.exchange.name.toLowerCase().trim() ===
+      lowestAsk.exchange.toLowerCase().trim()
   )
   const highestBidTax = taxes.find(
     (tax) => tax.exchange.name === highestBid.exchange

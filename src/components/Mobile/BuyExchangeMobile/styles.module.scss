@@ -1,39 +1,39 @@
 .select {
+  color: var(--gray-100);
+  > div[class$='control'] {
+    cursor: text;
+    height: 45px;
+    margin-top: 5px;
+    background-color: var(--gray-600);
     color: var(--gray-100);
-    > div[class$='control'] {
-      cursor: text;
-      height: 45px;
-      margin-top: 5px;
-      background-color: var(--gray-600);
+    border: none;
+    border-color: var(--purple-500);
+    box-shadow: none;
+    border-radius: 8px;
+
+    > div[class$='ValueContainer'] {
+      padding: 0.5rem;
       color: var(--gray-100);
-      border: none;
-      border-color: var(--purple-500);
-      box-shadow: none;
-      border-radius: 8px;
-  
-      > div[class$='ValueContainer'] {
-        padding: 0.5rem;
+
+      div {
         color: var(--gray-100);
-  
-        div {
-          color: var(--gray-100);
-        }
-      }
-  
-      > div[class$='IndicatorsContainer'] {
-        > div {
-          color: var(--gray-100);
-        }
-        > span {
-          background-color: var(--gray-100);
-        }
       }
     }
-  
-    > div[class$='menu'] {
-      background-color: var(--gray-600);
-      color: var(--gray-100);
-      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-      width: 100%;
+
+    > div[class$='IndicatorsContainer'] {
+      > div {
+        color: var(--gray-100);
+      }
+      > span {
+        background-color: var(--gray-100);
+      }
     }
   }
+
+  > div[class$='menu'] {
+    background-color: var(--gray-600);
+    color: var(--gray-100);
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    width: 100%;
+  }
+}
