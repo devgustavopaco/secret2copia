@@ -29,7 +29,7 @@ export async function sendResetPasswordEmail(
             <p>Recebemos uma solicitação para redefinir sua senha. Sua nova senha é:</p>
             <p><strong>${newPassword}</strong></p>
             <p>Faça o login com esta nova senha e altere-a imediatamente. Se você não solicitou uma redefinição de senha, entre em contato com nossa equipe de suporte.</p>
-            <p>Best regards,<br>NextGain Team</p>
+            <p>Atenciosamente,<br>NextGain</p>
         `,
   };
 
