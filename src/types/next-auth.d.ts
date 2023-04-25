@@ -1,16 +1,16 @@
-import NextAuth, { DefaultSession } from 'next-auth'
+import NextAuth, { DefaultSession } from "next-auth";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface User {
     /** OpenID ID Token */
     role: {
-      name: string
-    }
+      name: string;
+    };
   }
   interface Session {
-    role: string
+    role: string;
     user: {
-      role: string
-    } & DefaultSession['user']
+      role: string;
+    } & DefaultSession["user"];
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 export function CoinNotFound() {
   return (
@@ -20,5 +20,5 @@ export function CoinNotFound() {
         </clipPath>
       </defs>
     </svg>
-  )
+  );
 }

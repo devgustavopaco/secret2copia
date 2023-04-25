@@ -1,39 +1,39 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import { ExchangesSingleton } from '../ExchangesSingleton'
-import { createRouter } from './context'
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { ExchangesSingleton } from "../ExchangesSingleton";
+import { createRouter } from "./context";
 
 export const exchangeRouter = createRouter()
-  .query('getExchanges', {
+  .query("getExchanges", {
     resolve({ ctx }) {
-      const exchanges = ctx.prisma.exchange.findMany()
+      const exchanges = ctx.prisma.exchange.findMany();
 
-      return exchanges
+      return exchanges;
     },
   })
-  .query('getActiveExchanges', {
+  .query("getActiveExchanges", {
     resolve({ ctx }) {
       const exchanges = ctx.prisma.exchange.findMany({
         orderBy: {
-          name: 'asc',
+          name: "asc",
         },
         where: {
           active: true,
         },
-      })
+      });
 
-      return exchanges
+      return exchanges;
     },
   })
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
     // raise an error unless there is a current session
     if (!ctx.session) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' })
+      throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    return next()
+    return next();
   })
-  .mutation('create', {
+  .mutation("create", {
     input: z.object({
       fee: z.number().nonnegative(),
       name: z.string(),
@@ -50,22 +50,22 @@ export const exchangeRouter = createRouter()
           image_url: input.image_url,
           convert: input.convert,
         },
-      })
+      });
 
       if (exchange) {
-        await ExchangesSingleton.getInstance().updateExchanges()
+        await ExchangesSingleton.getInstance().updateExchanges();
 
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
   })
-  .mutation('delete', {
+  .mutation("delete", {
     input: z.object({
       ids: z.string().cuid().array(),
     }),
@@ -76,22 +76,22 @@ export const exchangeRouter = createRouter()
             in: input.ids,
           },
         },
-      })
+      });
 
       if (exchange) {
-        await ExchangesSingleton.getInstance().updateExchanges()
+        await ExchangesSingleton.getInstance().updateExchanges();
 
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
   })
-  .mutation('update', {
+  .mutation("update", {
     input: z.object({
       id: z.string().cuid(),
       active: z.boolean().optional(),
@@ -112,18 +112,18 @@ export const exchangeRouter = createRouter()
           tag: input.tag,
           convert: input.convert,
         },
-      })
+      });
 
       if (exchange) {
-        await ExchangesSingleton.getInstance().updateExchanges()
+        await ExchangesSingleton.getInstance().updateExchanges();
 
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
-  })
+  });

@@ -4,7 +4,5 @@
     "prettier",
     "plugin:prettier/recommended"
   ],
-  "plugins": [
-    "prettier"
-  ]
+  "plugins": ["prettier"]
 }

@@ -23,9 +23,9 @@ import {
   NovaDAXStrategy,
   OkxStrategy,
   PolonieskStrategy,
-} from '../modules/exchanges/Exchanges'
-import { ExchangeStrategy } from '../modules/exchanges/ExchangeStrategy'
-import { createRouter } from './context'
+} from "../modules/exchanges/Exchanges";
+import { ExchangeStrategy } from "../modules/exchanges/ExchangeStrategy";
+import { createRouter } from "./context";
 
 const exchangeStrategies: ExchangeStrategy[] = [
   new BinanceStrategy(),
@@ -52,19 +52,19 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new OkxStrategy(),
   new BitcoinTradeStrategy(),
   new GateIoTradeStrategy(),
-]
+];
 
-export const tickerRouter = createRouter().query('getAll', {
+export const tickerRouter = createRouter().query("getAll", {
   async resolve({ ctx }) {
     const promisesArray = exchangeStrategies.map(async (exchangeStrategy) => {
-      const coinPair = exchangeStrategy.formatPair('btc', 'usdt')
+      const coinPair = exchangeStrategy.formatPair("btc", "usdt");
 
       return exchangeStrategy.fetchOrderbook(coinPair).then((exchangeData) => {
-        return exchangeData
-      })
-    })
+        return exchangeData;
+      });
+    });
 
-    const results = await Promise.allSettled(promisesArray)
-    return results
+    const results = await Promise.allSettled(promisesArray);
+    return results;
   },
-})
+});

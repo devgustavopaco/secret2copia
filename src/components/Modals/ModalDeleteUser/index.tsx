@@ -1,8 +1,8 @@
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 interface ModalDeleteUserProps {
-  setOpenModal: (open: boolean) => void
-  deleted: (deleted: boolean) => void
+  setOpenModal: (open: boolean) => void;
+  deleted: (deleted: boolean) => void;
 }
 
 export function ModalDeleteUser({
@@ -15,7 +15,7 @@ export function ModalDeleteUser({
         <div className={styles.titleCloseBtn}>
           <button
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
             className={styles.xBtn}
           >
@@ -32,14 +32,14 @@ export function ModalDeleteUser({
           <button
             className={styles.voltarBtn}
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
           >
             Voltar
           </button>
           <button
             onClick={() => {
-              deleted(true), setOpenModal(false)
+              deleted(true), setOpenModal(false);
             }}
             className={styles.excluirBtn}
           >
@@ -48,5 +48,5 @@ export function ModalDeleteUser({
         </div>
       </div>
     </div>
-  )
+  );
 }

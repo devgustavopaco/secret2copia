@@ -1,61 +1,61 @@
-import { X } from 'phosphor-react'
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { ImageDropzone } from '../../../ImageDropzone'
+import { X } from "phosphor-react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { ImageDropzone } from "../../../ImageDropzone";
 
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 interface ModalAddExchangeProps {
-  onClose: () => void
+  onClose: () => void;
   onSubmit: (
     fee: number,
     tag: string,
     name: string,
     image: File,
     convert: boolean
-  ) => void
+  ) => void;
 }
 
 export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
-  const [tag, setTag] = useState('')
-  const [name, setName] = useState('')
-  const [fee, setFee] = useState(0)
-  const [convert, setConvert] = useState(false)
-  const [image, setImage] = useState<File | null>(null)
+  const [tag, setTag] = useState("");
+  const [name, setName] = useState("");
+  const [fee, setFee] = useState(0);
+  const [convert, setConvert] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
 
   const handleImageDrop = (files: File[]) => {
-    const selectedImage = files[0]
+    const selectedImage = files[0];
 
     if (selectedImage) {
-      setImage(selectedImage)
+      setImage(selectedImage);
     }
-  }
+  };
 
   const handleFeeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFee(Number(event.target.value))
-  }
+    setFee(Number(event.target.value));
+  };
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value)
-  }
+    setName(event.target.value);
+  };
 
   const handleTagChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setTag(event.target.value.toUpperCase())
-  }
+    setTag(event.target.value.toUpperCase());
+  };
 
   const handleConvertChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setConvert(event.target.checked)
-  }
+    setConvert(event.target.checked);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (image) {
-      onSubmit(fee, tag, name, image, convert)
-      onClose()
+      onSubmit(fee, tag, name, image, convert);
+      onClose();
     } else {
-      console.error('Image is required')
+      console.error("Image is required");
     }
-  }
+  };
 
   return (
     <div className={styles.modalBackground}>
@@ -125,5 +125,5 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
         </footer>
       </form>
     </div>
-  )
+  );
 }

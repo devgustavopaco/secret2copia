@@ -1,5 +1,5 @@
-import styles from './styles.module.scss'
-import { Visibility } from '@material-ui/icons'
+import styles from "./styles.module.scss";
+import { Visibility } from "@material-ui/icons";
 
 export function WidgetSm() {
   return (
@@ -70,5 +70,5 @@ export function WidgetSm() {
         </li>
       </ul>
     </div>
-  )
+  );
 }

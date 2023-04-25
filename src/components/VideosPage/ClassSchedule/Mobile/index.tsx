@@ -1,17 +1,17 @@
-import { Videos } from '@prisma/client'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { CheckCircle } from 'phosphor-react'
-import styles from './styles.module.scss'
+import { Videos } from "@prisma/client";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { CheckCircle } from "phosphor-react";
+import styles from "./styles.module.scss";
 
 interface videoProps {
-  data: Videos[]
+  data: Videos[];
 }
 
 export function MobileClassScheduleComponent({ data }: videoProps) {
-  const router = useRouter()
+  const router = useRouter();
 
-  const { id } = router.query as { id: string }
+  const { id } = router.query as { id: string };
 
   return (
     <div className={styles.cronogramaSection}>
@@ -52,5 +52,5 @@ export function MobileClassScheduleComponent({ data }: videoProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

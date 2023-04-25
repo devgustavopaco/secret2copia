@@ -1,20 +1,20 @@
-import { Exchange } from '@prisma/client'
-import { prisma } from './db/client'
+import { Exchange } from "@prisma/client";
+import { prisma } from "./db/client";
 
 export class ExchangesSingleton {
-  private static instance: ExchangesSingleton
+  private static instance: ExchangesSingleton;
 
-  public exchanges: Exchange[] = []
+  public exchanges: Exchange[] = [];
 
   constructor() {
-    this.updateExchanges()
+    this.updateExchanges();
   }
 
   public static getInstance(): ExchangesSingleton {
     if (!ExchangesSingleton.instance) {
-      ExchangesSingleton.instance = new ExchangesSingleton()
+      ExchangesSingleton.instance = new ExchangesSingleton();
     }
-    return ExchangesSingleton.instance
+    return ExchangesSingleton.instance;
   }
 
   public async updateExchanges(): Promise<void> {
@@ -22,6 +22,6 @@ export class ExchangesSingleton {
       where: {
         active: true,
       },
-    })
+    });
   }
 }

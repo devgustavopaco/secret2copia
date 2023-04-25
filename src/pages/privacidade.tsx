@@ -1,57 +1,57 @@
-import type { NextPage } from 'next'
-import { useSession } from 'next-auth/react'
-import Head from 'next/head'
-import Link from 'next/link'
-import { CheckCircle, XCircle } from 'phosphor-react'
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { toast } from 'react-toastify'
+import type { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import Head from "next/head";
+import Link from "next/link";
+import { CheckCircle, XCircle } from "phosphor-react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { toast } from "react-toastify";
 
-import { Header } from '../components/Header'
-import styles from '../styles/Privacidade.module.scss'
-import { trpc } from '../utils/trpc'
+import { Header } from "../components/Header";
+import styles from "../styles/Privacidade.module.scss";
+import { trpc } from "../utils/trpc";
 
 const notify = (text: string, success: boolean) => {
   if (success) {
     toast.dark(text, {
       icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-    })
+    });
   } else {
     toast.dark(text, {
       icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-    })
+    });
   }
-}
+};
 
 const Privacidade: NextPage = () => {
-  const { data: auth } = useSession()
+  const { data: auth } = useSession();
 
   const { data: user } = trpc.useQuery([
-    'user.getUserByEmail',
+    "user.getUserByEmail",
     { email: auth?.user?.email as string },
-  ])
+  ]);
 
-  const updateMutation = trpc.useMutation('user.updatePassword', {
+  const updateMutation = trpc.useMutation("user.updatePassword", {
     onSuccess() {
-      notify('Senha alterada com sucesso!', true)
+      notify("Senha alterada com sucesso!", true);
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
-  const [firstPassword, setFirstPassword] = useState('')
-  const [secondPassword, setSecondPassword] = useState('')
+  const [firstPassword, setFirstPassword] = useState("");
+  const [secondPassword, setSecondPassword] = useState("");
 
   const handleFirstPassword = (event: ChangeEvent<HTMLInputElement>) => {
-    setFirstPassword(event.target.value)
-  }
+    setFirstPassword(event.target.value);
+  };
 
   const handleSecondPassword = (event: ChangeEvent<HTMLInputElement>) => {
-    setSecondPassword(event.target.value)
-  }
+    setSecondPassword(event.target.value);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (
       firstPassword.toLowerCase().trim() === secondPassword.toLowerCase().trim()
@@ -59,11 +59,11 @@ const Privacidade: NextPage = () => {
       updateMutation.mutate({
         id: String(user?.id),
         password: secondPassword,
-      })
+      });
     } else {
-      notify('As senhas não são as mesmas!', false)
+      notify("As senhas não são as mesmas!", false);
     }
-  }
+  };
 
   return (
     <>
@@ -116,10 +116,10 @@ const Privacidade: NextPage = () => {
         </div>
       </section>
     </>
-  )
-}
+  );
+};
 
-export default Privacidade
+export default Privacidade;
 
 // export const getServerSideProps: GetServerSideProps = async (context) => {
 //   const session = await unstable_getServerSession(

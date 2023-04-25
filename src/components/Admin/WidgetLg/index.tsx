@@ -1,4 +1,4 @@
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 export function WidgetLg() {
   return (
@@ -48,5 +48,5 @@ export function WidgetLg() {
         </tr>
       </table>
     </div>
-  )
+  );
 }

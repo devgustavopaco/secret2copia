@@ -1,69 +1,69 @@
-import { Exchange } from '@prisma/client'
-import { useId } from 'react'
-import Select, { OnChangeValue } from 'react-select'
-import styles from './styles.module.scss'
+import { Exchange } from "@prisma/client";
+import { useId } from "react";
+import Select, { OnChangeValue } from "react-select";
+import styles from "./styles.module.scss";
 
 interface SelectProps {
-  defaultExchanges: Exchange[]
-  selectedExchanges: string[]
-  onSelectSellExchangeMobile: (exchange: readonly Exchange[]) => void
-  isLoading: boolean
+  defaultExchanges: Exchange[];
+  selectedExchanges: string[];
+  onSelectSellExchangeMobile: (exchange: readonly Exchange[]) => void;
+  isLoading: boolean;
 }
 
 const multiValueContainer: any = ({ selectProps, data }: any) => {
-  const exchangeName = data.name
-  const allSelected = selectProps.value
+  const exchangeName = data.name;
+  const allSelected = selectProps.value;
   const index = allSelected.findIndex(
     (selected: any) => selected.name === exchangeName
-  )
-  const isLastSelected = index === allSelected.length - 1
-  const labelSuffix = isLastSelected ? ` (${allSelected.length})` : ', '
-  const val = `${exchangeName}${labelSuffix}`
-  return val
-}
+  );
+  const isLastSelected = index === allSelected.length - 1;
+  const labelSuffix = isLastSelected ? ` (${allSelected.length})` : ", ";
+  const val = `${exchangeName}${labelSuffix}`;
+  return val;
+};
 
-const getOptionLabel = (option: Exchange) => `${option.name}`
+const getOptionLabel = (option: Exchange) => `${option.name}`;
 
 const customStyles = {
   valueContainer: (provided: any, state: any) => ({
     ...provided,
-    textOverflow: 'ellipsis',
-    border: 'none',
-    boxShadow: 'none',
-    outline: state.isFocused ? 'var(--purple-500) solid 2px' : 'none',
-    outlineOffset: '1px',
-    maxWidth: '90%',
-    height: '40px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    display: 'initial',
+    textOverflow: "ellipsis",
+    border: "none",
+    boxShadow: "none",
+    outline: state.isFocused ? "var(--purple-500) solid 2px" : "none",
+    outlineOffset: "1px",
+    maxWidth: "90%",
+    height: "40px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    display: "initial",
   }),
   control: (provided: any, state: any) => ({
     ...provided,
-    border: 'none',
-    boxShadow: 'none',
-    outline: state.isFocused ? 'var(--purple-500) solid 2px' : 'none',
-    outlineOffset: '1px',
+    border: "none",
+    boxShadow: "none",
+    outline: state.isFocused ? "var(--purple-500) solid 2px" : "none",
+    outlineOffset: "1px",
   }),
   option: (provided: any, state: any) => ({
     ...provided,
-    color: state.isSelected ? 'var(--gray-100)' : 'var(--gray-100)',
+    color: state.isSelected ? "var(--gray-100)" : "var(--gray-100)",
     backgroundColor: state.isSelected
-      ? 'var(--purple-500)'
+      ? "var(--purple-500)"
       : state.isFocused
-      ? 'var(--purple-500)'
-      : 'transparent',
-    ':active': {
-      filter: 'brightness(0.8)',
+      ? "var(--purple-500)"
+      : "transparent",
+    ":active": {
+      filter: "brightness(0.8)",
     },
   }),
   loadingIndicator: (provided: any, state: any) => ({
     ...provided,
-    '& > *': {
-      fontSize: '8px !important',
+    "& > *": {
+      fontSize: "8px !important",
     },
   }),
-}
+};
 
 export function SellExchangeMobile({
   defaultExchanges,
@@ -74,19 +74,19 @@ export function SellExchangeMobile({
   const handleExchangeSellChange = (
     newValue: OnChangeValue<Exchange, true>
   ) => {
-    onSelectSellExchangeMobile(newValue)
-  }
+    onSelectSellExchangeMobile(newValue);
+  };
 
   const exchanges = defaultExchanges.filter((exchange) => {
-    return selectedExchanges.includes(exchange.name)
-  })
+    return selectedExchanges.includes(exchange.name);
+  });
 
   const handleSelectedOption = (
     selectedOption: Exchange,
     selectValue: readonly Exchange[]
   ) => {
-    return selectValue.includes(selectedOption)
-  }
+    return selectValue.includes(selectedOption);
+  };
 
   return (
     <Select
@@ -108,5 +108,5 @@ export function SellExchangeMobile({
       onChange={handleExchangeSellChange}
       isLoading={isLoading}
     />
-  )
+  );
 }

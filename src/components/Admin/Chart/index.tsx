@@ -1,4 +1,4 @@
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 import {
   LineChart,
   Line,
@@ -8,83 +8,83 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts'
+} from "recharts";
 
 export function Chart() {
   const data = [
     {
-      name: 'Janeiro',
+      name: "Janeiro",
       2021: 4000,
       2022: 2400,
       amt: 2400,
     },
     {
-      name: 'Fevereiro',
+      name: "Fevereiro",
       2021: 3000,
       2022: 1398,
       amt: 2210,
     },
     {
-      name: 'Março',
+      name: "Março",
       2021: 2000,
       2022: 9800,
       amt: 2290,
     },
     {
-      name: 'Abril',
+      name: "Abril",
       2021: 2780,
       2022: 3908,
       amt: 2000,
     },
     {
-      name: 'Maio',
+      name: "Maio",
       2021: 1890,
       2022: 4800,
       amt: 2181,
     },
     {
-      name: 'Junho',
+      name: "Junho",
       2021: 2090,
       2022: 3400,
       amt: 2560,
     },
     {
-      name: 'Julho',
+      name: "Julho",
       2021: 3400,
       2022: 4380,
       amt: 2100,
     },
     {
-      name: 'Agosto',
+      name: "Agosto",
       2021: 3410,
       2022: 4550,
       amt: 2100,
     },
     {
-      name: 'Setembro',
+      name: "Setembro",
       2021: 3490,
       2022: 10000,
       amt: 2100,
     },
     {
-      name: 'Outubro',
+      name: "Outubro",
       2021: 3490,
       2022: 4300,
       amt: 2100,
     },
     {
-      name: 'Novembro',
+      name: "Novembro",
       2021: 3490,
       2022: 2100,
       amt: 2100,
     },
     {
-      name: 'Dezembro',
+      name: "Dezembro",
       2021: 3490,
       2022: 9500,
       amt: 2100,
     },
-  ]
+  ];
 
   return (
     <div className={styles.chart}>
@@ -116,5 +116,5 @@ export function Chart() {
         </LineChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }

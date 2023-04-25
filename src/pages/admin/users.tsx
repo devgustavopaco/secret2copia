@@ -1,69 +1,69 @@
-import type { GetServerSideProps, NextPage } from 'next'
-import { CheckCircle, Trash, UserCirclePlus, XCircle } from 'phosphor-react'
-import { DataGridUsers } from '../../components/GridComponents/DataGridUsers'
+import type { GetServerSideProps, NextPage } from "next";
+import { CheckCircle, Trash, UserCirclePlus, XCircle } from "phosphor-react";
+import { DataGridUsers } from "../../components/GridComponents/DataGridUsers";
 
-import styles from '../../styles/Admin.module.scss'
-import { useEffect, useState } from 'react'
-import { ModalDeleteUser } from '../../components/Modals/ModalDeleteUser'
-import { ModalAddUser } from '../../components/Modals/ModalAddUser'
-import { trpc } from '../../utils/trpc'
-import Head from 'next/head'
-import { unstable_getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]'
-import { Header } from '../../components/Header'
-import { toast } from 'react-toastify'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
+import styles from "../../styles/Admin.module.scss";
+import { useEffect, useState } from "react";
+import { ModalDeleteUser } from "../../components/Modals/ModalDeleteUser";
+import { ModalAddUser } from "../../components/Modals/ModalAddUser";
+import { trpc } from "../../utils/trpc";
+import Head from "next/head";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]";
+import { Header } from "../../components/Header";
+import { toast } from "react-toastify";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
 
 const AdminUsers: NextPage = () => {
-  const [modalOpenDelete, setModalOpenDelete] = useState(false)
-  const [modalOpenAdd, setModalOpenAdd] = useState(false)
-  const [itemDeleted, setItemDeleted] = useState(false)
-  const [idsFromGrid, setIds] = useState<string[]>([])
+  const [modalOpenDelete, setModalOpenDelete] = useState(false);
+  const [modalOpenAdd, setModalOpenAdd] = useState(false);
+  const [itemDeleted, setItemDeleted] = useState(false);
+  const [idsFromGrid, setIds] = useState<string[]>([]);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
   const {
     data: users,
     isLoading,
     refetch,
-  } = trpc.useQuery(['user.getAllUsers'])
+  } = trpc.useQuery(["user.getAllUsers"]);
   useEffect(() => {
     if (idsFromGrid.length !== 0) {
       deleteUserMutation.mutate({
         ids: idsFromGrid,
-      })
+      });
     }
-  }, [itemDeleted])
+  }, [itemDeleted]);
 
-  const createUserMutation = trpc.useMutation('user.create', {
+  const createUserMutation = trpc.useMutation("user.create", {
     onSuccess() {
-      notify('Usuário criado com sucesso!', true)
-      refetch()
+      notify("Usuário criado com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
-  const deleteUserMutation = trpc.useMutation('user.delete', {
+  const deleteUserMutation = trpc.useMutation("user.delete", {
     onSuccess() {
-      notify('Usuário deletado com sucesso!', true)
-      refetch()
+      notify("Usuário deletado com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
   // Create
   const handleUserCreate = (
     name: string,
@@ -78,12 +78,12 @@ const AdminUsers: NextPage = () => {
       pricePaid,
       phone,
       password,
-    })
-  }
+    });
+  };
 
   const handleUserDelete = (ids: string[]) => {
-    setIds(ids)
-  }
+    setIds(ids);
+  };
 
   return (
     <>
@@ -116,7 +116,7 @@ const AdminUsers: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpenDelete(true)
+                  setModalOpenDelete(true);
                 }}
                 datatype="remove"
               >
@@ -127,7 +127,7 @@ const AdminUsers: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpenAdd(true)
+                  setModalOpenAdd(true);
                 }}
               >
                 Adicionar
@@ -145,28 +145,28 @@ const AdminUsers: NextPage = () => {
         </main>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AdminUsers
+export default AdminUsers;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
-  if (!session || session?.role !== 'admin') {
+  if (!session || session?.role !== "admin") {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: true,
       },
-    }
+    };
   }
 
   return {
     props: {},
-  }
-}
+  };
+};

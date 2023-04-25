@@ -1,55 +1,55 @@
-import type { GetServerSideProps, NextPage } from 'next'
-import styles from '../../styles/Admin.module.scss'
-import { DataGridCryptos } from '../../components/GridComponents/DataGridCryptos'
-import { CheckCircle, CurrencyEth, Trash, XCircle } from 'phosphor-react'
-import { useState } from 'react'
-import { ModalAddCrypto } from '../../components/Modals/ModalAddCrypto'
-import { trpc } from '../../utils/trpc'
-import { unstable_getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]'
-import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { toast } from 'react-toastify'
-import { useS3Upload } from 'next-s3-upload'
+import type { GetServerSideProps, NextPage } from "next";
+import styles from "../../styles/Admin.module.scss";
+import { DataGridCryptos } from "../../components/GridComponents/DataGridCryptos";
+import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
+import { useState } from "react";
+import { ModalAddCrypto } from "../../components/Modals/ModalAddCrypto";
+import { trpc } from "../../utils/trpc";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]";
+import { Header } from "../../components/Header";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { toast } from "react-toastify";
+import { useS3Upload } from "next-s3-upload";
 
 const AdminExchanges: NextPage = () => {
-  let { uploadToS3 } = useS3Upload()
+  let { uploadToS3 } = useS3Upload();
 
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const { data: coins, isLoading, refetch } = trpc.useQuery(['coin.getCoins'])
+  const { data: coins, isLoading, refetch } = trpc.useQuery(["coin.getCoins"]);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const deleteMutation = trpc.useMutation('coin.delete', {
+  const deleteMutation = trpc.useMutation("coin.delete", {
     onSuccess() {
-      notify('Moeda deletada com sucesso!', true)
-      refetch()
+      notify("Moeda deletada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
-  const createCryptoMutation = trpc.useMutation('coin.create', {
+  const createCryptoMutation = trpc.useMutation("coin.create", {
     onSuccess() {
-      notify('Moeda criada com sucesso!', true)
-      refetch()
+      notify("Moeda criada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const handleCryptoCreate = async (
     ticker: string,
@@ -57,10 +57,10 @@ const AdminExchanges: NextPage = () => {
     isFanToken: boolean,
     image?: File | null
   ) => {
-    let imageUrl
+    let imageUrl;
     if (image) {
-      const { url } = await uploadToS3(image)
-      imageUrl = url
+      const { url } = await uploadToS3(image);
+      imageUrl = url;
     }
     createCryptoMutation.mutate({
       active: true,
@@ -68,20 +68,20 @@ const AdminExchanges: NextPage = () => {
       ticker,
       isFanToken,
       imageUrl,
-    })
-  }
+    });
+  };
 
   const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids)
-  }
+    setSelectedIds(ids);
+  };
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleDeletion = () => {
     deleteMutation.mutate({
       ids: selectedIds,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -112,7 +112,7 @@ const AdminExchanges: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpen(true)
+                  setModalOpen(true);
                 }}
               >
                 Adicionar
@@ -130,28 +130,28 @@ const AdminExchanges: NextPage = () => {
         </main>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AdminExchanges
+export default AdminExchanges;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
-  if (!session || session?.role !== 'admin') {
+  if (!session || session?.role !== "admin") {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: true,
       },
-    }
+    };
   }
 
   return {
     props: {},
-  }
-}
+  };
+};

@@ -1,22 +1,22 @@
-import { Box } from '@mui/material'
+import { Box } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
   GridColumns,
   GridSelectionModel,
   type GridRenderCellParams,
-} from '@mui/x-data-grid'
+} from "@mui/x-data-grid";
 
-import styles from './styles.module.scss'
-import type { Coin } from '@prisma/client'
-import { trpc } from '../../../utils/trpc'
-import { toast } from 'react-toastify'
-import { CheckCircle, XCircle } from 'phosphor-react'
+import styles from "./styles.module.scss";
+import type { Coin } from "@prisma/client";
+import { trpc } from "../../../utils/trpc";
+import { toast } from "react-toastify";
+import { CheckCircle, XCircle } from "phosphor-react";
 
 interface DataGridCryptosProps {
-  data: Coin[]
-  isLoading?: boolean
-  onSelect: (ids: string[]) => void
+  data: Coin[];
+  isLoading?: boolean;
+  onSelect: (ids: string[]) => void;
 }
 
 export function DataGridCryptos({
@@ -26,15 +26,15 @@ export function DataGridCryptos({
 }: DataGridCryptosProps) {
   const columns: GridColumns = [
     {
-      field: 'id',
-      headerName: 'Imagem',
+      field: "id",
+      headerName: "Imagem",
       width: 150,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       renderCell(params: GridRenderCellParams) {
-        const imageUrl = params.row.image_url
+        const imageUrl = params.row.image_url;
         return (
           <img
             src={
@@ -43,12 +43,12 @@ export function DataGridCryptos({
             }
             className={styles.imgStyle}
           />
-        )
+        );
       },
     },
     {
-      field: 'name',
-      headerName: 'Crypto',
+      field: "name",
+      headerName: "Crypto",
       width: 250,
       editable: false,
       sortable: false,
@@ -56,8 +56,8 @@ export function DataGridCryptos({
       disableColumnMenu: true,
     },
     {
-      field: 'ticker',
-      headerName: 'Código',
+      field: "ticker",
+      headerName: "Código",
       width: 250,
       editable: false,
       sortable: false,
@@ -65,58 +65,58 @@ export function DataGridCryptos({
       disableColumnMenu: true,
     },
     {
-      field: 'isFanToken',
-      headerName: 'Fan Token',
+      field: "isFanToken",
+      headerName: "Fan Token",
       width: 300,
-      type: 'boolean',
+      type: "boolean",
       editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
     {
-      field: 'active',
-      headerName: 'Ativo',
+      field: "active",
+      headerName: "Ativo",
       width: 300,
-      type: 'boolean',
+      type: "boolean",
       editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
-  ]
+  ];
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const updateCryptoMutation = trpc.useMutation('coin.update', {
+  const updateCryptoMutation = trpc.useMutation("coin.update", {
     onSuccess() {
-      notify('Moeda alterada com sucesso!', true)
+      notify("Moeda alterada com sucesso!", true);
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const handleEditCommit = (cell: GridCellEditCommitParams) => {
     updateCryptoMutation.mutate({
       id: String(cell.id),
       [cell.field]: cell.value,
-    })
-  }
+    });
+  };
 
   const handleSelectionChanged = (ids: GridSelectionModel) => {
-    onSelect(ids as string[])
-  }
+    onSelect(ids as string[]);
+  };
 
   return (
     <div className={styles.tableContainer}>
@@ -134,5 +134,5 @@ export function DataGridCryptos({
         />
       </Box>
     </div>
-  )
+  );
 }

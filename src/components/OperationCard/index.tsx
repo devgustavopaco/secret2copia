@@ -1,40 +1,40 @@
-import { ArrowRight } from 'phosphor-react'
-import styles from './styles.module.scss'
+import { ArrowRight } from "phosphor-react";
+import styles from "./styles.module.scss";
 
 interface OperationCardProps {
   coin: {
-    image?: string
-    name: string
+    image?: string;
+    name: string;
     ask: {
-      exchange: string
-      price: number
-      image_url?: string
-      isUSD: boolean
-    }
+      exchange: string;
+      price: number;
+      image_url?: string;
+      isUSD: boolean;
+    };
     bid: {
-      exchange: string
-      price: number
-      image_url?: string
-      isUSD: boolean
-    }
-    symbol: string
-    fee: number
-    tax: number
-    spread: number
-  }
-  dollarPrice?: number
-  onClick: () => void
+      exchange: string;
+      price: number;
+      image_url?: string;
+      isUSD: boolean;
+    };
+    symbol: string;
+    fee: number;
+    tax: number;
+    spread: number;
+  };
+  dollarPrice?: number;
+  onClick: () => void;
 }
 
-const percentageFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'percent',
+const percentageFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
   minimumFractionDigits: 2,
-})
+});
 
-const numberFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'decimal',
+const numberFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "decimal",
   maximumFractionDigits: 4,
-})
+});
 
 export function OperationCard({
   coin,
@@ -43,14 +43,14 @@ export function OperationCard({
 }: OperationCardProps) {
   const bidPrice = coin.bid.isUSD
     ? coin.bid.price * dollarPrice
-    : coin.bid.price
+    : coin.bid.price;
   const askPrice = coin.ask.isUSD
     ? coin.ask.price * dollarPrice
-    : coin.ask.price
+    : coin.ask.price;
 
   return (
     <section className={styles.card}>
-      <header className={styles['card-header']}>
+      <header className={styles["card-header"]}>
         <img
           src={
             coin.image ??
@@ -59,14 +59,14 @@ export function OperationCard({
           alt={coin.name}
         />
 
-        <h2 className={''}>
+        <h2 className={""}>
           {coin.name} ({coin.symbol})
         </h2>
       </header>
 
       <hr />
 
-      <div className={styles['card-content']}>
+      <div className={styles["card-content"]}>
         <div>
           <h3>Compra</h3>
           <div>
@@ -102,7 +102,7 @@ export function OperationCard({
 
       <hr />
 
-      <div className={styles['card-footer']}>
+      <div className={styles["card-footer"]}>
         <p>
           <span>Spread</span>
           {percentageFormatter.format(coin.spread)}
@@ -118,5 +118,5 @@ export function OperationCard({
         Order Book
       </button>
     </section>
-  )
+  );
 }

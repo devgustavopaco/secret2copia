@@ -1,73 +1,73 @@
-import { X } from 'phosphor-react'
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { X } from "phosphor-react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
-import { ImageDropzone } from '../../ImageDropzone'
-import styles from './styles.module.scss'
+import { ImageDropzone } from "../../ImageDropzone";
+import styles from "./styles.module.scss";
 
 interface ModalAddCryptoProps {
-  setOpenModal: (open: boolean) => void
+  setOpenModal: (open: boolean) => void;
   onSubmit: (
     ticker: string,
     name: string,
     isFanToken: boolean,
     image?: File | null
-  ) => void
+  ) => void;
 }
 
 export function ModalAddCrypto({
   setOpenModal,
   onSubmit,
 }: ModalAddCryptoProps) {
-  const [name, setName] = useState('')
-  const [ticker, setTicker] = useState('')
-  const [isFanToken, setIsFanToken] = useState(false)
-  const [previewImageUrl, setPreviewImageUrl] = useState('')
-  const [image, setImage] = useState<File | null>(null)
+  const [name, setName] = useState("");
+  const [ticker, setTicker] = useState("");
+  const [isFanToken, setIsFanToken] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
+  const [image, setImage] = useState<File | null>(null);
 
   const handleImageDrop = (files: File[]) => {
-    const selectedImage = files[0]
+    const selectedImage = files[0];
 
     if (selectedImage) {
-      setImage(selectedImage)
+      setImage(selectedImage);
     }
-  }
+  };
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value)
-  }
+    setName(event.target.value);
+  };
 
   const handleTickerChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setTicker(event.target.value.toUpperCase())
-  }
+    setTicker(event.target.value.toUpperCase());
+  };
   const handleTickerBlur = async (event: ChangeEvent<HTMLInputElement>) => {
-    const image = new Image()
-    image.src = `https://assets.coincap.io/assets/icons/${ticker.toLowerCase()}@2x.png`
+    const image = new Image();
+    image.src = `https://assets.coincap.io/assets/icons/${ticker.toLowerCase()}@2x.png`;
     image.onload = () => {
-      console.log('image loaded')
-      setPreviewImageUrl(image.src)
-    }
+      console.log("image loaded");
+      setPreviewImageUrl(image.src);
+    };
     image.onerror = () => {
-      console.log('image not found')
-      setPreviewImageUrl('')
-    }
-  }
+      console.log("image not found");
+      setPreviewImageUrl("");
+    };
+  };
 
   const handleIsFanTokenChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setIsFanToken(event.target.checked)
-  }
+    setIsFanToken(event.target.checked);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    onSubmit(ticker, name, isFanToken, image)
-    setOpenModal(false)
-  }
+    onSubmit(ticker, name, isFanToken, image);
+    setOpenModal(false);
+  };
 
   const handleCleanImage = () => {
     if (previewImageUrl) {
-      setPreviewImageUrl('')
+      setPreviewImageUrl("");
     }
-  }
+  };
 
   return (
     <div className={styles.modalBackground}>
@@ -80,7 +80,7 @@ export function ModalAddCrypto({
           <h3>Adicionar Moeda</h3>
           <button
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
           >
             <X size={24} weight="bold" />
@@ -109,7 +109,7 @@ export function ModalAddCrypto({
               onChange={handleNameChange}
             />
           </div>
-          {previewImageUrl != '' ? (
+          {previewImageUrl != "" ? (
             <>
               <div className={styles.inputImage}>
                 <img src={previewImageUrl} alt={name} />
@@ -144,7 +144,7 @@ export function ModalAddCrypto({
           <button
             className={styles.voltarBtn}
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
             type="button"
           >
@@ -156,5 +156,5 @@ export function ModalAddCrypto({
         </footer>
       </form>
     </div>
-  )
+  );
 }

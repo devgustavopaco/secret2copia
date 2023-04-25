@@ -13,7 +13,7 @@
     color: var(--white);
     border: none;
 
-    :global(div[class$='virtualScroller']) {
+    :global(div[class$="virtualScroller"]) {
       &::-webkit-scrollbar {
         width: 0.25rem;
       }

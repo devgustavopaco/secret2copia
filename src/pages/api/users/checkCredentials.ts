@@ -1,7 +1,7 @@
 // src/pages/api/examples.ts
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { compare } from 'bcrypt'
-import { prisma } from '../../../server/db/client'
+import type { NextApiRequest, NextApiResponse } from "next";
+import { compare } from "bcrypt";
+import { prisma } from "../../../server/db/client";
 
 const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = await prisma.user.findUnique({
@@ -20,19 +20,19 @@ const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       },
     },
-  })
+  });
 
   if (
     user &&
     user.password &&
     (await compare(req.body.password, user.password))
   ) {
-    const { password, ...userWithoutPassword } = user
+    const { password, ...userWithoutPassword } = user;
 
-    res.status(200).json(userWithoutPassword)
+    res.status(200).json(userWithoutPassword);
   } else {
-    res.status(400).end('Email ou senha inválidos')
+    res.status(400).end("Email ou senha inválidos");
   }
-}
+};
 
-export default checkCredentials
+export default checkCredentials;

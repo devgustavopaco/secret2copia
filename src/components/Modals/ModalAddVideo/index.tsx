@@ -1,51 +1,51 @@
-import styles from './styles.module.scss'
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { X } from 'phosphor-react'
+import styles from "./styles.module.scss";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { X } from "phosphor-react";
 
 interface ModalAddVideoProps {
-  setOpenModal: (open: boolean) => void
+  setOpenModal: (open: boolean) => void;
   onSubmit: (
     title: string,
     description: string,
     additionalMaterial: string | undefined,
     idYoutube: string,
     createdAt: Date
-  ) => void
+  ) => void;
 }
 
 export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [additionalMaterial, setAdditionalMaterial] = useState('')
-  const [idYoutube, setIdYoutube] = useState('')
-  const [createdAt, setCreatedAt] = useState(new Date())
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [additionalMaterial, setAdditionalMaterial] = useState("");
+  const [idYoutube, setIdYoutube] = useState("");
+  const [createdAt, setCreatedAt] = useState(new Date());
 
   const handleTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.target.value)
-  }
+    setTitle(event.target.value);
+  };
 
   const handleDescriptionChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setDescription(event.target.value)
-  }
+    setDescription(event.target.value);
+  };
 
   const handleAdditionalMaterialChange = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-    setAdditionalMaterial(event.target.value)
-  }
+    setAdditionalMaterial(event.target.value);
+  };
 
   const handleIdYoutubeChange = async (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-    setIdYoutube(event.target.value)
-  }
+    setIdYoutube(event.target.value);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    onSubmit(title, description, additionalMaterial, idYoutube, createdAt)
-    setOpenModal(false)
-  }
+    onSubmit(title, description, additionalMaterial, idYoutube, createdAt);
+    setOpenModal(false);
+  };
 
   return (
     <div className={styles.modalBackground}>
@@ -54,7 +54,7 @@ export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
           <h3>Adicionar Vídeo</h3>
           <button
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
           >
             <X size={24} weight="bold" />
@@ -105,7 +105,7 @@ export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
             <button
               className={styles.voltarBtn}
               onClick={() => {
-                setOpenModal(false)
+                setOpenModal(false);
               }}
               type="button"
             >
@@ -118,5 +118,5 @@ export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
         </form>
       </div>
     </div>
-  )
+  );
 }

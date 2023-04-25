@@ -79,7 +79,7 @@
 
 .select {
   color: var(--gray-100);
-  > div[class$='control'] {
+  > div[class$="control"] {
     cursor: text;
     height: 45px;
 
@@ -90,7 +90,7 @@
     box-shadow: none;
     border-radius: 8px;
 
-    > div[class$='ValueContainer'] {
+    > div[class$="ValueContainer"] {
       padding: 0.5rem;
       color: var(--gray-100);
 
@@ -99,7 +99,7 @@
       }
     }
 
-    > div[class$='IndicatorsContainer'] {
+    > div[class$="IndicatorsContainer"] {
       > div {
         color: var(--gray-100);
       }
@@ -109,7 +109,7 @@
     }
   }
 
-  > div[class$='menu'] {
+  > div[class$="menu"] {
     background-color: var(--gray-600);
     color: var(--gray-100);
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;

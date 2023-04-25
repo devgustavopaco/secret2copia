@@ -1,41 +1,41 @@
-import { Videos } from '@prisma/client'
-import dynamic from 'next/dynamic'
-import { CaretRight, FileArrowDown, WhatsappLogo } from 'phosphor-react'
-import { useState } from 'react'
-import { MobileClassScheduleComponent } from '../../ClassSchedule/Mobile'
-import { PlayerProps } from '../../Player/Player'
-import styles from './styles.module.scss'
+import { Videos } from "@prisma/client";
+import dynamic from "next/dynamic";
+import { CaretRight, FileArrowDown, WhatsappLogo } from "phosphor-react";
+import { useState } from "react";
+import { MobileClassScheduleComponent } from "../../ClassSchedule/Mobile";
+import { PlayerProps } from "../../Player/Player";
+import styles from "./styles.module.scss";
 
 const PlayerComponent = dynamic<PlayerProps>(
-  () => import('../../Player/Player').then((module) => module.PlayerComponent),
+  () => import("../../Player/Player").then((module) => module.PlayerComponent),
   {
     ssr: false,
   }
-)
+);
 
 interface videoProps {
-  aula: Videos
+  aula: Videos;
 
-  data: Videos[]
+  data: Videos[];
 }
 
 export function MobileVideoComponent({ aula, data }: videoProps) {
   const additionalMaterial =
-    aula.additionalMaterial !== null ? aula.additionalMaterial : ''
+    aula.additionalMaterial !== null ? aula.additionalMaterial : "";
 
-  const [toggleState, setToggleState] = useState<'conteudo' | 'aulas'>(
-    'conteudo'
-  )
-  const [isConteudo, isConteudoState] = useState<boolean>(false)
+  const [toggleState, setToggleState] = useState<"conteudo" | "aulas">(
+    "conteudo"
+  );
+  const [isConteudo, isConteudoState] = useState<boolean>(false);
 
-  const toggleTab = (tab: 'conteudo' | 'aulas') => {
-    setToggleState(tab)
-    if (toggleState == 'conteudo') {
-      isConteudoState(true)
+  const toggleTab = (tab: "conteudo" | "aulas") => {
+    setToggleState(tab);
+    if (toggleState == "conteudo") {
+      isConteudoState(true);
     } else {
-      isConteudoState(false)
+      isConteudoState(false);
     }
-  }
+  };
 
   return (
     <div className={styles.videoSection}>
@@ -43,27 +43,27 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
       <div className={styles.blocTabs}>
         <button
           className={`${styles.tabs} ${
-            toggleState === 'conteudo' ? 'activeConteudo' : ''
+            toggleState === "conteudo" ? "activeConteudo" : ""
           }`}
-          onClick={() => toggleTab('conteudo')}
+          onClick={() => toggleTab("conteudo")}
         >
           Visão geral
         </button>
         <button
           className={`${styles.tabs} ${
-            toggleState === 'aulas' ? 'activeAulas' : ''
+            toggleState === "aulas" ? "activeAulas" : ""
           }`}
-          onClick={() => toggleTab('aulas')}
+          onClick={() => toggleTab("aulas")}
         >
           Conteúdo do curso
         </button>
       </div>
-      {toggleState === 'conteudo' ? (
+      {toggleState === "conteudo" ? (
         <>
           <div className={styles.classDescription}>
             <div className={styles.classText}>
-              <h2>{aula ? aula.title : ''}</h2>
-              <p>{aula ? aula.description : ''}</p>
+              <h2>{aula ? aula.title : ""}</h2>
+              <p>{aula ? aula.description : ""}</p>
             </div>
             <div className={styles.btnList}>
               <a
@@ -120,5 +120,5 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
         <span>NextGain - Todos os direitos reservados</span>
       </div>
     </div>
-  )
+  );
 }

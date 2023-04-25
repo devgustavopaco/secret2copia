@@ -1,21 +1,21 @@
-import { Box } from '@mui/material'
+import { Box } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
   GridColumns,
   GridSelectionModel,
   type GridRenderCellParams,
-} from '@mui/x-data-grid'
+} from "@mui/x-data-grid";
 
-import styles from './styles.module.scss'
-import { useState } from 'react'
-import type { ExchangeCoinTax } from '@prisma/client'
-import { trpc } from '../../../utils/trpc'
+import styles from "./styles.module.scss";
+import { useState } from "react";
+import type { ExchangeCoinTax } from "@prisma/client";
+import { trpc } from "../../../utils/trpc";
 
 interface DataGridTaxesProps {
-  data: ExchangeCoinTax[]
-  isLoading?: boolean
-  onSelect: (ids: string[]) => void
+  data: ExchangeCoinTax[];
+  isLoading?: boolean;
+  onSelect: (ids: string[]) => void;
 }
 
 export function DataGridTaxes({
@@ -25,32 +25,32 @@ export function DataGridTaxes({
 }: DataGridTaxesProps) {
   const columns: GridColumns = [
     {
-      field: 'exchangeName',
-      headerName: 'Exchange',
+      field: "exchangeName",
+      headerName: "Exchange",
       width: 250,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return params.row.exchange.name
+        return params.row.exchange.name;
       },
     },
     {
-      field: 'coinName',
-      headerName: 'Moeda',
+      field: "coinName",
+      headerName: "Moeda",
       width: 250,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return params.row.coin.name
+        return params.row.coin.name;
       },
     },
     {
-      field: 'tax',
-      headerName: 'Taxa',
+      field: "tax",
+      headerName: "Taxa",
       width: 200,
       editable: true,
       sortable: false,
@@ -58,8 +58,8 @@ export function DataGridTaxes({
       disableColumnMenu: true,
     },
     {
-      field: 'confirmations',
-      headerName: 'Confirmações',
+      field: "confirmations",
+      headerName: "Confirmações",
       width: 200,
       editable: true,
       sortable: false,
@@ -67,36 +67,36 @@ export function DataGridTaxes({
       disableColumnMenu: true,
     },
     {
-      field: 'active',
-      headerName: 'Ativo',
+      field: "active",
+      headerName: "Ativo",
       width: 300,
-      type: 'boolean',
+      type: "boolean",
       editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
-  ]
+  ];
 
-  const updateTaxMutation = trpc.useMutation('tax.update', {
+  const updateTaxMutation = trpc.useMutation("tax.update", {
     onSuccess() {
-      console.log('success')
+      console.log("success");
     },
     onError(error) {
-      console.error(error.message)
+      console.error(error.message);
     },
-  })
+  });
 
   const handleEditCommit = (cell: GridCellEditCommitParams) => {
     updateTaxMutation.mutate({
       id: String(cell.id),
       [cell.field]: cell.value,
-    })
-  }
+    });
+  };
 
   const handleSelectionChanged = (ids: GridSelectionModel) => {
-    onSelect(ids as string[])
-  }
+    onSelect(ids as string[]);
+  };
 
   return (
     <div className={styles.tableContainer}>
@@ -114,5 +114,5 @@ export function DataGridTaxes({
         />
       </Box>
     </div>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import { createRouter } from './context'
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { createRouter } from "./context";
 
 export const videosRouter = createRouter()
-  .query('getVideos', {
+  .query("getVideos", {
     resolve({ ctx }) {
-      const videos = ctx.prisma.videos.findMany()
+      const videos = ctx.prisma.videos.findMany();
 
-      return videos
+      return videos;
     },
   })
-  .query('getVideoById', {
+  .query("getVideoById", {
     input: z.object({
       id: z.string().cuid(),
     }),
@@ -19,19 +19,19 @@ export const videosRouter = createRouter()
         where: {
           id: input.id,
         },
-      })
-      return video
+      });
+      return video;
     },
   })
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
     // raise an error unless there is a current session
     if (!ctx.session) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' })
+      throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    return next()
+    return next();
   })
-  .mutation('create', {
+  .mutation("create", {
     input: z.object({
       title: z.string(),
       description: z.string(),
@@ -48,11 +48,11 @@ export const videosRouter = createRouter()
           idYoutube: input.idYoutube,
           createdAt: input.createdAt,
         },
-      })
-      return videos
+      });
+      return videos;
     },
   })
-  .mutation('delete', {
+  .mutation("delete", {
     input: z.object({
       ids: z.string().cuid().array(),
     }),
@@ -63,20 +63,20 @@ export const videosRouter = createRouter()
             in: input.ids,
           },
         },
-      })
+      });
 
       if (video) {
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
   })
-  .mutation('update', {
+  .mutation("update", {
     input: z.object({
       id: z.string().cuid(),
       title: z.string().optional(),
@@ -97,8 +97,8 @@ export const videosRouter = createRouter()
             : undefined,
           idYoutube: input.idYoutube,
         },
-      })
+      });
 
-      return video
+      return video;
     },
-  })
+  });

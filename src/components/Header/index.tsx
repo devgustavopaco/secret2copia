@@ -1,22 +1,22 @@
-import { signOut, useSession } from 'next-auth/react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { List, SignOut, X } from 'phosphor-react'
-import { useState } from 'react'
-import styles from './styles.module.scss'
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { List, SignOut, X } from "phosphor-react";
+import { useState } from "react";
+import styles from "./styles.module.scss";
 
 export function Header() {
-  const router = useRouter()
-  const { data: auth } = useSession()
+  const router = useRouter();
+  const { data: auth } = useSession();
 
-  const [toggle, settoggle] = useState(true)
+  const [toggle, settoggle] = useState(true);
 
   const handleSignOut = () => {
     signOut({
-      callbackUrl: '/',
-    })
+      callbackUrl: "/",
+    });
     // router.push('/')
-  }
+  };
 
   return (
     <header className={styles.header}>
@@ -26,24 +26,24 @@ export function Header() {
         </Link>
         <nav
           aria-label="Principal"
-          className={`${styles['navigation-links']} ${styles['desktop-navigation']}`}
+          className={`${styles["navigation-links"]} ${styles["desktop-navigation"]}`}
         >
           <ul
             role="list"
-            className={`${styles['mobile-navigation']} ${
-              toggle ? '' : 'active'
+            className={`${styles["mobile-navigation"]} ${
+              toggle ? "" : "active"
             }`}
           >
             <li>
               <Link href="/monitor">
-                <a className={router.pathname === '/monitor' ? 'active' : ''}>
+                <a className={router.pathname === "/monitor" ? "active" : ""}>
                   Monitor
                 </a>
               </Link>
             </li>
             <li>
               <Link href="/videos">
-                <a className={router.pathname === '/videos' ? 'active' : ''}>
+                <a className={router.pathname === "/videos" ? "active" : ""}>
                   Mentoria
                 </a>
               </Link>
@@ -51,7 +51,7 @@ export function Header() {
             <li>
               <Link href="/privacidade">
                 <a
-                  className={router.pathname === '/privacidade' ? 'active' : ''}
+                  className={router.pathname === "/privacidade" ? "active" : ""}
                 >
                   Privacidade
                 </a>
@@ -66,12 +66,12 @@ export function Header() {
                 Contato
               </a>
             </li>
-            {auth?.role === 'admin' && (
+            {auth?.role === "admin" && (
               <li>
                 <Link href="/admin/users">
                   <a
                     className={
-                      router.pathname === '/admin/users' ? 'active' : ''
+                      router.pathname === "/admin/users" ? "active" : ""
                     }
                   >
                     Dashboard
@@ -100,7 +100,7 @@ export function Header() {
         </div>
         <button
           type="button"
-          className={styles['logout-button']}
+          className={styles["logout-button"]}
           onClick={handleSignOut}
         >
           Sair
@@ -109,28 +109,28 @@ export function Header() {
       </div>
       <nav
         aria-label="Principal"
-        className={`${styles['navigation-links']} ${
-          styles['mobile-navigation']
-        } ${toggle ? '' : 'active'}`}
+        className={`${styles["navigation-links"]} ${
+          styles["mobile-navigation"]
+        } ${toggle ? "" : "active"}`}
       >
         <ul role="list">
           <li>
             <Link href="/monitor">
-              <a className={router.pathname === '/monitor' ? 'active' : ''}>
+              <a className={router.pathname === "/monitor" ? "active" : ""}>
                 Monitor
               </a>
             </Link>
           </li>
           <li>
             <Link href="/videos">
-              <a className={router.pathname === '/videos' ? 'active' : ''}>
+              <a className={router.pathname === "/videos" ? "active" : ""}>
                 Mentoria
               </a>
             </Link>
           </li>
           <li>
             <Link href="/privacidade">
-              <a className={router.pathname === '/privacidade' ? 'active' : ''}>
+              <a className={router.pathname === "/privacidade" ? "active" : ""}>
                 Privacidade
               </a>
             </Link>
@@ -144,11 +144,11 @@ export function Header() {
               Contato
             </a>
           </li>
-          {auth?.role === 'admin' && (
+          {auth?.role === "admin" && (
             <li>
               <Link href="/admin/users">
                 <a
-                  className={router.pathname === '/admin/users' ? 'active' : ''}
+                  className={router.pathname === "/admin/users" ? "active" : ""}
                 >
                   Dashboard
                 </a>
@@ -158,5 +158,5 @@ export function Header() {
         </ul>
       </nav>
     </header>
-  )
+  );
 }

@@ -1,54 +1,54 @@
-import type { GetServerSideProps, NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from "next";
 
-import styles from '../../styles/Admin.module.scss'
-import { DataGridTaxes } from '../../components/GridComponents/DataGridTaxes'
-import { CheckCircle, CurrencyEth, Trash, XCircle } from 'phosphor-react'
-import { useState } from 'react'
-import { trpc } from '../../utils/trpc'
-import { ModalAddTax } from '../../components/Modals/Taxes/ModalAddTax'
-import Head from 'next/head'
-import { unstable_getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]'
-import { Header } from '../../components/Header'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { toast } from 'react-toastify'
+import styles from "../../styles/Admin.module.scss";
+import { DataGridTaxes } from "../../components/GridComponents/DataGridTaxes";
+import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
+import { useState } from "react";
+import { trpc } from "../../utils/trpc";
+import { ModalAddTax } from "../../components/Modals/Taxes/ModalAddTax";
+import Head from "next/head";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]";
+import { Header } from "../../components/Header";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { toast } from "react-toastify";
 
 const AdminTaxPage: NextPage = () => {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const createTaxMutation = trpc.useMutation('tax.create', {
+  const createTaxMutation = trpc.useMutation("tax.create", {
     onSuccess() {
-      notify('Taxa criada com sucesso!', true)
-      refetch()
+      notify("Taxa criada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
-  const { data: taxes, isLoading, refetch } = trpc.useQuery(['tax.getTaxes'])
+  const { data: taxes, isLoading, refetch } = trpc.useQuery(["tax.getTaxes"]);
 
-  const deleteMutation = trpc.useMutation('tax.delete', {
+  const deleteMutation = trpc.useMutation("tax.delete", {
     onSuccess() {
-      notify('Taxa deletada com sucesso!', true)
-      refetch()
+      notify("Taxa deletada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const handleTaxCreate = (
     exchangeId: string,
@@ -61,24 +61,24 @@ const AdminTaxPage: NextPage = () => {
       coinId,
       tax,
       confirmations,
-    })
-  }
+    });
+  };
 
   const handleClose = () => {
-    setModalOpen(false)
-  }
+    setModalOpen(false);
+  };
 
   const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids)
-  }
+    setSelectedIds(ids);
+  };
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleDeletion = () => {
     deleteMutation.mutate({
       ids: selectedIds,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -111,7 +111,7 @@ const AdminTaxPage: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpen(true)
+                  setModalOpen(true);
                 }}
               >
                 Adicionar
@@ -129,28 +129,28 @@ const AdminTaxPage: NextPage = () => {
         </main>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AdminTaxPage
+export default AdminTaxPage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
-  if (!session || session?.role !== 'admin') {
+  if (!session || session?.role !== "admin") {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: true,
       },
-    }
+    };
   }
 
   return {
     props: {},
-  }
-}
+  };
+};

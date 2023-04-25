@@ -1,60 +1,60 @@
-import type { GetServerSideProps, NextPage } from 'next'
-import { unstable_getServerSession } from 'next-auth'
-import Head from 'next/head'
-import { CheckCircle, Plus, Trash, XCircle } from 'phosphor-react'
-import { useState } from 'react'
-import { toast } from 'react-toastify'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { DataGridVideos } from '../../components/GridComponents/DataGridVideos'
-import { Header } from '../../components/Header'
-import { ModalAddVideo } from '../../components/Modals/ModalAddVideo'
-import styles from '../../styles/Admin.module.scss'
-import { trpc } from '../../utils/trpc'
-import { authOptions } from '../api/auth/[...nextauth]'
+import type { GetServerSideProps, NextPage } from "next";
+import { unstable_getServerSession } from "next-auth";
+import Head from "next/head";
+import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { DataGridVideos } from "../../components/GridComponents/DataGridVideos";
+import { Header } from "../../components/Header";
+import { ModalAddVideo } from "../../components/Modals/ModalAddVideo";
+import styles from "../../styles/Admin.module.scss";
+import { trpc } from "../../utils/trpc";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 const VideosPage: NextPage = () => {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const createVideoMutation = trpc.useMutation('videos.create', {
+  const createVideoMutation = trpc.useMutation("videos.create", {
     onSuccess() {
-      notify('Aula criada com sucesso!', true)
-      refetch()
+      notify("Aula criada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const {
     data: videos,
     isLoading,
     refetch,
-  } = trpc.useQuery(['videos.getVideos'])
+  } = trpc.useQuery(["videos.getVideos"]);
 
   // console.log(videos)
 
-  const deleteMutation = trpc.useMutation('videos.delete', {
+  const deleteMutation = trpc.useMutation("videos.delete", {
     onSuccess() {
-      notify('Video deletada com sucesso!', true)
-      refetch()
+      notify("Video deletada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
       // console.log(error)
     },
-  })
+  });
 
   const handleVideoCreate = async (
     title: string,
@@ -69,24 +69,24 @@ const VideosPage: NextPage = () => {
       additionalMaterial,
       idYoutube,
       createdAt,
-    })
-  }
+    });
+  };
 
   const handleClose = () => {
-    setModalOpen(false)
-  }
+    setModalOpen(false);
+  };
 
   const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids)
-  }
+    setSelectedIds(ids);
+  };
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleDeletion = () => {
     deleteMutation.mutate({
       ids: selectedIds,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -122,7 +122,7 @@ const VideosPage: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpen(true)
+                  setModalOpen(true);
                 }}
               >
                 Adicionar
@@ -140,28 +140,28 @@ const VideosPage: NextPage = () => {
         </main>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default VideosPage
+export default VideosPage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
-  if (!session || session?.role !== 'admin') {
+  if (!session || session?.role !== "admin") {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: true,
       },
-    }
+    };
   }
 
   return {
     props: {},
-  }
-}
+  };
+};

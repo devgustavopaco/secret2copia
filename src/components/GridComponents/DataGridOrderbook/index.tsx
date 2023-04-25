@@ -1,32 +1,32 @@
-import { Box } from '@mui/material'
+import { Box } from "@mui/material";
 import {
   DataGrid,
   GridColumns,
   GridRowIdGetter,
   type GridRenderCellParams,
-} from '@mui/x-data-grid'
+} from "@mui/x-data-grid";
 
-import { v4 as uuidV4 } from 'uuid'
+import { v4 as uuidV4 } from "uuid";
 
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 interface DataGridOrderbookProps {
-  data: { price: number; amount: number }[]
-  isLoading?: boolean
-  dollarPrice: number
-  isUSD: boolean
-  isPurchase: boolean
+  data: { price: number; amount: number }[];
+  isLoading?: boolean;
+  dollarPrice: number;
+  isUSD: boolean;
+  isPurchase: boolean;
 }
 
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
   maximumFractionDigits: 4,
-})
-const numberFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'decimal',
+});
+const numberFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "decimal",
   maximumFractionDigits: 6,
-})
+});
 
 export function DataGridOrderbook({
   data,
@@ -37,8 +37,8 @@ export function DataGridOrderbook({
 }: DataGridOrderbookProps) {
   const columns: GridColumns = [
     {
-      field: 'price',
-      headerName: 'Preço',
+      field: "price",
+      headerName: "Preço",
       width: 200,
       editable: false,
       sortable: false,
@@ -47,24 +47,24 @@ export function DataGridOrderbook({
       valueGetter(params: GridRenderCellParams) {
         return currencyFormatter.format(
           params.row.price * (isUSD ? dollarPrice : 1)
-        )
+        );
       },
     },
     {
-      field: 'amount',
-      headerName: 'Volume',
+      field: "amount",
+      headerName: "Volume",
       width: 150,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(params.row.amount)
+        return numberFormatter.format(params.row.amount);
       },
     },
     {
-      field: 'total',
-      headerName: 'Total',
+      field: "total",
+      headerName: "Total",
       width: 180,
       editable: false,
       sortable: false,
@@ -73,26 +73,26 @@ export function DataGridOrderbook({
       valueGetter(params: GridRenderCellParams) {
         return currencyFormatter.format(
           params.row.price * (isUSD ? dollarPrice : 1) * params.row.amount
-        )
+        );
       },
     },
     {
-      field: 'sumVolume',
-      headerName: 'Soma Volume',
+      field: "sumVolume",
+      headerName: "Soma Volume",
       width: 150,
       editable: false,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return numberFormatter.format(params.row.sumVolume)
+        return numberFormatter.format(params.row.sumVolume);
       },
     },
-  ]
+  ];
 
   const createRowId: GridRowIdGetter = (row) => {
-    return uuidV4()
-  }
+    return uuidV4();
+  };
 
   return (
     <div className={styles.tableContainer}>
@@ -126,5 +126,5 @@ export function DataGridOrderbook({
         )}
       </Box>
     </div>
-  )
+  );
 }

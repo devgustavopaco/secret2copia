@@ -1,30 +1,30 @@
-import { Coin } from '@prisma/client'
-import { prisma } from './db/client'
+import { Coin } from "@prisma/client";
+import { prisma } from "./db/client";
 
 export class CoinsSingleton {
-  private static instance: CoinsSingleton
+  private static instance: CoinsSingleton;
 
   public coins: (Coin & {
     ExchangeCoinTax: {
       exchange: {
-        name: string
-        fee: number
-        convert: boolean
-        image_url: string | null
-      }
-      tax: number
-    }[]
-  })[] = []
+        name: string;
+        fee: number;
+        convert: boolean;
+        image_url: string | null;
+      };
+      tax: number;
+    }[];
+  })[] = [];
 
   constructor() {
-    this.updateCoins()
+    this.updateCoins();
   }
 
   public static getInstance(): CoinsSingleton {
     if (!CoinsSingleton.instance) {
-      CoinsSingleton.instance = new CoinsSingleton()
+      CoinsSingleton.instance = new CoinsSingleton();
     }
-    return CoinsSingleton.instance
+    return CoinsSingleton.instance;
   }
 
   public async updateCoins(): Promise<void> {
@@ -52,6 +52,6 @@ export class CoinsSingleton {
           },
         },
       },
-    })
+    });
   }
 }

@@ -1,33 +1,33 @@
-import { Videos } from '@prisma/client'
-import dynamic from 'next/dynamic'
-import { CaretRight, FileArrowDown, WhatsappLogo } from 'phosphor-react'
-import { PlayerProps } from '../../Player/Player'
-import styles from './styles.module.scss'
+import { Videos } from "@prisma/client";
+import dynamic from "next/dynamic";
+import { CaretRight, FileArrowDown, WhatsappLogo } from "phosphor-react";
+import { PlayerProps } from "../../Player/Player";
+import styles from "./styles.module.scss";
 
 const PlayerComponent = dynamic<PlayerProps>(
-  () => import('../../Player/Player').then((module) => module.PlayerComponent),
+  () => import("../../Player/Player").then((module) => module.PlayerComponent),
   {
     ssr: false,
   }
-)
+);
 
 interface videoProps {
-  aula: Videos
+  aula: Videos;
 
-  data: Videos[]
+  data: Videos[];
 }
 
 export function DesktopVideoComponent({ aula, data }: videoProps) {
   const additionalMaterial =
-    aula.additionalMaterial !== null ? aula.additionalMaterial : ''
+    aula.additionalMaterial !== null ? aula.additionalMaterial : "";
 
   return (
     <div className={styles.videoSection}>
       <PlayerComponent aula={aula} />
       <div className={styles.classDescription}>
         <div className={styles.classText}>
-          <h2>{aula ? aula.title : ''}</h2>
-          <p>{aula ? aula.description : ''}</p>
+          <h2>{aula ? aula.title : ""}</h2>
+          <p>{aula ? aula.description : ""}</p>
         </div>
         <div className={styles.btnList}>
           <a
@@ -77,5 +77,5 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
         <span>NextGain - Todos os direitos reservados</span>
       </div>
     </div>
-  )
+  );
 }

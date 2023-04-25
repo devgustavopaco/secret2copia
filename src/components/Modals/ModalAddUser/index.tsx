@@ -1,50 +1,50 @@
-import styles from './styles.module.scss'
-import { ChangeEvent, FormEvent, useState } from 'react'
-import { X } from 'phosphor-react'
-import { MaskedInput, createDefaultMaskGenerator } from 'react-hook-mask'
+import styles from "./styles.module.scss";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { X } from "phosphor-react";
+import { MaskedInput, createDefaultMaskGenerator } from "react-hook-mask";
 
-const phoneMask = createDefaultMaskGenerator('(99) 99999-9999')
+const phoneMask = createDefaultMaskGenerator("(99) 99999-9999");
 
 interface ModalAddUserProps {
-  setOpenModal: (open: boolean) => void
+  setOpenModal: (open: boolean) => void;
   onSubmit: (
     name: string,
     email: string,
     phone: string,
     pricePaid: number,
     password: string
-  ) => void
+  ) => void;
 }
 
 export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
-  const [value, setValue] = useState('')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [pricePaid, setPricePaid] = useState(0)
-  const [password, setPassword] = useState('')
+  const [value, setValue] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [pricePaid, setPricePaid] = useState(0);
+  const [password, setPassword] = useState("");
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value)
-  }
+    setName(event.target.value);
+  };
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value)
-  }
+    setEmail(event.target.value);
+  };
 
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setPricePaid(parseFloat(event.target.value))
-  }
+    setPricePaid(parseFloat(event.target.value));
+  };
 
   const handlePasswordChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value)
-  }
+    setPassword(event.target.value);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    onSubmit(name, email, value, pricePaid, password)
-    setOpenModal(false)
-  }
+    onSubmit(name, email, value, pricePaid, password);
+    setOpenModal(false);
+  };
 
   return (
     <div className={styles.modalBackground}>
@@ -53,7 +53,7 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
           <h3>Adicionar Usuário</h3>
           <button
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
           >
             <X size={24} weight="bold" />
@@ -113,7 +113,7 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
             <button
               className={styles.voltarBtn}
               onClick={() => {
-                setOpenModal(false)
+                setOpenModal(false);
               }}
               type="button"
             >
@@ -126,5 +126,5 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
         </form>
       </div>
     </div>
-  )
+  );
 }

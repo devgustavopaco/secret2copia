@@ -1,10 +1,10 @@
-import { Check, Image } from 'phosphor-react'
-import { useDropzone } from 'react-dropzone'
+import { Check, Image } from "phosphor-react";
+import { useDropzone } from "react-dropzone";
 
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 interface ImageDropzoneProps {
-  onDrop: (acceptedFiles: File[]) => void
+  onDrop: (acceptedFiles: File[]) => void;
 }
 
 export function ImageDropzone({ onDrop }: ImageDropzoneProps) {
@@ -16,21 +16,21 @@ export function ImageDropzone({ onDrop }: ImageDropzoneProps) {
     getInputProps,
   } = useDropzone({
     accept: {
-      'image/jpeg': [],
-      'image/png': [],
+      "image/jpeg": [],
+      "image/png": [],
     },
     maxFiles: 1,
     onDrop,
-  })
+  });
 
-  const file = acceptedFiles[0]
+  const file = acceptedFiles[0];
 
-  const isActive = isDragActive || isFocused
+  const isActive = isDragActive || isFocused;
 
   return (
     <div
-      className={`${styles.dropzone} ${isActive ? 'isFocused' : ''} ${
-        file ? 'hasFile' : ''
+      className={`${styles.dropzone} ${isActive ? "isFocused" : ""} ${
+        file ? "hasFile" : ""
       }`}
       {...getRootProps()}
     >
@@ -40,8 +40,8 @@ export function ImageDropzone({ onDrop }: ImageDropzoneProps) {
       <p>
         {file
           ? file.name
-          : 'Clique para selecionar a imagem ou arraste e solte a imagem aqui'}
+          : "Clique para selecionar a imagem ou arraste e solte a imagem aqui"}
       </p>
     </div>
-  )
+  );
 }

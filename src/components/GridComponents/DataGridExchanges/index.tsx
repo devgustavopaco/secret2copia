@@ -1,22 +1,22 @@
-import { Box } from '@mui/material'
+import { Box } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
   GridColumns,
   GridSelectionModel,
-} from '@mui/x-data-grid'
+} from "@mui/x-data-grid";
 
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
-import type { Exchange } from '@prisma/client'
-import { CheckCircle, XCircle } from 'phosphor-react'
-import { toast } from 'react-toastify'
-import { trpc } from '../../../utils/trpc'
+import type { Exchange } from "@prisma/client";
+import { CheckCircle, XCircle } from "phosphor-react";
+import { toast } from "react-toastify";
+import { trpc } from "../../../utils/trpc";
 
 interface DataGridExchangesProps {
-  data: Exchange[]
-  isLoading?: boolean
-  onSelect: (ids: string[]) => void
+  data: Exchange[];
+  isLoading?: boolean;
+  onSelect: (ids: string[]) => void;
 }
 
 export function DataGridExchanges({
@@ -27,8 +27,8 @@ export function DataGridExchanges({
   // console.log(data)
   const columns: GridColumns = [
     {
-      field: 'name',
-      headerName: 'Exchange',
+      field: "name",
+      headerName: "Exchange",
       width: 250,
       editable: false,
       sortable: false,
@@ -36,8 +36,8 @@ export function DataGridExchanges({
       disableColumnMenu: true,
     },
     {
-      field: 'tag',
-      headerName: 'Tag',
+      field: "tag",
+      headerName: "Tag",
       width: 250,
       editable: false,
       sortable: false,
@@ -45,8 +45,8 @@ export function DataGridExchanges({
       disableColumnMenu: true,
     },
     {
-      field: 'fee',
-      headerName: 'Taxa',
+      field: "fee",
+      headerName: "Taxa",
       width: 200,
       editable: true,
       sortable: false,
@@ -54,9 +54,9 @@ export function DataGridExchanges({
       disableColumnMenu: true,
     },
     {
-      field: 'convert',
-      headerName: 'Converte',
-      type: 'boolean',
+      field: "convert",
+      headerName: "Converte",
+      type: "boolean",
       width: 200,
       editable: true,
       sortable: false,
@@ -64,49 +64,49 @@ export function DataGridExchanges({
       disableColumnMenu: true,
     },
     {
-      field: 'active',
-      headerName: 'Ativo',
+      field: "active",
+      headerName: "Ativo",
       width: 300,
-      type: 'boolean',
+      type: "boolean",
       editable: true,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
     },
-  ]
+  ];
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const updateTaxMutation = trpc.useMutation('exchange.update', {
+  const updateTaxMutation = trpc.useMutation("exchange.update", {
     onSuccess() {
-      notify('Exchange alterada com sucesso!', true)
-      localStorage.clear()
+      notify("Exchange alterada com sucesso!", true);
+      localStorage.clear();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const handleEditCommit = (cell: GridCellEditCommitParams) => {
     updateTaxMutation.mutate({
       id: String(cell.id),
       [cell.field]: cell.value,
-    })
-  }
+    });
+  };
 
   const handleSelectionChanged = (ids: GridSelectionModel) => {
-    onSelect(ids as string[])
-  }
+    onSelect(ids as string[]);
+  };
 
   return (
     <div className={styles.tableContainer}>
@@ -124,5 +124,5 @@ export function DataGridExchanges({
         />
       </Box>
     </div>
-  )
+  );
 }

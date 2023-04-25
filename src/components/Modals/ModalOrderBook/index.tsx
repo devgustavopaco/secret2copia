@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import type { Orderbook } from '../../../server/router/orderbook'
-import { DataGridOrderbook } from '../../GridComponents/DataGridOrderbook'
-import styles from './styles.module.scss'
+import { useState } from "react";
+import type { Orderbook } from "../../../server/router/orderbook";
+import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
+import styles from "./styles.module.scss";
 
 interface ModalOrderBookProps {
-  coin: string | undefined
+  coin: string | undefined;
 
-  symbol: string | undefined
-  coinImage: string | undefined
-  buyWhere: string | undefined
-  buyEchangeName: string
-  sellEchangeName: string
-  sellWhere: string | undefined
-  dollarPrice: number
+  symbol: string | undefined;
+  coinImage: string | undefined;
+  buyWhere: string | undefined;
+  buyEchangeName: string;
+  sellEchangeName: string;
+  sellWhere: string | undefined;
+  dollarPrice: number;
   orderbookBid: {
-    isUSD: boolean
-    orderbook: Orderbook
-  }
+    isUSD: boolean;
+    orderbook: Orderbook;
+  };
   orderbookAsk: {
-    isUSD: boolean
-    orderbook: Orderbook
-  }
-  setOpenModal: (open: boolean) => void
+    isUSD: boolean;
+    orderbook: Orderbook;
+  };
+  setOpenModal: (open: boolean) => void;
 }
 
 export function ModalOrderBook({
@@ -37,17 +37,17 @@ export function ModalOrderBook({
   symbol,
   setOpenModal,
 }: ModalOrderBookProps) {
-  const [toggleState, setToggleState] = useState<'compra' | 'venda'>('compra')
-  const [isPurchase, isPurchaseState] = useState<boolean>(false)
+  const [toggleState, setToggleState] = useState<"compra" | "venda">("compra");
+  const [isPurchase, isPurchaseState] = useState<boolean>(false);
 
-  const toggleTab = (tab: 'compra' | 'venda') => {
-    setToggleState(tab)
-    if (toggleState == 'compra') {
-      isPurchaseState(true)
+  const toggleTab = (tab: "compra" | "venda") => {
+    setToggleState(tab);
+    if (toggleState == "compra") {
+      isPurchaseState(true);
     } else {
-      isPurchaseState(false)
+      isPurchaseState(false);
     }
-  }
+  };
 
   return (
     <div className={styles.modalBackground}>
@@ -56,17 +56,17 @@ export function ModalOrderBook({
           <div className={styles.blocTabs}>
             <button
               className={`${styles.tabs} ${
-                toggleState === 'compra' ? 'activeCompra' : ''
+                toggleState === "compra" ? "activeCompra" : ""
               }`}
-              onClick={() => toggleTab('compra')}
+              onClick={() => toggleTab("compra")}
             >
               Compra
             </button>
             <button
               className={`${styles.tabs} ${
-                toggleState === 'venda' ? 'activeVenda' : ''
+                toggleState === "venda" ? "activeVenda" : ""
               }`}
-              onClick={() => toggleTab('venda')}
+              onClick={() => toggleTab("venda")}
             >
               Venda
             </button>
@@ -80,20 +80,20 @@ export function ModalOrderBook({
             />
             <p>{coin}</p>
             <span>|</span>
-            <p>{toggleState === 'compra' ? sellEchangeName : buyEchangeName}</p>
-            <img src={`${toggleState === 'compra' ? sellWhere : buyWhere}`} />
+            <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
+            <img src={`${toggleState === "compra" ? sellWhere : buyWhere}`} />
           </div>
 
           <div className={styles.contentTabs}>
             <DataGridOrderbook
               data={
-                toggleState === 'compra'
+                toggleState === "compra"
                   ? orderbookAsk.orderbook.asks
                   : orderbookBid.orderbook.bids
               }
               dollarPrice={dollarPrice}
               isUSD={
-                toggleState === 'compra'
+                toggleState === "compra"
                   ? orderbookAsk.isUSD
                   : orderbookBid.isUSD
               }
@@ -106,7 +106,7 @@ export function ModalOrderBook({
           <button
             className={styles.voltarBtn}
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
             type="button"
           >
@@ -115,5 +115,5 @@ export function ModalOrderBook({
         </footer>
       </div>
     </div>
-  )
+  );
 }

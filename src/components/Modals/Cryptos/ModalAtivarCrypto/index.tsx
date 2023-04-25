@@ -1,4 +1,4 @@
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
 export function ModalAtivarCrypto({ setOpenModal }: any) {
   return (
@@ -7,7 +7,7 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
         <div className={styles.titleCloseBtn}>
           <button
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
             className={styles.xBtn}
           >
@@ -24,7 +24,7 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
           <button
             className={styles.voltarBtn}
             onClick={() => {
-              setOpenModal(false)
+              setOpenModal(false);
             }}
           >
             Voltar
@@ -33,5 +33,5 @@ export function ModalAtivarCrypto({ setOpenModal }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }

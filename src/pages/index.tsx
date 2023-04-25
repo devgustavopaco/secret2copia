@@ -1,96 +1,96 @@
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import type { GetServerSideProps, NextPage } from 'next'
-import { unstable_getServerSession } from 'next-auth/next'
-import { signIn } from 'next-auth/react'
-import Router from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { GetServerSideProps, NextPage } from "next";
+import { unstable_getServerSession } from "next-auth/next";
+import { signIn } from "next-auth/react";
+import Router from "next/router";
+import { useCallback, useEffect, useState } from "react";
 import {
   GoogleReCaptchaProvider,
   useGoogleReCaptcha,
-} from 'react-google-recaptcha-v3'
-import { toast } from 'react-toastify'
+} from "react-google-recaptcha-v3";
+import { toast } from "react-toastify";
 
-import { XCircle } from 'phosphor-react'
-import styles from '../styles/Login.module.scss'
-import { authOptions } from './api/auth/[...nextauth]'
+import { XCircle } from "phosphor-react";
+import styles from "../styles/Login.module.scss";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 const LoginWithCaptha = () => {
-  const RECAPTCHA_SITE_KEY = '6Lf7sbMlAAAAAP2FYf141iFvvxtf94odSx_kLKBa' // Add your reCAPTCHA site key
+  const RECAPTCHA_SITE_KEY = "6Lf7sbMlAAAAAP2FYf141iFvvxtf94odSx_kLKBa"; // Add your reCAPTCHA site key
 
   return (
     <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
       <Login />
     </GoogleReCaptchaProvider>
-  )
-}
+  );
+};
 
-export default LoginWithCaptha
+export default LoginWithCaptha;
 
 const Login: NextPage = () => {
-  const { executeRecaptcha } = useGoogleReCaptcha()
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [backgroundIndex, setBackgroundIndex] = useState(1)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [backgroundIndex, setBackgroundIndex] = useState(1);
 
   const backgrounds = [
-    'images/login.png',
-    '/images/login2.png',
-    'images/login3.png',
-  ]
+    "images/login.png",
+    "/images/login2.png",
+    "images/login3.png",
+  ];
 
   const handleBackgroundChange = useCallback(() => {
     setBackgroundIndex(
       (backgroundIndex) => (backgroundIndex + 1) % backgrounds.length
-    )
-  }, [])
+    );
+  }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(handleBackgroundChange, 5000)
+    const intervalId = setInterval(handleBackgroundChange, 5000);
 
-    return () => clearInterval(intervalId)
-  }, [handleBackgroundChange])
+    return () => clearInterval(intervalId);
+  }, [handleBackgroundChange]);
 
   const toggleShowPassword = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-  }
+    setEmail(e.target.value);
+  };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-  }
+    setPassword(e.target.value);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!executeRecaptcha) {
-      return
+      return;
     }
 
-    const recaptchaToken = await executeRecaptcha('login')
+    const recaptchaToken = await executeRecaptcha("login");
 
-    const response = await signIn('credentials', {
+    const response = await signIn("credentials", {
       redirect: false,
       email,
       password,
       recaptchaToken,
-    })
+    });
 
     if (response?.error) {
       toast.dark(response.error, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
-      console.error(response.error)
-      return Router.push('/')
+      });
+      console.error(response.error);
+      return Router.push("/");
     }
 
-    return Router.push('/monitor')
-  }
+    return Router.push("/monitor");
+  };
 
   return (
     <div className={styles.body}>
@@ -98,7 +98,7 @@ const Login: NextPage = () => {
         className={styles.halfLeft}
         style={{
           backgroundImage: `url(${backgrounds[backgroundIndex]})`,
-          transition: 'background-image 2s ease-in-out',
+          transition: "background-image 2s ease-in-out",
         }}
       >
         <div className={styles.contentBox}>
@@ -118,7 +118,7 @@ const Login: NextPage = () => {
                 <span>Senha</span>
                 <div className={styles.inputPassword}>
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={handlePasswordChange}
                   />
@@ -141,26 +141,26 @@ const Login: NextPage = () => {
         </div>
       </section>
     </div>
-  )
-}
+  );
+};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
   if (!session) {
     return {
       props: {},
-    }
+    };
   }
 
   return {
     redirect: {
-      destination: '/monitor',
+      destination: "/monitor",
       permanent: true,
     },
-  }
-}
+  };
+};

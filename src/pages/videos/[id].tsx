@@ -1,23 +1,23 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import { useRouter } from 'next/router'
-import { BeatLoader } from 'react-spinners'
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { BeatLoader } from "react-spinners";
 
-import { Header } from '../../components/Header'
-import { DesktopClassScheduleComponent } from '../../components/VideosPage/ClassSchedule/Desktop'
-import { VideoComponent } from '../../components/VideosPage/Video'
-import styles from '../../styles/SingleVideo.module.scss'
-import { trpc } from '../../utils/trpc'
+import { Header } from "../../components/Header";
+import { DesktopClassScheduleComponent } from "../../components/VideosPage/ClassSchedule/Desktop";
+import { VideoComponent } from "../../components/VideosPage/Video";
+import styles from "../../styles/SingleVideo.module.scss";
+import { trpc } from "../../utils/trpc";
 
 const VideoPage: NextPage = () => {
-  const router = useRouter()
+  const router = useRouter();
   //pegando o id do youtube
 
-  let { id } = router.query as { id: string }
+  let { id } = router.query as { id: string };
 
-  const { data: singleVideo } = trpc.useQuery(['videos.getVideoById', { id }])
+  const { data: singleVideo } = trpc.useQuery(["videos.getVideoById", { id }]);
 
-  const { data: aulas } = trpc.useQuery(['videos.getVideos'])
+  const { data: aulas } = trpc.useQuery(["videos.getVideos"]);
 
   return (
     <>
@@ -35,7 +35,7 @@ const VideoPage: NextPage = () => {
         <DesktopClassScheduleComponent data={aulas || []} />
       </section>
     </>
-  )
-}
+  );
+};
 
-export default VideoPage
+export default VideoPage;

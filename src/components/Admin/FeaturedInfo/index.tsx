@@ -1,5 +1,5 @@
-import styles from './styles.module.scss'
-import { ArrowDownward, ArrowUpward } from '@material-ui/icons'
+import styles from "./styles.module.scss";
+import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 
 export function FeaturedInfo() {
   return (
@@ -9,9 +9,9 @@ export function FeaturedInfo() {
         <div className={styles.featuredMoneyContainer}>
           <span className={styles.featuredMoney}>R$2,415</span>
           <span className={styles.featuredMoneyRate}>
-            -11.4{' '}
+            -11.4{" "}
             <ArrowDownward
-              className={styles.featuredIcon + ' ' + styles.negative}
+              className={styles.featuredIcon + " " + styles.negative}
             />
           </span>
         </div>
@@ -22,9 +22,9 @@ export function FeaturedInfo() {
         <div className={styles.featuredMoneyContainer}>
           <span className={styles.featuredMoney}>16,8</span>
           <span className={styles.featuredMoneyRate}>
-            -22,4{' '}
+            -22,4{" "}
             <ArrowDownward
-              className={styles.featuredIcon + ' ' + styles.negative}
+              className={styles.featuredIcon + " " + styles.negative}
             />
           </span>
         </div>
@@ -45,5 +45,5 @@ export function FeaturedInfo() {
         </span>
       </div>
     </div>
-  )
+  );
 }

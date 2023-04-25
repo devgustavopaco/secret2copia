@@ -1,4 +1,4 @@
-import Document, { Html, Head, Main, NextScript } from 'next/document'
+import Document, { Head, Html, Main, NextScript } from "next/document";
 
 export default class MyDocument extends Document {
   render(): JSX.Element {
@@ -7,7 +7,7 @@ export default class MyDocument extends Document {
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" />
-
+          <title>N E X T G A I N ®️ 2023</title>
           <link
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;600;700&display=swap"
             rel="stylesheet"
@@ -19,6 +19,6 @@ export default class MyDocument extends Document {
           <NextScript />
         </body>
       </Html>
-    )
+    );
   }
 }

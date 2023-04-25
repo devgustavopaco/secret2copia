@@ -1,61 +1,61 @@
-import type { GetServerSideProps, NextPage } from 'next'
-import styles from '../../styles/Admin.module.scss'
+import type { GetServerSideProps, NextPage } from "next";
+import styles from "../../styles/Admin.module.scss";
 
-import { unstable_getServerSession } from 'next-auth'
-import { useS3Upload } from 'next-s3-upload'
-import Head from 'next/head'
-import { CheckCircle, Plus, Trash, XCircle } from 'phosphor-react'
-import { useState } from 'react'
-import { toast } from 'react-toastify'
-import { SidebarAdmin } from '../../components/Admin/SidebarAdmin'
-import { DataGridExchanges } from '../../components/GridComponents/DataGridExchanges'
-import { Header } from '../../components/Header'
-import { ModalAddExchange } from '../../components/Modals/Exchange/ModalAddExchange'
-import { trpc } from '../../utils/trpc'
-import { authOptions } from '../api/auth/[...nextauth]'
+import { unstable_getServerSession } from "next-auth";
+import { useS3Upload } from "next-s3-upload";
+import Head from "next/head";
+import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { DataGridExchanges } from "../../components/GridComponents/DataGridExchanges";
+import { Header } from "../../components/Header";
+import { ModalAddExchange } from "../../components/Modals/Exchange/ModalAddExchange";
+import { trpc } from "../../utils/trpc";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 const AdminTaxPage: NextPage = () => {
-  let { uploadToS3 } = useS3Upload()
+  let { uploadToS3 } = useS3Upload();
 
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
         icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-      })
+      });
     } else {
       toast.dark(text, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-      })
+      });
     }
-  }
+  };
 
-  const createExchangeMutation = trpc.useMutation('exchange.create', {
+  const createExchangeMutation = trpc.useMutation("exchange.create", {
     onSuccess() {
-      notify('Exchange criada com sucesso!', true)
-      refetch()
+      notify("Exchange criada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const {
     data: exchanges,
     isLoading,
     refetch,
-  } = trpc.useQuery(['exchange.getExchanges'])
+  } = trpc.useQuery(["exchange.getExchanges"]);
 
-  const deleteMutation = trpc.useMutation('exchange.delete', {
+  const deleteMutation = trpc.useMutation("exchange.delete", {
     onSuccess() {
-      notify('Exchange deletada com sucesso!', true)
-      refetch()
+      notify("Exchange deletada com sucesso!", true);
+      refetch();
     },
     onError(error) {
-      notify('Não foi possível realizar a operação!', false)
+      notify("Não foi possível realizar a operação!", false);
     },
-  })
+  });
 
   const handleExchangeCreate = async (
     fee: number,
@@ -64,9 +64,9 @@ const AdminTaxPage: NextPage = () => {
     image: File,
     convert: boolean
   ) => {
-    const { url } = await uploadToS3(image)
+    const { url } = await uploadToS3(image);
 
-    console.log(url)
+    console.log(url);
 
     createExchangeMutation.mutate({
       name,
@@ -74,24 +74,24 @@ const AdminTaxPage: NextPage = () => {
       fee,
       convert,
       image_url: url,
-    })
-  }
+    });
+  };
 
   const handleClose = () => {
-    setModalOpen(false)
-  }
+    setModalOpen(false);
+  };
 
   const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids)
-  }
+    setSelectedIds(ids);
+  };
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleDeletion = () => {
     deleteMutation.mutate({
       ids: selectedIds,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -127,7 +127,7 @@ const AdminTaxPage: NextPage = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={() => {
-                  setModalOpen(true)
+                  setModalOpen(true);
                 }}
               >
                 Adicionar
@@ -145,28 +145,28 @@ const AdminTaxPage: NextPage = () => {
         </main>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AdminTaxPage
+export default AdminTaxPage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(
     context.req,
     context.res,
     authOptions
-  )
+  );
 
-  if (!session || session?.role !== 'admin') {
+  if (!session || session?.role !== "admin") {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: true,
       },
-    }
+    };
   }
 
   return {
     props: {},
-  }
-}
+  };
+};

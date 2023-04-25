@@ -84,7 +84,7 @@
       filter: brightness(0.8);
     }
 
-    input[type='checkbox'] {
+    input[type="checkbox"] {
       appearance: none;
       background-color: transparent;
       border: none;
@@ -102,7 +102,7 @@
       &:checked {
         color: var(--purple-500);
         background-color: var(--purple-500);
-        background-image: url('/check.svg');
+        background-image: url("/check.svg");
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;

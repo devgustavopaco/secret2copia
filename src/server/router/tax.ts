@@ -1,30 +1,30 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import { CoinsSingleton } from '../CoinsSingleton'
-import { createRouter } from './context'
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { CoinsSingleton } from "../CoinsSingleton";
+import { createRouter } from "./context";
 
 export const taxRouter = createRouter()
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
     // raise an error unless there is a current session
     if (!ctx.session) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' })
+      throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    return next()
+    return next();
   })
-  .query('getTaxes', {
+  .query("getTaxes", {
     resolve({ ctx }) {
       const taxes = ctx.prisma.exchangeCoinTax.findMany({
         include: {
           coin: true,
           exchange: true,
         },
-      })
+      });
 
-      return taxes
+      return taxes;
     },
   })
-  .mutation('create', {
+  .mutation("create", {
     input: z.object({
       exchangeId: z.string(),
       coinId: z.string(),
@@ -39,14 +39,14 @@ export const taxRouter = createRouter()
           tax: input.tax,
           confirmations: input.confirmations,
         },
-      })
+      });
 
-      await CoinsSingleton.getInstance().updateCoins()
+      await CoinsSingleton.getInstance().updateCoins();
 
-      return tax
+      return tax;
     },
   })
-  .mutation('update', {
+  .mutation("update", {
     input: z.object({
       id: z.string().cuid(),
       tax: z.union([z.string(), z.number()]).optional(),
@@ -65,22 +65,22 @@ export const taxRouter = createRouter()
             : undefined,
           active: input.active,
         },
-      })
+      });
 
       if (tax) {
-        await CoinsSingleton.getInstance().updateCoins()
+        await CoinsSingleton.getInstance().updateCoins();
 
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
   })
-  .mutation('delete', {
+  .mutation("delete", {
     input: z.object({
       ids: z.string().cuid().array(),
     }),
@@ -91,18 +91,18 @@ export const taxRouter = createRouter()
             in: input.ids,
           },
         },
-      })
+      });
 
       if (tax) {
-        await CoinsSingleton.getInstance().updateCoins()
+        await CoinsSingleton.getInstance().updateCoins();
 
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
-  })
+  });

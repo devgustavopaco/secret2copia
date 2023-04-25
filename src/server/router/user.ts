@@ -1,18 +1,18 @@
-import { TRPCError } from '@trpc/server'
-import { hash } from 'bcrypt'
-import { z } from 'zod'
-import { createRouter } from './context'
+import { TRPCError } from "@trpc/server";
+import { hash } from "bcrypt";
+import { z } from "zod";
+import { createRouter } from "./context";
 
 export const userRouter = createRouter()
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
     // raise an error unless there is a current session
     if (!ctx.session) {
-      throw new TRPCError({ code: 'UNAUTHORIZED' })
+      throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    return next()
+    return next();
   })
-  .query('getAllUsers', {
+  .query("getAllUsers", {
     resolve({ ctx }) {
       const allUsers = ctx.prisma.user.findMany({
         select: {
@@ -24,15 +24,15 @@ export const userRouter = createRouter()
         },
         where: {
           email: {
-            not: 'admin@solid.dev.br',
+            not: "admin@solid.dev.br",
           },
         },
-      })
+      });
 
-      return allUsers
+      return allUsers;
     },
   })
-  .query('getUserByEmail', {
+  .query("getUserByEmail", {
     input: z.object({
       email: z.string(),
     }),
@@ -41,11 +41,11 @@ export const userRouter = createRouter()
         where: {
           email: input.email,
         },
-      })
-      return user
+      });
+      return user;
     },
   })
-  .mutation('create', {
+  .mutation("create", {
     input: z.object({
       name: z.string(),
       email: z.string(),
@@ -56,11 +56,11 @@ export const userRouter = createRouter()
     async resolve({ ctx, input }) {
       const userRole = await ctx.prisma.role.findFirst({
         where: {
-          name: 'user',
+          name: "user",
         },
-      })
+      });
 
-      const passwordHash = await hash(input.password, 8)
+      const passwordHash = await hash(input.password, 8);
       const user = await ctx.prisma.user.create({
         data: {
           name: input.name,
@@ -70,12 +70,12 @@ export const userRouter = createRouter()
           password: passwordHash,
           roleId: userRole!.id,
         },
-      })
+      });
 
-      return user
+      return user;
     },
   })
-  .mutation('update', {
+  .mutation("update", {
     input: z.object({
       id: z.string(),
       name: z.string().optional(),
@@ -94,18 +94,18 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
         },
-      })
+      });
 
-      return user
+      return user;
     },
   })
-  .mutation('updatePassword', {
+  .mutation("updatePassword", {
     input: z.object({
       id: z.string(),
       password: z.string(),
     }),
     async resolve({ ctx, input }) {
-      const passwordHash = await hash(input.password, 8)
+      const passwordHash = await hash(input.password, 8);
       const user = await ctx.prisma.user.update({
         where: {
           id: input.id,
@@ -113,12 +113,12 @@ export const userRouter = createRouter()
         data: {
           password: passwordHash,
         },
-      })
+      });
 
-      return user
+      return user;
     },
   })
-  .mutation('delete', {
+  .mutation("delete", {
     input: z.object({
       ids: z.string().array(),
     }),
@@ -129,16 +129,16 @@ export const userRouter = createRouter()
             in: input.ids,
           },
         },
-      })
+      });
 
       if (user) {
         return {
           success: true,
-        }
+        };
       }
 
       return {
         success: false,
-      }
+      };
     },
-  })
+  });

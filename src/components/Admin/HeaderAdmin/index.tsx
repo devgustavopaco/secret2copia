@@ -1,6 +1,6 @@
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
 
-import { NotificationsNone, Language, Settings } from '@material-ui/icons'
+import { NotificationsNone, Language, Settings } from "@material-ui/icons";
 
 export function HeaderAdmin() {
   return (
@@ -29,5 +29,5 @@ export function HeaderAdmin() {
         </div>
       </div>
     </div>
-  )
+  );
 }

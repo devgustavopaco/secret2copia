@@ -1,5 +1,5 @@
-import { CaretRight, FileArrowDown, Image } from 'phosphor-react'
-import styles from './styles.module.scss'
+import { CaretRight, FileArrowDown, Image } from "phosphor-react";
+import styles from "./styles.module.scss";
 
 export function AdditionalMaterial() {
   return (
@@ -34,5 +34,5 @@ export function AdditionalMaterial() {
         </div>
       </div>
     </div>
-  )
+  );
 }
