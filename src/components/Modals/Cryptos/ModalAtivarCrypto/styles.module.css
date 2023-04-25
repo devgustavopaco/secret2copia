@@ -1,0 +1,108 @@
+.modalBackground {
+  animation: fadein 0.5s;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.685);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.xBtn {
+  color: white;
+  font-size: 29px !important;
+}
+
+.modalContainer {
+  width: 500px;
+  height: auto;
+  border-radius: 12px;
+  background: var(--gray-800);
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 35px;
+}
+
+.modalContainer .title {
+  display: inline-block;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.titleCloseBtn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.titleCloseBtn button {
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modalContainer .body {
+  flex: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 17px;
+  text-align: center;
+  margin: 10px;
+}
+
+.modalContainer .footer {
+  flex: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.modalContainer .footer button {
+  width: 150px;
+  height: 45px;
+  margin: 10px;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.excluirBtn {
+  background-color: var(--purple-500);
+}
+.excluirBtn:hover {
+  color: rgb(73, 7, 73);
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--purple-500);
+}
+
+.voltarBtn {
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--white);
+}
+.voltarBtn:hover {
+  color: var(--purple-200);
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--purple-200);
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}/*# sourceMappingURL=styles.module.css.map */

@@ -1,0 +1,125 @@
+.cronogramaSection {
+  display: none;
+  justify-content: center;
+  margin-left: 0.05rem;
+  border-left: 1px solid var(--gray-500);
+  min-width: 25rem;
+  padding: 1.5rem;
+}
+.cronogramaSection h2 {
+  font-size: 1.5rem;
+  font-weight: normal;
+}
+@media only screen and (max-width: 768px) {
+  .cronogramaSection {
+    display: block;
+  }
+}
+
+.divisor::before {
+  content: "";
+  display: block;
+  width: 100%;
+  background-color: var(--gray-500);
+  height: 1px;
+  border-radius: 100vw;
+  margin-top: 1.3rem;
+}
+
+.content {
+  overflow-y: auto;
+  max-height: 550px;
+}
+.content::-webkit-scrollbar {
+  width: 0.25rem;
+}
+.content::-webkit-scrollbar-track {
+  background-color: var(--gray-500);
+  border-radius: 100vw;
+}
+.content::-webkit-scrollbar-thumb {
+  background-color: var(--white);
+  border-radius: 100vw;
+  -webkit-transition: filter 0.2s ease;
+  transition: filter 0.2s ease;
+}
+.content::-webkit-scrollbar-thumb:hover {
+  filter: brightness(0.8);
+}
+
+.containerTriangle {
+  display: flex;
+  align-items: center;
+  margin-left: -10px;
+}
+.containerTriangle .triangle {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 10px solid #00875f;
+}
+
+.classContainer {
+  margin-block: 2rem;
+  margin-right: 1.5rem;
+}
+
+.date {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #8d8d99;
+}
+
+.classRoomSection {
+  display: flex;
+  flex-direction: column;
+  padding: 0.8rem;
+  border: 1px solid var(--gray-500);
+  border-radius: 5px;
+  margin-top: 0.6rem;
+}
+.classRoomSection .classRoom {
+  margin-top: 0.5rem;
+}
+.classRoomSection .content {
+  display: flex;
+  gap: 0.7rem;
+  font-size: 14px;
+}
+.classRoomSection .content span,
+.classRoomSection .content svg {
+  color: var(--purple-200);
+}
+.classRoomSection .classRoomContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.classRoomSection .classRoomContent h6 {
+  padding: 3px;
+  border: 1px solid #00875f;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 13px;
+}
+.classRoomSection .className {
+  font-size: 15px;
+  margin-top: 0.8rem;
+}
+.classRoomSection:global(.active), .classRoomSection:hover {
+  cursor: pointer;
+  background: #00875f;
+  border: 1px solid #00875f;
+}
+.classRoomSection:global(.active) h6, .classRoomSection:hover h6 {
+  border: 1px solid var(--white);
+}
+.classRoomSection:global(.active) .content, .classRoomSection:hover .content {
+  color: var(--white);
+}
+.classRoomSection:global(.active) .content span,
+.classRoomSection:global(.active) .content svg, .classRoomSection:hover .content span,
+.classRoomSection:hover .content svg {
+  color: var(--white) !important;
+}/*# sourceMappingURL=styles.module.css.map */

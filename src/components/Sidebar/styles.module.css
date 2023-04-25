@@ -1,0 +1,110 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2rem 2.5rem;
+  gap: 2rem;
+  min-width: 240px;
+  background: var(--gray-800);
+  border-radius: 8px;
+}
+
+.text-section,
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.text-section legend,
+.filter-section legend {
+  font-weight: 600;
+  font-size: var(--fs-400);
+  text-transform: capitalize;
+}
+.text-section p,
+.filter-section p {
+  font-weight: 300;
+}
+.text-section p > span,
+.filter-section p > span {
+  font-size: var(--fs-200);
+}
+
+.filter-section {
+  flex: 1;
+  max-height: 264px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+.filter-options::-webkit-scrollbar {
+  width: 0.125rem;
+}
+.filter-options::-webkit-scrollbar-track {
+  background-color: var(--gray-500);
+  border-radius: 100vw;
+}
+.filter-options::-webkit-scrollbar-thumb {
+  background-color: var(--white);
+  border-radius: 100vw;
+  -webkit-transition: filter 0.2s ease;
+  transition: filter 0.2s ease;
+}
+.filter-options::-webkit-scrollbar-thumb:hover {
+  filter: brightness(0.8);
+}
+.filter-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.2rem;
+  margin-right: 1rem;
+  margin-block: 0.2rem;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.filter-options label:hover, .filter-options label:focus {
+  filter: brightness(0.8);
+}
+.filter-options label input[type=checkbox] {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  border: none;
+  margin: 0;
+  color: var(--purple-500);
+  height: var(--fs-500);
+  aspect-ratio: 1/1;
+  padding: 2px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-options label input[type=checkbox]:checked {
+  color: var(--purple-500);
+  background-color: var(--purple-500);
+  background-image: url("/check.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-origin: content-box;
+}
+.filter-options label input[type=checkbox]:checked:hover, .filter-options label input[type=checkbox]:checked:focus {
+  --bg-color: var(--purple-400);
+}
+.filter-options label input[type=checkbox]:active {
+  filter: brightness(0.8);
+}
+
+@media screen and (max-width: 968px) {
+  .sidebar {
+    display: none;
+  }
+}/*# sourceMappingURL=styles.module.css.map */

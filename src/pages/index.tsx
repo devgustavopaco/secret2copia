@@ -12,6 +12,7 @@ import {
 import { toast } from "react-toastify";
 
 import Image from "next/image";
+import Link from "next/link";
 import { XCircle } from "phosphor-react";
 import styles from "../styles/Login.module.scss";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -94,53 +95,66 @@ const Login: NextPage = () => {
   };
 
   return (
-    <div className={styles.body}>
-      <div style={{ display: "none" }}>
-        {backgrounds.map((bg, index) => (
-          <Image key={index} src={bg} layout="fill" />
-        ))}
-      </div>
-      <section className={styles.halfLeft}>
-        <div className={styles.contentBox}>
-          <img src="images/logoBranca.svg" alt="Logo da nextGain" />
+    <>
+      <section className={styles.body}>
+        <div style={{ display: "none" }}>
+          {backgrounds.map((bg, index) => (
+            <Image key={index} src={bg} layout="fill" />
+          ))}
         </div>
-      </section>
-      <section className={styles.halfRight}>
-        <div className={styles.contentBox}>
-          <div className={styles.formBox}>
-            <h1>Bem-vindo à Next Gain</h1>
-            <form action="" onSubmit={handleSubmit}>
-              <div className={styles.inputBox}>
-                <span>Email*</span>
-                <input type="text" value={email} onChange={handleEmailChange} />
-              </div>
-              <div className={styles.inputBox}>
-                <span>Senha</span>
-                <div className={styles.inputPassword}>
+        <section className={styles.halfLeft}>
+          <div className={styles.contentBox}>
+            <img src="images/logoBranca.svg" alt="Logo da nextGain" />
+          </div>
+        </section>
+        <section className={styles.halfRight}>
+          <div className={styles.contentBox}>
+            <div className={styles.formBox}>
+              <h1>Bem-vindo à Next Gain</h1>
+              <form action="" onSubmit={handleSubmit}>
+                <div className={styles.inputBox}>
+                  <span>Email</span>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={handlePasswordChange}
-                  />
-                  <FontAwesomeIcon
-                    className={styles.eyeIcon}
-                    icon={showPassword ? faEyeSlash : faEye}
-                    onClick={toggleShowPassword}
-                    width={24}
-                    height={24}
+                    type="text"
+                    value={email}
+                    onChange={handleEmailChange}
                   />
                 </div>
-              </div>
-              <div className={styles.inputBox}>
-                <button type="submit">
-                  Entrar <img src="images/arrowLogin.svg" alt="" />
-                </button>
-              </div>
-            </form>
+                <div className={styles.inputBox}>
+                  <span>Senha</span>
+                  <div className={styles.inputPassword}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={handlePasswordChange}
+                    />
+                    <FontAwesomeIcon
+                      className={styles.eyeIcon}
+                      icon={showPassword ? faEyeSlash : faEye}
+                      onClick={toggleShowPassword}
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                </div>
+                <div className={styles.inputBox}>
+                  <button type="submit">
+                    Entrar <img src="images/arrowLogin.svg" alt="" />
+                  </button>
+                </div>
+              </form>
+            </div>
+            <section className={styles.forgotPassword}>
+              <Link href="/recuperar">
+                <a>
+                  <span>Esqueci minha senha</span>
+                </a>
+              </Link>
+            </section>
           </div>
-        </div>
+        </section>
       </section>
-    </div>
+    </>
   );
 };
 

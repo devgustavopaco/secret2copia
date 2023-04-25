@@ -1,0 +1,94 @@
+.content {
+  display: flex;
+  margin-top: 25px;
+  padding-block: 2rem;
+  gap: 1.75rem;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-inline: auto;
+}
+.content main {
+  flex: 1;
+  width: 100%;
+}
+.content main h1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+@media screen and (max-width: 968px) {
+  .content main h1 {
+    font-size: 27px;
+  }
+}
+@media screen and (min-width: 968px) {
+  .content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.operations {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(20.25rem, 1fr));
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20%;
+  height: 100%;
+  width: 100%;
+}
+@media screen and (max-width: 968px) {
+  .loading {
+    width: 70%;
+    padding: 50px;
+  }
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem;
+}
+.notFound svg {
+  height: 7rem;
+  width: 7rem;
+  fill: var(--gray-400);
+}
+.notFound div {
+  text-align: center;
+}
+.notFound div h2 {
+  font-size: var(--fs-450);
+  font-weight: 600;
+  color: var(--gray-300);
+}
+.notFound div p {
+  font-size: var(--fs-400);
+  color: var(--gray-300);
+}
+
+.mobileFilter {
+  padding-left: 15px;
+  padding-top: 20px;
+  padding-right: 15px;
+}
+.mobileFilter span {
+  margin-left: 1px;
+  font-size: 20px;
+}
+@media screen and (min-width: 968px) {
+  .mobileFilter {
+    display: none;
+  }
+}/*# sourceMappingURL=Monitor.module.css.map */
