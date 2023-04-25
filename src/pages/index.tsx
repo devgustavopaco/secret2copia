@@ -34,7 +34,6 @@ const Login: NextPage = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [backgroundIndex, setBackgroundIndex] = useState(1)
-  const [recaptchaTokenState, setRecaptchaTokenState] = useState('')
 
   const backgrounds = [
     'images/login.png',
