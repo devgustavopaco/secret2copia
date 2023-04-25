@@ -54,13 +54,13 @@ const Login: NextPage = () => {
         });
         return Router.push("/");
       } else {
-        toast.dark("Email inválido", {
+        toast.dark("Email inválido!", {
           icon: <XCircle size={32} color="#ff3838" weight="fill" />,
         });
         setEmail("");
       }
     } catch (error) {
-      toast.dark("Email inválido", {
+      toast.dark("Email inválido!", {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       });
       setEmail("");
