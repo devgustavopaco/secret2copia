@@ -22,7 +22,7 @@ export function Header() {
     <header className={styles.header}>
       <div className="container">
         <Link href="/monitor">
-          <img className={styles.logo} src="/images/NG1.png"></img>
+          <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img>
         </Link>
         <nav
           aria-label="Principal"
@@ -98,14 +98,18 @@ export function Header() {
             />
           )}
         </div>
-        <button
-          type="button"
-          className={styles["logout-button"]}
-          onClick={handleSignOut}
-        >
-          Sair
-          <SignOut size={24} />
-        </button>
+        <div className={styles.name}>
+          <span className={styles.text}>Olá</span>
+          <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
+          <button
+            type="button"
+            className={styles["logout-button"]}
+            onClick={handleSignOut}
+          >
+            Sair
+            <SignOut size={24} />
+          </button>
+        </div>
       </div>
       <nav
         aria-label="Principal"

@@ -59,7 +59,7 @@ const Monitoring: NextPage = () => {
       },
     ],
     {
-      refetchInterval: 40 * 1000,
+      refetchInterval: 1000 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false;
@@ -228,7 +228,6 @@ const Monitoring: NextPage = () => {
           />
           <main>
             <h1>
-              Operações
               {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 

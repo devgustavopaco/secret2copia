@@ -2,10 +2,11 @@ import { useState } from "react";
 import type { Orderbook } from "../../../server/router/orderbook";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
+import { Coin } from "phosphor-react";
+import { MdArrowForwardIos } from "react-icons/md";
 
 interface ModalOrderBookProps {
   coin: string | undefined;
-
   symbol: string | undefined;
   coinImage: string | undefined;
   buyWhere: string | undefined;
@@ -71,6 +72,9 @@ export function ModalOrderBook({
               Venda
             </button>
           </div>
+          <div className={styles.textModal}>
+            <span>Exchange</span>
+          </div>
           <div className={styles.buyAndSell}>
             <img
               src={`${
@@ -79,9 +83,25 @@ export function ModalOrderBook({
               }`}
             />
             <p>{coin}</p>
-            <span>|</span>
-            <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
+            <MdArrowForwardIos size={32} className={styles.iconArrow} />
             <img src={`${toggleState === "compra" ? sellWhere : buyWhere}`} />
+            <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
+          </div>
+
+          <div className={styles.textModalBottom}>
+            <span className={styles.textSpan}>Moeda</span>{" "}
+            <div className={styles.coin}>
+              <img
+                src={
+                  coinImage ??
+                  `https://assets.coincap.io/assets/icons/${symbol?.toLowerCase()}@2x.png`
+                }
+                alt={coin}
+              />
+              <span>
+                {coin} <b>({symbol})</b>
+              </span>
+            </div>
           </div>
 
           <div className={styles.contentTabs}>
@@ -110,7 +130,7 @@ export function ModalOrderBook({
             }}
             type="button"
           >
-            OK
+            Voltar
           </button>
         </footer>
       </div>

@@ -1,5 +1,5 @@
-import { ArrowRight } from "phosphor-react";
 import styles from "./styles.module.scss";
+import { MdArrowForwardIos } from "react-icons/md";
 
 interface OperationCardProps {
   coin: {
@@ -60,7 +60,7 @@ export function OperationCard({
         />
 
         <h2 className={""}>
-          {coin.name} ({coin.symbol})
+          {coin.name} <b>({coin.symbol})</b>
         </h2>
       </header>
 
@@ -82,7 +82,7 @@ export function OperationCard({
           </p>
         </div>
 
-        <ArrowRight size={32} />
+        <MdArrowForwardIos size={32} opacity={0.3} />
 
         <div>
           <h3>Venda</h3>

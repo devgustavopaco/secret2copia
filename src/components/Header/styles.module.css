@@ -1,7 +1,17 @@
+body :root{
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
 .header {
   border-bottom: solid 1px var(--gray-500);
+  height: 77px !important;
+  padding: 14px 0;
+
 }
 .header :global(.container) {
+  height: 77px;
+  padding: 14px 0;
+
   display: flex;
   gap: 2.5rem;
   align-items: center;
@@ -37,7 +47,7 @@
 }
 .navigation-links ul {
   display: flex;
-  gap: 1.5rem;
+  gap: 2.5rem;
   padding: 0;
   list-style: none;
 }
@@ -46,14 +56,10 @@
 }
 .navigation-links ul li a {
   transition: filter 0.2s ease;
-  font-weight: 300;
+  font-weight: 400;
 }
 .navigation-links ul li a:active {
-  color: var(--purple-500) !important;
   font-weight: 700;
-}
-.navigation-links ul li a:global(.active) {
-  color: var(--purple-500);
 }
 .navigation-links ul li :hover {
   filter: brightness(0.7);
