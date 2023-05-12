@@ -1,8 +1,13 @@
 import { Videos } from "@prisma/client";
+import { useState, useEffect } from "react";
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CheckCircle } from "phosphor-react";
 import styles from "./styles.module.scss";
+import { modules } from "../../../../utils/videos";
+import { MdKeyboardArrowUp } from "react-icons/md";
+import { BsArrowLeft } from "react-icons/bs";
 
 interface videoProps {
   data: Videos[];
@@ -10,45 +15,85 @@ interface videoProps {
 
 export function MobileClassScheduleComponent({ data }: videoProps) {
   const router = useRouter();
-
   const { id } = router.query as { id: string };
+
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [videoStates, setVideoStates] = useState<{ [key: string]: boolean }>(
+    {}
+  );
+
+  useEffect(() => {
+    const savedStates = localStorage.getItem("videoStates");
+    if (savedStates) {
+      setVideoStates(JSON.parse(savedStates));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("videoStates", JSON.stringify(videoStates));
+  }, [videoStates]);
+
+  const toggleModule = (moduleId: string) => {
+    if (expandedModule === moduleId) {
+      setExpandedModule(null); // Fecha o módulo se já estiver aberto
+    } else {
+      setExpandedModule(moduleId); // Abre o módulo se estiver fechado
+    }
+  };
+
+  const toggleVideoState = (videoId: number) => {
+    const videoIdStr = videoId.toString(); // Converte para string
+    setVideoStates((prevStates) => ({
+      ...prevStates,
+      [videoIdStr]: !prevStates[videoIdStr],
+    }));
+  };
 
   return (
     <div className={styles.cronogramaSection}>
-      <h2>Cronograma de Aulas</h2>
-      <div className={styles.divisor}></div>
+      <Link href="/mentoria">
+        <div className={styles.modules}>
+          <BsArrowLeft size={30} />
+          <p>Ver todos os módulos</p>
+        </div>
+      </Link>
       <div className={styles.content}>
-        {data.map((item, index) => (
-          <Link href={`/videos/${encodeURIComponent(item.id)}`} key={item.id}>
-            <a>
-              <div className={styles.classContainer}>
-                {/* <span className={styles.date}>
-                  {item.createdAt?.toString()}
-                </span>
-                + */}
-                <div
-                  className={
-                    id == item.id
-                      ? `${styles.classRoomSection} active`
-                      : styles.classRoomSection
-                  }
-                >
-                  <div className={styles.classRoom}>
-                    <div className={styles.classRoomContent}>
-                      <div className={styles.content}>
-                        <CheckCircle size={18} />
-                        <span>Conteúdo liberado</span>
-                      </div>
-                      <h6 className={styles.liveText}>AULA PRÁTICA</h6>
+        {modules.map((module) => (
+          <div key={module.moduleTitle}>
+            <div
+              className={styles.videoModules}
+              onClick={() => toggleModule(module.moduleTitle)}
+            >
+              <span>{module.moduleTitle}</span>
+              <MdKeyboardArrowUp
+                size={30}
+                className={
+                  expandedModule === module.moduleTitle
+                    ? styles.iconExpanded
+                    : undefined
+                }
+              />
+            </div>
+            {expandedModule === module.moduleTitle && (
+              <div>
+                {module.videos.map((video) => (
+                  <Link href={`${video.url}`} key={video.id}>
+                    <div className={styles.class}>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={videoStates[video.id.toString()] || false}
+                          onChange={() => toggleVideoState(video.id)}
+                        />
+                        <img src={video.thumbnail} alt={video.title} />
+                        <span>{video.title}</span>
+                      </label>
                     </div>
-                  </div>
-                  <span className={styles.className}>
-                    <strong>Aula 0{index + 1}</strong> - {item.title}
-                  </span>
-                </div>
+                  </Link>
+                ))}
               </div>
-            </a>
-          </Link>
+            )}
+          </div>
         ))}
       </div>
     </div>

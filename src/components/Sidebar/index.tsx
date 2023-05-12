@@ -58,9 +58,9 @@ export function Sidebar({
         <legend>
           Exchanges <br /> de Compra
           {showBuyList ? (
-            <IoIosArrowUp size="30" onClick={handleShowBuyList} />
+            <IoIosArrowUp size={30} onClick={handleShowBuyList} />
           ) : (
-            <IoIosArrowDown size="30" onClick={handleShowBuyList} />
+            <IoIosArrowDown size={30} onClick={handleShowBuyList} />
           )}
         </legend>
         <div className={styles["filter-options"]}>

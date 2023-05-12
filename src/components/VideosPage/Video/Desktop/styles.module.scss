@@ -1,7 +1,6 @@
 .videoSection {
   display: block;
   width: 100%;
-  padding-right: 1rem;
   position: relative;
 
   @media only screen and (max-width: 768px) {
@@ -16,16 +15,16 @@
   justify-content: space-around;
   align-items: flex-start;
   gap: 3rem;
-
+  max-width: 882px;
   h2 {
     font-size: 1.3rem;
     font-weight: 600;
   }
 
   p {
-    font-size: 0.8rem;
+    font-size: 1rem;
     font-weight: 400;
-    color: var(--gray-200);
+    color: #fff;
   }
 
   @media only screen and (max-width: 768px) {
@@ -70,7 +69,7 @@
 
 .discordBtn {
   margin-bottom: 1rem;
-  background: #00875f;
+  background: #7b61ff;
   color: var(--white);
   svg {
     color: var(--white);
@@ -125,9 +124,10 @@
 .material {
   display: flex;
   align-items: center;
-  background: #015f43;
+  background: #7b61ff;
   border-radius: 4px;
-  max-width: 500px;
+  max-width: 108px;
+  height: 77px;
   cursor: pointer;
 }
 
@@ -137,16 +137,17 @@
 }
 
 .materialText {
-  background: #121214;
+  background: #21202d;
   display: flex;
   align-items: center;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
-  gap: 2rem;
   padding-right: 1.5rem;
+  width: 260px;
+  height: 77px;
 
   h2 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
   }
 

@@ -91,7 +91,7 @@ const Login: NextPage = () => {
       return Router.push("/");
     }
 
-    return Router.push("/monitor");
+    return Router.push("/home");
   };
 
   return (

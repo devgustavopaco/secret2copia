@@ -21,7 +21,7 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className="container">
-        <Link href="/monitor">
+        <Link href="/home">
           <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img>
         </Link>
         <nav
@@ -35,6 +35,13 @@ export function Header() {
             }`}
           >
             <li>
+              <Link href="/home">
+                <a className={router.pathname === "/home" ? "active" : ""}>
+                  Home
+                </a>
+              </Link>
+            </li>
+            <li>
               <Link href="/monitor">
                 <a className={router.pathname === "/monitor" ? "active" : ""}>
                   Monitor
@@ -42,8 +49,8 @@ export function Header() {
               </Link>
             </li>
             <li>
-              <Link href="/videos">
-                <a className={router.pathname === "/videos" ? "active" : ""}>
+              <Link href="/mentoria">
+                <a className={router.pathname === "/mentoria" ? "active" : ""}>
                   Mentoria
                 </a>
               </Link>

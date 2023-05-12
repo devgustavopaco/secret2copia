@@ -5,6 +5,18 @@
   border-left: 1px solid var(--gray-500);
   min-width: 25rem;
   padding: 1.5rem;
+  .modules {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 1.5rem;
+    p {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+    }
+  }
 
   h2 {
     font-size: 1.5rem;
@@ -50,6 +62,63 @@
       filter: brightness(0.8);
     }
   }
+  .videoModules {
+    width: 100%;
+    background-color: #21202d;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    max-width: 435px;
+    cursor: pointer;
+    span {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+  }
+
+  .class {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 1rem;
+    label {
+      display: flex;
+      align-items: center;
+      padding: 2.75rem 0;
+
+      input[type="checkbox"] {
+        width: 24px;
+        height: 20px;
+        appearance: none;
+        border: 2px solid #d9d9d9;
+        background-color: #d9d9d9;
+        border-radius: 4px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.3s;
+      }
+
+      input[type="checkbox"]:checked {
+        border-color: #7b61ff;
+        background-color: #7b61ff;
+      }
+
+      img {
+        width: 167px;
+        height: 107px;
+        margin-left: 0.5rem;
+      }
+      span {
+        font-family: "IBM Plex Sans", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-left: 1.3rem;
+      }
+    }
+  }
 }
 
 .containerTriangle {
@@ -69,6 +138,7 @@
 .classContainer {
   margin-block: 2rem;
   margin-right: 1.5rem;
+  font-family: "IBM Plex Sans", sans-serif;
 }
 
 .date {
@@ -79,11 +149,16 @@
 
 .classRoomSection {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   padding: 0.8rem;
-  border: 1px solid var(--gray-500);
   border-radius: 5px;
   margin-top: 0.6rem;
+  img {
+    width: 167px;
+    height: 107px;
+    margin-right: 1rem;
+  }
 
   .classRoom {
     margin-top: 0.5rem;
@@ -119,22 +194,22 @@
 
   // CASO ESTEJA ATIVO
 
-  &:global(.active),
-  &:hover {
-    cursor: pointer;
-    background: #00875f;
-    border: 1px solid #00875f;
+  // &:global(.active),
+  // &:hover {
+  //   cursor: pointer;
+  //   background: #00875f;
+  //   border: 1px solid #00875f;
 
-    h6 {
-      border: 1px solid var(--white);
-    }
+  //   h6 {
+  //     border: 1px solid var(--white);
+  //   }
 
-    .content {
-      color: var(--white);
-      span,
-      svg {
-        color: var(--white) !important;
-      }
-    }
-  }
+  //   .content {
+  //     color: var(--white);
+  //     span,
+  //     svg {
+  //       color: var(--white) !important;
+  //     }
+  //   }
+  // }
 }

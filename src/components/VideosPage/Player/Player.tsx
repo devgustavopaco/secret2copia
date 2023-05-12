@@ -18,7 +18,6 @@ export const PlayerComponent = ({ aula }: PlayerProps) => {
     <div className={styles.videoStyle}>
       <Player theme="dark" autoplay>
         <Youtube videoId={videoId} />
-
         <DefaultUi />
       </Player>
     </div>
