@@ -50,6 +50,10 @@ export function ModalOrderBook({
     }
   };
 
+  const formatNumber = (value: number) => {
+    return parseFloat(value.toFixed(2)); // Converte para número novamente
+  };
+
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContainer}>
@@ -88,7 +92,7 @@ export function ModalOrderBook({
             <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
           </div>
 
-          <div className={styles.textModalBottom}>
+          {/* <div className={styles.textModalBottom}>
             <span className={styles.textSpan}>Moeda</span>{" "}
             <div className={styles.coin}>
               <img
@@ -102,7 +106,7 @@ export function ModalOrderBook({
                 {coin} <b>({symbol})</b>
               </span>
             </div>
-          </div>
+          </div> */}
 
           <div className={styles.contentTabs}>
             <DataGridOrderbook
@@ -111,7 +115,7 @@ export function ModalOrderBook({
                   ? orderbookAsk.orderbook.asks
                   : orderbookBid.orderbook.bids
               }
-              dollarPrice={dollarPrice}
+              dollarPrice={formatNumber(dollarPrice)}
               isUSD={
                 toggleState === "compra"
                   ? orderbookAsk.isUSD

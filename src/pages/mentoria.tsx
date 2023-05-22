@@ -54,11 +54,11 @@ const Home: NextPage = () => {
             Aqui você acessa todas as suas mentorias, monitor de arbitragem em
             tempo real, materiais complementares, contato direto e muito mais...
           </span>
-          <Link href="/videos">
+          <Link className={styles.linkButton} href="/videos">
             <button className={styles.buttonWatch}>
               Assistir Agora{" "}
               <img
-                className={styles.images}
+                className={styles.image}
                 src="images/arrowButton.svg"
                 alt="flecha do botão"
               />
@@ -85,20 +85,20 @@ const Home: NextPage = () => {
                 <h3>{module.moduleTitle}</h3>
                 {module.videos.map((video) => (
                   <SwiperSlide key={video.title}>
-                    <Link href={video.url} className={styles.videosWatching}>
+                    <a href={video.url} className={styles.videosWatching}>
                       <img src={video.thumbnail} alt={video.title} />
                       <span className={styles.videosModule}>
                         {module.moduleTitle}
                       </span>
                       <span className={styles.videosTitle}>{video.title}</span>
-                      <Link href={video.url} className={styles.videosButton}>
+                      <span className={styles.videosButton}>
                         Assistir{" "}
                         <AiOutlinePlayCircle
                           size={20}
                           className={styles.videosIcon}
                         />
-                      </Link>
-                    </Link>
+                      </span>
+                    </a>
                   </SwiperSlide>
                 ))}
               </React.Fragment>
@@ -120,76 +120,15 @@ const Home: NextPage = () => {
             modules={[Navigation]}
             className="mySwiper"
           >
-            <SwiperSlide>
-              <Link href="/videos/cl9ellbn4000209l1gnc9wslt">
-                <img
-                  src="images/bannersModulos/boasVindas.png"
-                  alt="Boas vindas"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9elp8r7006709l1jdsyo8jg">
-                <img
-                  src="images/bannersModulos/entendendoNextGain.png"
-                  alt="Entendendo a Next Gain"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9ely3ir013609l1e4bew8qi">
-                <img
-                  src="images/bannersModulos/criacaoDeConta.png"
-                  alt="criação de conta"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9elynpv014909l19qiekub6">
-                <img
-                  src="images/bannersModulos/entendendoOMonitor.png"
-                  alt="Entendendo o monitor"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              <Link href="/videos/cl9em2mz2024109l1slmmabkr">
-                <img
-                  src="images/bannersModulos/corretoras.png"
-                  alt="Corretoras"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9em32qy025409l133i46mil">
-                <img
-                  src="images/bannersModulos/transferenciaESaque.png"
-                  alt="Transferencia e saque"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9em4tlp012409l23qnhwai5">
-                <img
-                  src="images/bannersModulos/operandoNaPratica.png"
-                  alt="Operando na prática"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
-                <img
-                  src="images/bannersModulos/dicasSecretas.png"
-                  alt="Dicas secretas"
-                />
-              </Link>
-            </SwiperSlide>
+            {modules.map((call) => (
+              <React.Fragment key={call.moduleTitle}>
+                <SwiperSlide>
+                  <a href={call.link}>
+                    <img src={call.thumbnail} alt={call.moduleTitle} />
+                  </a>
+                </SwiperSlide>
+              </React.Fragment>
+            ))}
           </Swiper>
         </div>
       </div>

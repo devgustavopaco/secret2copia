@@ -51,11 +51,11 @@ const Home: NextPage = () => {
             Aqui você acessa todas as suas mentorias, monitor de arbitragem em
             tempo real, materiais complementares, contato direto e muito mais...
           </span>
-          <Link href="/videos">
+          <Link className={styles.linkButton} href="/videos">
             <button className={styles.buttonWatch}>
               Assistir Agora{" "}
               <img
-                className={styles.images}
+                className={styles.image}
                 src="images/arrowButton.svg"
                 alt="flecha do botão"
               />

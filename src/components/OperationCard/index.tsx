@@ -42,10 +42,10 @@ export function OperationCard({
   onClick,
 }: OperationCardProps) {
   const bidPrice = coin.bid.isUSD
-    ? coin.bid.price * dollarPrice
+    ? parseFloat((coin.bid.price * dollarPrice).toFixed(2))
     : coin.bid.price;
   const askPrice = coin.ask.isUSD
-    ? coin.ask.price * dollarPrice
+    ? parseFloat((coin.ask.price * dollarPrice).toFixed(2))
     : coin.ask.price;
 
   return (

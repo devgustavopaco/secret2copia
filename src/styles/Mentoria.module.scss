@@ -24,26 +24,29 @@
    font-size: 22px;
    font-weight: 500;
   }
-  a {
+  .linkButton {
    max-width: 326px;
    width: 100%;
-   .buttonWatch {
-    margin-top: 3.5rem;
-    max-width: 326px;
-    width: 100%;
-    height: 56px;
-    background-color: #7b61ff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: var(--fs-400);
-    font-weight: 600;
-    text-transform: uppercase;
-    .images {
-     margin-left: 0.5rem;
-     width: 10px;
-     height: 10px !important;
-    }
+  }
+  .buttonWatch {
+   margin-top: 3.5rem;
+   max-width: 326px;
+   width: 100%;
+   height: 56px;
+   background-color: #7b61ff;
+   color: #fff;
+   border: none;
+   border-radius: 5px;
+   font-size: var(--fs-400);
+   font-weight: 600;
+   text-transform: uppercase;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   .image {
+    margin-left: 1rem;
+    width: 12px;
+    height: 12px !important;
    }
   }
  }

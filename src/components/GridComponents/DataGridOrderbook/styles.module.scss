@@ -135,3 +135,12 @@
   height: 50px;
   border-radius: 50%;
 }
+
+@media (max-width: 600px) {
+  .tableContainer {
+    :global(.MuiDataGrid-cellContent) {
+      font-size: 12px;
+      font-weight: 400;
+    }
+  }
+}

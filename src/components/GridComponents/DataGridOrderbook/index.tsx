@@ -28,11 +28,11 @@ const theme = createTheme({
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
-  maximumFractionDigits: 4,
+  maximumFractionDigits: 2,
 });
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
-  maximumFractionDigits: 6,
+  maximumFractionDigits: 2,
 });
 
 export function DataGridOrderbook({

@@ -108,6 +108,7 @@ export function Header() {
         <div className={styles.name}>
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
+          <img src="images/user.png" alt="" />
           <button
             type="button"
             className={styles["logout-button"]}

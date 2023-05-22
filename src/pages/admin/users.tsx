@@ -1,5 +1,5 @@
 import type { GetServerSideProps, NextPage } from "next";
-import { CheckCircle, Trash, UserCirclePlus, XCircle } from "phosphor-react";
+import { CheckCircle, Trash, Plus, XCircle } from "phosphor-react";
 import { DataGridUsers } from "../../components/GridComponents/DataGridUsers";
 
 import styles from "../../styles/Admin.module.scss";
@@ -131,7 +131,7 @@ const AdminUsers: NextPage = () => {
                 }}
               >
                 Adicionar
-                <UserCirclePlus size={24} />
+                <Plus size={24} />
               </button>
             </div>
           </div>
