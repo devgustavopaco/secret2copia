@@ -1,6 +1,7 @@
 import styles from "./styles.module.scss";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { X } from "phosphor-react";
+import { ImageDropzone } from "../../ImageDropzone";
 
 interface ModalAddVideoProps {
   setOpenModal: (open: boolean) => void;
@@ -19,6 +20,15 @@ export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
   const [additionalMaterial, setAdditionalMaterial] = useState("");
   const [idYoutube, setIdYoutube] = useState("");
   const [createdAt, setCreatedAt] = useState(new Date());
+  const [image, setImage] = useState<File | null>(null);
+
+  const handleImageDrop = (files: File[]) => {
+    const selectedImage = files[0];
+
+    if (selectedImage) {
+      setImage(selectedImage);
+    }
+  };
 
   const handleTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
@@ -98,6 +108,23 @@ export function ModalAddVideo({ setOpenModal, onSubmit }: ModalAddVideoProps) {
                 onChange={handleIdYoutubeChange}
                 required
               />
+            </div>
+            <div className={styles.inputBox}>
+              <span className={styles.details}>Selecione o Módulo</span>
+              <select name="modules" id="modules">
+                <option value="1">Módulo 1</option>
+                <option value="2">Módulo 2</option>
+                <option value="3">Módulo 3</option>
+                <option value="4">Módulo 4</option>
+                <option value="5">Módulo 5</option>
+                <option value="6">Módulo 6</option>
+                <option value="7">Módulo 7</option>
+                <option value="8">Bônus</option>
+              </select>
+            </div>
+            <div className={styles.inputBox}>
+              <span>Adicione uma thumbnail</span>
+              <ImageDropzone onDrop={handleImageDrop} />
             </div>
           </div>
 

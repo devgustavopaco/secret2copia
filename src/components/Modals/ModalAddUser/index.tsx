@@ -2,6 +2,7 @@ import styles from "./styles.module.scss";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { X } from "phosphor-react";
 import { MaskedInput, createDefaultMaskGenerator } from "react-hook-mask";
+import { ImageDropzone } from "../../ImageDropzone";
 
 const phoneMask = createDefaultMaskGenerator("(99) 99999-9999");
 
@@ -22,6 +23,16 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
   const [email, setEmail] = useState("");
   const [pricePaid, setPricePaid] = useState(0);
   const [password, setPassword] = useState("");
+
+  const [image, setImage] = useState<File | null>(null);
+
+  const handleImageDrop = (files: File[]) => {
+    const selectedImage = files[0];
+
+    if (selectedImage) {
+      setImage(selectedImage);
+    }
+  };
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value);
@@ -106,6 +117,10 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
                 onChange={handlePasswordChange}
                 required
               />
+            </div>
+            <div className={styles.inputBox}>
+              <span>Foto</span>
+              <ImageDropzone onDrop={handleImageDrop} />
             </div>
           </div>
 

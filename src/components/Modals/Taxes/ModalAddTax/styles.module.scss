@@ -14,7 +14,7 @@
   width: 550px;
   height: auto;
   border-radius: 12px;
-  background: var(--gray-800);
+  background: #211f2d;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
     padding: 0.5rem;
     border-radius: 8px;
 
-    background-color: var(--gray-600);
+    background-color: #3a3847;
     color: var(--gray-100);
   }
 }
@@ -60,7 +60,7 @@
     cursor: text;
     height: 45px;
 
-    background-color: var(--gray-600);
+    background-color: #3a3847;
     color: var(--gray-100);
     border: none;
     border-color: var(--purple-500);
@@ -87,7 +87,7 @@
   }
 
   > div[class$="menu"] {
-    background-color: var(--gray-600);
+    background-color: #3a3847;
     color: var(--gray-100);
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     width: 100%;
