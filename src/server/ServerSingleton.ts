@@ -4,13 +4,24 @@ interface DolarResponse {
   };
 }
 
+interface KRWResponse {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    KRW: number;
+  };
+}
+
 export class ServerSingleton {
   private static instance: ServerSingleton;
 
   private dolar: number;
+  private dolarKrw: number;
 
   private constructor() {
     this.dolar = 0;
+    this.dolarKrw = 0;
   }
 
   public static getInstance(): ServerSingleton {
@@ -32,7 +43,23 @@ export class ServerSingleton {
     return this.dolar;
   }
 
+  private async fetchDollarToKrw(): Promise<number> {
+    const response = await fetch(
+      `https://api.frankfurter.app/latest?from=USD&to=KRW`
+    );
+
+    const { rates } = (await response.json()) as KRWResponse;
+
+    this.dolarKrw = Number(rates.KRW);
+
+    return this.dolarKrw;
+  }
+
   public async getDollar(): Promise<number> {
     return await this.fetchDollar();
+  }
+
+  public async getDollarToKrw(): Promise<number> {
+    return await this.fetchDollarToKrw();
   }
 }
