@@ -5,8 +5,8 @@ import { proxies } from "../../proxies/proxies";
 import { Orderbook, OrderbookOperation } from "../../router/orderbook";
 import { Exchange, ExchangeStrategy } from "./ExchangeStrategy";
 
-async function fetchWithProxy(url: string, proxies: string[]): Promise<any> {
-  const randomIndex = Math.floor(Math.random() * 500);
+async function fetchWithProxy(url: string, proxies: string[], timeout: number = 60000, gateio: boolean = false): Promise<any> {
+  const randomIndex = Math.floor(Math.random() * proxies.length); // use proxies.length to avoid out-of-bounds
   const proxy = proxies[randomIndex] || "";
 
   const [host, portStr, username, password] = proxy.split(":");
@@ -14,10 +14,21 @@ async function fetchWithProxy(url: string, proxies: string[]): Promise<any> {
   const port = parseInt(portStr || "", 10);
   const auth = `${username}:${password}`;
   const agent = new HttpsProxyAgent({ host, port, auth });
-  const response = await fetch(url, { agent });
+
+  // Add headers if gateio is true
+  const fetchOptions = gateio ?
+    { agent, headers: { "Content-Type": "application/json" } } :
+    { agent };
+
+  const fetchPromise = fetch(url, fetchOptions);
+  const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout));
+
+  const response = await Promise.race([fetchPromise, timeoutPromise]);
 
   return response;
 }
+
+
 
 interface BinanceOrderbook {
   bids: string[][];
@@ -406,9 +417,8 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${
-      isFanToken ? "CHZ" : destinationToken.toUpperCase()
-    }`;
+    return `${baseToken.toUpperCase()}${isFanToken ? "CHZ" : destinationToken.toUpperCase()
+      }`;
   }
 
   async fetchOrderbook(
@@ -438,8 +448,6 @@ export class ChilizStrategy implements ExchangeStrategy {
     callCount++;
 
     // console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
-
-    console.log(json);
 
     this.orderbook[pair] = json;
 
@@ -495,6 +503,8 @@ export class CoinextStrategy implements ExchangeStrategy {
         body: JSON.stringify({ OMSId: 1, InstrumentId: 1, Depth: 10 }),
       }
     );
+
+
     const json = (await response.json()) as CoinextOrderbook;
     this.orderbook[pair] = json;
 
@@ -580,9 +590,12 @@ export class GeminiStategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.gemini.com/v1/book/${pair}?limit_bids=10&limit_asks=10`
-    );
+    const url =
+      `https://api.gemini.com/v1/book/${pair}`
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as GeminiOrderbook;
     this.orderbook[pair] = json;
 
@@ -658,9 +671,12 @@ export class HuobiStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.huobi.pro/market/depth?symbol=${pair}&type=step0&depth=10`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as HuobiOrderbook;
     this.orderbook[pair] = json;
 
@@ -838,9 +854,12 @@ export class KuCoinStratefy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as KuCoinOrderbook;
     this.orderbook[pair] = json;
 
@@ -916,9 +935,12 @@ export class NovaDAXStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.novadax.com/v1/market/depth?symbol=${pair}&limit=10`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as NovaDAXOrderbook;
     this.orderbook[pair] = json;
 
@@ -996,9 +1018,12 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://www.mercadobitcoin.net/api/${pair}/orderbook/`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as MercadoBitcoinOrderbook;
     this.orderbook[pair] = json;
 
@@ -1072,9 +1097,12 @@ export class HitBTCStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as HitBTCOrderbook;
     this.orderbook[pair] = json;
 
@@ -1229,9 +1257,12 @@ export class HotBitStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.hotbit.io/api/v1/order.depth?market=${pair}&limit=10&interval=1e-8`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as HotBitOrderbook;
     this.orderbook[pair] = json;
 
@@ -1307,9 +1338,12 @@ export class ByBitStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api-testnet.bybit.com/derivatives/v3/public/order-book/L2?category=linear&symbol=${pair}`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as ByBitOrderbook;
     this.orderbook[pair] = json;
 
@@ -1387,9 +1421,12 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://contract.mexc.com/api/v1/contract/depth/${pair}`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as MexcOrderbook;
     this.orderbook[pair] = json;
 
@@ -1475,9 +1512,12 @@ export class PolonieskStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.poloniex.com/markets/${pair}/orderBook`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as PoloniexOrderbook;
     this.orderbook[pair] = json;
 
@@ -1553,9 +1593,12 @@ export class BitmartStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://www.bitstamp.net/api/v2/order_book/${pair}`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as BitmartOrderbook;
     this.orderbook[pair] = json;
 
@@ -1633,9 +1676,12 @@ export class BidgetStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as BidgetOrderbook;
     this.orderbook[pair] = json;
 
@@ -1826,9 +1872,12 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.bitcointrade.com.br/v3/public/USDC${pair}/orders`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as BitcoinTradeOrderbook;
     this.orderbook[pair] = json;
 
@@ -1904,14 +1953,11 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit= 20`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const url =
+      `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`
+      ;
+
+    const response = await fetchWithProxy(url, proxies, 60000, true);
 
     const json = (await response.json()) as GateIoTradeOrderbook;
 
@@ -1991,9 +2037,12 @@ export class CryptoComStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
+    const url =
       `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`
-    );
+      ;
+
+    const response = await fetchWithProxy(url, proxies);
+
     const json = (await response.json()) as CryptoComOrderbook;
     this.orderbook[pair] = json;
 

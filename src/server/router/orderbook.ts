@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { CoinsSingleton } from "../CoinsSingleton";
 import { ExchangesSingleton } from "../ExchangesSingleton";
+import { ServerSingleton } from "../ServerSingleton";
+import type {
+  Exchange,
+  ExchangeStrategy,
+} from "../modules/exchanges/ExchangeStrategy";
 import {
   BidgetStrategy,
   BinanceStrategy,
@@ -26,11 +31,6 @@ import {
   OkxStrategy,
   PolonieskStrategy,
 } from "../modules/exchanges/Exchanges";
-import type {
-  Exchange,
-  ExchangeStrategy,
-} from "../modules/exchanges/ExchangeStrategy";
-import { ServerSingleton } from "../ServerSingleton";
 import { createRouter } from "./context";
 
 interface StrategyObject {

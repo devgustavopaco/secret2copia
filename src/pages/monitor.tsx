@@ -12,7 +12,9 @@ import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
 import { Exchange } from "@prisma/client";
+import { CheckCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
+import { toast } from "react-toastify";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 
@@ -59,7 +61,7 @@ const Monitoring: NextPage = () => {
       },
     ],
     {
-      refetchInterval: 1000 * 1000,
+      refetchInterval: 15 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false;
@@ -91,6 +93,7 @@ const Monitoring: NextPage = () => {
       localStorage.setItem("buyExchanges", JSON.stringify(buyExchanges));
     }
   }, [buyExchanges]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("sellExchanges", JSON.stringify(sellExchanges));
@@ -172,6 +175,17 @@ const Monitoring: NextPage = () => {
       }
       return false;
     });
+
+  useEffect(() => {
+    if (sortedOperations) {
+      toast.dark(
+        `Total de operações sortedOperations: ${sortedOperations.length}`,
+        {
+          icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+        }
+      );
+    }
+  }, [data]);
 
   return (
     <>
