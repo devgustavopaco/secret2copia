@@ -1124,7 +1124,17 @@ export class HitBTCStrategy implements ExchangeStrategy {
   }
 }
 
-type BitfinexOrderbook = number[][];
+interface BitfinexOrder {
+  price: string;
+  amount: string;
+  timestamp: string;
+}
+
+interface BitfinexOrderbook {
+  bids: BitfinexOrder[];
+  asks: BitfinexOrder[];
+}
+
 
 export class BitfinexStrategy implements ExchangeStrategy {
   orderbook: {
@@ -1132,75 +1142,71 @@ export class BitfinexStrategy implements ExchangeStrategy {
   } = {};
 
   convertOrderbook(pair: string): Orderbook {
-    const book = this.orderbook[pair]?.reduce(
-      (acc, result, index) => {
-        if (index < 25) {
-          let sumVolume = 0;
-          if (index - 1 >= 0) {
-            sumVolume = acc.bids[index - 1]!.sumVolume + Number(result[2]);
-          } else {
-            sumVolume = Number(result[2]);
-          }
+    const orderbook = this.orderbook[pair];
 
-          acc.bids.push({
-            price: Number(result[0]),
-            amount: Number(result[2]),
-            sumVolume,
-          });
-          return acc;
-        } else {
-          let sumVolume = 0;
-          if (index - 1 >= 0) {
-            sumVolume = acc.asks[index - 1]!.sumVolume + Number(result[2]);
-          } else {
-            sumVolume = Number(result[2]);
-          }
+    if (!orderbook) {
+      return { asks: [], bids: [] };
+    }
 
-          acc.asks.push({
-            price: Number(result[0]),
-            amount: -1 * Number(result[2]),
-            sumVolume,
-          });
-          return acc;
-        }
-      },
-      { asks: [], bids: [] } as {
-        asks: OrderbookOperation[];
-        bids: OrderbookOperation[];
-      }
-    ) ?? { asks: [], bids: [] };
+    const convertOrders = (orders: BitfinexOrder[], isAsk: boolean): OrderbookOperation[] => {
+      return orders.map((order, index) => {
+        const sumVolume = index > 0
+          ? Number(order.amount) + Number(orders[index - 1]!.amount)
+          : Number(order.amount);
 
-    return book;
+
+        return {
+          price: Number(order.price),
+          amount: isAsk ? -1 * Number(order.amount) : Number(order.amount),
+          sumVolume,
+        };
+      });
+    };
+
+    return {
+      bids: convertOrders(orderbook.bids, false),
+      asks: convertOrders(orderbook.asks, true),
+    };
   }
+
 
   formatPair(baseToken: string, destinationToken: string): string {
     if (destinationToken.toUpperCase() === "USDT") {
       destinationToken = "USD";
     }
 
-    return `t${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const response = await fetch(
-      `https://api-pub.bitfinex.com/v2/book/${pair}/P0?len=25`
-    );
+    const url = `https://api.bitfinex.com/v1/book/${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as BitfinexOrderbook;
+
     this.orderbook[pair] = json;
 
-    return {
-      name: "Bitfinex",
-      bid: {
-        price: Number(json[0]![0]),
-        amount: Number(json[0]![2]),
-      },
-      ask: {
-        price: Number(json[25]![0]),
-        amount: -1 * Number(json[25]![2]),
-      },
-      isUSD: true,
-    };
+    // check if bids and asks are not empty
+    if (json.bids.length > 0 && json.asks.length > 0) {
+      return {
+        name: "Bitfinex",
+        bid: {
+          price: Number(json.bids[0]!.price),
+          amount: Number(json.bids[0]!.amount),
+        },
+        ask: {
+          price: Number(json.asks[0]!.price),
+          amount: -1 * Number(json.asks[0]!.amount),
+        },
+        isUSD: true,
+      };
+    } else {
+      // handle the case where bids or asks are empty
+      throw new Error("Bids or Asks are empty");
+    }
   }
+
+
 }
 
 interface ByBitOrderbook {
@@ -1519,13 +1525,9 @@ export class BitstampStrategy implements ExchangeStrategy {
       `https://www.bitstamp.net/api/v2/order_book/${pair}`
       ;
 
-    console.log(url);
-
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BitstampOrderbook;
-
-    console.log(json);
 
     this.orderbook[pair] = json;
 
