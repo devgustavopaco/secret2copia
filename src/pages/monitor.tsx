@@ -61,7 +61,7 @@ const Monitoring: NextPage = () => {
       },
     ],
     {
-      refetchInterval: 15 * 1000,
+      refetchInterval: 20 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false;

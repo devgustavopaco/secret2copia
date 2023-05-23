@@ -1184,6 +1184,7 @@ export class BitfinexStrategy implements ExchangeStrategy {
     const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as BitfinexOrderbook;
 
+
     this.orderbook[pair] = json;
 
     // check if bids and asks are not empty
