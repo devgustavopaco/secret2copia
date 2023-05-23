@@ -5,8 +5,8 @@ import { proxies } from "../../proxies/proxies";
 import { Orderbook, OrderbookOperation } from "../../router/orderbook";
 import { Exchange, ExchangeStrategy } from "./ExchangeStrategy";
 
-async function fetchWithProxy(url: string, proxies: string[], timeout: number = 60000, gateio: boolean = false): Promise<any> {
-  const randomIndex = Math.floor(Math.random() * proxies.length); // use proxies.length to avoid out-of-bounds
+async function fetchWithProxy(url: string, proxies: string[], timeout: number = 60000, gateio: boolean = false, okx: boolean = false, headers?: object): Promise<any> {
+  const randomIndex = Math.floor(Math.random() * proxies.length);
   const proxy = proxies[randomIndex] || "";
 
   const [host, portStr, username, password] = proxy.split(":");
@@ -15,10 +15,21 @@ async function fetchWithProxy(url: string, proxies: string[], timeout: number = 
   const auth = `${username}:${password}`;
   const agent = new HttpsProxyAgent({ host, port, auth });
 
-  // Add headers if gateio is true
-  const fetchOptions = gateio ?
-    { agent, headers: { "Content-Type": "application/json" } } :
-    { agent };
+  const defaultOptions: any = { agent };
+
+  let fetchOptions = defaultOptions;
+
+  if (gateio) {
+    fetchOptions = {
+      ...defaultOptions,
+      headers: { "Content-Type": "application/json" }
+    };
+  } else if (okx) {
+    fetchOptions = {
+      ...defaultOptions,
+      headers
+    };
+  }
 
   const fetchPromise = fetch(url, fetchOptions);
   const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout));
@@ -447,8 +458,6 @@ export class ChilizStrategy implements ExchangeStrategy {
 
     callCount++;
 
-    // console.log(`Total responses of method ${callCount} calls: ${methodCount} `)
-
     this.orderbook[pair] = json;
 
     return {
@@ -771,12 +780,6 @@ export class KrakenStrategy implements ExchangeStrategy {
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as KrakenOrderbook;
-
-    // console.log(json)
-
-    // callCount++
-
-    // console.log(`Total value after ${callCount} method: ${methodCount}`)
 
     this.orderbook[pair] = json;
 
@@ -1778,13 +1781,13 @@ export class OkxStrategy implements ExchangeStrategy {
       "OK-ACCESS-PASSPHRASE": "your_passphrase_here",
     };
 
-    const response = await fetch(
-      `https://www.okx.com/api/v5/market/books-lite?instId=${pair}`,
-      { headers }
-    );
-    const json = (await response.json()) as OkxOrderbook;
+    const url =
+      `https://www.okx.com/api/v5/market/books-lite?instId=${pair}`
+      ;
 
-    // console.log(json)
+    const response = await fetchWithProxy(url, proxies, 60000, false, true, headers);
+
+    const json = (await response.json()) as OkxOrderbook;
 
     this.orderbook[pair] = json;
 
