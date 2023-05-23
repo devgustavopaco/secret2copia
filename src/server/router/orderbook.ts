@@ -11,8 +11,8 @@ import {
   BinanceStrategy,
   BitcoinTradeStrategy,
   BitfinexStrategy,
-  BitmartStrategy,
   BitsoStrategy,
+  BitstampStrategy,
   BrasilBitcoinStrategy,
   ByBitStrategy,
   ChilizStrategy,
@@ -21,7 +21,6 @@ import {
   GateIoTradeStrategy,
   GeminiStategy,
   HitBTCStrategy,
-  HotBitStrategy,
   HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy,
@@ -29,7 +28,7 @@ import {
   MexcStrategy,
   NovaDAXStrategy,
   OkxStrategy,
-  PolonieskStrategy,
+  PolonieskStrategy
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
 
@@ -53,11 +52,10 @@ const exchangeStrategies: StrategyObject = {
   mercadobitcoin: new MercadoBitcoinStrategy(),
   hitbtc: new HitBTCStrategy(),
   bitfinex: new BitfinexStrategy(),
-  hotbit: new HotBitStrategy(),
   bybit: new ByBitStrategy(),
   mexc: new MexcStrategy(),
   poloniex: new PolonieskStrategy(),
-  bistamp: new BitmartStrategy(),
+  bitstamp: new BitstampStrategy(),
   bidget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),

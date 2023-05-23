@@ -1203,87 +1203,6 @@ export class BitfinexStrategy implements ExchangeStrategy {
   }
 }
 
-interface HotBitOrderbook {
-  result: {
-    bids: string[][];
-    asks: string[][];
-  };
-}
-
-export class HotBitStrategy implements ExchangeStrategy {
-  orderbook: {
-    [key: string]: HotBitOrderbook;
-  } = {};
-
-  convertOrderbook(pair: string): Orderbook {
-    const bids =
-      this.orderbook[pair]?.result.bids.reduce((acc, bid, index) => {
-        let sumVolume = 0;
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
-        } else {
-          sumVolume = Number(bid[1]);
-        }
-
-        acc.push({
-          price: Number(bid[0]),
-          amount: Number(bid[1]),
-          sumVolume,
-        });
-
-        return acc;
-      }, [] as OrderbookOperation[]) ?? [];
-
-    const asks =
-      this.orderbook[pair]?.result.asks.reduce((acc, ask, index) => {
-        let sumVolume = 0;
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
-        } else {
-          sumVolume = Number(ask[1]);
-        }
-
-        acc.push({
-          price: Number(ask[0]),
-          amount: Number(ask[1]),
-          sumVolume,
-        });
-
-        return acc;
-      }, [] as OrderbookOperation[]) ?? [];
-
-    return { bids, asks };
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}/${destinationToken.toUpperCase()}`;
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url =
-      `https://api.hotbit.io/api/v1/order.depth?market=${pair}&limit=10&interval=1e-8`
-      ;
-
-    const response = await fetchWithProxy(url, proxies);
-
-    const json = (await response.json()) as HotBitOrderbook;
-    this.orderbook[pair] = json;
-
-    return {
-      name: "HotBit",
-      bid: {
-        price: Number(json.result.bids[0]![0]),
-        amount: Number(json.result.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.asks[0]![0]),
-        amount: Number(json.result.asks[0]![1]),
-      },
-      isUSD: true,
-    };
-  }
-}
-
 interface ByBitOrderbook {
   result: {
     b: string[][];
@@ -1539,16 +1458,16 @@ export class PolonieskStrategy implements ExchangeStrategy {
   }
 }
 
-// Bitmart ---------------------------------------------------------------------
+// Bitstamp ---------------------------------------------------------------------
 
-interface BitmartOrderbook {
+interface BitstampOrderbook {
   asks: string[][];
   bids: string[][];
 }
 
-export class BitmartStrategy implements ExchangeStrategy {
+export class BitstampStrategy implements ExchangeStrategy {
   orderbook: {
-    [key: string]: BitmartOrderbook;
+    [key: string]: BitstampOrderbook;
   } = {};
 
   convertOrderbook(pair: string): Orderbook {
@@ -1592,7 +1511,7 @@ export class BitmartStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
+    return `${baseToken.toLowerCase()}usd`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1600,9 +1519,14 @@ export class BitmartStrategy implements ExchangeStrategy {
       `https://www.bitstamp.net/api/v2/order_book/${pair}`
       ;
 
+    console.log(url);
+
     const response = await fetchWithProxy(url, proxies);
 
-    const json = (await response.json()) as BitmartOrderbook;
+    const json = (await response.json()) as BitstampOrderbook;
+
+    console.log(json);
+
     this.orderbook[pair] = json;
 
     return {
@@ -1876,12 +1800,14 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
     const url =
-      `https://api.bitcointrade.com.br/v3/public/USDC${pair}/orders`
+      `https://api.bitcointrade.com.br/v3/public/BRL${pair}/orders`
       ;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BitcoinTradeOrderbook;
+
+
     this.orderbook[pair] = json;
 
     return {
@@ -1894,7 +1820,7 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
         price: Number(json.data.asks[0].unit_price),
         amount: Number(json.data.asks[0].amount),
       },
-      isUSD: true,
+      isUSD: false,
     };
   }
 }
