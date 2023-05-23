@@ -1992,3 +1992,91 @@ export class CryptoComStrategy implements ExchangeStrategy {
     };
   }
 }
+
+// FOXBIT ---------------------------------------------------------------------
+
+type FoxBitOrder = [string, string];
+
+interface FoxBitOrderbook {
+  sequence_id: number;
+  asks: FoxBitOrder[];
+  bids: FoxBitOrder[];
+}
+
+
+export class FoxBitStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: FoxBitOrderbook;
+  } = {};
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}BRL`;
+  }
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.foxbit.com.br/rest/v3/markets/${pair}/orderbook`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as FoxBitOrderbook;
+
+    if (!json || !json.bids || !json.asks || json.bids.length === 0 || json.asks.length === 0) {
+      throw new Error(`Failed to fetch orderbook for pair: ${pair}`);
+    }
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Foxbit",
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: false,
+    };
+  }
+
+}

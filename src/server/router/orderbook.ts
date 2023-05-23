@@ -18,6 +18,7 @@ import {
   ChilizStrategy,
   CoinBaseStrategy,
   CryptoComStrategy,
+  FoxBitStrategy,
   GateIoTradeStrategy,
   GeminiStategy,
   HitBTCStrategy,
@@ -60,6 +61,7 @@ const exchangeStrategies: StrategyObject = {
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
   gateio: new GateIoTradeStrategy(),
+  foxbit: new FoxBitStrategy(),
 };
 
 export interface OrderbookOperation {
