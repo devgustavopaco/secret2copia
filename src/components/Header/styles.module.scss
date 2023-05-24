@@ -38,7 +38,7 @@
   font-size: 18px;
   ul {
     display: flex;
-    gap: 2.5rem;
+    gap: 2rem;
     padding: 0;
 
     list-style: none;
@@ -207,5 +207,20 @@
 
   .logout-button {
     display: none;
+  }
+}
+
+@media screen and (max-width: 1243px) {
+  .logo {
+    width: 150px;
+  }
+}
+
+@media (max-width: 500px) {
+  .logo {
+    width: 150px;
+  }
+  .nav_toggle {
+    padding: 0;
   }
 }
