@@ -2276,7 +2276,6 @@ interface BithumpOrderbook {
   };
 }
 
-
 export class BithumpStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: BithumpOrderbook;
@@ -2354,4 +2353,196 @@ export class BithumpStrategy implements ExchangeStrategy {
       isUSD: true,
     };
   }
+}
+
+
+// PROBIT ---------------------------------------------------------------------
+
+interface ProbitOrderResponse {
+  data: {
+    side: string;
+    price: string;
+    quantity: string;
+  }[];
+}
+
+export class ProbitStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: ProbitOrderResponse;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orders = this.orderbook[pair]?.data;
+
+    const bids = orders?.filter(order => order.side === 'buy').reduce((acc, bid, index) => {
+      let sumVolume = 0;
+      if (index - 1 >= 0) {
+        sumVolume = acc[index - 1]!.sumVolume + Number(bid.quantity);
+      } else {
+        sumVolume = Number(bid.quantity);
+      }
+
+      acc.push({
+        price: Number(bid.price),
+        amount: Number(bid.quantity),
+        sumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    const asks = orders?.filter(order => order.side === 'sell').reduce((acc, ask, index) => {
+      let sumVolume = 0;
+      if (index - 1 >= 0) {
+        sumVolume = acc[index - 1]!.sumVolume + Number(ask.quantity);
+      } else {
+        sumVolume = Number(ask.quantity);
+      }
+
+      acc.push({
+        price: Number(ask.price),
+        amount: Number(ask.quantity),
+        sumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.probit.com/api/exchange/v1/order_book?market_id=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as ProbitOrderResponse;
+
+    this.orderbook[pair] = json;
+
+    const bids = json.data.filter(order => order.side === 'buy');
+    const asks = json.data.filter(order => order.side === 'sell');
+
+    const highestBid = bids.reduce((prev, current) => (Number(prev.price) > Number(current.price)) ? prev : current);
+    const lowestAsk = asks.reduce((prev, current) => (Number(prev.price) < Number(current.price)) ? prev : current);
+
+    return {
+      name: "Probit",
+      bid: {
+        price: Number(highestBid.price),
+        amount: Number(highestBid.quantity),
+      },
+      ask: {
+        price: Number(lowestAsk.price),
+        amount: Number(lowestAsk.quantity),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// P2PB2B ---------------------------------------------------------------------
+
+interface P2PB2BOrderResponse {
+  result: {
+    limit: number;
+    total: number;
+    orders: {
+      market: string;
+      amount: string;
+      type: string;
+      price: string;
+      timestamp: number;
+      side: string;
+    }[];
+  };
+}
+
+export class P2PB2BStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: P2PB2BOrderResponse;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orders = this.orderbook[pair]?.result.orders;
+
+    const bids = orders?.filter(order => order.side === 'buy').reduce((acc, bid, index) => {
+      let sumVolume = 0;
+      if (index - 1 >= 0) {
+        sumVolume = acc[index - 1]!.sumVolume + Number(bid.amount);
+      } else {
+        sumVolume = Number(bid.amount);
+      }
+
+      acc.push({
+        price: Number(bid.price),
+        amount: Number(bid.amount),
+        sumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    const asks = orders?.filter(order => order.side === 'sell').reduce((acc, ask, index) => {
+      let sumVolume = 0;
+      if (index - 1 >= 0) {
+        sumVolume = acc[index - 1]!.sumVolume + Number(ask.amount);
+      } else {
+        sumVolume = Number(ask.amount);
+      }
+
+      acc.push({
+        price: Number(ask.price),
+        amount: Number(ask.amount),
+        sumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.p2pb2b.io/api/v2/public/book?market=${pair}&offset=0&limit=40`;
+
+    const responseSell = await fetchWithProxy(`${url}&side=sell`, proxies);
+    const responseBuy = await fetchWithProxy(`${url}&side=buy`, proxies);
+
+    const jsonSell = (await responseSell.json()) as P2PB2BOrderResponse;
+    const jsonBuy = (await responseBuy.json()) as P2PB2BOrderResponse;
+
+    const bids = jsonBuy.result.orders;
+    const asks = jsonSell.result.orders;
+
+    const highestBid = bids.reduce((prev, current) => (Number(prev!.price) > Number(current.price)) ? prev : current, bids[0]);
+    const lowestAsk = asks.reduce((prev, current) => (Number(prev!.price) < Number(current.price)) ? prev : current, asks[0]);
+
+    return {
+      name: "P2PB2B",
+      bid: {
+        price: Number(highestBid!.price),
+        amount: Number(highestBid!.amount),
+      },
+      ask: {
+        price: Number(lowestAsk!.price),
+        amount: Number(lowestAsk!.amount),
+      },
+      isUSD: true,
+    };
+  }
+
+
 }

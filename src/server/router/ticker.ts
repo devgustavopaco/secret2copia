@@ -25,7 +25,9 @@ import {
   MexcStrategy,
   NovaDAXStrategy,
   OkxStrategy,
+  P2PB2BStrategy,
   PolonieskStrategy,
+  ProbitStrategy,
 } from "../modules/exchanges/Exchanges";
 import { ExchangeStrategy } from "../modules/exchanges/ExchangeStrategy";
 import { createRouter } from "./context";
@@ -43,6 +45,8 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new BitmexStrategy(),
   new GeminiStategy(),
   new BithumpStrategy(),
+  new ProbitStrategy(),
+  new P2PB2BStrategy(),
   new HuobiStrategy(),
   new KrakenStrategy(),
   new KuCoinStratefy(),
