@@ -13,7 +13,9 @@ import {
   ChilizStrategy,
   CoinBaseStrategy,
   CoinextStrategy,
+  CoinwStrategy,
   CryptoComStrategy,
+  DigifinexStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
   GeminiStategy,
@@ -26,8 +28,10 @@ import {
   NovaDAXStrategy,
   OkxStrategy,
   P2PB2BStrategy,
+  PhemexStrategy,
   PolonieskStrategy,
   ProbitStrategy,
+  XTStrategy
 } from "../modules/exchanges/Exchanges";
 import { ExchangeStrategy } from "../modules/exchanges/ExchangeStrategy";
 import { createRouter } from "./context";
@@ -55,10 +59,14 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new MercadoBitcoinStrategy(),
   new HitBTCStrategy(),
   new BitfinexStrategy(),
+  new DigifinexStrategy(),
   new ByBitStrategy(),
+  new CoinwStrategy(),
   new PolonieskStrategy(),
   new BitstampStrategy(),
+  new XTStrategy(),
   new BidgetStrategy(),
+  new PhemexStrategy(),
   new OkxStrategy(),
   new BitcoinTradeStrategy(),
   new GateIoTradeStrategy(),

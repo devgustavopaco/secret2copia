@@ -20,7 +20,9 @@ import {
   CexStrategy,
   ChilizStrategy,
   CoinBaseStrategy,
+  CoinwStrategy,
   CryptoComStrategy,
+  DigifinexStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
   GeminiStategy,
@@ -33,8 +35,10 @@ import {
   NovaDAXStrategy,
   OkxStrategy,
   P2PB2BStrategy,
+  PhemexStrategy,
   PolonieskStrategy,
-  ProbitStrategy
+  ProbitStrategy,
+  XTStrategy
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
 
@@ -53,6 +57,10 @@ const exchangeStrategies: StrategyObject = {
   bithump: new BithumpStrategy(),
   probit: new ProbitStrategy(),
   p2pb2b: new P2PB2BStrategy(),
+  digifinex: new DigifinexStrategy(),
+  coinw: new CoinwStrategy(),
+  xt: new XTStrategy(),
+  phemex: new PhemexStrategy(),
   // coinext: new CoinextStrategy(),
   cryptocom: new CryptoComStrategy(),
   gemini: new GeminiStategy(),

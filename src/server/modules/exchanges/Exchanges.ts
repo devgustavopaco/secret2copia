@@ -2543,6 +2543,259 @@ export class P2PB2BStrategy implements ExchangeStrategy {
       isUSD: true,
     };
   }
+}
 
 
+// Digifinex ---------------------------------------------------------------------
+
+interface DigifinexOrderBook {
+  bids: [number, number][];
+  asks: [number, number][];
+}
+
+export class DigifinexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: DigifinexOrderBook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderbook = this.orderbook[pair];
+
+    const bids = orderbook?.bids.map(bid => ({
+      price: bid[0],
+      amount: bid[1],
+      sumVolume: bid[1],  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    const asks = orderbook?.asks.map(ask => ({
+      price: ask[0],
+      amount: ask[1],
+      sumVolume: ask[1],  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://openapi.digifinex.com/v3/order_book?symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as DigifinexOrderBook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Digifinex",
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Coinw ---------------------------------------------------------------------
+
+interface CoinwOrderBook {
+  data: {
+    asks: [string, string][];
+    bids: [string, string][];
+  };
+}
+
+export class CoinwStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CoinwOrderBook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderbook = this.orderbook[pair];
+
+    const bids = orderbook?.data.bids.map(bid => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      sumVolume: Number(bid[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    const asks = orderbook?.data.asks.map(ask => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      sumVolume: Number(ask[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.coinw.com/api/v1/public?command=returnOrderBook&symbol=${pair}&size=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as CoinwOrderBook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Coinw",
+      bid: {
+        price: Number(json.data.bids[0]![0]),
+        amount: Number(json.data.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.data.asks[0]![0]),
+        amount: Number(json.data.asks[0]![1]),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// XT ---------------------------------------------------------------------
+
+interface XTOrderBook {
+  result: {
+    bids: [string, string][];
+    asks: [string, string][];
+  };
+}
+
+export class XTStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: XTOrderBook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderbook = this.orderbook[pair];
+
+    const bids = orderbook?.result.bids.map(bid => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      sumVolume: Number(bid[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    const asks = orderbook?.result.asks.map(ask => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      sumVolume: Number(ask[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://sapi.xt.com/v4/public/depth?symbol=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as XTOrderBook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "XT",
+      bid: {
+        price: Number(json.result.bids[0]![0]),
+        amount: Number(json.result.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.result.asks[0]![0]),
+        amount: Number(json.result.asks[0]![1]),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Phemex ---------------------------------------------------------------------
+
+interface PhemexOrderBook {
+  error: any;
+  id: number;
+  result: {
+    depth: number;
+    orderbook_p: {
+      asks: Array<[string, string]>;
+      bids: Array<[string, string]>;
+    };
+    sequence: number;
+    symbol: string;
+    timestamp: number;
+    type: string;
+  };
+}
+
+export class PhemexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: PhemexOrderBook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderbook = this.orderbook[pair];
+
+    const bids = orderbook?.result.orderbook_p.bids.map(bid => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      sumVolume: Number(bid[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    const asks = orderbook?.result.orderbook_p.asks.map(ask => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      sumVolume: Number(ask[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.phemex.com/md/v2/orderbook?symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as PhemexOrderBook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Phemex",
+      bid: {
+        price: Number(json.result.orderbook_p.bids[0]![0]),
+        amount: Number(json.result.orderbook_p.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.result.orderbook_p.asks[0]![0]),
+        amount: Number(json.result.orderbook_p.asks[0]![1]),
+      },
+      isUSD: true,
+    };
+  }
 }
