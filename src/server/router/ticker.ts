@@ -12,6 +12,7 @@ import {
   CexStrategy,
   ChilizStrategy,
   CoinBaseStrategy,
+  CoincheckStrategy,
   CoinextStrategy,
   CoinwStrategy,
   CryptoComStrategy,
@@ -68,6 +69,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new BidgetStrategy(),
   new PhemexStrategy(),
   new OkxStrategy(),
+  new CoincheckStrategy(),
   new BitcoinTradeStrategy(),
   new GateIoTradeStrategy(),
 ];

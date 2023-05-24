@@ -2799,3 +2799,69 @@ export class PhemexStrategy implements ExchangeStrategy {
     };
   }
 }
+
+
+// Coincheck ---------------------------------------------------------------------
+
+interface CoincheckOrderBook {
+  asks: Array<[string, string]>;
+  bids: Array<[string, string]>;
+}
+
+export class CoincheckStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CoincheckOrderBook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderbook = this.orderbook[pair];
+
+    const bids = orderbook?.bids.map(bid => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      sumVolume: Number(bid[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    const asks = orderbook?.asks.map(ask => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      sumVolume: Number(ask[1]),  // You may need to change this, depending on how you want to calculate sumVolume
+    })) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "JPY";
+    }
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://coincheck.com/api/order_books?pair=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as CoincheckOrderBook;
+
+    console.log(json);
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Coincheck",
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+    };
+  }
+
+}
