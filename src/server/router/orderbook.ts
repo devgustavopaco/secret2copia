@@ -7,6 +7,7 @@ import type {
   ExchangeStrategy,
 } from "../modules/exchanges/ExchangeStrategy";
 import {
+  AscendexStrategy,
   BidgetStrategy,
   BinanceStrategy,
   BitcoinTradeStrategy,
@@ -63,6 +64,7 @@ const exchangeStrategies: StrategyObject = {
   xt: new XTStrategy(),
   phemex: new PhemexStrategy(),
   coincheck: new CoincheckStrategy(),
+  ascendex: new AscendexStrategy(),
   // coinext: new CoinextStrategy(),
   cryptocom: new CryptoComStrategy(),
   gemini: new GeminiStategy(),

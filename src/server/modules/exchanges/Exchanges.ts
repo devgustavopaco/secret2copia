@@ -6,8 +6,11 @@ import { proxies } from "../../proxies/proxies";
 import { Orderbook, OrderbookOperation } from "../../router/orderbook";
 import { Exchange, ExchangeStrategy } from "./ExchangeStrategy";
 
-async function fetchDollarPrice() {
+async function fetchDollarPriceKrw() {
   return await ServerSingleton.getInstance().getDollarToKrw();
+}
+async function fetchDollarPriceJpy() {
+  return await ServerSingleton.getInstance().getDollarToJpy();
 }
 
 async function fetchWithProxy(url: string, proxies: string[], timeout: number = 70000, gateio: boolean = false, okx: boolean = false, headers?: object): Promise<any> {
@@ -2336,7 +2339,7 @@ export class BithumpStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as BithumpOrderbook;
 
-    const dollarPriceToKrw = await fetchDollarPrice();
+    const dollarPriceToKrw = await fetchDollarPriceKrw();
 
     this.orderbook[pair] = json;
 
@@ -2846,22 +2849,112 @@ export class CoincheckStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as CoincheckOrderBook;
 
-    console.log(json);
+    const dollarPriceToJpy = await fetchDollarPriceJpy();
 
     this.orderbook[pair] = json;
 
     return {
       name: "Coincheck",
       bid: {
-        price: Number(json.bids[0]![0]),
+        price: Number(json.bids[0]![0]) / dollarPriceToJpy,
         amount: Number(json.bids[0]![1]),
       },
       ask: {
-        price: Number(json.asks[0]![0]),
+        price: Number(json.asks[0]![0]) / dollarPriceToJpy,
         amount: Number(json.asks[0]![1]),
       },
       isUSD: true,
     };
   }
+}
 
+// Ascendex ---------------------------------------------------------------------
+
+
+interface AscendexOrderbook {
+  data: {
+    data: {
+      asks: [string, string][];
+      bids: [string, string][];
+    };
+  };
+}
+
+export class AscendexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: AscendexOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.data.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}/${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string, isFanToken: boolean): Promise<Exchange> {
+
+    console.log(isFanToken);
+
+    const url = `https://ascendex.com/api/pro/v1/depth?symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as AscendexOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Ascendex",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
 }

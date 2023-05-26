@@ -1,4 +1,5 @@
 import {
+  AscendexStrategy,
   BidgetStrategy,
   BinanceStrategy,
   BitcoinTradeStrategy,
@@ -71,6 +72,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new OkxStrategy(),
   new CoincheckStrategy(),
   new BitcoinTradeStrategy(),
+  new AscendexStrategy(),
   new GateIoTradeStrategy(),
 ];
 
