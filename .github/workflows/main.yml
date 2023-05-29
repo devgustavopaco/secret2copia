@@ -72,4 +72,7 @@ jobs:
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          script: /root/.nvm/versions/node/v20.2.0/bin/pm2 reload nextgain --update-env
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            /root/.nvm/versions/node/v20.2.0/bin/pm2 reload nextgain --update-env
