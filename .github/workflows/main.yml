@@ -65,10 +65,11 @@ jobs:
           echo "177.73.233.38 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFaRd92ZJNKsvkJjAc4pncZhLI3ZPlSxfz3JczmlN9E7XHQCoUWxbGKci6ArDAU6Rc3DeT1RVxLqumfJH1cXmXs=" >> $HOME/.ssh/known_hosts
           echo "177.73.233.38 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkUYb8EOUOvzpxJYM+XuElZKOZ8kQ5g5Xtxw7kKQ1ur" >> $HOME/.ssh/known_hosts
 
-      - name: Restart PM2 service
+      - name: Restart PM2 process
         uses: appleboy/ssh-action@master
         with:
+          debug: true
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          script: pm2 reload nextgain --update-env
+          script: /root/.nvm/versions/node/v20.2.0/bin/pm2 reload nextgain --update-env
