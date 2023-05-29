@@ -41,6 +41,7 @@ jobs:
       - name: Deploy to server
         uses: appleboy/scp-action@master
         with:
+          debug: true
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
@@ -48,13 +49,18 @@ jobs:
           target: "/root/New-NextGain-System"
 
       - name: Update Git repository on production server
-        run: |
-          ssh-agent bash -c 'echo "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' | ssh-add - > /dev/null'
-          GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa" git pull
+        uses: appleboy/ssh-action@master
+        with:
+          debug: true
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: cd /root/New-NextGain-System && git pull
 
       - name: Deploy to server
         uses: appleboy/scp-action@master
         with:
+          debug: true
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
