@@ -64,3 +64,11 @@ jobs:
           echo "177.73.233.38 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC1BMdCil6tq9Ru93m0Ehupf88NHImitzkMJxD8vBhMPyM5o+T0yXzicpQ1dxrNt3m5GmzBFvGDrZcTxjgaVqLj2iFNtU3Qpmnx1mkEK+7/pi5fdBdi+ng9yd67lmRL/S2w8DxcHKl6PX/SyjnF80LKFwMrTQstyIobcxr7Q+4+TwxJQ/jfxcEzhg3IY/EWAqJxmuidWFJ3DM9K7SMv1IMvJ3uVh7kNAbiE5Sbcc1j3Z3tUUlqVAi5w2W7H3z4qGN9w2Zol14zjFQgsdJpnhPO3Vzphz5kAk58ZUQsK0Y+02dPXgjX7luhztWHr9D/huV9mFjW/we96PSWIJWFyZJDlg4RSy927Z8c+mOV9HzHHXlwVZOgS0ztj0WxYpHeu1CPQ1g2BccWuGuBvvD7k133ZWzouHNWGmrPI/xngQsl48gVQLZmtx7GB8v2K4E9HJOghpzlr4hU2sZ/tGvGI1vjez5PBl+tNlpujR/kd8US+jZbktiY9t4Eg3JpRMUWXESs=" >> $HOME/.ssh/known_hosts
           echo "177.73.233.38 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFaRd92ZJNKsvkJjAc4pncZhLI3ZPlSxfz3JczmlN9E7XHQCoUWxbGKci6ArDAU6Rc3DeT1RVxLqumfJH1cXmXs=" >> $HOME/.ssh/known_hosts
           echo "177.73.233.38 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkUYb8EOUOvzpxJYM+XuElZKOZ8kQ5g5Xtxw7kKQ1ur" >> $HOME/.ssh/known_hosts
+
+      - name: Restart PM2 service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: pm2 reload nextgain --update-env
