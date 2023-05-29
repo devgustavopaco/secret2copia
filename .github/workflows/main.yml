@@ -46,3 +46,11 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           source: ".next/"
           target: "/root/New-NextGain-System"
+       - name: Update Git repository on production server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_SERVER }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: cd /root/New-NextGain-System && git pull
+
