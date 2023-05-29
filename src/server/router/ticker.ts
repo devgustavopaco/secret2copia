@@ -11,6 +11,7 @@ import {
   BitstampStrategy,
   BkexStrategy,
   BrasilBitcoinStrategy,
+  BtcexStrategy,
   ByBitStrategy,
   CexStrategy,
   ChilizStrategy,
@@ -79,6 +80,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new LbkexStrategy(),
   new BkexStrategy(),
   new BitrueStrategy(),
+  new BtcexStrategy(),
   new GateIoTradeStrategy(),
 ];
 

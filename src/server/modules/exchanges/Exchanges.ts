@@ -3178,6 +3178,83 @@ export class BitrueStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as BitrueOrderbook;
 
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bitrue",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+// Btcex ---------------------------------------------------------------------
+
+interface BtcexOrderbook {
+  result: {
+    timestamp: number;
+    bids: [string, string][];
+    asks: [string, string][];
+    ticker_id: string;
+  };
+}
+
+export class BtcexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BtcexOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.result.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid[1]);
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: Number(bid[1]),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.result.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask[1]);
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: Number(ask[1]),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://www.btcex.com/api/v1/public/cmc_spot_orderbook?market_pair=${pair}&depth=40`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as BtcexOrderbook;
+
     console.log(json);
 
     this.orderbook[pair] = json;
@@ -3185,7 +3262,7 @@ export class BitrueStrategy implements ExchangeStrategy {
     const { bids, asks } = this.convertOrderbook(pair);
 
     return {
-      name: "Bitrue",
+      name: "Btcex",
       bid: {
         price: Number(bids[0]?.price),
         amount: Number(bids[0]?.amount),
