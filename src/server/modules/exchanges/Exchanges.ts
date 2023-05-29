@@ -3044,7 +3044,6 @@ export class LbkexStrategy implements ExchangeStrategy {
 
 // Bkex ---------------------------------------------------------------------
 
-
 interface BkexOrderbook {
   code: number;
   data: {
@@ -3111,6 +3110,82 @@ export class BkexStrategy implements ExchangeStrategy {
 
     return {
       name: "Bkex",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+// Bitrue ---------------------------------------------------------------------
+
+interface BitrueOrderbook {
+  lastUpdateId: number;
+  bids: [string, string, any[]][];
+  asks: [string, string, any[]][];
+}
+
+export class BitrueStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitrueOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid[1]);
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: Number(bid[1]),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask[1]);
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: Number(ask[1]),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://openapi.bitrue.com/api/v1/depth?symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as BitrueOrderbook;
+
+    console.log(json);
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bitrue",
       bid: {
         price: Number(bids[0]?.price),
         amount: Number(bids[0]?.amount),
