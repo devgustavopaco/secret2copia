@@ -25,6 +25,7 @@ import {
   HuobiStrategy,
   KrakenStrategy,
   KuCoinStratefy,
+  LbkexStrategy,
   MercadoBitcoinStrategy,
   MexcStrategy,
   NovaDAXStrategy,
@@ -73,6 +74,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new CoincheckStrategy(),
   new BitcoinTradeStrategy(),
   new AscendexStrategy(),
+  new LbkexStrategy(),
   new GateIoTradeStrategy(),
 ];
 

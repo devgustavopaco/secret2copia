@@ -2932,8 +2932,6 @@ export class AscendexStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(pair: string, isFanToken: boolean): Promise<Exchange> {
 
-    console.log(isFanToken);
-
     const url = `https://ascendex.com/api/pro/v1/depth?symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2946,6 +2944,94 @@ export class AscendexStrategy implements ExchangeStrategy {
 
     return {
       name: "Ascendex",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+
+// Lbkex ---------------------------------------------------------------------
+
+
+interface LbkexOrderbook {
+  result: string;
+  data: {
+    asks: [string, string][];
+    bids: [string, string][];
+    timestamp: number;
+  };
+  error_code: number;
+  ts: number;
+}
+
+export class LbkexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: LbkexOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid[1]);
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: Number(bid[1]),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask[1]);
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: Number(ask[1]),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string, isFanToken: boolean): Promise<Exchange> {
+
+
+    const url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as LbkexOrderbook;
+
+    console.log(json);
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "LBank",
       bid: {
         price: Number(bids[0]?.price),
         amount: Number(bids[0]?.amount),
