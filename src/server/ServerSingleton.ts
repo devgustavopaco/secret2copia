@@ -20,6 +20,22 @@ interface JPYResponse {
     JPY: number;
   };
 }
+interface THBResponse {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    THB: number;
+  };
+}
+interface EURResponse {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    EUR: number;
+  };
+}
 
 export class ServerSingleton {
   private static instance: ServerSingleton;
@@ -27,11 +43,15 @@ export class ServerSingleton {
   private dolar: number;
   private dolarKrw: number;
   private dolarJpy: number;
+  private dolarThb: number;
+  private dolarEur: number;
 
   private constructor() {
     this.dolar = 0;
     this.dolarKrw = 0;
     this.dolarJpy = 0;
+    this.dolarThb = 0;
+    this.dolarEur = 0;
   }
 
   public static getInstance(): ServerSingleton {
@@ -76,6 +96,29 @@ export class ServerSingleton {
 
     return this.dolarJpy;
   }
+  private async fetchDollarToThb(): Promise<number> {
+    const response = await fetch(
+      `https://api.frankfurter.app/latest?from=USD&to=THB`
+    );
+
+    const { rates } = (await response.json()) as THBResponse;
+
+    this.dolarThb = Number(rates.THB);
+
+    return this.dolarThb;
+  }
+
+  private async fetchDollarToEur(): Promise<number> {
+    const response = await fetch(
+      `https://api.frankfurter.app/latest?from=USD&to=EUR`
+    );
+
+    const { rates } = (await response.json()) as EURResponse;
+
+    this.dolarEur = Number(rates.EUR);
+
+    return this.dolarEur;
+  }
 
 
   public async getDollar(): Promise<number> {
@@ -88,5 +131,12 @@ export class ServerSingleton {
 
   public async getDollarToJpy(): Promise<number> {
     return await this.fetchDollarToJpy();
+  }
+
+  public async getDollarToThb(): Promise<number> {
+    return await this.fetchDollarToThb();
+  }
+  public async getDollarToEur(): Promise<number> {
+    return await this.fetchDollarToEur();
   }
 }

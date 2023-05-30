@@ -12,6 +12,12 @@ async function fetchDollarPriceKrw() {
 async function fetchDollarPriceJpy() {
   return await ServerSingleton.getInstance().getDollarToJpy();
 }
+async function fetchDollarPriceThb() {
+  return await ServerSingleton.getInstance().getDollarToThb();
+}
+async function fetchDollarPriceEur() {
+  return await ServerSingleton.getInstance().getDollarToEur();
+}
 
 async function fetchWithProxy(url: string, proxies: string[], timeout: number = 70000, gateio: boolean = false, okx: boolean = false, headers?: object): Promise<any> {
   const randomIndex = Math.floor(Math.random() * proxies.length);
@@ -602,7 +608,6 @@ export class GeminiStategy implements ExchangeStrategy {
     if (destinationToken.toUpperCase() === "USDT") {
       destinationToken = "USD";
     }
-
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
 
@@ -3255,8 +3260,6 @@ export class BtcexStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as BtcexOrderbook;
 
-    console.log(json);
-
     this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
@@ -3270,6 +3273,1091 @@ export class BtcexStrategy implements ExchangeStrategy {
       ask: {
         price: Number(asks[0]?.price),
         amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Coinsbit ---------------------------------------------------------------------
+
+interface CoinsbitOrderbook {
+  timestamp: number;
+  bids: [string, string][];
+  asks: [string, string][];
+  ticker_id: string;
+}
+
+
+export class CoinsbitStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CoinsbitOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid[1]);
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: Number(bid[1]),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask[1]);
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: Number(ask[1]),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://api.coinsbit.io/api/v1/public/depth/result?market=${pair}&limit=30`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as CoinsbitOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Coinsbit",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// Bingx ---------------------------------------------------------------------
+
+interface BingxOrderbook {
+  code: number;
+  msg: string;
+  data: {
+    T: number;
+    bids: [string, string][];
+    asks: [string, string][];
+  };
+}
+
+
+export class BingxStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BingxOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid[1]);
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: Number(bid[1]),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask[1]);
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: Number(ask[1]),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://open-api.bingx.com/openApi/swap/v2/quote/depth?symbol=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as BingxOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bingx",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// BigOne ---------------------------------------------------------------------
+
+interface BigOneOrderbook {
+  code: number;
+  data: {
+    asset_pair_name: string;
+    bids: Array<{
+      price: string;
+      order_count: number;
+      quantity: string;
+    }>;
+    asks: Array<{
+      price: string;
+      order_count: number;
+      quantity: string;
+    }>;
+  };
+}
+
+
+
+export class BigOneStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BigOneOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      bidSumVolume += Number(bid.quantity);
+
+      acc.push({
+        price: Number(bid.price),
+        amount: Number(bid.quantity),
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      askSumVolume += Number(ask.quantity);
+
+      acc.push({
+        price: Number(ask.price),
+        amount: Number(ask.quantity),
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://big.one/api/v3/asset_pairs/${pair}/depth`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as BigOneOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bigone",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Whitebit ---------------------------------------------------------------------
+
+interface WhitebitOrderbook {
+  asks: Array<[string, string]>;
+  bids: Array<[string, string]>;
+}
+
+
+export class WhitebitStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: WhitebitOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://whitebit.com/api/v1/public/depth/result?market=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as WhitebitOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Whitebit",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+
+// Bitkub ---------------------------------------------------------------------
+
+interface BitkubOrderbook {
+  asks: Array<[number, number]>;
+  bids: Array<[number, number]>;
+}
+
+
+export class BitkubStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitkubOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "THB";
+    }
+    return `${destinationToken.toLocaleUpperCase()}_${baseToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://api.bitkub.com/api/market/depth?sym=${pair}&lmt=40`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as BitkubOrderbook;
+
+    const dollarPriceToThb = await fetchDollarPriceThb();
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bitkub",
+      bid: {
+        price: Number(bids[0]?.price) / dollarPriceToThb,
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price) / dollarPriceToThb,
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// Dextrade ---------------------------------------------------------------------
+
+interface DextradeOrderbook {
+  buy: Array<{ volume: number; rate: number; count: number }>;
+  sell: Array<{ volume: number; rate: number; count: number }>;
+}
+
+export class DextradeStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: DextradeOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.buy.reduce((acc, bid) => {
+      let quantity = Number(bid.volume);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid.rate),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.sell.reduce((acc, ask) => {
+      let quantity = Number(ask.volume);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask.rate),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+
+    const url = `https://api.dex-trade.com/v1/public/book?pair=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()).data as DextradeOrderbook;
+
+    this.orderbook[pair] = json;
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Dextrade",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// Pionex ---------------------------------------------------------------------
+
+interface PionexOrderbook {
+  result: boolean;
+  data: {
+    bids: Array<[string, string]>;
+    asks: Array<[string, string]>;
+    updateTime: number;
+  };
+  timestamp: number;
+}
+
+export class PionexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: PionexOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.pionex.com/api/v1/market/depth?symbol=${pair}&limit=30`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: PionexOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full PionexOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Pionex",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+
+}
+
+
+// Bitforex ---------------------------------------------------------------------
+
+interface BitforexOrderbook {
+  success: boolean;
+  time: number;
+  data: {
+    bids: Array<{ price: number; amount: number }>;
+    asks: Array<{ price: number; amount: number }>;
+  };
+}
+
+
+export class BitforexStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitforexOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      let quantity = bid.amount;
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: bid.price,
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      let quantity = ask.amount;
+      askSumVolume += quantity;
+
+      acc.push({
+        price: ask.price,
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${destinationToken.toLocaleLowerCase()}-${baseToken.toLocaleLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.bitforex.com/api/v1/market/depth?symbol=coin-${pair}&size=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: BitforexOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full BitforexOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bitforex",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Cryptology ---------------------------------------------------------------------
+
+interface CryptologyOrderbook {
+  status: string;
+  error: string | null;
+  data: {
+    bids: Array<[string, string]>;
+    asks: Array<[string, string]>;
+  };
+}
+
+export class CryptologyStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CryptologyOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "USD";
+    }
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api-sandbox.cryptology.com/v1/public/get-order-book?trade_pair=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: CryptologyOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full CryptologyOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Cryptology",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+// Woo ---------------------------------------------------------------------
+
+interface WooOrderbook {
+  success: boolean;
+  timestamp: number;
+  bids: Array<{ price: number, quantity: number }>;
+  asks: Array<{ price: number, quantity: number }>;
+}
+
+
+export class WooStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: WooOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = bid.quantity;
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: bid.price,
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = ask.quantity;
+      askSumVolume += quantity;
+
+      acc.push({
+        price: ask.price,
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.woo.org/v1/orderbook/SPOT_${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: WooOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full WooOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Woo",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// Latoken ---------------------------------------------------------------------
+
+interface LatokenOrderbook {
+  ask: Array<{
+    price: string;
+    quantity: string;
+    cost: string;
+    accumulated: string;
+  }>;
+  bid: Array<{
+    price: string;
+    quantity: string;
+    cost: string;
+    accumulated: string;
+  }>;
+  totalAsk: string;
+  totalBid: string;
+}
+
+
+export class LatokenStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: LatokenOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bid.reduce((acc, bid) => {
+      let quantity = Number(bid.quantity);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid.price),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.ask.reduce((acc, ask) => {
+      let quantity = Number(ask.quantity);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask.price),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}/${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.latoken.com/v2/book/${pair}?limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: LatokenOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full LatokenOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Latoken",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Blockchain ---------------------------------------------------------------------
+
+interface BlockchainOrderbook {
+  symbol: string;
+  bids: Array<{
+    px: number;
+    qty: number;
+    num: number;
+  }>;
+  asks: Array<{
+    px: number;
+    qty: number;
+    num: number;
+  }>;
+}
+
+export class BlockchainStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BlockchainOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = bid.qty;
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: bid.px,
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = ask.qty;
+      askSumVolume += quantity;
+
+      acc.push({
+        price: ask.px,
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "USD";
+    }
+    return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.blockchain.com/v3/exchange/l2/${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: BlockchainOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full BlockchainOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Blockchain",
+      bid: {
+        price: Number(bids[0]?.price),
+        amount: Number(bids[0]?.amount),
+      },
+      ask: {
+        price: Number(asks[0]?.price),
+        amount: Number(asks[0]?.amount),
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+// Bitpanda ---------------------------------------------------------------------
+
+interface BitpandaOrderbook {
+  instrument_code: string;
+  time: string;
+  sequence: number;
+  bids: Array<{
+    price: string;
+    amount: string;
+    order_id: string;
+  }>;
+  asks: Array<{
+    price: string;
+    amount: string;
+    order_id: string;
+  }>;
+}
+
+
+export class BitpandaStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitpandaOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = Number(bid.amount);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid.price),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = Number(ask.amount);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask.price),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "EUR";
+    }
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.exchange.bitpanda.com/public/v1/order-book/${pair}?depth=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: BitpandaOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full BitpandaOrderbook
+
+    const dollarPriceToEur = await fetchDollarPriceEur();
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Bitpanda",
+      bid: {
+        price: (bids[0]!.price) / dollarPriceToEur,
+        amount: bids[0]!.amount,
+      },
+      ask: {
+        price: (asks[0]!.price) / dollarPriceToEur,
+        amount: asks[0]!.amount,
       },
       isUSD: true,
     };
