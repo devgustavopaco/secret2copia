@@ -1,9 +1,8 @@
 import { useState } from "react";
+import { MdArrowForwardIos } from "react-icons/md";
 import type { Orderbook } from "../../../server/router/orderbook";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
-import { Coin } from "phosphor-react";
-import { MdArrowForwardIos } from "react-icons/md";
 
 interface ModalOrderBookProps {
   coin: string | undefined;
@@ -91,22 +90,6 @@ export function ModalOrderBook({
             <img src={`${toggleState === "compra" ? sellWhere : buyWhere}`} />
             <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
           </div>
-
-          {/* <div className={styles.textModalBottom}>
-            <span className={styles.textSpan}>Moeda</span>{" "}
-            <div className={styles.coin}>
-              <img
-                src={
-                  coinImage ??
-                  `https://assets.coincap.io/assets/icons/${symbol?.toLowerCase()}@2x.png`
-                }
-                alt={coin}
-              />
-              <span>
-                {coin} <b>({symbol})</b>
-              </span>
-            </div>
-          </div> */}
 
           <div className={styles.contentTabs}>
             <DataGridOrderbook

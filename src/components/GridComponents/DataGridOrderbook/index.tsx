@@ -6,8 +6,8 @@ import {
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
 
+import { GlobalStyles, ThemeProvider, createTheme } from "@mui/material";
 import { v4 as uuidV4 } from "uuid";
-import { createTheme, ThemeProvider, GlobalStyles } from "@mui/material";
 
 import styles from "./styles.module.scss";
 
@@ -34,6 +34,21 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 2,
 });
+
+type DataItem = {
+  price: number;
+  amount: number;
+};
+
+function calculateCumulativePriceAndVolume(data: DataItem[]): DataItem[] {
+  let cumulativePrice = 0;
+  let cumulativeVolume = 0;
+  return data.map((item: DataItem) => {
+    cumulativePrice += item.price;
+    cumulativeVolume += item.amount;
+    return { ...item, price: cumulativePrice, amount: cumulativeVolume };
+  });
+}
 
 export function DataGridOrderbook({
   data,
@@ -99,6 +114,9 @@ export function DataGridOrderbook({
     return uuidV4();
   };
 
+  let updatedData = calculateCumulativePriceAndVolume(data);
+
+  console.log(data);
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles
@@ -112,7 +130,7 @@ export function DataGridOrderbook({
         <Box className={styles.box} sx={{ height: 500, width: "100%" }}>
           {isPurchase ? (
             <DataGrid
-              rows={data}
+              rows={updatedData}
               columns={columns}
               pageSize={10}
               rowsPerPageOptions={[10]}
@@ -125,7 +143,7 @@ export function DataGridOrderbook({
             />
           ) : (
             <DataGrid
-              rows={data}
+              rows={updatedData}
               columns={columns}
               pageSize={10}
               rowsPerPageOptions={[10]}
