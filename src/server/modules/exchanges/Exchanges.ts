@@ -4363,3 +4363,338 @@ export class BitpandaStrategy implements ExchangeStrategy {
     };
   }
 }
+
+
+
+// Cointr ---------------------------------------------------------------------
+
+interface CointrOrderbook {
+  code: number;
+  message: string;
+  data: {
+    bids: Array<[string, string]>;
+    asks: Array<[string, string]>;
+    utime: number;
+  };
+}
+
+
+export class CointrStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: CointrOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.data.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);  // bid[1] corresponds to the amount
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),  // bid[0] corresponds to the price
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.data.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);  // ask[1] corresponds to the amount
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),  // ask[0] corresponds to the price
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.cointr.pro/v1/spot/market/depths?instId=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: CointrOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full CointrOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Cointr",
+      bid: {
+        price: (bids[0]!.price),
+        amount: bids[0]!.amount,
+      },
+      ask: {
+        price: (asks[0]!.price),
+        amount: asks[0]!.amount,
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Exmarkets ---------------------------------------------------------------------
+
+interface ExmarketsOrderbook {
+  bids: Array<{
+    price: string;
+    amount: string;
+  }>;
+  asks: Array<{
+    price: string;
+    amount: string;
+  }>;
+}
+
+
+export class ExmarketsStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: ExmarketsOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = Number(bid.amount);
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid.price),
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = Number(ask.amount);
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask.price),
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleLowerCase()}-${destinationToken.toLocaleLowerCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://exmarkets.com/api/trade/v1/market/order-book?market=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: ExmarketsOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full ExmarketsOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Exmarkets",
+      bid: {
+        price: bids[0]!.price,
+        amount: bids[0]!.amount,
+      },
+      ask: {
+        price: asks[0]!.price,
+        amount: asks[0]!.amount,
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+// Ztb ---------------------------------------------------------------------
+
+interface ZtbOrderbook {
+  bids: Array<[string, string]>;
+  asks: Array<[string, string]>;
+}
+
+
+export class ZtbStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: ZtbOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
+      let quantity = Number(bid[1]);  // bid[1] corresponds to the amount
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid[0]),  // bid[0] corresponds to the price
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]?.asks.reduce((acc, ask) => {
+      let quantity = Number(ask[1]);  // ask[1] corresponds to the amount
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask[0]),  // ask[0] corresponds to the price
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://www.ztb.im/api/v1/depth?symbol=${pair}&size=40`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: ZtbOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full ZtbOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    return {
+      name: "Ztb",
+      bid: {
+        price: bids[0]!.price,
+        amount: bids[0]!.amount,
+      },
+      ask: {
+        price: asks[0]!.price,
+        amount: asks[0]!.amount,
+      },
+      isUSD: true,
+    };
+  }
+}
+
+
+
+
+
+// Bitflyer ---------------------------------------------------------------------
+
+interface BitflyerOrderbook {
+  mid_price: number;
+  bids: { price: number; size: number }[];
+  asks: { price: number; size: number }[];
+}
+
+
+
+export class BitflyerStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitflyerOrderbook;
+  } = {};
+
+
+  convertOrderbook(pair: string): Orderbook {
+    if (!this.orderbook.hasOwnProperty(pair)) {
+      throw new Error(`Orderbook does not contain pair: ${pair}`);
+    }
+
+    let bidSumVolume = 0;
+    const bids = this.orderbook[pair]!.bids.reduce((acc, bid) => {
+      let quantity = Number(bid.size); // bid.size corresponds to the amount
+      bidSumVolume += quantity;
+
+      acc.push({
+        price: Number(bid.price), // bid.price corresponds to the price
+        amount: quantity,
+        sumVolume: bidSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    let askSumVolume = 0;
+    const asks = this.orderbook[pair]!.asks.reduce((acc, ask) => {
+      let quantity = Number(ask.size); // ask.size corresponds to the amount
+      askSumVolume += quantity;
+
+      acc.push({
+        price: Number(ask.price), // ask.price corresponds to the price
+        amount: quantity,
+        sumVolume: askSumVolume,
+      });
+
+      return acc;
+    }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "JPY";
+    }
+    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.bitflyer.com/v1/getboard?product_code=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json: BitflyerOrderbook = await response.json();
+
+    this.orderbook[pair] = json; // store full BitflyerOrderbook
+
+    const { bids, asks } = this.convertOrderbook(pair); // pass in the correct pair
+
+    const dollarPriceToJpy = await fetchDollarPriceJpy();
+
+    return {
+      name: "Bitflyer",
+      bid: {
+        price: bids[0]!.price / dollarPriceToJpy,
+        amount: bids[0]!.amount,
+      },
+      ask: {
+        price: asks[0]!.price / dollarPriceToJpy,
+        amount: asks[0]!.amount,
+      },
+      isUSD: true,
+    };
+  }
+}

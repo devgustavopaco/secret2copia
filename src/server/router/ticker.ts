@@ -6,6 +6,7 @@ import {
   BingxStrategy,
   BitcoinTradeStrategy,
   BitfinexStrategy,
+  BitflyerStrategy,
   BitforexStrategy,
   BithumpStrategy,
   BitkubStrategy,
@@ -25,11 +26,13 @@ import {
   CoincheckStrategy,
   CoinextStrategy,
   CoinsbitStrategy,
+  CointrStrategy,
   CoinwStrategy,
   CryptoComStrategy,
   CryptologyStrategy,
   DextradeStrategy,
   DigifinexStrategy,
+  ExmarketsStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
   GeminiStategy,
@@ -50,7 +53,8 @@ import {
   ProbitStrategy,
   WhitebitStrategy,
   WooStrategy,
-  XTStrategy
+  XTStrategy,
+  ZtbStrategy
 } from "../modules/exchanges/Exchanges";
 import { ExchangeStrategy } from "../modules/exchanges/ExchangeStrategy";
 import { createRouter } from "./context";
@@ -107,7 +111,11 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new WooStrategy(),
   new LatokenStrategy(),
   new BlockchainStrategy(),
-  new BitpandaStrategy()
+  new BitpandaStrategy(),
+  new CointrStrategy(),
+  new ExmarketsStrategy(),
+  new ZtbStrategy(),
+  new BitflyerStrategy()
 ];
 
 export const tickerRouter = createRouter().query("getAll", {

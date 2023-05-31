@@ -14,6 +14,7 @@ import {
   BingxStrategy,
   BitcoinTradeStrategy,
   BitfinexStrategy,
+  BitflyerStrategy,
   BitforexStrategy,
   BithumpStrategy,
   BitkubStrategy,
@@ -32,11 +33,13 @@ import {
   CoinBaseStrategy,
   CoincheckStrategy,
   CoinsbitStrategy,
+  CointrStrategy,
   CoinwStrategy,
   CryptoComStrategy,
   CryptologyStrategy,
   DextradeStrategy,
   DigifinexStrategy,
+  ExmarketsStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
   GeminiStategy,
@@ -57,7 +60,8 @@ import {
   ProbitStrategy,
   WhitebitStrategy,
   WooStrategy,
-  XTStrategy
+  XTStrategy,
+  ZtbStrategy
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
 
@@ -99,6 +103,10 @@ const exchangeStrategies: StrategyObject = {
   latoken: new LatokenStrategy(),
   blockchain: new BlockchainStrategy(),
   bitpanda: new BitpandaStrategy(),
+  cointr: new CointrStrategy(),
+  exmarkets: new ExmarketsStrategy(),
+  ztb: new ZtbStrategy(),
+  bitflyer: new BitflyerStrategy(),
   pionex: new PionexStrategy(),
   bitkub: new BitkubStrategy(),
   huobi: new HuobiStrategy(),
