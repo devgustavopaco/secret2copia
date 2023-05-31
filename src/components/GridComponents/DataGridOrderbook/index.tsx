@@ -25,11 +25,18 @@ const theme = createTheme({
   },
 });
 
+const priceFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  maximumFractionDigits: 4,
+});
+
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
   maximumFractionDigits: 2,
 });
+
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 2,
@@ -71,7 +78,7 @@ export function DataGridOrderbook({
       align: "center", // centraliza as células
 
       valueGetter(params: GridRenderCellParams) {
-        return currencyFormatter.format(
+        return priceFormatter.format(
           params.row.price * (isUSD ? dollarPrice : 1)
         );
       },
