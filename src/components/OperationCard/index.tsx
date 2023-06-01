@@ -1,5 +1,5 @@
-import styles from "./styles.module.scss";
 import { MdArrowForwardIos } from "react-icons/md";
+import styles from "./styles.module.scss";
 
 interface OperationCardProps {
   coin: {
@@ -42,10 +42,10 @@ export function OperationCard({
   onClick,
 }: OperationCardProps) {
   const bidPrice = coin.bid.isUSD
-    ? parseFloat((coin.bid.price * dollarPrice).toFixed(2))
+    ? parseFloat((coin.bid.price * dollarPrice).toFixed(4))
     : coin.bid.price;
   const askPrice = coin.ask.isUSD
-    ? parseFloat((coin.ask.price * dollarPrice).toFixed(2))
+    ? parseFloat((coin.ask.price * dollarPrice).toFixed(4))
     : coin.ask.price;
 
   return (
