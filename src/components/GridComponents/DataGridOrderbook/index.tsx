@@ -51,9 +51,8 @@ function calculateCumulativePriceAndVolume(data: DataItem[]): DataItem[] {
   let cumulativePrice = 0;
   let cumulativeVolume = 0;
   return data.map((item: DataItem) => {
-    cumulativePrice += item.price;
     cumulativeVolume += item.amount;
-    return { ...item, price: cumulativePrice, amount: cumulativeVolume };
+    return { ...item, amount: cumulativeVolume };
   });
 }
 
