@@ -2283,13 +2283,14 @@ interface BithumpOrderbook {
     }[];
   };
 }
-
 export class BithumpStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: BithumpOrderbook;
   } = {};
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string): Promise<Orderbook> {
+    const dollarPriceToKrw = await fetchDollarPriceKrw();
+
     const bids =
       this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
         let sumVolume = 0;
@@ -2300,7 +2301,7 @@ export class BithumpStrategy implements ExchangeStrategy {
         }
 
         acc.push({
-          price: Number(bid.price),
+          price: Number(bid.price) / dollarPriceToKrw,
           amount: Number(bid.quantity),
           sumVolume,
         });
@@ -2318,7 +2319,7 @@ export class BithumpStrategy implements ExchangeStrategy {
         }
 
         acc.push({
-          price: Number(ask.price),
+          price: Number(ask.price) / dollarPriceToKrw,
           amount: Number(ask.quantity),
           sumVolume,
         });
@@ -3623,14 +3624,16 @@ export class BitkubStrategy implements ExchangeStrategy {
     [key: string]: BitkubOrderbook;
   } = {};
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string): Promise<Orderbook> {
+    const dollarPriceThb = await fetchDollarPriceThb();
+
     let bidSumVolume = 0;
     const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
       let quantity = Number(bid[1]);
       bidSumVolume += quantity;
 
       acc.push({
-        price: Number(bid[0]),
+        price: Number(bid[0]) / dollarPriceThb,
         amount: quantity,
         sumVolume: bidSumVolume,
       });
@@ -3644,7 +3647,7 @@ export class BitkubStrategy implements ExchangeStrategy {
       askSumVolume += quantity;
 
       acc.push({
-        price: Number(ask[0]),
+        price: Number(ask[0]) / dollarPriceThb,
         amount: quantity,
         sumVolume: askSumVolume,
       });
@@ -3664,7 +3667,6 @@ export class BitkubStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-
     const url = `https://api.bitkub.com/api/market/depth?sym=${pair}&lmt=40`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3675,21 +3677,20 @@ export class BitkubStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
-    const { bids, asks } = this.convertOrderbook(pair);
-
     return {
       name: "Bitkub",
       bid: {
-        price: Number(bids[0]?.price) / dollarPriceToThb,
-        amount: Number(bids[0]?.amount),
+        price: Number(json.bids[0]![0]) / dollarPriceToThb,
+        amount: Number(json.bids[0]![1]),
       },
       ask: {
-        price: Number(asks[0]?.price) / dollarPriceToThb,
-        amount: Number(asks[0]?.amount),
+        price: Number(json.asks[0]![0]) / dollarPriceToThb,
+        amount: Number(json.asks[0]![1]),
       },
       isUSD: true,
     };
   }
+
 }
 
 

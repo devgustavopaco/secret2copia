@@ -122,7 +122,7 @@ export function DataGridOrderbook({
 
   let updatedData = calculateCumulativePriceAndVolume(data);
 
-  console.log(data);
+  console.log(updatedData);
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles

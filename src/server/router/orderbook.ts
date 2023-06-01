@@ -305,7 +305,7 @@ const fetchArbitrageOpportunity = async (
     "usdt",
     isFanToken
   );
-  lowestAsk.orderbook = exchangeStrategies[
+  lowestAsk.orderbook = await exchangeStrategies[
     lowestAskExchangeName
   ]!.convertOrderbook(lowestAskPair, isFanToken);
 
@@ -315,7 +315,7 @@ const fetchArbitrageOpportunity = async (
     "usdt",
     isFanToken
   );
-  highestBid.orderbook = exchangeStrategies[
+  highestBid.orderbook = await exchangeStrategies[
     highestBidExchangeName
   ]!.convertOrderbook(highestBidPair, isFanToken);
 
