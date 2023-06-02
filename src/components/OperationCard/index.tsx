@@ -42,11 +42,17 @@ export function OperationCard({
   onClick,
 }: OperationCardProps) {
   const bidPrice = coin.bid.isUSD
-    ? parseFloat((coin.bid.price * dollarPrice).toFixed(4))
+    ? parseFloat(
+        (coin.bid.price * dollarPrice).toFixed(coin.symbol === "SHIB" ? 8 : 4)
+      )
     : coin.bid.price;
   const askPrice = coin.ask.isUSD
-    ? parseFloat((coin.ask.price * dollarPrice).toFixed(4))
+    ? parseFloat(
+        (coin.ask.price * dollarPrice).toFixed(coin.symbol === "SHIB" ? 8 : 4)
+      )
     : coin.ask.price;
+
+  console.log(coin);
 
   return (
     <section className={styles.card}>
