@@ -126,11 +126,6 @@ export function ModalAddCrypto({
           ) : (
             <ImageDropzone onDrop={handleImageDrop} />
           )}
-          {/* <div className={styles.cleanImageBlock}>
-            <button className={styles.cleanImage} onClick={handleCleanImage}>
-              Limpar imagem
-            </button>
-          </div> */}
           <div className={styles.inputBoxInline}>
             <span className={styles.details}>Fan Token?</span>
             <input

@@ -3,11 +3,29 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { List, SignOut, X } from "phosphor-react";
 import { useState } from "react";
+import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
 export function Header() {
-  const router = useRouter();
   const { data: auth } = useSession();
+
+  let user = null;
+  let userData = null;
+
+  try {
+    userData = JSON.parse(localStorage.getItem("user") || "null");
+  } catch (error) {
+    console.error("Failed to parse user data from localStorage", error);
+  }
+
+  if (!userData && auth?.user?.email) {
+    user = trpc.useQuery(["user.getUserByEmail", { email: auth.user.email }]);
+    user.data && localStorage.setItem("user", JSON.stringify(user.data));
+  } else {
+    user = { data: userData };
+  }
+
+  const router = useRouter();
 
   const [toggle, settoggle] = useState(true);
 
@@ -15,8 +33,12 @@ export function Header() {
     signOut({
       callbackUrl: "/",
     });
-    // router.push('/')
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+    }
   };
+
+  console.log(auth);
 
   return (
     <header className={styles.header}>
@@ -108,7 +130,15 @@ export function Header() {
         <div className={styles.name}>
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
-          <img src="images/user.png" alt="foto de perfil" />
+          <img
+            src={
+              user && user.data && user.data.image
+                ? user.data.image
+                : "images/user.png"
+            }
+            alt="foto de perfil"
+          />
+
           <button
             type="button"
             className={styles["logout-button"]}

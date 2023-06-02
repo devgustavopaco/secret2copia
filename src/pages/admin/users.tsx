@@ -3,6 +3,7 @@ import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
 import { DataGridUsers } from "../../components/GridComponents/DataGridUsers";
 
 import { unstable_getServerSession } from "next-auth";
+import { useS3Upload } from "next-s3-upload";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -15,6 +16,7 @@ import { trpc } from "../../utils/trpc";
 import { authOptions } from "../api/auth/[...nextauth]";
 
 const AdminUsers: NextPage = () => {
+  let { uploadToS3 } = useS3Upload();
   const [modalOpenDelete, setModalOpenDelete] = useState(false);
   const [modalOpenAdd, setModalOpenAdd] = useState(false);
   const [itemDeleted, setItemDeleted] = useState(false);
@@ -70,19 +72,35 @@ const AdminUsers: NextPage = () => {
     },
   });
   // Create
-  const handleUserCreate = (
+  const handleUserCreate = async (
     name: string,
     email: string,
     phone: string,
     pricePaid: number,
-    password: string
+    password: string,
+    image?: File | null
   ) => {
+    console.log("handleUserCreate called with", {
+      name,
+      email,
+      phone,
+      pricePaid,
+      password,
+      image,
+    });
+
+    let imageUrl;
+    if (image) {
+      const { url } = await uploadToS3(image);
+      imageUrl = url;
+    }
     createUserMutation.mutate({
       name,
       email,
       pricePaid,
       phone,
       password,
+      imageUrl,
     });
   };
 

@@ -60,6 +60,7 @@ export const userRouter = createRouter()
       pricePaid: z.number(),
       phone: z.string(),
       password: z.string(),
+      imageUrl: z.string().optional(),
     }),
     async resolve({ ctx, input }) {
       const userRole = await ctx.prisma.role.findFirst({
@@ -77,6 +78,7 @@ export const userRouter = createRouter()
           phone: input.phone,
           password: passwordHash,
           roleId: userRole!.id,
+          image: input.imageUrl,
         },
       });
 
