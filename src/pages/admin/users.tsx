@@ -1,24 +1,25 @@
 import type { GetServerSideProps, NextPage } from "next";
-import { CheckCircle, Trash, Plus, XCircle } from "phosphor-react";
+import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
 import { DataGridUsers } from "../../components/GridComponents/DataGridUsers";
 
-import styles from "../../styles/Admin.module.scss";
-import { useEffect, useState } from "react";
-import { ModalDeleteUser } from "../../components/Modals/ModalDeleteUser";
-import { ModalAddUser } from "../../components/Modals/ModalAddUser";
-import { trpc } from "../../utils/trpc";
-import Head from "next/head";
 import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]";
-import { Header } from "../../components/Header";
+import Head from "next/head";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { Header } from "../../components/Header";
+import { ModalAddUser } from "../../components/Modals/ModalAddUser";
+import { ModalDeleteUser } from "../../components/Modals/ModalDeleteUser";
+import styles from "../../styles/Admin.module.scss";
+import { trpc } from "../../utils/trpc";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 const AdminUsers: NextPage = () => {
   const [modalOpenDelete, setModalOpenDelete] = useState(false);
   const [modalOpenAdd, setModalOpenAdd] = useState(false);
   const [itemDeleted, setItemDeleted] = useState(false);
   const [idsFromGrid, setIds] = useState<string[]>([]);
+  const [searchText, setSearchText] = useState("");
 
   const notify = (text: string, success: boolean) => {
     if (success) {
@@ -36,7 +37,7 @@ const AdminUsers: NextPage = () => {
     data: users,
     isLoading,
     refetch,
-  } = trpc.useQuery(["user.getAllUsers"]);
+  } = trpc.useQuery(["user.getAllUsers", { search: searchText }]);
   useEffect(() => {
     if (idsFromGrid.length !== 0) {
       deleteUserMutation.mutate({
@@ -44,6 +45,10 @@ const AdminUsers: NextPage = () => {
       });
     }
   }, [itemDeleted]);
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
+  };
 
   const createUserMutation = trpc.useMutation("user.create", {
     onSuccess() {
@@ -140,6 +145,7 @@ const AdminUsers: NextPage = () => {
               onDelete={handleUserDelete}
               data={users || []}
               isLoading={isLoading}
+              onSearch={handleSearch}
             />
           </div>
         </main>

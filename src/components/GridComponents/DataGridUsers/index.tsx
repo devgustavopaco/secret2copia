@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
@@ -10,6 +10,7 @@ import { CheckCircle, XCircle } from "phosphor-react";
 import { toast } from "react-toastify";
 import { trpc } from "../../../utils/trpc";
 
+import { useState } from "react";
 import styles from "./styles.module.scss";
 const columns: GridColDef[] = [
   {
@@ -58,13 +59,16 @@ interface DataGridUsersProps {
   data: Partial<User>[];
   isLoading?: boolean;
   onDelete: (id: string[]) => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 export function DataGridUsers({
   data,
   isLoading = false,
   onDelete,
+  onSearch,
 }: DataGridUsersProps) {
+  const [searchText, setSearchText] = useState<string>("");
   const updateMutation = trpc.useMutation("user.update", {
     onSuccess() {
       notify("Usuário alterado com sucesso!", true);
@@ -73,6 +77,11 @@ export function DataGridUsers({
       notify("Não foi possível realizar a operação!", false);
     },
   });
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    onSearch(event.target.value);
+  };
 
   const handleCommit = (e: GridCellEditCommitParams) => {
     updateMutation.mutate({
@@ -88,6 +97,15 @@ export function DataGridUsers({
 
   return (
     <div className={styles.tableContainer}>
+      <TextField
+        id="search-field"
+        label="Pesquisar"
+        placeholder="Pesquisar"
+        value={searchText}
+        onChange={handleSearchChange}
+        className={styles.customTextField}
+      />
+
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}

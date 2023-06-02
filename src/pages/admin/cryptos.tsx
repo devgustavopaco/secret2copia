@@ -1,23 +1,29 @@
 import type { GetServerSideProps, NextPage } from "next";
-import styles from "../../styles/Admin.module.scss";
-import { DataGridCryptos } from "../../components/GridComponents/DataGridCryptos";
+import { unstable_getServerSession } from "next-auth";
+import { useS3Upload } from "next-s3-upload";
 import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
 import { useState } from "react";
-import { ModalAddCrypto } from "../../components/Modals/ModalAddCrypto";
-import { trpc } from "../../utils/trpc";
-import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]";
-import { Header } from "../../components/Header";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
 import { toast } from "react-toastify";
-import { useS3Upload } from "next-s3-upload";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { DataGridCryptos } from "../../components/GridComponents/DataGridCryptos";
+import { Header } from "../../components/Header";
+import { ModalAddCrypto } from "../../components/Modals/ModalAddCrypto";
+import styles from "../../styles/Admin.module.scss";
+import { trpc } from "../../utils/trpc";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 const AdminExchanges: NextPage = () => {
   let { uploadToS3 } = useS3Upload();
 
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { data: coins, isLoading, refetch } = trpc.useQuery(["coin.getCoins"]);
+  const [searchText, setSearchText] = useState("");
+
+  const {
+    data: coins,
+    isLoading,
+    refetch,
+  } = trpc.useQuery(["coin.getCoins", { search: searchText }]);
 
   const notify = (text: string, success: boolean) => {
     if (success) {
@@ -69,6 +75,10 @@ const AdminExchanges: NextPage = () => {
       isFanToken,
       imageUrl,
     });
+  };
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
   };
 
   const handleSelection = (ids: string[]) => {
@@ -125,6 +135,7 @@ const AdminExchanges: NextPage = () => {
               data={coins || []}
               isLoading={isLoading}
               onSelect={handleSelection}
+              onSearch={handleSearch}
             />
           </div>
         </main>

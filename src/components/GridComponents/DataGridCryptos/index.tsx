@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
@@ -7,23 +7,27 @@ import {
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
 
-import styles from "./styles.module.scss";
 import type { Coin } from "@prisma/client";
-import { trpc } from "../../../utils/trpc";
-import { toast } from "react-toastify";
 import { CheckCircle, XCircle } from "phosphor-react";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { trpc } from "../../../utils/trpc";
+import styles from "./styles.module.scss";
 
 interface DataGridCryptosProps {
   data: Coin[];
   isLoading?: boolean;
   onSelect: (ids: string[]) => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 export function DataGridCryptos({
   data,
   isLoading = false,
   onSelect,
+  onSearch,
 }: DataGridCryptosProps) {
+  const [searchText, setSearchText] = useState<string>("");
   const columns: GridColumns = [
     {
       field: "id",
@@ -98,6 +102,11 @@ export function DataGridCryptos({
     }
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    onSearch(event.target.value);
+  };
+
   const updateCryptoMutation = trpc.useMutation("coin.update", {
     onSuccess() {
       notify("Moeda alterada com sucesso!", true);
@@ -120,6 +129,14 @@ export function DataGridCryptos({
 
   return (
     <div className={styles.tableContainer}>
+      <TextField
+        id="search-field"
+        label="Pesquisar"
+        placeholder="Pesquisar"
+        value={searchText}
+        onChange={handleSearchChange}
+        className={styles.customTextField}
+      />
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}

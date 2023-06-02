@@ -5,8 +5,18 @@ import { createRouter } from "./context";
 
 export const exchangeRouter = createRouter()
   .query("getExchanges", {
-    resolve({ ctx }) {
-      const exchanges = ctx.prisma.exchange.findMany();
+    input: z.object({
+      search: z.string().optional(),
+    }),
+    resolve({ ctx, input }) {
+      const { search } = input ?? {};
+      const exchanges = ctx.prisma.exchange.findMany({
+        where: {
+          name: search ? {
+            contains: search,
+          } : undefined,
+        }
+      });
 
       return exchanges;
     },

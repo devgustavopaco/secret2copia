@@ -13,7 +13,11 @@ export const userRouter = createRouter()
     return next();
   })
   .query("getAllUsers", {
-    resolve({ ctx }) {
+    input: z.object({
+      search: z.string().optional(),
+    }),
+    resolve({ ctx, input }) {
+      const { search } = input ?? {};
       const allUsers = ctx.prisma.user.findMany({
         select: {
           id: true,
@@ -26,12 +30,16 @@ export const userRouter = createRouter()
           email: {
             not: "admin@solid.dev.br",
           },
+          name: search ? {
+            contains: search,
+          } : undefined,
         },
       });
 
       return allUsers;
     },
   })
+
   .query("getUserByEmail", {
     input: z.object({
       email: z.string(),

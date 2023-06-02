@@ -19,6 +19,8 @@ const AdminTaxPage: NextPage = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  const [searchText, setSearchText] = useState("");
+
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
@@ -31,7 +33,7 @@ const AdminTaxPage: NextPage = () => {
     }
   };
 
-  const createExchangeMutation = trpc.useMutation("exchange.create", {
+  const createExchangeMutation = trpc.useMutation(["exchange.create"], {
     onSuccess() {
       notify("Exchange criada com sucesso!", true);
       refetch();
@@ -45,7 +47,7 @@ const AdminTaxPage: NextPage = () => {
     data: exchanges,
     isLoading,
     refetch,
-  } = trpc.useQuery(["exchange.getExchanges"]);
+  } = trpc.useQuery(["exchange.getExchanges", { search: searchText }]);
 
   const deleteMutation = trpc.useMutation("exchange.delete", {
     onSuccess() {
@@ -91,6 +93,10 @@ const AdminTaxPage: NextPage = () => {
     deleteMutation.mutate({
       ids: selectedIds,
     });
+  };
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
   };
 
   return (
@@ -140,6 +146,7 @@ const AdminTaxPage: NextPage = () => {
               data={exchanges || []}
               isLoading={isLoading}
               onSelect={handleSelection}
+              onSearch={handleSearch}
             />
           </div>
         </main>

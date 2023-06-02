@@ -20,6 +20,32 @@
     border-bottom: 1px solid #6f57e1 !important;
     padding: 10px 0 !important;
   }
+  :global(.MuiOutlinedInput-root) {
+    &.Mui-focused fieldset {
+      border-color: #6f57e1; // Cor quando o input está focado
+    }
+    &:hover fieldset {
+      border-color: #6f57e1; // Cor quando o input está sendo pairado
+    }
+    &:active fieldset {
+      border-color: #fff; // Cor quando o input está ativo
+    }
+    fieldset {
+      border-color: #6f57e1; // Cor normal
+    }
+  }
+
+  :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+    border-color: #fff !important;
+  }
+
+  :global(.MuiInputLabel-root.Mui-focused) {
+    color: #fff !important;
+  }
+
+  :global(.MuiOutlinedInput-input) {
+    color: white !important;
+  }
 }
 
 .BtnAtivar {
@@ -60,4 +86,8 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
+}
+
+.customTextField {
+  margin-bottom: 20px !important;
 }

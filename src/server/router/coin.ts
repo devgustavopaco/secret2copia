@@ -16,9 +16,18 @@ export const coinRouter = createRouter()
     },
   })
   .query("getCoins", {
-    resolve({ ctx }) {
-      const coins = ctx.prisma.coin.findMany();
-
+    input: z.object({
+      search: z.string().optional(),
+    }),
+    resolve({ ctx, input }) {
+      const { search } = input ?? {};
+      const coins = ctx.prisma.coin.findMany({
+        where: {
+          name: search ? {
+            contains: search,
+          } : undefined,
+        }
+      });
       return coins;
     },
   })

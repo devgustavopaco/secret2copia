@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
@@ -10,6 +10,7 @@ import styles from "./styles.module.scss";
 
 import type { Exchange } from "@prisma/client";
 import { CheckCircle, XCircle } from "phosphor-react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { trpc } from "../../../utils/trpc";
 
@@ -17,14 +18,16 @@ interface DataGridExchangesProps {
   data: Exchange[];
   isLoading?: boolean;
   onSelect: (ids: string[]) => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 export function DataGridExchanges({
   data,
   isLoading = false,
   onSelect,
+  onSearch,
 }: DataGridExchangesProps) {
-  // console.log(data)
+  const [searchText, setSearchText] = useState<string>("");
   const columns: GridColumns = [
     {
       field: "name",
@@ -104,12 +107,25 @@ export function DataGridExchanges({
     });
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    onSearch(event.target.value);
+  };
+
   const handleSelectionChanged = (ids: GridSelectionModel) => {
     onSelect(ids as string[]);
   };
 
   return (
     <div className={styles.tableContainer}>
+      <TextField
+        id="search-field"
+        label="Pesquisar"
+        placeholder="Pesquisar"
+        value={searchText}
+        onChange={handleSearchChange}
+        className={styles.customTextField}
+      />
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}

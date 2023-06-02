@@ -1,20 +1,21 @@
 import type { GetServerSideProps, NextPage } from "next";
 
-import styles from "../../styles/Admin.module.scss";
-import { DataGridTaxes } from "../../components/GridComponents/DataGridTaxes";
+import { unstable_getServerSession } from "next-auth";
+import Head from "next/head";
 import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
 import { useState } from "react";
-import { trpc } from "../../utils/trpc";
-import { ModalAddTax } from "../../components/Modals/Taxes/ModalAddTax";
-import Head from "next/head";
-import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]";
-import { Header } from "../../components/Header";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
 import { toast } from "react-toastify";
+import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
+import { DataGridTaxes } from "../../components/GridComponents/DataGridTaxes";
+import { Header } from "../../components/Header";
+import { ModalAddTax } from "../../components/Modals/Taxes/ModalAddTax";
+import styles from "../../styles/Admin.module.scss";
+import { trpc } from "../../utils/trpc";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 const AdminTaxPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const notify = (text: string, success: boolean) => {
     if (success) {
@@ -38,7 +39,11 @@ const AdminTaxPage: NextPage = () => {
     },
   });
 
-  const { data: taxes, isLoading, refetch } = trpc.useQuery(["tax.getTaxes"]);
+  const {
+    data: taxes,
+    isLoading,
+    refetch,
+  } = trpc.useQuery(["tax.getTaxes", { search: searchText }]);
 
   const deleteMutation = trpc.useMutation("tax.delete", {
     onSuccess() {
@@ -78,6 +83,10 @@ const AdminTaxPage: NextPage = () => {
     deleteMutation.mutate({
       ids: selectedIds,
     });
+  };
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
   };
 
   return (
@@ -124,6 +133,7 @@ const AdminTaxPage: NextPage = () => {
               data={taxes || []}
               isLoading={isLoading}
               onSelect={handleSelection}
+              onSearch={handleSearch}
             />
           </div>
         </main>

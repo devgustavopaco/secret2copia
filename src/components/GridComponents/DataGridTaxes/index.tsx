@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
@@ -7,22 +7,25 @@ import {
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
 
-import styles from "./styles.module.scss";
-import { useState } from "react";
 import type { ExchangeCoinTax } from "@prisma/client";
+import { useState } from "react";
 import { trpc } from "../../../utils/trpc";
+import styles from "./styles.module.scss";
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[];
   isLoading?: boolean;
   onSelect: (ids: string[]) => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 export function DataGridTaxes({
   data,
   isLoading = false,
   onSelect,
+  onSearch,
 }: DataGridTaxesProps) {
+  const [searchText, setSearchText] = useState<string>("");
   const columns: GridColumns = [
     {
       field: "exchangeName",
@@ -98,8 +101,21 @@ export function DataGridTaxes({
     onSelect(ids as string[]);
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    onSearch(event.target.value);
+  };
+
   return (
     <div className={styles.tableContainer}>
+      <TextField
+        id="search-field"
+        label="Pesquisar"
+        placeholder="Pesquisar"
+        value={searchText}
+        onChange={handleSearchChange}
+        className={styles.customTextField}
+      />
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}
