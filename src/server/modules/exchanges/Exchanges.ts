@@ -1615,6 +1615,9 @@ export class BidgetStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
+    if (baseToken.toUpperCase() === 'POR' || baseToken.toUpperCase() === 'CAI' || baseToken.toUpperCase() === 'CVC' || baseToken.toUpperCase() === 'GAL' || baseToken.toUpperCase() === 'MENGO' || baseToken.toUpperCase() === 'TRA') {
+      return '';
+    }
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
