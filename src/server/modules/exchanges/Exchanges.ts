@@ -4638,18 +4638,21 @@ export class BitflyerStrategy implements ExchangeStrategy {
   } = {};
 
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string): Promise<Orderbook> {
+
+    const dollarPriceToJpy = await fetchDollarPriceJpy();
+
     if (!this.orderbook.hasOwnProperty(pair)) {
       throw new Error(`Orderbook does not contain pair: ${pair}`);
     }
 
     let bidSumVolume = 0;
     const bids = this.orderbook[pair]!.bids.reduce((acc, bid) => {
-      let quantity = Number(bid.size); // bid.size corresponds to the amount
+      let quantity = Number(bid.size);
       bidSumVolume += quantity;
 
       acc.push({
-        price: Number(bid.price), // bid.price corresponds to the price
+        price: Number(bid.price) / dollarPriceToJpy,
         amount: quantity,
         sumVolume: bidSumVolume,
       });
@@ -4659,11 +4662,11 @@ export class BitflyerStrategy implements ExchangeStrategy {
 
     let askSumVolume = 0;
     const asks = this.orderbook[pair]!.asks.reduce((acc, ask) => {
-      let quantity = Number(ask.size); // ask.size corresponds to the amount
+      let quantity = Number(ask.size);
       askSumVolume += quantity;
 
       acc.push({
-        price: Number(ask.price), // ask.price corresponds to the price
+        price: Number(ask.price) / dollarPriceToJpy,
         amount: quantity,
         sumVolume: askSumVolume,
       });
@@ -4690,19 +4693,17 @@ export class BitflyerStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json; // store full BitflyerOrderbook
 
-    const { bids, asks } = this.convertOrderbook(pair); // pass in the correct pair
-
     const dollarPriceToJpy = await fetchDollarPriceJpy();
 
     return {
       name: "Bitflyer",
       bid: {
-        price: bids[0]!.price / dollarPriceToJpy,
-        amount: bids[0]!.amount,
+        price: (json.bids[0]!.price) / dollarPriceToJpy,
+        amount: (json.bids[0]!.size),
       },
       ask: {
-        price: asks[0]!.price / dollarPriceToJpy,
-        amount: asks[0]!.amount,
+        price: (json.asks[0]!.price) / dollarPriceToJpy,
+        amount: Number(json.asks[0]!.size),
       },
       isUSD: true,
     };
