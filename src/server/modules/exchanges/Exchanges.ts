@@ -2822,17 +2822,20 @@ export class CoincheckStrategy implements ExchangeStrategy {
     [key: string]: CoincheckOrderBook;
   } = {};
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string): Promise<Orderbook> {
+
+    const dollarPriceToJpy = await fetchDollarPriceJpy();
+
     const orderbook = this.orderbook[pair];
 
     const bids = orderbook?.bids.map(bid => ({
-      price: Number(bid[0]),
+      price: Number(bid[0]) / dollarPriceToJpy,
       amount: Number(bid[1]),
       sumVolume: Number(bid[1]),  // You may need to change this, depending on how you want to calculate sumVolume
     })) ?? [];
 
     const asks = orderbook?.asks.map(ask => ({
-      price: Number(ask[0]),
+      price: Number(ask[0]) / dollarPriceToJpy,
       amount: Number(ask[1]),
       sumVolume: Number(ask[1]),  // You may need to change this, depending on how you want to calculate sumVolume
     })) ?? [];
@@ -4297,14 +4300,17 @@ export class BitpandaStrategy implements ExchangeStrategy {
     [key: string]: BitpandaOrderbook;
   } = {};
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string): Promise<Orderbook> {
+
+    const dollarPriceToEur = await fetchDollarPriceEur();
+
     let bidSumVolume = 0;
     const bids = this.orderbook[pair]?.bids.reduce((acc, bid) => {
       let quantity = Number(bid.amount);
       bidSumVolume += quantity;
 
       acc.push({
-        price: Number(bid.price),
+        price: Number(bid.price) / dollarPriceToEur,
         amount: quantity,
         sumVolume: bidSumVolume,
       });
@@ -4318,7 +4324,7 @@ export class BitpandaStrategy implements ExchangeStrategy {
       askSumVolume += quantity;
 
       acc.push({
-        price: Number(ask.price),
+        price: Number(ask.price) / dollarPriceToEur,
         amount: quantity,
         sumVolume: askSumVolume,
       });
@@ -4348,17 +4354,15 @@ export class BitpandaStrategy implements ExchangeStrategy {
 
     const dollarPriceToEur = await fetchDollarPriceEur();
 
-    const { bids, asks } = this.convertOrderbook(pair);
-
     return {
       name: "Bitpanda",
       bid: {
-        price: (bids[0]!.price) / dollarPriceToEur,
-        amount: bids[0]!.amount,
+        price: Number(json.bids[0]!.price) / dollarPriceToEur,
+        amount: Number(json.bids[0]!.amount),
       },
       ask: {
-        price: (asks[0]!.price) / dollarPriceToEur,
-        amount: asks[0]!.amount,
+        price: Number(json.asks[0]!.price) / dollarPriceToEur,
+        amount: Number(json.asks[0]!.amount),
       },
       isUSD: true,
     };
