@@ -52,8 +52,6 @@ export function OperationCard({
       )
     : coin.ask.price;
 
-  console.log(coin);
-
   return (
     <section className={styles.card}>
       <header className={styles["card-header"]}>

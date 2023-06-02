@@ -2179,91 +2179,6 @@ export class CexStrategy implements ExchangeStrategy {
 }
 
 
-// BITMEX ---------------------------------------------------------------------
-
-interface BitmexOrder {
-  symbol: string;
-  id: number;
-  side: "Sell" | "Buy";
-  timestamp: string;
-  size: number;
-  price: number;
-}
-
-export class BitmexStrategy implements ExchangeStrategy {
-  orderbook: BitmexOrder[] = [];
-
-  convertOrderbook(pair: string): Orderbook {
-    const orders = this.orderbook.filter(order => order.symbol === pair);
-    if (!orders) return { bids: [], asks: [] };
-
-    const bids = orders.filter(order => order.side === "Buy")
-      .reduce((acc: OrderbookOperation[], bid, index) => {
-        let sumVolume = 0;
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + bid.size;
-        } else {
-          sumVolume = bid.size;
-        }
-
-        acc.push({
-          price: bid.price,
-          amount: bid.size,
-          sumVolume,
-        });
-
-        return acc;
-      }, []);
-
-    const asks = orders.filter(order => order.side === "Sell")
-      .reduce((acc: OrderbookOperation[], ask, index) => {
-        let sumVolume = 0;
-        if (index - 1 >= 0) {
-          sumVolume = acc[index - 1]!.sumVolume + ask.size;
-        } else {
-          sumVolume = ask.size;
-        }
-
-        acc.push({
-          price: ask.price,
-          amount: ask.size,
-          sumVolume,
-        });
-
-        return acc;
-      }, []);
-
-    return { bids, asks };
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLowerCase()}`;
-  }
-
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://www.bitmex.com/api/v1/orderBook/L2?symbol=${pair}`;
-
-    const response = await fetchWithProxy(url, proxies);
-    const json = (await response.json()) as BitmexOrder[];
-    this.orderbook = json;
-    const bids = json.filter(order => order.side === "Buy");
-    const asks = json.filter(order => order.side === "Sell");
-
-    return {
-      name: "Bitmex",
-      bid: {
-        price: Number(bids[0]!.price),
-        amount: Number(bids[0]!.size),
-      },
-      ask: {
-        price: Number(asks[0]!.price),
-        amount: Number(asks[0]!.size),
-      },
-      isUSD: true,
-    };
-  }
-}
-
 
 // BITHUMP ---------------------------------------------------------------------
 
@@ -2543,6 +2458,14 @@ export class P2PB2BStrategy implements ExchangeStrategy {
 
     const highestBid = bids.reduce((prev, current) => (Number(prev!.price) > Number(current.price)) ? prev : current, bids[0]);
     const lowestAsk = asks.reduce((prev, current) => (Number(prev!.price) < Number(current.price)) ? prev : current, asks[0]);
+
+    this.orderbook[pair] = {
+      result: {
+        limit: 0, // Ou um valor adequado
+        total: 0, // Ou um valor adequado
+        orders: [...jsonBuy.result.orders, ...jsonSell.result.orders]
+      }
+    };
 
     return {
       name: "P2PB2B",
