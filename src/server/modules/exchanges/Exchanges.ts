@@ -2383,42 +2383,47 @@ export class ProbitStrategy implements ExchangeStrategy {
   convertOrderbook(pair: string): Orderbook {
     const orders = this.orderbook[pair]?.data;
 
-    const bids = orders?.filter(order => order.side === 'buy').reduce((acc, bid, index) => {
-      let sumVolume = 0;
-      if (index - 1 >= 0) {
-        sumVolume = acc[index - 1]!.sumVolume + Number(bid.quantity);
-      } else {
-        sumVolume = Number(bid.quantity);
-      }
+    const bids: OrderbookOperation[] = orders?.filter(order => order.side === 'buy')
+      .sort((a, b) => Number(b.price) - Number(a.price))
+      .reduce((acc: OrderbookOperation[], bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.quantity);
+        } else {
+          sumVolume = Number(bid.quantity);
+        }
 
-      acc.push({
-        price: Number(bid.price),
-        amount: Number(bid.quantity),
-        sumVolume,
-      });
+        acc.push({
+          price: Number(bid.price),
+          amount: Number(bid.quantity),
+          sumVolume,
+        });
 
-      return acc;
-    }, [] as OrderbookOperation[]) ?? [];
+        return acc;
+      }, []) ?? [];
 
-    const asks = orders?.filter(order => order.side === 'sell').reduce((acc, ask, index) => {
-      let sumVolume = 0;
-      if (index - 1 >= 0) {
-        sumVolume = acc[index - 1]!.sumVolume + Number(ask.quantity);
-      } else {
-        sumVolume = Number(ask.quantity);
-      }
+    const asks: OrderbookOperation[] = orders?.filter(order => order.side === 'sell')
+      .sort((a, b) => Number(a.price) - Number(b.price))
+      .reduce((acc: OrderbookOperation[], ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.quantity);
+        } else {
+          sumVolume = Number(ask.quantity);
+        }
 
-      acc.push({
-        price: Number(ask.price),
-        amount: Number(ask.quantity),
-        sumVolume,
-      });
+        acc.push({
+          price: Number(ask.price),
+          amount: Number(ask.quantity),
+          sumVolume,
+        });
 
-      return acc;
-    }, [] as OrderbookOperation[]) ?? [];
+        return acc;
+      }, []) ?? [];
 
     return { bids, asks };
   }
+
 
 
   formatPair(baseToken: string, destinationToken: string): string {
