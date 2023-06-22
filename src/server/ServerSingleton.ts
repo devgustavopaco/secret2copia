@@ -66,9 +66,9 @@ export class ServerSingleton {
       `https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`
     );
 
-    const { USDBRL } = (await response.json()) as DolarResponse;
+    const { price } = (await response.json());
 
-    this.dolar = Number(USDBRL.bid);
+    this.dolar = Number(price);
 
     return this.dolar;
   }
