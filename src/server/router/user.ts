@@ -161,16 +161,16 @@ export const userRouter = createRouter()
   })
   .mutation("updateUserDollarValue", {
     input: z.object({
-      userId: z.string(),
-      dollarValue: z.number(),
+      id: z.string(),
+      dolarValue: z.number(),
     }),
     async resolve({ ctx, input }) {
       const user = await ctx.prisma.user.update({
         where: {
-          id: input.userId,
+          id: input.id,
         },
         data: {
-          dolarValue: input.dollarValue,
+          dolarValue: input.dolarValue,
         },
       });
 

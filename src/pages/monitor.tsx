@@ -10,6 +10,7 @@ import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { useSession } from "next-auth/react";
 
 import { Exchange } from "@prisma/client";
 import { CheckCircle } from "phosphor-react";

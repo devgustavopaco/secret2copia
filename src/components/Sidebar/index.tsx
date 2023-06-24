@@ -1,8 +1,12 @@
 import { Exchange } from "@prisma/client";
 import { BeatLoader } from "react-spinners";
 import styles from "./styles.module.scss";
+import { useSession } from "next-auth/react";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { useState } from "react";
+import { trpc } from "../../utils/trpc";
+import { toast } from "react-toastify";
+import { CheckCircle, XCircle } from "phosphor-react";
 
 interface SidebarProps {
   dollarPrice?: number;
@@ -11,8 +15,19 @@ interface SidebarProps {
   sellExchanges: string[];
   onSelectBuyExchange: (exchange: string) => void;
   onSelectSellExchange: (exchange: string) => void;
-  onUpdateDollarValue: (value: number) => void;
 }
+
+const notify = (text: string, success: boolean) => {
+  if (success) {
+    toast.dark(text, {
+      icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+    });
+  } else {
+    toast.dark(text, {
+      icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+    });
+  }
+};
 
 export function Sidebar({
   dollarPrice,
@@ -21,11 +36,16 @@ export function Sidebar({
   sellExchanges,
   onSelectBuyExchange,
   onSelectSellExchange,
-  onUpdateDollarValue,
 }: SidebarProps) {
   const [showBuyList, setShowBuyList] = useState(true);
   const [showSellList, setShowSellList] = useState(true);
   const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
+  const { data: auth } = useSession();
+
+  const { data: user } = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
 
   const handleShowBuyList = () => {
     setShowBuyList(!showBuyList);
@@ -39,12 +59,24 @@ export function Sidebar({
     const rawValue = e.target.value.replace(/\D/g, "");
     const numValue = parseFloat(rawValue) / 100;
     setDolarValue(numValue);
-    onUpdateDollarValue(numValue); // Chame a função aqui
+    updateMutation.mutate({
+      id: String(user?.id),
+      dolarValue: numValue,
+    }); // Chame a função aqui
   };
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
+  });
+
+  const updateMutation = trpc.useMutation("user.updateUserDollarValue", {
+    onSuccess() {
+      notify("Dolar Atualizado!", true);
+    },
+    onError(error) {
+      notify("Não foi possível realizar alteração do Dolar", false);
+    },
   });
 
   return (

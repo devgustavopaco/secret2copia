@@ -22,7 +22,6 @@ interface ModalOrderBookProps {
     orderbook: Orderbook;
   };
   setOpenModal: (open: boolean) => void;
-  onUpdateDollarValue: (value: number) => void;
 }
 
 export function ModalOrderBook({
