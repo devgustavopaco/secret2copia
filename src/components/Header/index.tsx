@@ -130,14 +130,61 @@ export function Header() {
         <div className={styles.name}>
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
-          <img
-            src={
-              user && user.data && user.data.image
-                ? user.data.image
-                : "images/user.png"
-            }
-            alt="foto de perfil"
-          />
+          <div className={styles.tooltip}>
+            <div className={styles.profileImage}>
+              <img
+                src={
+                  user && user.data && user.data.image
+                    ? user.data.image
+                    : "images/user.png"
+                }
+                alt="foto de perfil"
+                style={{
+                  borderColor:
+                    auth?.role === "gold"
+                      ? "#D4AF37"
+                      : auth?.role === "silver"
+                      ? "#C0C0C0"
+                      : auth?.role === "bronze"
+                      ? "#cd7f32"
+                      : auth?.role === "platinum"
+                      ? "#03f1f5"
+                      : auth?.role === "admin"
+                      ? "#000000"
+                      : "#ffffff",
+                }}
+              />
+            </div>
+            <span className={styles.tooltiptext}>
+              Atualmente sua conta esta level:
+              <span
+                style={{
+                  color:
+                    auth?.role === "gold"
+                      ? "#D4AF37"
+                      : auth?.role === "silve"
+                      ? "#C0C0C0"
+                      : auth?.role === "bronze"
+                      ? "#cd7f32"
+                      : auth?.role === "platinum"
+                      ? "#E5E4E2"
+                      : auth?.role === "admin"
+                      ? "#000000"
+                      : "#000000",
+                }}
+              >
+                {auth?.role
+                  ? {
+                      gold: " Ouro",
+                      silver: " Prata",
+                      bronze: " Bronze",
+                      platinum: " Platina",
+                      admin: " Administrador",
+                    }[auth.role]
+                  : "Bronze"}
+              </span>
+            </span>
+          </div>
 
           <button
             type="button"

@@ -53,6 +53,7 @@ model User {
   phone         String?
   sessions      Session[]
   pricePaid     Float?
+  dolarValue    Float?
   Account       Account[]
   role          Role      @relation(fields: [roleId], references: [id])
   roleId        String

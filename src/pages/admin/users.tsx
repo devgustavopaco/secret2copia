@@ -78,6 +78,7 @@ const AdminUsers: NextPage = () => {
     phone: string,
     pricePaid: number,
     password: string,
+    dolarValue: number,
     image?: File | null
   ) => {
     console.log("handleUserCreate called with", {
@@ -86,6 +87,7 @@ const AdminUsers: NextPage = () => {
       phone,
       pricePaid,
       password,
+      dolarValue,
       image,
     });
 
@@ -100,6 +102,7 @@ const AdminUsers: NextPage = () => {
       pricePaid,
       phone,
       password,
+      dolarValue,
       imageUrl,
     });
   };

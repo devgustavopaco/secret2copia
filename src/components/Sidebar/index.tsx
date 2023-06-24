@@ -11,6 +11,7 @@ interface SidebarProps {
   sellExchanges: string[];
   onSelectBuyExchange: (exchange: string) => void;
   onSelectSellExchange: (exchange: string) => void;
+  onUpdateDollarValue: (value: number) => void;
 }
 
 export function Sidebar({
@@ -20,9 +21,11 @@ export function Sidebar({
   sellExchanges,
   onSelectBuyExchange,
   onSelectSellExchange,
+  onUpdateDollarValue,
 }: SidebarProps) {
   const [showBuyList, setShowBuyList] = useState(true);
   const [showSellList, setShowSellList] = useState(true);
+  const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
 
   const handleShowBuyList = () => {
     setShowBuyList(!showBuyList);
@@ -30,6 +33,13 @@ export function Sidebar({
 
   const handleShowSellList = () => {
     setShowSellList(!showSellList);
+  };
+
+  const handleDollarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, "");
+    const numValue = parseFloat(rawValue) / 100;
+    setDolarValue(numValue);
+    onUpdateDollarValue(numValue); // Chame a função aqui
   };
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
@@ -40,6 +50,19 @@ export function Sidebar({
   return (
     <aside className={styles.sidebar}>
       <h2 className={styles.title}>Operações</h2>
+
+      <section className={styles["text-section"]}>
+        <legend>Dólar Editável</legend>
+        <input
+          className={styles.dolarLabel}
+          type="text"
+          value={`R$ ${
+            dolarValue !== undefined ? numberFormatter.format(dolarValue) : ""
+          }`}
+          onChange={handleDollarChange}
+          style={{ textAlign: "left" }}
+        />
+      </section>
 
       <section className={styles["text-section"]}>
         <legend>Cotação do Dólar</legend>

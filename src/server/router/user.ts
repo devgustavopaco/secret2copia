@@ -25,14 +25,17 @@ export const userRouter = createRouter()
           email: true,
           pricePaid: true,
           phone: true,
+          dolarValue: true,
         },
         where: {
           email: {
             not: "admin@solid.dev.br",
           },
-          name: search ? {
-            contains: search,
-          } : undefined,
+          name: search
+            ? {
+                contains: search,
+              }
+            : undefined,
         },
       });
 
@@ -60,6 +63,7 @@ export const userRouter = createRouter()
       pricePaid: z.number(),
       phone: z.string(),
       password: z.string(),
+      dolarValue: z.number(),
       imageUrl: z.string().optional(),
     }),
     async resolve({ ctx, input }) {
@@ -77,6 +81,7 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid,
           phone: input.phone,
           password: passwordHash,
+          dolarValue: input.dolarValue,
           roleId: userRole!.id,
           image: input.imageUrl,
         },
@@ -92,6 +97,7 @@ export const userRouter = createRouter()
       email: z.string().optional(),
       pricePaid: z.union([z.string(), z.number()]).optional(),
       phone: z.string().optional(),
+      dolarValue: z.number().optional(),
     }),
     async resolve({ ctx, input }) {
       const user = await ctx.prisma.user.update({
@@ -103,6 +109,7 @@ export const userRouter = createRouter()
           email: input.email,
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
+          dolarValue: input.dolarValue,
         },
       });
 
@@ -150,5 +157,23 @@ export const userRouter = createRouter()
       return {
         success: false,
       };
+    },
+  })
+  .mutation("updateUserDollarValue", {
+    input: z.object({
+      userId: z.string(),
+      dollarValue: z.number(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          dolarValue: input.dollarValue,
+        },
+      });
+
+      return user;
     },
   });
