@@ -55,20 +55,17 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
   };
   const handleBronzeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBronze(event.target.checked);
+    setSilver(event.target.checked);
+    setGold(event.target.checked);
+    setPlatinum(event.target.checked);
   };
   const handleSilverChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBronze(event.target.checked);
     setSilver(event.target.checked);
   };
   const handleGoldChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBronze(event.target.checked);
-    setSilver(event.target.checked);
     setGold(event.target.checked);
   };
   const handlePlatinumChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBronze(event.target.checked);
-    setSilver(event.target.checked);
-    setGold(event.target.checked);
     setPlatinum(event.target.checked);
   };
 

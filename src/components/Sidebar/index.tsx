@@ -62,7 +62,7 @@ export function Sidebar({
     updateMutation.mutate({
       id: String(user?.id),
       dolarValue: numValue,
-    }); // Chame a função aqui
+    });
   };
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
@@ -72,12 +72,36 @@ export function Sidebar({
 
   const updateMutation = trpc.useMutation("user.updateUserDollarValue", {
     onSuccess() {
-      notify("Dolar Atualizado!", true);
+      notify("Dólar Atualizado!", true);
     },
     onError(error) {
-      notify("Não foi possível realizar alteração do Dolar", false);
+      notify("Não foi possível realizar a alteração do Dólar", false);
     },
   });
+
+  const roleAccessible = (exchange: Exchange): boolean => {
+    switch (auth?.role) {
+      case "bronze":
+        return exchange.bronze === 1;
+      case "silver":
+        return exchange.bronze === 1 && exchange.silver === 1;
+      case "gold":
+        return (
+          exchange.bronze === 1 && exchange.silver === 1 && exchange.gold === 1
+        );
+      case "platinum":
+        return (
+          exchange.bronze === 1 &&
+          exchange.silver === 1 &&
+          exchange.gold === 1 &&
+          exchange.platinum === 1
+        );
+      case "admin":
+        return true; // Admin pode ver todas as exchanges
+      default:
+        return false;
+    }
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -120,7 +144,7 @@ export function Sidebar({
         </legend>
         <div className={styles["filter-options"]}>
           {defaultExchanges.length > 0 ? (
-            defaultExchanges.map((exchange) => (
+            defaultExchanges.filter(roleAccessible).map((exchange) => (
               <label key={exchange.name}>
                 <>
                   <input
@@ -144,15 +168,15 @@ export function Sidebar({
         <legend>
           Exchanges <br /> de Venda
           {showSellList ? (
-            <IoIosArrowUp size="30" onClick={handleShowSellList} />
+            <IoIosArrowUp size={30} onClick={handleShowSellList} />
           ) : (
-            <IoIosArrowDown size="30" onClick={handleShowSellList} />
+            <IoIosArrowDown size={30} onClick={handleShowSellList} />
           )}
         </legend>
         {showSellList && (
           <div className={styles["filter-options"]}>
             {defaultExchanges.length > 0 ? (
-              defaultExchanges.map((exchange) => (
+              defaultExchanges.filter(roleAccessible).map((exchange) => (
                 <label key={exchange.name}>
                   <>
                     <input
