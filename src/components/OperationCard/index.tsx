@@ -1,5 +1,7 @@
 import { MdArrowForwardIos } from "react-icons/md";
 import styles from "./styles.module.scss";
+import { useSession } from "next-auth/react";
+import { trpc } from "../../utils/trpc";
 
 interface OperationCardProps {
   coin: {
@@ -41,14 +43,22 @@ export function OperationCard({
   dollarPrice = 1,
   onClick,
 }: OperationCardProps) {
+  const { data: auth } = useSession();
+  const { data: user } = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
+
+  const dolarValue = user?.dolarValue ?? 1;
+
   const bidPrice = coin.bid.isUSD
     ? parseFloat(
-        (coin.bid.price * dollarPrice).toFixed(coin.symbol === "SHIB" ? 8 : 4)
+        (coin.bid.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
       )
     : coin.bid.price;
   const askPrice = coin.ask.isUSD
     ? parseFloat(
-        (coin.ask.price * dollarPrice).toFixed(coin.symbol === "SHIB" ? 8 : 4)
+        (coin.ask.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
       )
     : coin.ask.price;
 
@@ -114,7 +124,7 @@ export function OperationCard({
         <p>
           <span>Taxas</span>
           {percentageFormatter.format(coin.fee)} + R$
-          {(coin.ask.isUSD ? coin.tax * dollarPrice : coin.tax).toFixed(2)}
+          {(coin.ask.isUSD ? coin.tax * dolarValue : coin.tax).toFixed(2)}
         </p>
       </div>
 

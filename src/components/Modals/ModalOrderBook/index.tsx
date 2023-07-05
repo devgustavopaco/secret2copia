@@ -3,6 +3,8 @@ import { MdArrowForwardIos } from "react-icons/md";
 import type { Orderbook } from "../../../server/router/orderbook";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
+import { useSession } from "next-auth/react";
+import { trpc } from "../../../utils/trpc";
 
 interface ModalOrderBookProps {
   coin: string | undefined;
@@ -52,6 +54,14 @@ export function ModalOrderBook({
   const formatNumber = (value: number) => {
     return parseFloat(value.toFixed(2)); // Converte para número novamente
   };
+
+  const { data: auth } = useSession();
+  const { data: user } = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
+
+  const dolarValue = user?.dolarValue ?? 1;
 
   return (
     <div className={styles.modalBackground}>

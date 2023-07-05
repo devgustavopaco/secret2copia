@@ -80,37 +80,17 @@ export function Sidebar({
   });
 
   const roleAccessible = (exchange: Exchange): boolean => {
-    console.log("Auth Role:", auth?.role);
-    console.log("Exchange:", exchange);
-
     switch (auth?.role) {
       case "bronze":
-        const bronzeResult = exchange.bronze;
-        console.log("Bronze Result:", bronzeResult);
-        return bronzeResult;
-
+        return exchange.bronze;
       case "silver":
-        const silverResult = exchange.bronze && exchange.silver;
-        console.log("Silver Result:", silverResult);
-        return silverResult;
-
+        return exchange.silver;
       case "gold":
-        const goldResult = exchange.bronze && exchange.silver && exchange.gold;
-        console.log("Gold Result:", goldResult);
-        return goldResult;
-
+        return exchange.gold;
       case "platinum":
-        const platinumResult =
-          exchange.bronze &&
-          exchange.silver &&
-          exchange.gold &&
-          exchange.platinum;
-        console.log("Platinum Result:", platinumResult);
-        return platinumResult;
-
+        return exchange.platinum;
       case "admin":
-        return true;
-
+        return true; // Admin pode ver todas as exchanges
       default:
         return false;
     }
