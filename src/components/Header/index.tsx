@@ -9,8 +9,13 @@ import styles from "./styles.module.scss";
 export function Header() {
   const { data: auth } = useSession();
 
-  let user = null;
   let userData = null;
+  const email = auth?.user?.email || "";
+  let user;
+
+  user = trpc.useQuery(["user.getUserByEmail", { email }], {
+    enabled: email !== "",
+  });
 
   try {
     userData = JSON.parse(localStorage.getItem("user") || "null");
@@ -18,11 +23,9 @@ export function Header() {
     console.error("Failed to parse user data from localStorage", error);
   }
 
-  if (!userData && auth?.user?.email) {
-    user = trpc.useQuery(["user.getUserByEmail", { email: auth.user.email }]);
-    user.data && localStorage.setItem("user", JSON.stringify(user.data));
-  } else {
-    user = { data: userData };
+  if (user?.data && !userData && email) {
+    localStorage.setItem("user", JSON.stringify(user.data));
+    userData = user.data;
   }
 
   const router = useRouter();
@@ -150,7 +153,7 @@ export function Header() {
                       : auth?.role === "platinum"
                       ? "#03f1f5"
                       : auth?.role === "admin"
-                      ? "#000000"
+                      ? "#7b61ff"
                       : "#ffffff",
                 }}
               />

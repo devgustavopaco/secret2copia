@@ -91,6 +91,10 @@ model Exchange {
   active          Boolean           @default(true)
   image_url       String?
   convert         Boolean
+  bronze          Boolean
+  silver          Boolean
+  gold            Boolean
+  platinum        Boolean
   ExchangeCoinTax ExchangeCoinTax[]
 }
 

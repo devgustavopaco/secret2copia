@@ -11,7 +11,11 @@ interface ModalAddExchangeProps {
     tag: string,
     name: string,
     image: File,
-    convert: boolean
+    convert: boolean,
+    bronze: boolean,
+    silver: boolean,
+    gold: boolean,
+    platinum: boolean
   ) => void;
 }
 
@@ -20,6 +24,10 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
   const [name, setName] = useState("");
   const [fee, setFee] = useState(0);
   const [convert, setConvert] = useState(false);
+  const [bronze, setBronze] = useState(false);
+  const [silver, setSilver] = useState(false);
+  const [gold, setGold] = useState(false);
+  const [platinum, setPlatinum] = useState(false);
   const [image, setImage] = useState<File | null>(null);
 
   const handleImageDrop = (files: File[]) => {
@@ -45,12 +53,30 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
   const handleConvertChange = (event: ChangeEvent<HTMLInputElement>) => {
     setConvert(event.target.checked);
   };
+  const handleBronzeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setBronze(event.target.checked);
+  };
+  const handleSilverChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setBronze(event.target.checked);
+    setSilver(event.target.checked);
+  };
+  const handleGoldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setBronze(event.target.checked);
+    setSilver(event.target.checked);
+    setGold(event.target.checked);
+  };
+  const handlePlatinumChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setBronze(event.target.checked);
+    setSilver(event.target.checked);
+    setGold(event.target.checked);
+    setPlatinum(event.target.checked);
+  };
 
   const handleFormSubmit = (event: FormEvent) => {
     event.preventDefault();
 
     if (image) {
-      onSubmit(fee, tag, name, image, convert);
+      onSubmit(fee, tag, name, image, convert, bronze, silver, gold, platinum);
       onClose();
     } else {
       console.error("Image is required");
@@ -112,6 +138,28 @@ export function ModalAddExchange({ onClose, onSubmit }: ModalAddExchangeProps) {
               type="checkbox"
               checked={convert}
               onChange={handleConvertChange}
+            />
+          </div>
+          <div className={styles.inputBoxInline}>
+            <span className={styles.details}>Bronze</span>
+            <input
+              type="checkbox"
+              checked={bronze}
+              onChange={handleBronzeChange}
+            />
+            <span className={styles.details}>Prata</span>
+            <input
+              type="checkbox"
+              checked={silver}
+              onChange={handleSilverChange}
+            />
+            <span className={styles.details}>Gold</span>
+            <input type="checkbox" checked={gold} onChange={handleGoldChange} />
+            <span className={styles.details}>platinum</span>
+            <input
+              type="checkbox"
+              checked={platinum}
+              onChange={handlePlatinumChange}
             />
           </div>
         </div>

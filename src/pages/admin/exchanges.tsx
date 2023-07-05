@@ -64,11 +64,28 @@ const AdminTaxPage: NextPage = () => {
     tag: string,
     name: string,
     image: File,
-    convert: boolean
+    convert: boolean,
+    bronze: boolean,
+    silver: boolean,
+    gold: boolean,
+    platinum: boolean
   ) => {
     const { url } = await uploadToS3(image);
 
     console.log(url);
+
+    if (silver) {
+      bronze = true;
+    }
+    if (gold) {
+      bronze = true;
+      silver = true;
+    }
+    if (platinum) {
+      bronze = true;
+      silver = true;
+      gold = true;
+    }
 
     createExchangeMutation.mutate({
       name,
@@ -76,6 +93,10 @@ const AdminTaxPage: NextPage = () => {
       fee,
       convert,
       image_url: url,
+      bronze,
+      silver,
+      gold,
+      platinum,
     });
   };
 
