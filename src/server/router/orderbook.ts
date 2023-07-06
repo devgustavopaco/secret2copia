@@ -2,6 +2,7 @@ import { z } from "zod";
 import { CoinsSingleton } from "../CoinsSingleton";
 import { ExchangesSingleton } from "../ExchangesSingleton";
 import { ServerSingleton } from "../ServerSingleton";
+import axios from "axios";
 import type {
   Exchange,
   ExchangeStrategy,
@@ -60,9 +61,10 @@ import {
   WhitebitStrategy,
   WooStrategy,
   XTStrategy,
-  ZtbStrategy
+  ZtbStrategy,
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
+import { userRouter } from "./user";
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy;
@@ -95,7 +97,7 @@ const exchangeStrategies: StrategyObject = {
   gemini: new GeminiStategy(),
   whitebit: new WhitebitStrategy(),
   dextrade: new DextradeStrategy(),
-  bitforex: new BitforexStrategy,
+  bitforex: new BitforexStrategy(),
   cryptology: new CryptologyStrategy(),
   woo: new WooStrategy(),
   latoken: new LatokenStrategy(),

@@ -56,6 +56,22 @@ export const userRouter = createRouter()
       return user;
     },
   })
+  .query("getUserDollarValueById", {
+    input: z.object({
+      id: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: {
+          dolarValue: true,
+        },
+      });
+      return user ? user.dolarValue : null;
+    },
+  })
   .mutation("create", {
     input: z.object({
       name: z.string(),
