@@ -3,6 +3,15 @@ import { hash } from "bcrypt";
 import { z } from "zod";
 import { createRouter } from "./context";
 
+export async function getDollarValueForUser(ctx: any, email: string) {
+  const user = await ctx.prisma.user.findUnique({
+    where: { email },
+    select: { dolarValue: true },
+  });
+
+  return user?.dolarValue ?? 1;
+}
+
 export const userRouter = createRouter()
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
@@ -54,6 +63,14 @@ export const userRouter = createRouter()
         },
       });
       return user;
+    },
+  })
+  .query("getUserDollarValueByEmail", {
+    input: z.object({
+      email: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      return getDollarValueForUser(ctx, input.email);
     },
   })
   .query("getUserDollarValueById", {

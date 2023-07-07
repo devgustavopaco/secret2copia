@@ -70,14 +70,7 @@ export function Sidebar({
     maximumFractionDigits: 3,
   });
 
-  const updateMutation = trpc.useMutation("user.updateUserDollarValue", {
-    onSuccess() {
-      notify("Dólar Atualizado!", true);
-    },
-    onError(error) {
-      notify("Não foi possível realizar a alteração do Dólar", false);
-    },
-  });
+  const updateMutation = trpc.useMutation("user.updateUserDollarValue");
 
   const roleAccessible = (exchange: Exchange): boolean => {
     switch (auth?.role) {

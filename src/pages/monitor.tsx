@@ -50,6 +50,10 @@ const Monitoring: NextPage = () => {
     return ActiveExchanges;
   });
 
+  const { data: auth } = useSession();
+
+  const userEmail = auth?.user?.email;
+
   const [selectedOperation, setSelectedOperation] =
     useState<ArbitrageOpportunity>({} as ArbitrageOpportunity);
 
@@ -59,10 +63,11 @@ const Monitoring: NextPage = () => {
       {
         buyExchanges,
         sellExchanges,
+        email: userEmail ?? undefined,
       },
     ],
     {
-      refetchInterval: 20 * 1000,
+      refetchInterval: 10 * 1000,
       retry(failureCount, error) {
         if (failureCount > 3) {
           return false;
@@ -86,7 +91,7 @@ const Monitoring: NextPage = () => {
   );
 
   const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
-    refetchInterval: 19 * 1000,
+    refetchInterval: 20 * 1000,
   });
 
   useEffect(() => {

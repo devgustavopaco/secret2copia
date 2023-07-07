@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { CoinsSingleton } from "../CoinsSingleton";
 import { ExchangesSingleton } from "../ExchangesSingleton";
 import { ServerSingleton } from "../ServerSingleton";
@@ -64,7 +65,8 @@ import {
   ZtbStrategy,
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
-import { userRouter } from "./user";
+import { userRouter, getDollarValueForUser } from "./user";
+import { trpc } from "../../utils/trpc";
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy;
@@ -177,6 +179,7 @@ const formatExchangeName = (exchange: string): string => {
 };
 
 const fetchArbitrageOpportunity = async (
+  ctx,
   coin: {
     name: string;
     ticker: string;
@@ -193,7 +196,8 @@ const fetchArbitrageOpportunity = async (
       convert: boolean;
     };
     tax: number;
-  }[]
+  }[],
+  email: string
 ): Promise<ArbitrageOpportunity> => {
   const { name, ticker, isFanToken, imageUrl } = coin;
 
@@ -223,6 +227,7 @@ const fetchArbitrageOpportunity = async (
     return acc;
   }, [] as Exchange[]);
 
+  const dolarValue = await getDollarValueForUser(ctx, email);
   const dollarPrice = await ServerSingleton.getInstance().getDollar();
 
   // Lowest buy price
@@ -236,7 +241,7 @@ const fetchArbitrageOpportunity = async (
       if (isContained) {
         const priceInUSD = exchange.isUSD
           ? exchange.ask.price
-          : exchange.ask.price / dollarPrice;
+          : exchange.ask.price / dolarValue;
 
         if (priceInUSD < acc.price) {
           return {
@@ -275,7 +280,7 @@ const fetchArbitrageOpportunity = async (
       if (isContained && notSelectedBuyExchange) {
         const priceInUSD = exchange.isUSD
           ? exchange.bid.price
-          : exchange.bid.price / dollarPrice;
+          : exchange.bid.price / dolarValue;
 
         if (priceInUSD > acc.price) {
           return {
@@ -350,10 +355,10 @@ const fetchArbitrageOpportunity = async (
   highestBid.image_url = highestBidExchange?.image_url ?? "";
 
   const bidPrice = highestBid.isUSD
-    ? highestBid.price * dollarPrice
+    ? highestBid.price * dolarValue
     : highestBid.price;
   const askPrice = lowestAsk.isUSD
-    ? lowestAsk.price * dollarPrice
+    ? lowestAsk.price * dolarValue
     : lowestAsk.price;
 
   const spread = (bidPrice - askPrice) / askPrice;
@@ -376,6 +381,7 @@ export const orderbookRouter = createRouter()
       .object({
         buyExchanges: z.string().array(),
         sellExchanges: z.string().array(),
+        email: z.string().optional(),
       })
       .optional(),
     async resolve({ ctx, input }) {
@@ -410,6 +416,7 @@ export const orderbookRouter = createRouter()
       for (const coin of activeCoins) {
         arbitrageOpportunitiesPromises.push(
           fetchArbitrageOpportunity(
+            ctx,
             {
               name: coin.name,
               ticker: coin.ticker,
@@ -418,7 +425,8 @@ export const orderbookRouter = createRouter()
             },
             buyExchanges,
             sellExchanges,
-            coin.ExchangeCoinTax
+            coin.ExchangeCoinTax,
+            input?.email || ""
           )
         );
       }

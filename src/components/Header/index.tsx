@@ -42,7 +42,7 @@ export function Header() {
   };
 
   if (auth && auth.user) {
-    console.log("ID do usuário", auth.user.id);
+    console.log("ID do usuário", auth.user);
   } else {
     console.log("Não é possível acessar o ID do usuário.");
   }
@@ -50,8 +50,9 @@ export function Header() {
   let userId = null;
 
   if (auth && auth.user) {
-    userId = auth.user.id;
+    userId = auth.user?.id;
   }
+  console.log("userId= ", userId);
 
   return (
     <header className={styles.header}>
@@ -123,27 +124,6 @@ export function Header() {
             )}
           </ul>
         </nav>
-        <div className={styles.name}>
-          <span className={styles.text}>Olá</span>
-          <span>{auth && auth.user ? `, ${auth.id}` : ""}</span>
-        </div>
-        <div className={styles.nav_toggle}>
-          {toggle ? (
-            <List
-              size={35}
-              color="#969696"
-              weight="bold"
-              onClick={() => settoggle(false)}
-            />
-          ) : (
-            <X
-              size={35}
-              color="#957dff"
-              weight="bold"
-              onClick={() => settoggle(true)}
-            />
-          )}
-        </div>
         <div className={styles.name}>
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
