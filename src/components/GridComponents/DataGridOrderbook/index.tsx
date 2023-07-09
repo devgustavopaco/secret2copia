@@ -18,6 +18,7 @@ interface DataGridOrderbookProps {
   isLoading?: boolean;
   isUSD: boolean;
   isPurchase: boolean;
+  dollarPrice: number;
 }
 
 const theme = createTheme({

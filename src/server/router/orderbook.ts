@@ -179,7 +179,7 @@ const formatExchangeName = (exchange: string): string => {
 };
 
 const fetchArbitrageOpportunity = async (
-  ctx,
+  ctx: any,
   coin: {
     name: string;
     ticker: string;
