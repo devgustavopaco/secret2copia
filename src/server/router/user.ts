@@ -3,6 +3,15 @@ import { hash } from "bcrypt";
 import { z } from "zod";
 import { createRouter } from "./context";
 
+export async function getDollarValueForUser(ctx: any, email: string) {
+  const user = await ctx.prisma.user.findUnique({
+    where: { email },
+    select: { dolarValue: true },
+  });
+
+  return user?.dolarValue ?? 1;
+}
+
 export const userRouter = createRouter()
   .middleware(async ({ ctx, next }) => {
     // Any queries or mutations after this middleware will
@@ -25,14 +34,17 @@ export const userRouter = createRouter()
           email: true,
           pricePaid: true,
           phone: true,
+          dolarValue: true,
         },
         where: {
           email: {
             not: "admin@solid.dev.br",
           },
-          name: search ? {
-            contains: search,
-          } : undefined,
+          name: search
+            ? {
+                contains: search,
+              }
+            : undefined,
         },
       });
 
@@ -53,6 +65,36 @@ export const userRouter = createRouter()
       return user;
     },
   })
+  .query("getUserDollarValueByEmail", {
+    input: z.object({
+      email: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      return getDollarValueForUser(ctx, input.email);
+    },
+  })
+  .query("getUserDollarValueById", {
+    input: z.object({
+      id: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      console.log("ID do usuário recebido: ", input.id); // Log do ID do usuário recebido
+
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: {
+          dolarValue: true,
+        },
+      });
+
+      console.log("Usuário encontrado: ", user); // Log do usuário encontrado
+
+      return user ? user.dolarValue : null;
+    },
+  })
+
   .mutation("create", {
     input: z.object({
       name: z.string(),
@@ -60,6 +102,7 @@ export const userRouter = createRouter()
       pricePaid: z.number(),
       phone: z.string(),
       password: z.string(),
+      dolarValue: z.number(),
       imageUrl: z.string().optional(),
     }),
     async resolve({ ctx, input }) {
@@ -77,6 +120,7 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid,
           phone: input.phone,
           password: passwordHash,
+          dolarValue: input.dolarValue,
           roleId: userRole!.id,
           image: input.imageUrl,
         },
@@ -92,6 +136,7 @@ export const userRouter = createRouter()
       email: z.string().optional(),
       pricePaid: z.union([z.string(), z.number()]).optional(),
       phone: z.string().optional(),
+      dolarValue: z.number().optional(),
     }),
     async resolve({ ctx, input }) {
       const user = await ctx.prisma.user.update({
@@ -103,6 +148,7 @@ export const userRouter = createRouter()
           email: input.email,
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
+          dolarValue: input.dolarValue,
         },
       });
 
@@ -150,5 +196,23 @@ export const userRouter = createRouter()
       return {
         success: false,
       };
+    },
+  })
+  .mutation("updateUserDollarValue", {
+    input: z.object({
+      id: z.string(),
+      dolarValue: z.number(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = await ctx.prisma.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          dolarValue: input.dolarValue,
+        },
+      });
+
+      return user;
     },
   });

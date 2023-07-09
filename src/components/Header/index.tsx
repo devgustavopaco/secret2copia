@@ -9,8 +9,13 @@ import styles from "./styles.module.scss";
 export function Header() {
   const { data: auth } = useSession();
 
-  let user = null;
   let userData = null;
+  const email = auth?.user?.email || "";
+  let user;
+
+  user = trpc.useQuery(["user.getUserByEmail", { email }], {
+    enabled: email !== "",
+  });
 
   try {
     userData = JSON.parse(localStorage.getItem("user") || "null");
@@ -18,11 +23,9 @@ export function Header() {
     console.error("Failed to parse user data from localStorage", error);
   }
 
-  if (!userData && auth?.user?.email) {
-    user = trpc.useQuery(["user.getUserByEmail", { email: auth.user.email }]);
-    user.data && localStorage.setItem("user", JSON.stringify(user.data));
-  } else {
-    user = { data: userData };
+  if (user?.data && !userData && email) {
+    localStorage.setItem("user", JSON.stringify(user.data));
+    userData = user.data;
   }
 
   const router = useRouter();
@@ -38,7 +41,18 @@ export function Header() {
     }
   };
 
-  console.log(auth);
+  if (auth && auth.user) {
+    console.log("ID do usuário", auth.user);
+  } else {
+    console.log("Não é possível acessar o ID do usuário.");
+  }
+
+  let userId = null;
+
+  if (auth && auth.user) {
+    userId = auth.user?.id;
+  }
+  console.log("userId= ", userId);
 
   return (
     <header className={styles.header}>
@@ -110,34 +124,64 @@ export function Header() {
             )}
           </ul>
         </nav>
-        <div className={styles.nav_toggle}>
-          {toggle ? (
-            <List
-              size={35}
-              color="#969696"
-              weight="bold"
-              onClick={() => settoggle(false)}
-            />
-          ) : (
-            <X
-              size={35}
-              color="#957dff"
-              weight="bold"
-              onClick={() => settoggle(true)}
-            />
-          )}
-        </div>
         <div className={styles.name}>
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
-          <img
-            src={
-              user && user.data && user.data.image
-                ? user.data.image
-                : "images/user.png"
-            }
-            alt="foto de perfil"
-          />
+          <div className={styles.tooltip}>
+            <div className={styles.profileImage}>
+              <img
+                src={
+                  user && user.data && user.data.image
+                    ? user.data.image
+                    : "images/user.png"
+                }
+                alt="foto de perfil"
+                style={{
+                  borderColor:
+                    auth?.role === "gold"
+                      ? "#D4AF37"
+                      : auth?.role === "silver"
+                      ? "#C0C0C0"
+                      : auth?.role === "bronze"
+                      ? "#cd7f32"
+                      : auth?.role === "platinum"
+                      ? "#03f1f5"
+                      : auth?.role === "admin"
+                      ? "#7b61ff"
+                      : "#ffffff",
+                }}
+              />
+            </div>
+            <span className={styles.tooltiptext}>
+              Atualmente sua conta esta level:
+              <span
+                style={{
+                  color:
+                    auth?.role === "gold"
+                      ? "#D4AF37"
+                      : auth?.role === "silve"
+                      ? "#C0C0C0"
+                      : auth?.role === "bronze"
+                      ? "#cd7f32"
+                      : auth?.role === "platinum"
+                      ? "#E5E4E2"
+                      : auth?.role === "admin"
+                      ? "#000000"
+                      : "#000000",
+                }}
+              >
+                {auth?.role
+                  ? {
+                      gold: " Ouro",
+                      silver: " Prata",
+                      bronze: " Bronze",
+                      platinum: " Platina",
+                      admin: " Administrador",
+                    }[auth.role]
+                  : "Bronze"}
+              </span>
+            </span>
+          </div>
 
           <button
             type="button"

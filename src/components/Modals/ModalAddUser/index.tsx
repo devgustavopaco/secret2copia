@@ -14,6 +14,7 @@ interface ModalAddUserProps {
     phone: string,
     pricePaid: number,
     password: string,
+    dolarValue: number,
     image?: File | null
   ) => void;
 }
@@ -23,6 +24,7 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pricePaid, setPricePaid] = useState(0);
+  const [dolarValue, setDolarValue] = useState(0);
   const [password, setPassword] = useState("");
 
   const [image, setImage] = useState<File | null>(null);
@@ -33,6 +35,10 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
     if (selectedImage) {
       setImage(selectedImage);
     }
+  };
+
+  const handleDolarValueChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDolarValue(parseFloat(event.target.value));
   };
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +60,7 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
   const handleFormSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    onSubmit(name, email, value, pricePaid, password, image);
+    onSubmit(name, email, value, pricePaid, password, dolarValue, image);
     setOpenModal(false);
   };
 
@@ -116,6 +122,15 @@ export function ModalAddUser({ setOpenModal, onSubmit }: ModalAddUserProps) {
                 type="password"
                 placeholder="Senha"
                 onChange={handlePasswordChange}
+                required
+              />
+            </div>
+            <div className={styles.inputBox}>
+              <span className={styles.details}>Valor do Dólar</span>
+              <input
+                type="number"
+                placeholder="Valor do Dólar"
+                onChange={handleDolarValueChange}
                 required
               />
             </div>

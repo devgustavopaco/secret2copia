@@ -9,12 +9,13 @@ import {
 import { GlobalStyles, ThemeProvider, createTheme } from "@mui/material";
 import { v4 as uuidV4 } from "uuid";
 
+import { trpc } from "../../../utils/trpc";
+import { useSession } from "next-auth/react";
 import styles from "./styles.module.scss";
 
 interface DataGridOrderbookProps {
   data: { price: number; amount: number }[];
   isLoading?: boolean;
-  dollarPrice: number;
   isUSD: boolean;
   isPurchase: boolean;
 }
@@ -59,10 +60,15 @@ function calculateCumulativePriceAndVolume(data: DataItem[]): DataItem[] {
 export function DataGridOrderbook({
   data,
   isLoading,
-  dollarPrice,
   isUSD,
   isPurchase,
 }: DataGridOrderbookProps) {
+  const { data: auth } = useSession();
+  const { data: user } = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
+
   const columns: GridColumns = [
     {
       field: "price",
@@ -77,8 +83,9 @@ export function DataGridOrderbook({
       align: "center", // centraliza as células
 
       valueGetter(params: GridRenderCellParams) {
+        const dolarValue = user?.dolarValue ?? 1;
         return priceFormatter.format(
-          params.row.price * (isUSD ? dollarPrice : 1)
+          params.row.price * (isUSD ? dolarValue : 1)
         );
       },
     },
@@ -109,8 +116,9 @@ export function DataGridOrderbook({
       headerAlign: "center", // centraliza o header
       align: "center", // centraliza as células
       valueGetter(params: GridRenderCellParams) {
+        const dolarValue = user?.dolarValue ?? 1;
         return currencyFormatter.format(
-          params.row.price * (isUSD ? dollarPrice : 1) * params.row.amount
+          params.row.price * (isUSD ? dolarValue : 1) * params.row.amount
         );
       },
     },

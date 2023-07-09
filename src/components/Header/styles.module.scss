@@ -70,6 +70,59 @@
   }
 }
 
+
+.profileImage {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 220px;
+  height: 60px;
+  background-color: #7B61FF;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 12px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%; /* Position the tooltip below the image */
+  left: 50%;
+  transform: translateX(-50%); /* Use transform to center the tooltip */
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Create the tooltip arrow */
+.tooltip .tooltiptext::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 55%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #7B61FF transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+  opacity: 1;
+}
+
 .name {
   margin-left: auto;
   display: flex;
@@ -88,7 +141,7 @@
     width: 40px;
     height: 40px;
     margin-left: 1rem;
-    border: 4px solid #7b61ff;
+    border: 4px solid #ffffff;
     border-radius: 100%;
   }
 }

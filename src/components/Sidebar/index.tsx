@@ -1,8 +1,12 @@
 import { Exchange } from "@prisma/client";
 import { BeatLoader } from "react-spinners";
 import styles from "./styles.module.scss";
+import { useSession } from "next-auth/react";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { useState } from "react";
+import { trpc } from "../../utils/trpc";
+import { toast } from "react-toastify";
+import { CheckCircle, XCircle } from "phosphor-react";
 
 interface SidebarProps {
   dollarPrice?: number;
@@ -12,6 +16,18 @@ interface SidebarProps {
   onSelectBuyExchange: (exchange: string) => void;
   onSelectSellExchange: (exchange: string) => void;
 }
+
+const notify = (text: string, success: boolean) => {
+  if (success) {
+    toast.dark(text, {
+      icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+    });
+  } else {
+    toast.dark(text, {
+      icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+    });
+  }
+};
 
 export function Sidebar({
   dollarPrice,
@@ -23,6 +39,13 @@ export function Sidebar({
 }: SidebarProps) {
   const [showBuyList, setShowBuyList] = useState(true);
   const [showSellList, setShowSellList] = useState(true);
+  const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
+  const { data: auth } = useSession();
+
+  const { data: user } = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
 
   const handleShowBuyList = () => {
     setShowBuyList(!showBuyList);
@@ -32,14 +55,56 @@ export function Sidebar({
     setShowSellList(!showSellList);
   };
 
+  const handleDollarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, "");
+    const numValue = parseFloat(rawValue) / 100;
+    setDolarValue(numValue);
+    updateMutation.mutate({
+      id: String(user?.id),
+      dolarValue: numValue,
+    });
+  };
+
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
   });
 
+  const updateMutation = trpc.useMutation("user.updateUserDollarValue");
+
+  const roleAccessible = (exchange: Exchange): boolean => {
+    switch (auth?.role) {
+      case "bronze":
+        return exchange.bronze;
+      case "silver":
+        return exchange.silver;
+      case "gold":
+        return exchange.gold;
+      case "platinum":
+        return exchange.platinum;
+      case "admin":
+        return true; // Admin pode ver todas as exchanges
+      default:
+        return false;
+    }
+  };
+
   return (
     <aside className={styles.sidebar}>
       <h2 className={styles.title}>Operações</h2>
+
+      <section className={styles["text-section"]}>
+        <legend>Dólar Editável</legend>
+        <input
+          className={styles.dolarLabel}
+          type="text"
+          value={`R$ ${
+            dolarValue !== undefined ? numberFormatter.format(dolarValue) : ""
+          }`}
+          onChange={handleDollarChange}
+          style={{ textAlign: "left" }}
+        />
+      </section>
 
       <section className={styles["text-section"]}>
         <legend>Cotação do Dólar</legend>
@@ -65,7 +130,7 @@ export function Sidebar({
         </legend>
         <div className={styles["filter-options"]}>
           {defaultExchanges.length > 0 ? (
-            defaultExchanges.map((exchange) => (
+            defaultExchanges.filter(roleAccessible).map((exchange) => (
               <label key={exchange.name}>
                 <>
                   <input
@@ -89,15 +154,15 @@ export function Sidebar({
         <legend>
           Exchanges <br /> de Venda
           {showSellList ? (
-            <IoIosArrowUp size="30" onClick={handleShowSellList} />
+            <IoIosArrowUp size={30} onClick={handleShowSellList} />
           ) : (
-            <IoIosArrowDown size="30" onClick={handleShowSellList} />
+            <IoIosArrowDown size={30} onClick={handleShowSellList} />
           )}
         </legend>
         {showSellList && (
           <div className={styles["filter-options"]}>
             {defaultExchanges.length > 0 ? (
-              defaultExchanges.map((exchange) => (
+              defaultExchanges.filter(roleAccessible).map((exchange) => (
                 <label key={exchange.name}>
                   <>
                     <input

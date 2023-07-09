@@ -50,6 +50,10 @@ export const exchangeRouter = createRouter()
       tag: z.string(),
       image_url: z.string().url(),
       convert: z.boolean(),
+      bronze: z.boolean(),
+      silver: z.boolean(),
+      gold: z.boolean(),
+      platinum: z.boolean(),
     }),
     async resolve({ ctx, input }) {
       const exchange = await ctx.prisma.exchange.create({
@@ -59,6 +63,10 @@ export const exchangeRouter = createRouter()
           tag: input.tag,
           image_url: input.image_url,
           convert: input.convert,
+          bronze: input.bronze,
+          silver: input.silver,
+          gold: input.gold,
+          platinum: input.platinum,
         },
       });
 
@@ -109,8 +117,13 @@ export const exchangeRouter = createRouter()
       name: z.string().optional(),
       tag: z.string().optional(),
       convert: z.boolean().optional(),
+      bronze: z.boolean().optional(),
+      silver: z.boolean().optional(),
+      gold: z.boolean().optional(),
+      platinum: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
+
       const exchange = await ctx.prisma.exchange.update({
         where: {
           id: input.id,
@@ -121,6 +134,10 @@ export const exchangeRouter = createRouter()
           name: input.name,
           tag: input.tag,
           convert: input.convert,
+          bronze: input.bronze,
+          silver: input.silver,
+          gold: input.gold,
+          platinum: input.platinum,
         },
       });
 

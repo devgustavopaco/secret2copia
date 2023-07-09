@@ -1,6 +1,8 @@
 import type { GetServerSideProps, NextPage } from "next";
 import styles from "../../styles/Admin.module.scss";
 
+import { Exchange } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { unstable_getServerSession } from "next-auth";
 import { useS3Upload } from "next-s3-upload";
 import Head from "next/head";
@@ -64,11 +66,28 @@ const AdminTaxPage: NextPage = () => {
     tag: string,
     name: string,
     image: File,
-    convert: boolean
+    convert: boolean,
+    bronze: boolean,
+    silver: boolean,
+    gold: boolean,
+    platinum: boolean
   ) => {
     const { url } = await uploadToS3(image);
 
     console.log(url);
+
+    if (silver) {
+      bronze = true;
+    }
+    if (gold) {
+      bronze = true;
+      silver = true;
+    }
+    if (platinum) {
+      bronze = true;
+      silver = true;
+      gold = true;
+    }
 
     createExchangeMutation.mutate({
       name,
@@ -76,6 +95,10 @@ const AdminTaxPage: NextPage = () => {
       fee,
       convert,
       image_url: url,
+      bronze,
+      silver,
+      gold,
+      platinum,
     });
   };
 

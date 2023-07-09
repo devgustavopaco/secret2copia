@@ -120,7 +120,6 @@ export class ServerSingleton {
     return this.dolarEur;
   }
 
-
   public async getDollar(): Promise<number> {
     return await this.fetchDollar();
   }
