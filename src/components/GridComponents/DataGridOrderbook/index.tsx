@@ -70,6 +70,8 @@ export function DataGridOrderbook({
     { email: auth?.user?.email as string },
   ]);
 
+  const dolarValue = user?.dolarValue ?? 1;
+
   const columns: GridColumns = [
     {
       field: "price",
@@ -84,7 +86,6 @@ export function DataGridOrderbook({
       align: "center", // centraliza as células
 
       valueGetter(params: GridRenderCellParams) {
-        const dolarValue = user?.dolarValue ?? 1;
         return priceFormatter.format(
           params.row.price * (isUSD ? dolarValue : 1)
         );
