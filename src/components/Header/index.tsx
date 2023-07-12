@@ -47,13 +47,6 @@ export function Header() {
     console.log("Não é possível acessar o ID do usuário.");
   }
 
-  let userId = null;
-
-  if (auth && auth.user) {
-    userId = auth.user?.id;
-  }
-  console.log("userId= ", userId);
-
   return (
     <header className={styles.header}>
       <div className="container">
