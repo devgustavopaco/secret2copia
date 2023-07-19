@@ -1,7 +1,7 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { List, SignOut, X } from "phosphor-react";
+import { SignOut } from "phosphor-react";
 import { useState } from "react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
@@ -40,12 +40,6 @@ export function Header() {
       localStorage.clear();
     }
   };
-
-  if (auth && auth.user) {
-    console.log("ID do usuário", auth.user);
-  } else {
-    console.log("Não é possível acessar o ID do usuário.");
-  }
 
   return (
     <header className={styles.header}>

@@ -63,12 +63,12 @@ export class ServerSingleton {
 
   private async fetchDollar(): Promise<number> {
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`
-    );
+      `https://economia.awesomeapi.com.br/json/last/USD-BRL`
+    )
 
-    const { price } = (await response.json());
+    const { USDBRL } = (await response.json())
 
-    this.dolar = Number(price);
+    this.dolar = Number(USDBRL.bid);
 
     return this.dolar;
   }

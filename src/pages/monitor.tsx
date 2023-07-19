@@ -1,5 +1,6 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { unstable_getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import { Header } from "../components/Header";
@@ -10,10 +11,9 @@ import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { useSession } from "next-auth/react";
 
 import { Exchange } from "@prisma/client";
-import { CheckCircle } from "phosphor-react";
+import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
@@ -50,12 +50,37 @@ const Monitoring: NextPage = () => {
     return ActiveExchanges;
   });
 
+  const updateMutation = trpc.useMutation("user.updateUserDollarValue");
+
   const { data: auth } = useSession();
 
   const userEmail = auth?.user?.email;
 
   const [selectedOperation, setSelectedOperation] =
     useState<ArbitrageOpportunity>({} as ArbitrageOpportunity);
+
+  const [loadingDolarChange, setLoadingDolarChange] = useState(false);
+
+  const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
+
+  const queryInfo = trpc.useQuery([
+    "user.getUserByEmail",
+    { email: auth?.user?.email as string },
+  ]);
+
+  useEffect(() => {
+    if (!queryInfo.data) {
+      queryInfo.refetch();
+    }
+  }, [queryInfo]);
+
+  // useEffect(() => {
+  //   if (isFetching) {
+  //     setLoadingDolarChange(false);
+  //   }
+  // }, [dolarValue]);
+
+  const user = queryInfo.data;
 
   const { refetch, data, isLoading, isFetching } = trpc.useQuery(
     [
@@ -72,7 +97,7 @@ const Monitoring: NextPage = () => {
         if (failureCount > 3) {
           return false;
         }
-        console.log(error);
+        // console.log(error);
         return true;
       },
       keepPreviousData: true,
@@ -80,12 +105,13 @@ const Monitoring: NextPage = () => {
         if (data?.length === 0 && !isFetching) {
           refetch();
         }
+        setLoadingDolarChange(false);
       },
       onError(error) {
         if (!isFetching) {
           refetch();
         }
-        console.log(error);
+        // console.log(error);
       },
     }
   );
@@ -149,6 +175,44 @@ const Monitoring: NextPage = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (dolarValue === 0) {
+      refetch();
+    }
+  }, []);
+  const onChangeDolar = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.target.value.replace(/\D/g, "");
+      const numValue = parseFloat(rawValue) / 100;
+      if (isNaN(numValue)) {
+        toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
+          icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+        });
+        return;
+      }
+      setLoadingDolarChange(true); // <-- Adicione isto
+      refetch();
+      setDolarValue(numValue);
+      if (user) {
+        const newDolar =
+          isNaN(numValue) || numValue === 0 ? dollarPrice : numValue;
+        console.log(newDolar);
+        updateMutation.mutate(
+          {
+            id: String(user?.id),
+            dolarValue: newDolar as number,
+          },
+          {
+            onSettled: () => {
+              sortedOperations = undefined;
+            },
+          }
+        );
+      }
+    },
+    [user, dollarPrice]
+  );
+
   // Mobile
   const onSelectSellExchangeMobile = useCallback(
     (selectedExchanges: readonly Exchange[]) => {
@@ -162,7 +226,7 @@ const Monitoring: NextPage = () => {
     []
   );
 
-  const sortedOperations = data
+  let sortedOperations = data
     ?.sort((a, b) => {
       if (a && b) {
         if (a?.spread < b?.spread) {
@@ -181,17 +245,6 @@ const Monitoring: NextPage = () => {
       }
       return false;
     });
-
-  useEffect(() => {
-    if (sortedOperations) {
-      toast.dark(
-        `Total de operações sortedOperations: ${sortedOperations.length}`,
-        {
-          icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
-        }
-      );
-    }
-  }, [data]);
 
   return (
     <>
@@ -245,13 +298,20 @@ const Monitoring: NextPage = () => {
             sellExchanges={sellExchanges || []}
             onSelectBuyExchange={onSelectBuyExchange}
             onSelectSellExchange={onSelectSellExchange}
+            onChangeDolar={onChangeDolar}
+            dolarValue={dolarValue as number}
           />
           <main>
             <h1>
               {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
 
-            {isLoading || data?.length === 0 ? (
+            <>{console.log(sortedOperations)}</>
+
+            {isLoading ||
+            loadingDolarChange ||
+            data?.length === 0 ||
+            sortedOperations?.length === 0 ? (
               <div className={styles.loading}>
                 <PacmanLoader color="#957dff" size="4rem" />
               </div>

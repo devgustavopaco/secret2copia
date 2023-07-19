@@ -9,8 +9,8 @@ import {
 import { GlobalStyles, ThemeProvider, createTheme } from "@mui/material";
 import { v4 as uuidV4 } from "uuid";
 
-import { trpc } from "../../../utils/trpc";
 import { useSession } from "next-auth/react";
+import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface DataGridOrderbookProps {
@@ -132,7 +132,6 @@ export function DataGridOrderbook({
 
   let updatedData = calculateCumulativePriceAndVolume(data);
 
-  console.log(updatedData);
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles
