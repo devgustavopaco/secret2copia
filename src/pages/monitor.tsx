@@ -313,7 +313,7 @@ const Monitoring: NextPage = () => {
             data?.length === 0 ||
             sortedOperations?.length === 0 ? (
               <div className={styles.loading}>
-                <PacmanLoader color="#957dff" size="4rem" />
+                <PacmanLoader className={styles.loader} color="#957dff" />
               </div>
             ) : (
               <div className={styles.operations}>

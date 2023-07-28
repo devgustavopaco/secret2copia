@@ -36,6 +36,7 @@
 
 .navigation-links {
   font-size: 18px;
+
   ul {
     display: flex;
     gap: 2rem;
@@ -45,6 +46,7 @@
 
     li {
       text-align: center;
+
       a {
         transition: filter 0.2s ease;
         font-weight: 400;
@@ -97,9 +99,11 @@
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
-  top: 100%; /* Position the tooltip below the image */
+  top: 100%;
+  /* Position the tooltip below the image */
   left: 50%;
-  transform: translateX(-50%); /* Use transform to center the tooltip */
+  transform: translateX(-50%);
+  /* Use transform to center the tooltip */
 
   opacity: 0;
   transition: opacity 0.3s;
@@ -127,16 +131,19 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+
   .text {
     font-size: 16px;
     font-weight: 500;
     color: #fff;
   }
+
   span {
     font-weight: 700;
     font-size: 18px;
     color: #7b61ff;
   }
+
   img {
     width: 40px;
     height: 40px;
@@ -219,6 +226,7 @@
 
   .navigation-links {
     height: 100%;
+
     ul {
       flex-direction: column;
       margin-top: 8.3rem;
@@ -226,6 +234,7 @@
 
       li {
         flex: 1;
+
         a {
           display: flex;
           align-items: center;
@@ -263,6 +272,26 @@
   }
 }
 
+.hamburguer {
+  display: none;
+}
+
+.menuContent {
+  display: none;
+}
+
+.menuItem {
+  display: none;
+}
+
+.nameHamburguer {
+  display: none;
+}
+
+.logoutMobile {
+  display: none;
+}
+
 @media screen and (max-width: 1243px) {
   .logo {
     width: 150px;
@@ -273,7 +302,132 @@
   .logo {
     width: 150px;
   }
+
   .nav_toggle {
     padding: 0;
+  }
+
+  .hamburguer {
+    display: block;
+    width: 45px;
+    height: 45px;
+
+    margin-left: 39%;
+    margin-top: -5%;
+  }
+
+  .shadowMenu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 40vw;
+    background-color: #0d0f129f;
+
+    transform: translateX(-250%);
+    transition: transform 0.3s ease-out;
+  }
+
+  .shadowMenu.open {
+    transform: translateX(0);
+
+  }
+
+  .menuContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 60vw;
+    background-color: #0D0F12;
+    z-index: 100;
+    padding-top: 2rem;
+    padding-left: 1.5rem;
+
+    /* Adicione estas duas linhas */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-out;
+  }
+
+
+  .menuContent.open {
+    transform: translateX(0);
+  }
+
+  .menuItem {
+    display: block;
+    color: #8a8a8a;
+
+    margin-top: 2rem;
+    font-family: "IBM Plex Sans", sans-serif;
+
+    font-size: 20px;
+  }
+
+  .active {
+    composes: menuItem;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .name {
+    display: none;
+  }
+
+  .nameHamburguer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3rem;
+
+    .text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    span {
+      font-weight: 700;
+      font-size: 18px;
+      color: #7b61ff;
+    }
+
+    img {
+      width: 40px;
+      height: 40px;
+      margin-left: 1rem;
+      border: 4px solid #ffffff;
+      border-radius: 100%;
+    }
+  }
+
+  .logoutMobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-left: -15px;
+
+    margin-top: 120%;
+
+    background-color: transparent;
+
+    color: var(--white);
+    text-transform: uppercase;
+    border-radius: 4px;
+
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover,
+    &:focus {
+      box-shadow: 0 0 0 1.5px var(--white);
+
+      filter: brightness(0.8);
+    }
+
+    &:active {
+      filter: brightness(0.7);
+    }
   }
 }

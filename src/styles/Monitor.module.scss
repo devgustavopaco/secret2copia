@@ -42,18 +42,24 @@
 }
 
 .loading {
-  position: absolute;
+  position: fixed;
   display: flex;
   align-items: center;
-  justify-content: left;
-  margin-top: -10%;
-  margin-left: 30%;
-  height: 100%;
-  width: 50%;
+  justify-content: center;
+  z-index: 9999;
+}
 
-  @media screen and (max-width: 968px) {
-    width: 70%;
-    padding: 50px;
+.loader {
+  width: 4rem;
+  margin-top: 16rem;
+  margin-left: 36rem;
+}
+
+@media screen and (max-width: 968px) {
+  .loader {
+    width: 2rem;
+    margin-top: 2rem;
+    margin-left: 10rem;
   }
 }
 
