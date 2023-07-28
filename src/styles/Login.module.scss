@@ -4,6 +4,7 @@
   flex-wrap: wrap;
   overflow: hidden;
   justify-content: center;
+
   .halfLeft {
     flex: 1;
     max-width: 42%;
@@ -26,10 +27,12 @@
       }
     }
   }
+
   .halfRight {
     flex: 1;
     width: 100%;
     background-color: #0d0f12;
+
     .contentBox {
       display: flex;
       flex-direction: column;
@@ -107,6 +110,7 @@
     width: 100%;
   }
 }
+
 .formBoxForget {
   width: 500px;
   padding: 1rem;
@@ -265,11 +269,13 @@
     font-size: 16px;
 
     transition: all 0.1s ease-in-out;
+
     &:hover {
       color: #dddddd;
     }
   }
 }
+
 .comeBack {
   display: flex;
   justify-content: flex-start;
@@ -285,6 +291,7 @@
     font-size: 16px;
 
     transition: all 0.1s ease-in-out;
+
     &:hover {
       color: #dddddd;
     }
@@ -294,16 +301,19 @@
 @media screen and (max-width: 968px) {
   .body {
     flex-direction: column;
+
     .halfLeft {
       height: 45vh;
       flex: auto;
     }
+
     .halfRight {
       height: 60vh;
       flex: auto;
       padding: 3rem 0;
     }
   }
+
   .formBox {
     width: 90vw;
   }
@@ -312,7 +322,8 @@
 @media screen and (max-width: 500px) {
   .body {
     .halfLeft {
-      height: 40vh;
+      height: 30vh;
+      max-width: 100%;
     }
   }
 }
@@ -321,12 +332,15 @@
   0% {
     background-image: url("/images/login.png");
   }
+
   33.33% {
     background-image: url("/images/login2.png");
   }
+
   66.66% {
     background-image: url("/images/login3.png");
   }
+
   100% {
     background-image: url("/images/login.png");
   }
