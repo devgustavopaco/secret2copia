@@ -867,7 +867,14 @@ export class KuCoinStratefy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
+    if (
+      baseToken.toUpperCase() === "MC" ||
+      baseToken.toUpperCase() === "MIR" ||
+      baseToken.toUpperCase() === "NAVI"
+    ) {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1060,6 +1067,8 @@ export class HitBTCStrategy implements ExchangeStrategy {
     [key: string]: HitBTCOrderbook;
   } = {};
 
+  private tokensToRemove = ["gst", "smart", "doge", "pla"];
+
   convertOrderbook(pair: string): Orderbook {
     const bids =
       this.orderbook[pair]?.bid.reduce((acc, bid, index) => {
@@ -1101,9 +1110,16 @@ export class HitBTCStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    if (
+      baseToken.toLowerCase() === "gst" ||
+      baseToken.toLowerCase() === "smart" ||
+      baseToken.toLowerCase() === "doge" ||
+      baseToken.toLowerCase() === "pla"
+    ) {
+      return "";
+    }
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
-
   async fetchOrderbook(pair: string): Promise<Exchange> {
     const url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
     const response = await fetchWithProxy(url, proxies);
@@ -1142,6 +1158,8 @@ export class BitfinexStrategy implements ExchangeStrategy {
     [key: string]: BitfinexOrderbook;
   } = {};
 
+  private tokenToRemove = "AMP";
+
   convertOrderbook(pair: string): Orderbook {
     const orderbook = this.orderbook[pair];
 
@@ -1174,10 +1192,9 @@ export class BitfinexStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (destinationToken.toUpperCase() === "USDT") {
-      destinationToken = "USD";
+    if (baseToken.toUpperCase() === "AMP") {
+      return "";
     }
-
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
@@ -1876,9 +1893,15 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+    if (
+      baseToken.toUpperCase() === "NAVI" ||
+      baseToken.toUpperCase() === "ASM" ||
+      baseToken.toUpperCase() === "BFC"
+    ) {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
-
   async fetchOrderbook(pair: string): Promise<Exchange> {
     const url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     const response = await fetchWithProxy(url, proxies, 70000, true);
@@ -2319,7 +2342,10 @@ export class ProbitStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
+    if (baseToken.toUpperCase() === "NAVI") {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -2569,7 +2595,10 @@ export class CoinwStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+    if (baseToken.toUpperCase() === "GAS") {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -2631,7 +2660,10 @@ export class XTStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+    if (baseToken.toLowerCase() === "POR") {
+      return "";
+    }
+    return `${baseToken.toLowerCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -2900,6 +2932,8 @@ export class LbkexStrategy implements ExchangeStrategy {
     [key: string]: LbkexOrderbook;
   } = {};
 
+  private tokensToRemove = ["por", "tru", "tra"];
+
   convertOrderbook(pair: string): Orderbook {
     let bidSumVolume = 0;
     const bids =
@@ -2933,9 +2967,15 @@ export class LbkexStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
+    if (
+      baseToken.toLowerCase() === "por" ||
+      baseToken.toLowerCase() === "tru" ||
+      baseToken.toLowerCase() === "tra"
+    ) {
+      return "";
+    }
+    return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
-
   async fetchOrderbook(pair: string): Promise<Exchange> {
     const url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
 
@@ -3605,6 +3645,8 @@ export class DextradeStrategy implements ExchangeStrategy {
     [key: string]: DextradeOrderbook;
   } = {};
 
+  private tokenToRemove = "GMX";
+
   convertOrderbook(pair: string): Orderbook {
     let bidSumVolume = 0;
     const bids =
@@ -3640,7 +3682,10 @@ export class DextradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
+    if (baseToken.toUpperCase() === "GMX") {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -4469,7 +4514,10 @@ export class ZtbStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
+    if (baseToken.toUpperCase() === "NAVI") {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
