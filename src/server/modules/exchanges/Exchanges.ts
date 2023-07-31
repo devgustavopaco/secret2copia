@@ -1125,6 +1125,7 @@ export class HitBTCStrategy implements ExchangeStrategy {
     if (pair.toUpperCase() !== "DOGEUSDT" || pair.toUpperCase() !== "SMARTUSDT" || pair.toUpperCase() !== "GSTUSDT" || pair.toUpperCase() !== "PLAUSDT") {
       url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
     }
+    // teste
 
     const response = await fetchWithProxy(url, proxies);
 
