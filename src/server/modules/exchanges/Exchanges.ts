@@ -117,7 +117,11 @@ export class BinanceStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "GALUSDT") {
+      url = `https://api.binance.com/api/v3/depth?limit=10&symbol=${pair}`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -449,9 +453,8 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${
-      isFanToken ? "CHZ" : destinationToken.toUpperCase()
-    }`;
+    return `${baseToken.toUpperCase()}${isFanToken ? "CHZ" : destinationToken.toUpperCase()
+      }`;
   }
 
   async fetchOrderbook(
@@ -878,7 +881,13 @@ export class KuCoinStratefy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`;
+
+    let url = "";
+
+    if (pair.toUpperCase() !== "NAVIUSDT" || pair.toUpperCase() !== "MCUSDT" || pair.toUpperCase() !== "MIRUSDT") {
+      url = `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`;
+    }
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as KuCoinOrderbook;
@@ -1067,8 +1076,6 @@ export class HitBTCStrategy implements ExchangeStrategy {
     [key: string]: HitBTCOrderbook;
   } = {};
 
-  private tokensToRemove = ["gst", "smart", "doge", "pla"];
-
   convertOrderbook(pair: string): Orderbook {
     const bids =
       this.orderbook[pair]?.bid.reduce((acc, bid, index) => {
@@ -1110,18 +1117,15 @@ export class HitBTCStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken.toLowerCase() === "gst" ||
-      baseToken.toLowerCase() === "smart" ||
-      baseToken.toLowerCase() === "doge" ||
-      baseToken.toLowerCase() === "pla"
-    ) {
-      return "";
-    }
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "DOGEUSDT" || pair.toUpperCase() !== "SMARTUSDT" || pair.toUpperCase() !== "GSTUSDT" || pair.toUpperCase() !== "PLAUSDT") {
+      url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
+    }
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as HitBTCOrderbook;
@@ -1157,8 +1161,6 @@ export class BitfinexStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: BitfinexOrderbook;
   } = {};
-
-  private tokenToRemove = "AMP";
 
   convertOrderbook(pair: string): Orderbook {
     const orderbook = this.orderbook[pair];
@@ -1199,7 +1201,11 @@ export class BitfinexStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.bitfinex.com/v1/book/${pair}`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "AMPUSDT") {
+      url = `https://api.bitfinex.com/v1/book/${pair}`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as BitfinexOrderbook;
@@ -1903,7 +1909,12 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "NAVIUSDT" || pair.toUpperCase() !== "ACMUSDT" || pair.toUpperCase() !== "BFCUSDT") {
+      url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
+    }
+
     const response = await fetchWithProxy(url, proxies, 70000, true);
 
     const json = (await response.json()) as GateIoTradeOrderbook;
@@ -2602,7 +2613,12 @@ export class CoinwStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.coinw.com/api/v1/public?command=returnOrderBook&symbol=${pair}&size=20`;
+
+    let url = "";
+
+    if (pair.toUpperCase() !== "GASUSDT") {
+      url = `https://api.coinw.com/api/v1/public?command=returnOrderBook&symbol=${pair}&size=20`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -2667,7 +2683,11 @@ export class XTStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://sapi.xt.com/v4/public/depth?symbol=${pair}&limit=20`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "GASUSDT") {
+      url = `https://sapi.xt.com/v4/public/depth?symbol=${pair}&limit=20`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -2967,17 +2987,14 @@ export class LbkexStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken.toLowerCase() === "por" ||
-      baseToken.toLowerCase() === "tru" ||
-      baseToken.toLowerCase() === "tra"
-    ) {
-      return "";
-    }
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "PORUSDT" || pair.toUpperCase() !== "TRUUSDT" || pair.toUpperCase() !== "TRAUSDT") {
+      url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -3645,8 +3662,6 @@ export class DextradeStrategy implements ExchangeStrategy {
     [key: string]: DextradeOrderbook;
   } = {};
 
-  private tokenToRemove = "GMX";
-
   convertOrderbook(pair: string): Orderbook {
     let bidSumVolume = 0;
     const bids =
@@ -3689,7 +3704,11 @@ export class DextradeStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.dex-trade.com/v1/public/book?pair=${pair}&limit=20`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "GMWUSDT") {
+      url = `https://api.dex-trade.com/v1/public/book?pair=${pair}&limit=20`;
+    }
 
     const response = await fetchWithProxy(url, proxies);
 
