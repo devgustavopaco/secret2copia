@@ -74,12 +74,6 @@ const Monitoring: NextPage = () => {
     }
   }, [queryInfo]);
 
-  // useEffect(() => {
-  //   if (isFetching) {
-  //     setLoadingDolarChange(false);
-  //   }
-  // }, [dolarValue]);
-
   const user = queryInfo.data;
 
   const { refetch, data, isLoading, isFetching } = trpc.useQuery(
@@ -305,8 +299,6 @@ const Monitoring: NextPage = () => {
             <h1>
               {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
             </h1>
-
-            <>{console.log(sortedOperations)}</>
 
             {isLoading ||
             loadingDolarChange ||
