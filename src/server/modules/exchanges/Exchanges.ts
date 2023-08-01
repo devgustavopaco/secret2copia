@@ -871,8 +871,8 @@ export class KuCoinStratefy implements ExchangeStrategy {
 
   formatPair(baseToken: string, destinationToken: string): string {
     if (
-      baseToken.toUpperCase() === "MC" ||
-      baseToken.toUpperCase() === "MIR" ||
+      baseToken.toUpperCase() === "MC" &&
+      baseToken.toUpperCase() === "MIR" &&
       baseToken.toUpperCase() === "NAVI"
     ) {
       return "";
@@ -884,7 +884,7 @@ export class KuCoinStratefy implements ExchangeStrategy {
 
     let url = "";
 
-    if (pair.toUpperCase() !== "NAVIUSDT" || pair.toUpperCase() !== "MCUSDT" || pair.toUpperCase() !== "MIRUSDT") {
+    if (pair.toUpperCase() !== "NAVIUSDT" && pair.toUpperCase() !== "MCUSDT" && pair.toUpperCase() !== "MIRUSDT") {
       url = `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`;
     }
 
@@ -1122,10 +1122,9 @@ export class HitBTCStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "DOGEUSDT" || pair.toUpperCase() !== "SMARTUSDT" || pair.toUpperCase() !== "GSTUSDT" || pair.toUpperCase() !== "PLAUSDT") {
+    if (pair.toUpperCase() !== "DOGEUSDT" && pair.toUpperCase() !== "SMARTUSDT" && pair.toUpperCase() !== "GSTUSDT" && pair.toUpperCase() !== "PLAUSDT") {
       url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
     }
-    // teste
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -1614,16 +1613,6 @@ export class BidgetStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken.toUpperCase() === "POR" ||
-      baseToken.toUpperCase() === "CAI" ||
-      baseToken.toUpperCase() === "CVC" ||
-      baseToken.toUpperCase() === "GAL" ||
-      baseToken.toUpperCase() === "MENGO" ||
-      baseToken.toUpperCase() === "TRA"
-    ) {
-      return "";
-    }
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
@@ -1900,19 +1889,12 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken.toUpperCase() === "NAVI" ||
-      baseToken.toUpperCase() === "ASM" ||
-      baseToken.toUpperCase() === "BFC"
-    ) {
-      return "";
-    }
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "NAVIUSDT" || pair.toUpperCase() !== "ACMUSDT" || pair.toUpperCase() !== "BFCUSDT") {
+    if (pair.toUpperCase() !== "NAVIUSDT" && pair.toUpperCase() !== "ACMUSDT" && pair.toUpperCase() !== "BFCUSDT") {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
 
@@ -2993,7 +2975,7 @@ export class LbkexStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "PORUSDT" || pair.toUpperCase() !== "TRUUSDT" || pair.toUpperCase() !== "TRAUSDT") {
+    if (pair.toUpperCase() !== "PORUSDT" && pair.toUpperCase() !== "TRUUSDT" && pair.toUpperCase() !== "TRAUSDT") {
       url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
     }
 
