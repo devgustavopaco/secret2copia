@@ -42,8 +42,8 @@ export const userRouter = createRouter()
           },
           name: search
             ? {
-                contains: search,
-              }
+              contains: search,
+            }
             : undefined,
         },
       });
@@ -58,6 +58,16 @@ export const userRouter = createRouter()
     }),
     async resolve({ ctx, input }) {
       const user = ctx.prisma.user.findUnique({
+        select: {
+          id: true,
+          email: true,
+          bronze: true,
+          silver: true,
+          gold: true,
+          platinum: true,
+          image: true,
+          dolarValue: true,
+        },
         where: {
           email: input.email,
         },
@@ -104,6 +114,10 @@ export const userRouter = createRouter()
       password: z.string(),
       dolarValue: z.number(),
       imageUrl: z.string().optional(),
+      bronze: z.boolean(),
+      silver: z.boolean(),
+      gold: z.boolean(),
+      platinum: z.boolean(),
     }),
     async resolve({ ctx, input }) {
       const userRole = await ctx.prisma.role.findFirst({
@@ -123,6 +137,10 @@ export const userRouter = createRouter()
           dolarValue: input.dolarValue,
           roleId: userRole!.id,
           image: input.imageUrl,
+          bronze: input.bronze,
+          silver: input.silver,
+          gold: input.gold,
+          platinum: input.platinum,
         },
       });
 
@@ -137,6 +155,10 @@ export const userRouter = createRouter()
       pricePaid: z.union([z.string(), z.number()]).optional(),
       phone: z.string().optional(),
       dolarValue: z.number().optional(),
+      bronze: z.boolean().optional(),
+      silver: z.boolean().optional(),
+      gold: z.boolean().optional(),
+      platinum: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       const user = await ctx.prisma.user.update({
@@ -149,6 +171,10 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
           dolarValue: input.dolarValue,
+          bronze: input.bronze,
+          silver: input.silver,
+          gold: input.gold,
+          platinum: input.platinum,
         },
       });
 

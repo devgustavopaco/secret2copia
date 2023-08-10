@@ -58,6 +58,10 @@ model User {
   Account       Account[]
   role          Role      @relation(fields: [roleId], references: [id])
   roleId        String
+  bronze        Boolean
+  silver        Boolean
+  gold          Boolean
+  platinum      Boolean
 }
 
 model Videos {

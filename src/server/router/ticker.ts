@@ -31,6 +31,7 @@ import {
   CryptologyStrategy,
   DextradeStrategy,
   DigifinexStrategy,
+  DYDYXStrategy,
   ExmarketsStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
@@ -113,7 +114,8 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new CointrStrategy(),
   new ExmarketsStrategy(),
   new ZtbStrategy(),
-  new BitflyerStrategy()
+  new BitflyerStrategy(),
+  new DYDYXStrategy()
 ];
 
 export const tickerRouter = createRouter().query("getAll", {

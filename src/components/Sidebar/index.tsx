@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { BeatLoader } from "react-spinners";
+import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface SidebarProps {
@@ -30,6 +31,12 @@ export function Sidebar({
   const [showSellList, setShowSellList] = useState(true);
   const { data: auth } = useSession();
 
+  const email = auth?.user?.email || "";
+
+  const user = trpc.useQuery(["user.getUserByEmail", { email }], {
+    enabled: email !== "",
+  });
+
   const handleShowBuyList = () => {
     setShowBuyList(!showBuyList);
   };
@@ -43,22 +50,47 @@ export function Sidebar({
     maximumFractionDigits: 3,
   });
 
-  const roleAccessible = (exchange: Exchange): boolean => {
-    switch (auth?.role) {
-      case "bronze":
-        return exchange.bronze;
-      case "silver":
-        return exchange.silver;
-      case "gold":
-        return exchange.gold;
-      case "platinum":
-        return exchange.platinum;
-      case "admin":
-        return true; // Admin pode ver todas as exchanges
-      default:
-        return false;
+  const filterExchanges = (
+    defaultExchanges: Exchange[],
+    userData: any
+  ): Exchange[] => {
+    if (userData && userData.bronze) {
+      return defaultExchanges.filter((exchange) => exchange.bronze === true);
     }
+
+    if (userData && userData.silver) {
+      return defaultExchanges.filter(
+        (exchange) => exchange.silver === true && exchange.bronze === true
+      );
+    }
+
+    if (userData && userData.gold) {
+      return defaultExchanges.filter(
+        (exchange) =>
+          exchange.gold === true &&
+          exchange.silver === true &&
+          exchange.bronze === true
+      );
+    }
+
+    if (userData && userData.platinum) {
+      return defaultExchanges.filter(
+        (exchange) =>
+          exchange.platinum === true &&
+          exchange.gold === true &&
+          exchange.silver === true &&
+          exchange.bronze === true
+      );
+    }
+
+    if (auth?.role === "admin") {
+      return defaultExchanges;
+    }
+
+    return [];
   };
+
+  let accessibleExchanges = filterExchanges(defaultExchanges, user?.data);
 
   return (
     <aside className={styles.sidebar}>
@@ -103,8 +135,8 @@ export function Sidebar({
           )}
         </legend>
         <div className={styles["filter-options"]}>
-          {defaultExchanges.length > 0 ? (
-            defaultExchanges.filter(roleAccessible).map((exchange) => (
+          {accessibleExchanges.length > 0 ? (
+            accessibleExchanges.map((exchange) => (
               <label key={exchange.name}>
                 <>
                   <input
@@ -135,8 +167,8 @@ export function Sidebar({
         </legend>
         {showSellList && (
           <div className={styles["filter-options"]}>
-            {defaultExchanges.length > 0 ? (
-              defaultExchanges.filter(roleAccessible).map((exchange) => (
+            {accessibleExchanges.length > 0 ? (
+              accessibleExchanges.map((exchange) => (
                 <label key={exchange.name}>
                   <>
                     <input

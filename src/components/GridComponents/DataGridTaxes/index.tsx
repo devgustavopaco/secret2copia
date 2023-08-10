@@ -82,9 +82,7 @@ export function DataGridTaxes({
   ];
 
   const updateTaxMutation = trpc.useMutation("tax.update", {
-    onSuccess() {
-      // console.log("success");
-    },
+    onSuccess() {},
     onError(error) {
       console.error(error.message);
     },

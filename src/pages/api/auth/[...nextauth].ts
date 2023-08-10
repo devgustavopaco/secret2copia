@@ -46,7 +46,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid reCAPTCHA token.");
         }
 
-        // ... (existing code)
         const user = await fetch(
           `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
           {

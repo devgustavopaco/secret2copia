@@ -50,16 +50,32 @@ const Privacidade: NextPage = () => {
     setSecondPassword(event.target.value);
   };
 
-  const handleFormSubmit = (event: FormEvent) => {
+  const handleFormSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     if (
       firstPassword.toLowerCase().trim() === secondPassword.toLowerCase().trim()
     ) {
-      updateMutation.mutate({
-        id: String(user?.id),
-        password: secondPassword,
-      });
+      try {
+        const response = await fetch("/api/update-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: String(user?.id),
+            password: secondPassword,
+          }),
+        });
+
+        if (response.status === 200) {
+          notify("Senha alterada com sucesso!", true);
+        } else {
+          notify("Não foi possível realizar a operação!", false);
+        }
+      } catch (error) {
+        notify("Ocorreu um erro ao tentar alterar a senha", false);
+      }
     } else {
       notify("As senhas não são as mesmas!", false);
     }

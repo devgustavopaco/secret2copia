@@ -4633,3 +4633,93 @@ export class BitflyerStrategy implements ExchangeStrategy {
     };
   }
 }
+
+/* DYDYX */
+
+export interface DYDYXOrderbook {
+  asks: {
+    size: string;
+    price: string;
+  }[];
+  bids: {
+    size: string;
+    price: string;
+  }[];
+}
+
+
+export class DYDYXStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: DYDYXOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.size);
+        } else {
+          sumVolume = Number(bid.size);
+        }
+
+        acc.push({
+          price: Number(bid.price),
+          amount: Number(bid.size),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.size);
+        } else {
+          sumVolume = Number(ask.size);
+        }
+
+        acc.push({
+          price: Number(ask.price),
+          amount: Number(ask.size),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (destinationToken.toUpperCase() === "USDT") {
+      destinationToken = "USD";
+    }
+    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.dydx.exchange/v3/orderbook/${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as DYDYXOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Dydyx",
+      bid: {
+        price: Number(json.bids[0]?.price),
+        amount: Number(json.bids[0]?.size),
+      },
+      ask: {
+        price: Number(json.asks[0]?.price),
+        amount: Number(json.asks[0]?.size),
+      },
+      isUSD: true,
+    };
+  }
+}

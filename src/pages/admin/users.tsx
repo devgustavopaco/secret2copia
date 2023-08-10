@@ -79,6 +79,10 @@ const AdminUsers: NextPage = () => {
     pricePaid: number,
     password: string,
     dolarValue: number,
+    bronze: boolean,
+    silver: boolean,
+    gold: boolean,
+    platinum: boolean,
     image?: File | null
   ) => {
     console.log("handleUserCreate called with", {
@@ -96,6 +100,19 @@ const AdminUsers: NextPage = () => {
       const { url } = await uploadToS3(image);
       imageUrl = url;
     }
+
+    if (silver) {
+      bronze = true;
+    }
+    if (gold) {
+      bronze = true;
+      silver = true;
+    }
+    if (platinum) {
+      bronze = true;
+      silver = true;
+      gold = true;
+    }
     createUserMutation.mutate({
       name,
       email,
@@ -104,7 +121,30 @@ const AdminUsers: NextPage = () => {
       password,
       dolarValue,
       imageUrl,
+      bronze,
+      silver,
+      gold,
+      platinum,
     });
+
+    try {
+      const response = await fetch("/api/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (response.status !== 200) {
+        notify("Não foi possível realizar a operação!", false);
+      }
+    } catch (error) {
+      notify("Ocorreu um erro ao tentar alterar a senha", false);
+    }
   };
 
   const handleUserDelete = (ids: string[]) => {

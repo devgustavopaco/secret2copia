@@ -1,7 +1,7 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { List, SignOut, X } from "phosphor-react";
+import { SignOut } from "phosphor-react";
 import { useState } from "react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
@@ -41,26 +41,39 @@ export function Header() {
     }
   };
 
-  if (auth && auth.user) {
-    console.log("ID do usuário", auth.user);
-  } else {
-    console.log("Não é possível acessar o ID do usuário.");
-  }
-
   let userId = null;
 
   if (auth && auth.user) {
     userId = auth.user?.id;
   }
-  console.log("userId= ", userId);
-
-  console.log(router.pathname);
 
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  let roleName = "Administrator";
+  let roleColor = "#0e0345";
+
+  if (user && user.data && user.data.bronze === true) {
+    roleColor = "#cd7f32";
+    roleName = "Bronze";
+  }
+  if (user && user.data && user.data.silver === true) {
+    roleColor = "#e0e0e0";
+    roleName = "Silver";
+  }
+  if (user && user.data && user.data.gold === true) {
+    roleColor = "#D4AF37";
+    roleName = "Gold";
+  }
+  if (user && user.data && user.data.platinum === true) {
+    roleColor = "#E5E4E2";
+    roleName = "Platinum";
+  }
+
+  console.log(user.data, roleName);
 
   return (
     <header className={styles.header}>
@@ -89,49 +102,13 @@ export function Header() {
                   }
                   alt="foto de perfil"
                   style={{
-                    borderColor:
-                      auth?.role === "gold"
-                        ? "#D4AF37"
-                        : auth?.role === "silver"
-                        ? "#C0C0C0"
-                        : auth?.role === "bronze"
-                        ? "#cd7f32"
-                        : auth?.role === "platinum"
-                        ? "#03f1f5"
-                        : auth?.role === "admin"
-                        ? "#7b61ff"
-                        : "#ffffff",
+                    borderColor: roleColor,
                   }}
                 />
               </div>
               <span className={styles.tooltiptext}>
                 Atualmente sua conta esta level:
-                <span
-                  style={{
-                    color:
-                      auth?.role === "gold"
-                        ? "#D4AF37"
-                        : auth?.role === "silve"
-                        ? "#C0C0C0"
-                        : auth?.role === "bronze"
-                        ? "#cd7f32"
-                        : auth?.role === "platinum"
-                        ? "#E5E4E2"
-                        : auth?.role === "admin"
-                        ? "#000000"
-                        : "#000000",
-                  }}
-                >
-                  {auth?.role
-                    ? {
-                        gold: " Ouro",
-                        silver: " Prata",
-                        bronze: " Bronze",
-                        platinum: " Platina",
-                        admin: " Administrador",
-                      }[auth.role]
-                    : "Bronze"}
-                </span>
+                <p style={{ color: roleColor }}>{roleName}</p>
               </span>
             </div>
           </div>
@@ -284,49 +261,14 @@ export function Header() {
                 }
                 alt="foto de perfil"
                 style={{
-                  borderColor:
-                    auth?.role === "gold"
-                      ? "#D4AF37"
-                      : auth?.role === "silver"
-                      ? "#C0C0C0"
-                      : auth?.role === "bronze"
-                      ? "#cd7f32"
-                      : auth?.role === "platinum"
-                      ? "#03f1f5"
-                      : auth?.role === "admin"
-                      ? "#7b61ff"
-                      : "#ffffff",
+                  borderColor: roleColor,
                 }}
               />
             </div>
             <span className={styles.tooltiptext}>
               Atualmente sua conta esta level:
-              <span
-                style={{
-                  color:
-                    auth?.role === "gold"
-                      ? "#D4AF37"
-                      : auth?.role === "silve"
-                      ? "#C0C0C0"
-                      : auth?.role === "bronze"
-                      ? "#cd7f32"
-                      : auth?.role === "platinum"
-                      ? "#E5E4E2"
-                      : auth?.role === "admin"
-                      ? "#000000"
-                      : "#000000",
-                }}
-              >
-                {auth?.role
-                  ? {
-                      gold: " Ouro",
-                      silver: " Prata",
-                      bronze: " Bronze",
-                      platinum: " Platina",
-                      admin: " Administrador",
-                    }[auth.role]
-                  : "Bronze"}
-              </span>
+              <br></br>
+              <span style={{ color: roleColor }}>{roleName}</span>
             </span>
           </div>
 

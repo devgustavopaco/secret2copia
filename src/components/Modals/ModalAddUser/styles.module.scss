@@ -134,3 +134,9 @@
     opacity: 1;
   }
 }
+.inputBoxInline {
+  display: flex;
+  gap: 1rem;
+  margin-inline: auto;
+  margin-top: 30px;
+}

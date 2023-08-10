@@ -1,9 +1,7 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { CoinsSingleton } from "../CoinsSingleton";
 import { ExchangesSingleton } from "../ExchangesSingleton";
 import { ServerSingleton } from "../ServerSingleton";
-import axios from "axios";
 import type {
   Exchange,
   ExchangeStrategy,
@@ -38,6 +36,7 @@ import {
   CoinwStrategy,
   CryptoComStrategy,
   CryptologyStrategy,
+  DYDYXStrategy,
   DextradeStrategy,
   DigifinexStrategy,
   ExmarketsStrategy,
@@ -65,8 +64,7 @@ import {
   ZtbStrategy,
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
-import { userRouter, getDollarValueForUser } from "./user";
-import { trpc } from "../../utils/trpc";
+import { getDollarValueForUser } from "./user";
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy;
@@ -109,6 +107,7 @@ const exchangeStrategies: StrategyObject = {
   exmarkets: new ExmarketsStrategy(),
   ztb: new ZtbStrategy(),
   bitflyer: new BitflyerStrategy(),
+  dydyx: new DYDYXStrategy(),
   pionex: new PionexStrategy(),
   bitkub: new BitkubStrategy(),
   huobi: new HuobiStrategy(),

@@ -1,10 +1,10 @@
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
 import type { Orderbook } from "../../../server/router/orderbook";
+import { trpc } from "../../../utils/trpc";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
-import { useSession } from "next-auth/react";
-import { trpc } from "../../../utils/trpc";
 
 interface ModalOrderBookProps {
   coin: string | undefined;
@@ -108,7 +108,6 @@ export function ModalOrderBook({
                   ? orderbookAsk.orderbook.asks
                   : orderbookBid.orderbook.bids
               }
-              dollarPrice={formatNumber(dollarPrice)}
               isUSD={
                 toggleState === "compra"
                   ? orderbookAsk.isUSD
