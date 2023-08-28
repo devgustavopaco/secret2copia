@@ -54,7 +54,7 @@ export function Sidebar({
 
   const handleSelectBuyExchange = (exchange: string) => {
     console.log(buyExchanges);
-    if (buyExchanges.length <= 2 || buyExchanges.includes(exchange)) {
+    if (buyExchanges.length <= 2) {
       onSelectBuyExchange(exchange);
     } else {
       toast.dark("Você só pode selecionar 2 opções para compra.", {
@@ -64,7 +64,7 @@ export function Sidebar({
   };
 
   const handleSelectSellExchange = (exchange: string) => {
-    if (sellExchanges.length <= 2 || sellExchanges.includes(exchange)) {
+    if (sellExchanges.length <= 2) {
       onSelectSellExchange(exchange);
     } else {
       toast.dark("Você só pode selecionar 2 opções para venda.", {
