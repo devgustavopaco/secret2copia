@@ -121,7 +121,7 @@ const exchangeStrategies: StrategyObject = {
   mexc: new MexcStrategy(),
   poloniex: new PolonieskStrategy(),
   bitstamp: new BitstampStrategy(),
-  bidget: new BidgetStrategy(),
+  bitget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
   gateio: new GateIoTradeStrategy(),

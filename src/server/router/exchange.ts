@@ -12,10 +12,12 @@ export const exchangeRouter = createRouter()
       const { search } = input ?? {};
       const exchanges = ctx.prisma.exchange.findMany({
         where: {
-          name: search ? {
-            contains: search,
-          } : undefined,
-        }
+          name: search
+            ? {
+                contains: search,
+              }
+            : undefined,
+        },
       });
 
       return exchanges;
@@ -123,7 +125,6 @@ export const exchangeRouter = createRouter()
       platinum: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
-
       const exchange = await ctx.prisma.exchange.update({
         where: {
           id: input.id,

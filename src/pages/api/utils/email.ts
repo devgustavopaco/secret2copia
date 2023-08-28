@@ -74,4 +74,3 @@ export async function sendWelcomeEmail(email: string, password: string) {
     }
   }
 }
-

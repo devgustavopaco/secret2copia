@@ -23,10 +23,12 @@ export const coinRouter = createRouter()
       const { search } = input ?? {};
       const coins = ctx.prisma.coin.findMany({
         where: {
-          name: search ? {
-            contains: search,
-          } : undefined,
-        }
+          name: search
+            ? {
+                contains: search,
+              }
+            : undefined,
+        },
       });
       return coins;
     },

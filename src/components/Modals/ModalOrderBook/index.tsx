@@ -27,7 +27,6 @@ interface ModalOrderBookProps {
 }
 
 export function ModalOrderBook({
-  dollarPrice,
   orderbookBid,
   orderbookAsk,
   buyWhere,

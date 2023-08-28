@@ -1,7 +1,7 @@
 .select {
   color: var(--gray-100);
 }
-.select > div[class$=control] {
+.select > div[class$="control"] {
   cursor: text;
   height: 45px;
   margin-top: 5px;
@@ -12,22 +12,22 @@
   box-shadow: none;
   border-radius: 8px;
 }
-.select > div[class$=control] > div[class$=ValueContainer] {
+.select > div[class$="control"] > div[class$="ValueContainer"] {
   padding: 0.5rem;
   color: var(--gray-100);
 }
-.select > div[class$=control] > div[class$=ValueContainer] div {
+.select > div[class$="control"] > div[class$="ValueContainer"] div {
   color: var(--gray-100);
 }
-.select > div[class$=control] > div[class$=IndicatorsContainer] > div {
+.select > div[class$="control"] > div[class$="IndicatorsContainer"] > div {
   color: var(--gray-100);
 }
-.select > div[class$=control] > div[class$=IndicatorsContainer] > span {
+.select > div[class$="control"] > div[class$="IndicatorsContainer"] > span {
   background-color: var(--gray-100);
 }
-.select > div[class$=menu] {
+.select > div[class$="menu"] {
   background-color: var(--gray-600);
   color: var(--gray-100);
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   width: 100%;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

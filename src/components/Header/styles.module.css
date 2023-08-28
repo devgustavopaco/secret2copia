@@ -1,12 +1,11 @@
-body :root{
-  font-family: 'IBM Plex Sans', sans-serif;
+body :root {
+  font-family: "IBM Plex Sans", sans-serif;
 }
 
 .header {
   border-bottom: solid 1px var(--gray-500);
   height: 77px !important;
   padding: 14px 0;
-
 }
 .header :global(.container) {
   height: 77px;
@@ -28,7 +27,7 @@ body :root{
 
 .logo {
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   width: 240px;
   cursor: pointer;
 }
@@ -77,7 +76,8 @@ body :root{
   border-radius: 4px;
   transition: filter 0.2s ease, box-shadow 0.2s ease;
 }
-.logout-button:hover, .logout-button:focus {
+.logout-button:hover,
+.logout-button:focus {
   box-shadow: 0 0 0 1.5px var(--white);
   filter: brightness(0.8);
 }
@@ -157,4 +157,4 @@ body :root{
   .logout-button {
     display: none;
   }
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

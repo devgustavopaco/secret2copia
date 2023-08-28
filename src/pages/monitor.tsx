@@ -240,6 +240,8 @@ const Monitoring: NextPage = () => {
       return false;
     });
 
+  console.log(buyExchanges);
+
   return (
     <>
       <Head>

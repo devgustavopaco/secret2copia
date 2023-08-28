@@ -1,8 +1,10 @@
 import { Exchange } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { XCircle } from "phosphor-react";
 import { useState } from "react";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { BeatLoader } from "react-spinners";
+import { toast } from "react-toastify";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
@@ -49,6 +51,27 @@ export function Sidebar({
     style: "decimal",
     maximumFractionDigits: 3,
   });
+
+  const handleSelectBuyExchange = (exchange: string) => {
+    console.log(buyExchanges);
+    if (buyExchanges.length <= 2 || buyExchanges.includes(exchange)) {
+      onSelectBuyExchange(exchange);
+    } else {
+      toast.dark("Você só pode selecionar 2 opções para compra.", {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+    }
+  };
+
+  const handleSelectSellExchange = (exchange: string) => {
+    if (sellExchanges.length <= 2 || sellExchanges.includes(exchange)) {
+      onSelectSellExchange(exchange);
+    } else {
+      toast.dark("Você só pode selecionar 2 opções para venda.", {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+    }
+  };
 
   const filterExchanges = (
     defaultExchanges: Exchange[],
@@ -143,7 +166,7 @@ export function Sidebar({
                     type="checkbox"
                     checked={buyExchanges.includes(exchange.name)}
                     onChange={() => {
-                      onSelectBuyExchange(exchange.name);
+                      handleSelectBuyExchange(exchange.name);
                     }}
                   />
                   {exchange.name}
@@ -175,7 +198,7 @@ export function Sidebar({
                       type="checkbox"
                       checked={sellExchanges.includes(exchange.name)}
                       onChange={() => {
-                        onSelectSellExchange(exchange.name);
+                        handleSelectSellExchange(exchange.name);
                       }}
                     />
                     {exchange.name}

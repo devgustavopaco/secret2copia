@@ -25,11 +25,13 @@ export const taxRouter = createRouter()
         },
         where: {
           coin: {
-            name: search ? {
-              contains: search,
-            } : undefined,
+            name: search
+              ? {
+                  contains: search,
+                }
+              : undefined,
           },
-        }
+        },
       });
 
       return taxes;

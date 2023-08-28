@@ -54,7 +54,7 @@ import {
   WhitebitStrategy,
   WooStrategy,
   XTStrategy,
-  ZtbStrategy
+  ZtbStrategy,
 } from "../modules/exchanges/Exchanges";
 import { ExchangeStrategy } from "../modules/exchanges/ExchangeStrategy";
 import { createRouter } from "./context";
@@ -115,7 +115,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new ExmarketsStrategy(),
   new ZtbStrategy(),
   new BitflyerStrategy(),
-  new DYDYXStrategy()
+  new DYDYXStrategy(),
 ];
 
 export const tickerRouter = createRouter().query("getAll", {

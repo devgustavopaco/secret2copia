@@ -110,7 +110,7 @@
   width: 63px;
   height: 63px;
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   border-radius: 50%;
   border: 2px solid var(--purple-200);
 }
@@ -188,4 +188,4 @@
   font-size: 14px;
   color: #8d8d99;
   padding-block: 1.4rem;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

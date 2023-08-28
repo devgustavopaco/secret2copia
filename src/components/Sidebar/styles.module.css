@@ -69,13 +69,14 @@
   cursor: pointer;
   transition: filter 0.2s ease;
 }
-.filter-options label:hover, .filter-options label:focus {
+.filter-options label:hover,
+.filter-options label:focus {
   filter: brightness(0.8);
 }
-.filter-options label input[type=checkbox] {
+.filter-options label input[type="checkbox"] {
   -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   background-color: transparent;
   border: none;
   margin: 0;
@@ -87,7 +88,7 @@
   border-radius: 4px;
   cursor: pointer;
 }
-.filter-options label input[type=checkbox]:checked {
+.filter-options label input[type="checkbox"]:checked {
   color: var(--purple-500);
   background-color: var(--purple-500);
   background-image: url("/check.svg");
@@ -96,10 +97,11 @@
   background-size: contain;
   background-origin: content-box;
 }
-.filter-options label input[type=checkbox]:checked:hover, .filter-options label input[type=checkbox]:checked:focus {
+.filter-options label input[type="checkbox"]:checked:hover,
+.filter-options label input[type="checkbox"]:checked:focus {
   --bg-color: var(--purple-400);
 }
-.filter-options label input[type=checkbox]:active {
+.filter-options label input[type="checkbox"]:active {
   filter: brightness(0.8);
 }
 
@@ -107,4 +109,4 @@
   .sidebar {
     display: none;
   }
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

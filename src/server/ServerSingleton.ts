@@ -64,9 +64,9 @@ export class ServerSingleton {
   private async fetchDollar(): Promise<number> {
     const response = await fetch(
       `https://economia.awesomeapi.com.br/json/last/USD-BRL`
-    )
+    );
 
-    const { USDBRL } = (await response.json())
+    const { USDBRL } = await response.json();
 
     this.dolar = Number(USDBRL.bid);
 

@@ -107,19 +107,23 @@
   font-size: 15px;
   margin-top: 0.8rem;
 }
-.classRoomSection:global(.active), .classRoomSection:hover {
+.classRoomSection:global(.active),
+.classRoomSection:hover {
   cursor: pointer;
   background: #00875f;
   border: 1px solid #00875f;
 }
-.classRoomSection:global(.active) h6, .classRoomSection:hover h6 {
+.classRoomSection:global(.active) h6,
+.classRoomSection:hover h6 {
   border: 1px solid var(--white);
 }
-.classRoomSection:global(.active) .content, .classRoomSection:hover .content {
+.classRoomSection:global(.active) .content,
+.classRoomSection:hover .content {
   color: var(--white);
 }
 .classRoomSection:global(.active) .content span,
-.classRoomSection:global(.active) .content svg, .classRoomSection:hover .content span,
+.classRoomSection:global(.active) .content svg,
+.classRoomSection:hover .content span,
 .classRoomSection:hover .content svg {
   color: var(--white) !important;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

@@ -20,7 +20,8 @@
   border-color: var(--purple-500);
   filter: brightness(0.9);
 }
-.dropzone:hover, .dropzone:focus {
+.dropzone:hover,
+.dropzone:focus {
   border-color: var(--purple-500);
   filter: brightness(0.9);
 }
@@ -31,4 +32,4 @@
 }
 .dropzone:global(.hasFile) svg {
   color: var(--purple-400);
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

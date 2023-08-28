@@ -881,10 +881,13 @@ export class KuCoinStratefy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-
     let url = "";
 
-    if (pair.toUpperCase() !== "NAVIUSDT" && pair.toUpperCase() !== "MCUSDT" && pair.toUpperCase() !== "MIRUSDT") {
+    if (
+      pair.toUpperCase() !== "NAVIUSDT" &&
+      pair.toUpperCase() !== "MCUSDT" &&
+      pair.toUpperCase() !== "MIRUSDT"
+    ) {
       url = `https://api.kucoin.com/api/v1/market/orderbook/level2_20?symbol=${pair}`;
     }
 
@@ -1122,7 +1125,12 @@ export class HitBTCStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "DOGEUSDT" && pair.toUpperCase() !== "SMARTUSDT" && pair.toUpperCase() !== "GSTUSDT" && pair.toUpperCase() !== "PLAUSDT") {
+    if (
+      pair.toUpperCase() !== "DOGEUSDT" &&
+      pair.toUpperCase() !== "SMARTUSDT" &&
+      pair.toUpperCase() !== "GSTUSDT" &&
+      pair.toUpperCase() !== "PLAUSDT"
+    ) {
       url = `https://api.hitbtc.com/api/3/public/orderbook/${pair}?depth=10`;
     }
 
@@ -1558,7 +1566,7 @@ export class BitstampStrategy implements ExchangeStrategy {
   }
 }
 
-// Bidget ---------------------------------------------------------------------
+// Bitget ---------------------------------------------------------------------
 
 interface BidgetOrderbook {
   data: {
@@ -1624,7 +1632,7 @@ export class BidgetStrategy implements ExchangeStrategy {
     this.orderbook[pair] = json;
 
     return {
-      name: "Bidget",
+      name: "Bitget",
       bid: {
         price: Number(json.data.bids[0]![0]),
         amount: Number(json.data.bids[0]![1]),
@@ -1894,7 +1902,11 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "NAVIUSDT" && pair.toUpperCase() !== "ACMUSDT" && pair.toUpperCase() !== "BFCUSDT") {
+    if (
+      pair.toUpperCase() !== "NAVIUSDT" &&
+      pair.toUpperCase() !== "ACMUSDT" &&
+      pair.toUpperCase() !== "BFCUSDT"
+    ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
 
@@ -2596,7 +2608,6 @@ export class CoinwStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-
     let url = "";
 
     if (pair.toUpperCase() !== "GASUSDT") {
@@ -2975,7 +2986,11 @@ export class LbkexStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "PORUSDT" && pair.toUpperCase() !== "TRUUSDT" && pair.toUpperCase() !== "TRAUSDT") {
+    if (
+      pair.toUpperCase() !== "PORUSDT" &&
+      pair.toUpperCase() !== "TRUUSDT" &&
+      pair.toUpperCase() !== "TRAUSDT"
+    ) {
       url = `https://api.lbkex.com/v2/depth.do?symbol=${pair}&size=20`;
     }
 
@@ -4647,7 +4662,6 @@ export interface DYDYXOrderbook {
   }[];
 }
 
-
 export class DYDYXStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: DYDYXOrderbook;
@@ -4706,6 +4720,8 @@ export class DYDYXStrategy implements ExchangeStrategy {
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as DYDYXOrderbook;
+
+    console.log(json);
 
     this.orderbook[pair] = json;
 

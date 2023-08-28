@@ -22,7 +22,8 @@
   border-radius: 8px;
   transition: filter 0.2s ease;
 }
-.card button:hover, .card button:focus {
+.card button:hover,
+.card button:focus {
   filter: brightness(0.8);
 }
 .card button:active {
@@ -116,4 +117,4 @@
   font-weight: 200;
   font-size: var(--fs-200);
   color: var(--white);
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

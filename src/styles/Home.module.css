@@ -1,88 +1,88 @@
 .container {
- background-image: url(../../public//images/bannerNextGain.png);
- background-repeat: no-repeat;
- background-size: cover;
- background-position: center;
+  background-image: url(../../public//images/bannerNextGain.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
 }
 .container .banner {
- display: flex;
- flex-direction: column;
- justify-content: center;
- margin-right: auto;
- height: 89vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-right: auto;
+  height: 89vh;
 }
 .container .banner img {
- width: 141px;
- height: 31px;
+  width: 141px;
+  height: 31px;
 }
 .container .banner .title {
- margin: 2rem 0;
- max-width: 700px;
- font-size: var(--fs-600);
- font-weight: 800;
+  margin: 2rem 0;
+  max-width: 700px;
+  font-size: var(--fs-600);
+  font-weight: 800;
 }
 .container .banner .text {
- max-width: 562px;
- font-size: 22px;
- font-weight: 500;
+  max-width: 562px;
+  font-size: 22px;
+  font-weight: 500;
 }
 .container .banner a {
- max-width: 326px;
- width: 100%;
+  max-width: 326px;
+  width: 100%;
 }
 .container .banner a .buttonWatch {
- margin-top: 3.5rem;
- max-width: 326px;
- width: 100%;
- height: 56px;
- background-color: #7b61ff;
- color: #fff;
- border: none;
- border-radius: 5px;
- font-size: var(--fs-400);
- font-weight: 600;
- text-transform: uppercase;
+  margin-top: 3.5rem;
+  max-width: 326px;
+  width: 100%;
+  height: 56px;
+  background-color: #7b61ff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: var(--fs-400);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 .container .banner a .buttonWatch .images {
- margin-left: 0.5rem;
- width: 10px;
- height: 10px !important;
+  margin-left: 0.5rem;
+  width: 10px;
+  height: 10px !important;
 }
 .mentoring {
- display: flex;
- flex-direction: column;
- margin-bottom: 5rem;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5rem;
 }
 .mentoring .titleMentoring {
- display: flex;
- flex-direction: row;
- font-size: var(--fs-500);
- font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  font-size: var(--fs-500);
+  font-weight: 500;
 }
 .mentoring .titleMentoring .title {
- margin-left: 0.5rem;
+  margin-left: 0.5rem;
 }
 .mentoring .titleTools {
- display: flex;
- flex-direction: row;
- font-size: var(--fs-500);
- font-weight: 500;
- margin-top: 3.5rem;
+  display: flex;
+  flex-direction: row;
+  font-size: var(--fs-500);
+  font-weight: 500;
+  margin-top: 3.5rem;
 }
 .mentoring .titleTools .title {
- margin-left: 0.5rem;
+  margin-left: 0.5rem;
 }
 .mentoring .sliders {
- margin-top: 24px;
+  margin-top: 24px;
 }
 @media screen and (max-width: 500px) {
- .container .banner {
-  height: 87vh;
-}
- .container .banner .title {
-  font-size: 1.5rem;
-}
- .container .banner .text {
-  font-size: 1rem;
-}
+  .container .banner {
+    height: 87vh;
+  }
+  .container .banner .title {
+    font-size: 1.5rem;
+  }
+  .container .banner .text {
+    font-size: 1rem;
+  }
 }
