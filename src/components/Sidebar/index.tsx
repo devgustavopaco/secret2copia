@@ -54,20 +54,20 @@ export function Sidebar({
 
   const handleSelectBuyExchange = (exchange: string) => {
     console.log(buyExchanges);
-    if (buyExchanges.length < 2 || buyExchanges.includes(exchange)) {
+    if (buyExchanges.length < 4 || buyExchanges.includes(exchange)) {
       onSelectBuyExchange(exchange);
     } else {
-      toast.dark("Você só pode selecionar 2 opções para compra.", {
+      toast.dark("Você só pode selecionar 4 opções para compra.", {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       });
     }
   };
 
   const handleSelectSellExchange = (exchange: string) => {
-    if (sellExchanges.length < 2 || sellExchanges.includes(exchange)) {
+    if (sellExchanges.length < 4 || sellExchanges.includes(exchange)) {
       onSelectSellExchange(exchange);
     } else {
-      toast.dark("Você só pode selecionar 2 opções para venda.", {
+      toast.dark("Você só pode selecionar 4 opções para venda.", {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       });
     }
