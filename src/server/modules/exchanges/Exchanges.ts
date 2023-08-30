@@ -877,7 +877,7 @@ export class KuCoinStratefy implements ExchangeStrategy {
     ) {
       return "";
     }
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
