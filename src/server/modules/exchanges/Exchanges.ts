@@ -2351,7 +2351,7 @@ export class ProbitStrategy implements ExchangeStrategy {
     if (baseToken.toUpperCase() === "NAVI") {
       return "";
     }
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
