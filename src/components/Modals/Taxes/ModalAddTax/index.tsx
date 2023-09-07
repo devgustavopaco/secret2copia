@@ -1,8 +1,9 @@
-import { X } from "phosphor-react";
+import { X, XCircle } from "phosphor-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import Select from "react-select";
 import { trpc } from "../../../../utils/trpc";
 
+import { toast } from "react-toastify";
 import styles from "./styles.module.scss";
 
 interface StyledSelectProps {
@@ -108,6 +109,13 @@ export function ModalAddTax({ onClose, onSubmit }: ModalAddTaxProps) {
 
   const handleFormSubmit = (event: FormEvent) => {
     event.preventDefault();
+
+    if (!selectedExchange || !selectedCoin) {
+      toast.dark("Selecione uma corretora ou moeda!", {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+      return;
+    }
 
     onSubmit(selectedExchange, selectedCoin, tax, confirmations);
     onClose();
