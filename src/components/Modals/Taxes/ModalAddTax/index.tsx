@@ -24,7 +24,7 @@ const StyledSelect = ({
     styles={{
       singleValue: (provided, state) => ({
         ...provided,
-        color: "var(--white)",
+        color: "#fff",
       }),
       control: (provided, state) => ({
         ...provided,
