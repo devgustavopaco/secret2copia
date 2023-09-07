@@ -55,11 +55,12 @@
 }
 
 .select {
-  color: white;
+  color: white !important;
   input,
   select,
-  option {
-    color: #fff;
+  option,
+  div {
+    color: white !important;
   }
   > div[class$="control"] {
     cursor: text;
