@@ -22,6 +22,10 @@ const StyledSelect = ({
     className={styles.select}
     isLoading={isLoading}
     styles={{
+      valueContainer: (provided: any, state: any) => ({
+        ...provided,
+        color: "#fff",
+      }),
       singleValue: (provided, state) => ({
         ...provided,
         color: "#fff",

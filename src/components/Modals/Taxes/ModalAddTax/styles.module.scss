@@ -56,6 +56,11 @@
 
 .select {
   color: white;
+  input,
+  select,
+  option {
+    color: #fff;
+  }
   > div[class$="control"] {
     cursor: text;
     height: 45px;
