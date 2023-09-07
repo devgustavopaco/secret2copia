@@ -24,11 +24,11 @@ const StyledSelect = ({
     styles={{
       valueContainer: (provided: any, state: any) => ({
         ...provided,
-        color: "#fff",
+        color: "#fff !important",
       }),
       singleValue: (provided, state) => ({
         ...provided,
-        color: "#fff",
+        color: "#fff !important",
       }),
       control: (provided, state) => ({
         ...provided,
