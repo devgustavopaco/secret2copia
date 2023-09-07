@@ -67,7 +67,7 @@
     height: 45px;
 
     background-color: #3a3847;
-    color: white;
+    color: var(--white) !important;
     border: none;
     border-color: var(--purple-500);
     box-shadow: none;
