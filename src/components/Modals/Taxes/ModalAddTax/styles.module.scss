@@ -72,13 +72,13 @@
       color: var(--gray-100);
 
       div {
-        color: var(--gray-100);
+        color: white;
       }
     }
 
     > div[class$="IndicatorsContainer"] {
       > div {
-        color: var(--gray-100);
+        color: white;
       }
       > span {
         background-color: var(--gray-100);
