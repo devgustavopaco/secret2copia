@@ -67,15 +67,6 @@
     box-shadow: none;
     border-radius: 8px;
 
-    > div[class$="ValueContainer"] {
-      padding: 0.5rem;
-      color: white !important;
-
-      div {
-        color: white !important;
-      }
-    }
-
     > div[class$="IndicatorsContainer"] {
       > div {
         color: white;

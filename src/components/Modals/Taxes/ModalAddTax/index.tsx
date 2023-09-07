@@ -22,16 +22,21 @@ const StyledSelect = ({
     className={styles.select}
     isLoading={isLoading}
     styles={{
+      singleValue: (provided, state) => ({
+        ...provided,
+        color: "var(--white)",
+      }),
       control: (provided, state) => ({
         ...provided,
         border: "none",
         boxShadow: "none",
         outline: state.isFocused ? "var(--purple-500) solid 2px" : "none",
         outlineOffset: "1px",
+        color: "var(--white) !important",
       }),
       option: (provided, state) => ({
         ...provided,
-        color: state.isSelected ? "var(--gray-100)" : "var(--gray-100)",
+        color: state.isSelected ? "var(--white)" : "var(--white)",
         backgroundColor: state.isSelected
           ? "var(--purple-500)"
           : state.isFocused
