@@ -1,6 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import axios from "axios"; // Import axios
-import NextAuth, { ISODateString, NextAuthOptions, Session } from "next-auth";
+import NextAuth, {
+  ISODateString,
+  NextAuthOptions,
+  Session,
+  User,
+} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "../../../server/db/client";
 
@@ -18,6 +23,10 @@ interface CustomSession extends Session {
   email: string;
   role: string;
   expires: ISODateString;
+}
+
+interface CustomUser extends User {
+  ip?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -41,6 +50,13 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         // Verify the reCAPTCHA token
+
+        // Obtenha o IP do cliente
+        const ip =
+          (req as any).headers?.["x-forwarded-for"] ||
+          (req as any).connection?.remoteAddress ||
+          "";
+
         console.log(req.body);
         if (!(await verifyRecaptchaToken(req.body?.recaptchaToken))) {
           throw new Error("Invalid reCAPTCHA token.");
@@ -62,7 +78,26 @@ export const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("Email ou senha inválidos");
         }
-        return user;
+
+        // Se a autenticação for bem-sucedida, adicione o IP ao objeto do usuário
+        if (user) {
+          user.ip = ip;
+
+          console.log(ip, "TESTEEEEEEEEEEEEEEEEE");
+
+          // Atualizando o IP no banco de dados
+          await prisma.user.update({
+            where: { email: user.email },
+            data: { ip: user.ip },
+          });
+        }
+
+        const customUser: CustomUser = {
+          ...user,
+          ip,
+        };
+
+        return customUser;
       },
     }),
   ],
@@ -71,8 +106,12 @@ export const authOptions: NextAuthOptions = {
     maxAge: 1 * 3 * 60 * 60,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: any; user: CustomUser | null }) {
+      if (user && "ip" in user) {
+        token.ip = (user as CustomUser).ip;
+      }
       if (user) {
+        token.ip = user.ip;
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;

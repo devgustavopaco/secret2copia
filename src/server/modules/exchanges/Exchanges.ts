@@ -453,8 +453,9 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${isFanToken ? "CHZ" : destinationToken.toUpperCase()
-      }`;
+    return `${baseToken.toUpperCase()}${
+      isFanToken ? "CHZ" : destinationToken.toUpperCase()
+    }`;
   }
 
   async fetchOrderbook(
@@ -1378,7 +1379,7 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://contract.mexc.com/api/v1/contract/depth/${pair}`;
+    const url = `https://api.mexc.com/api/v3/depth/${pair}`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MexcOrderbook;

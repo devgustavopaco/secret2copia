@@ -62,6 +62,7 @@ model User {
   silver        Boolean
   gold          Boolean
   platinum      Boolean
+  ip            String
 }
 
 model Videos {
