@@ -42,8 +42,8 @@ export const userRouter = createRouter()
           },
           name: search
             ? {
-                contains: search,
-              }
+              contains: search,
+            }
             : undefined,
         },
       });
@@ -118,6 +118,7 @@ export const userRouter = createRouter()
       silver: z.boolean(),
       gold: z.boolean(),
       platinum: z.boolean(),
+      ip: z.string(),
     }),
     async resolve({ ctx, input }) {
       const userRole = await ctx.prisma.role.findFirst({
@@ -141,6 +142,7 @@ export const userRouter = createRouter()
           silver: input.silver,
           gold: input.gold,
           platinum: input.platinum,
+          ip: input.ip,
         },
       });
 

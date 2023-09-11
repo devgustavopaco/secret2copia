@@ -96,6 +96,7 @@ const AdminUsers: NextPage = () => {
     });
 
     let imageUrl;
+    let ip = "";
     if (image) {
       const { url } = await uploadToS3(image);
       imageUrl = url;
@@ -125,6 +126,7 @@ const AdminUsers: NextPage = () => {
       silver,
       gold,
       platinum,
+      ip,
     });
 
     try {
