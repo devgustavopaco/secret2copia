@@ -63,8 +63,18 @@ export function ModalOrderBook({
   const dolarValue = user?.dolarValue ?? 1;
 
   return (
-    <div className={styles.modalBackground}>
-      <div className={styles.modalContainer}>
+    <div
+      className={styles.modalBackground}
+      onClick={() => {
+        setOpenModal(false);
+      }}
+    >
+      <div
+        className={styles.modalContainer}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <div className={styles.container}>
           <div className={styles.blocTabs}>
             <button

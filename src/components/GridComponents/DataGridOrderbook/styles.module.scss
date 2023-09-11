@@ -20,6 +20,10 @@
     font-weight: 400;
   }
 
+  :global(.MuiDataGrid-row) {
+    border-bottom: 1px solid var(--gray-800);
+  }
+
   :global(.MuiDataGrid-root.MuiDataGrid-root--densityStandard) {
     background-color: #0d0f12;
     border: none !important;
@@ -82,7 +86,6 @@
 
   background: var(--gray-800);
   border-radius: 8px;
-  // box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
 
   svg {
     display: none;
@@ -101,6 +104,8 @@
   :global(.MuiDataGrid-columnHeaderTitle) {
     color: rgb(255, 58, 58);
     font-weight: bold;
+    text-transform: uppercase;
+    font-size: 20px;
   }
 
   overflow-x: hidden !important;
