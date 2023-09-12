@@ -64,17 +64,20 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
             <div className={styles.classText}>
               <h2>{aula ? aula.title : ""}</h2>
               <p>
-                {aula &&
-                  aula.description.split("/n").map((line, index) => (
-                    <>
-                      {line}
-                      {index !== aula.description.split("/n").length - 1 && (
-                        <>
-                          <br /> <br />
-                        </>
-                      )}
-                    </>
-                  ))}
+                {aula?.description
+                  ? aula.description.split("/n").map((line, index) => (
+                      <div key={index}>
+                        {line}
+                        {index !== aula.description.split("/n").length - 1 && (
+                          <>
+                            {" "}
+                            <br />
+                            <br />
+                          </>
+                        )}
+                      </div>
+                    ))
+                  : ""}
               </p>
             </div>
           </div>
