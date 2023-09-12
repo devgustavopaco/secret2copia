@@ -1,10 +1,10 @@
 import { Videos } from "@prisma/client";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { BsDownload } from "react-icons/bs";
 import { MobileClassScheduleComponent } from "../../ClassSchedule/Mobile";
 import { PlayerProps } from "../../Player/Player";
 import styles from "./styles.module.scss";
-import { BsDownload } from "react-icons/bs";
 
 const PlayerComponent = dynamic<PlayerProps>(
   () => import("../../Player/Player").then((module) => module.PlayerComponent),
@@ -63,7 +63,19 @@ export function MobileVideoComponent({ aula, data }: videoProps) {
           <div className={styles.classDescription}>
             <div className={styles.classText}>
               <h2>{aula ? aula.title : ""}</h2>
-              <p>{aula ? aula.description : ""}</p>
+              <p>
+                {aula &&
+                  aula.description.split("/n").map((line, index) => (
+                    <>
+                      {line}
+                      {index !== aula.description.split("/n").length - 1 && (
+                        <>
+                          <br /> <br />
+                        </>
+                      )}
+                    </>
+                  ))}
+              </p>
             </div>
           </div>
           <div className={styles.additionalMaterial}>

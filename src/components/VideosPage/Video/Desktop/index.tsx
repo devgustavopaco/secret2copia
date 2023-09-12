@@ -27,7 +27,20 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
       <div className={styles.classDescription}>
         <div className={styles.classText}>
           <h2>{aula ? aula.title : ""}</h2>
-          <p>{aula ? aula.description : ""}</p>
+          <p>
+            {aula &&
+              aula.description.split("/n").map((line, index) => (
+                <>
+                  {line}
+                  {index !== aula.description.split("/n").length - 1 && (
+                    <>
+                      <br />
+                      <br />
+                    </>
+                  )}
+                </>
+              ))}
+          </p>
         </div>
       </div>
       <div className={styles.additionalMaterial}>
