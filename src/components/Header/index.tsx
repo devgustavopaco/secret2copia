@@ -54,7 +54,7 @@ export function Header() {
   };
 
   let roleName = "Administrator";
-  let roleColor = "#0e0345";
+  let roleColor = "#7b61ff";
 
   if (user && user.data && user.data.bronze === true) {
     roleColor = "#cd7f32";
