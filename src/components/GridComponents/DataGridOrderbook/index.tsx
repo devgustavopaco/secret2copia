@@ -143,7 +143,7 @@ export function DataGridOrderbook({
         }}
       />
       <div className={styles.tableContainer}>
-        <Box className={styles.box} sx={{ height: 500, width: "100%" }}>
+        <Box className={styles.box} sx={{ height: 300, width: "100%" }}>
           {isPurchase ? (
             <DataGrid
               rows={updatedData}
