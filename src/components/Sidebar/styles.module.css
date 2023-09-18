@@ -2,35 +2,173 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 2rem 2.5rem;
-  gap: 2rem;
-  min-width: 240px;
-  background: var(--gray-800);
+  padding: 0;
+  gap: 1rem;
+  min-width: 209px;
+  max-width: 209px;
   border-radius: 8px;
+  font-family: "Raleway", sans-serif;
+}
+.sidebar .title {
+  font-size: 32px;
+  font-weight: 600;
 }
 
-.text-section,
+.ExchangesSection {
+  min-width: 209px;
+}
+.ExchangesSection .labelExchangeSection {
+  color: #fff;
+  font-family: "Raleway";
+  font-size: 17.432px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.ExchangesSection .addExchange {
+  border-radius: 18.667px;
+  background: rgba(123, 97, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 18px;
+  padding-block: 12px;
+  margin-block: 15px;
+  cursor: pointer;
+}
+.ExchangesSection .addExchange p {
+  color: #fff;
+  font-family: "Raleway";
+  font-size: 17.432px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.ExchangesSection .aroundImage {
+  width: 37.333px;
+  height: 37.333px;
+  background: rgba(123, 97, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  padding: 5px;
+}
+.ExchangesSection .aroundImage img {
+  display: flex;
+  align-items: center;
+  margin-inline: auto;
+}
+.ExchangesSection .selectedExchanges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 18.667px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.25);
+  -webkit-backdrop-filter: blur(5px);
+          backdrop-filter: blur(5px);
+  padding-inline: 18px;
+  padding-block: 12px;
+  margin-bottom: 8px;
+}
+.ExchangesSection .selectedExchanges .selectedExchangesBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--white, #fff);
+  text-align: center;
+  font-family: "Raleway";
+  font-size: 14.996px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.ExchangesSection .selectedExchanges .selectedExchangesBlock img {
+  width: 37.333px;
+  height: 37.333px;
+  border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border: 1px solid #fff;
+}
+
+.text-section {
+  border-radius: 18.667px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.25);
+  -webkit-backdrop-filter: blur(5px);
+          backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: none;
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+}
+.text-section legend {
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.text-section p {
+  font-weight: 500;
+}
+.text-section p > span {
+  font-size: var(--fs-300);
+}
+.text-section .dolarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .filter-section {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   border: none;
-  padding: 0;
+  padding: 20px;
   margin: 0;
+  background-color: #21202d;
+  border-radius: 5px;
+  width: 100%;
 }
-.text-section legend,
 .filter-section legend {
   font-weight: 600;
-  font-size: var(--fs-400);
-  text-transform: capitalize;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
-.text-section p,
 .filter-section p {
-  font-weight: 300;
+  font-weight: 500;
 }
-.text-section p > span,
 .filter-section p > span {
-  font-size: var(--fs-200);
+  font-size: var(--fs-300);
+}
+
+.dolarLabel {
+  color: #fff;
+  background-color: transparent;
+  border-bottom: 1px solid #ccc;
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  margin-left: -18px;
+  padding-left: 18px;
+  padding-bottom: 3px;
+  width: 78px;
+  font-family: "Raleway";
+  font-size: 16.942px;
 }
 
 .filter-section {
@@ -69,14 +207,13 @@
   cursor: pointer;
   transition: filter 0.2s ease;
 }
-.filter-options label:hover,
-.filter-options label:focus {
+.filter-options label:hover, .filter-options label:focus {
   filter: brightness(0.8);
 }
-.filter-options label input[type="checkbox"] {
+.filter-options label input[type=checkbox] {
   -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   background-color: transparent;
   border: none;
   margin: 0;
@@ -88,7 +225,7 @@
   border-radius: 4px;
   cursor: pointer;
 }
-.filter-options label input[type="checkbox"]:checked {
+.filter-options label input[type=checkbox]:checked {
   color: var(--purple-500);
   background-color: var(--purple-500);
   background-image: url("/check.svg");
@@ -97,11 +234,10 @@
   background-size: contain;
   background-origin: content-box;
 }
-.filter-options label input[type="checkbox"]:checked:hover,
-.filter-options label input[type="checkbox"]:checked:focus {
+.filter-options label input[type=checkbox]:checked:hover, .filter-options label input[type=checkbox]:checked:focus {
   --bg-color: var(--purple-400);
 }
-.filter-options label input[type="checkbox"]:active {
+.filter-options label input[type=checkbox]:active {
   filter: brightness(0.8);
 }
 
@@ -109,4 +245,4 @@
   .sidebar {
     display: none;
   }
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

@@ -5,8 +5,8 @@
   padding: 2rem 2.5rem;
   gap: 2rem;
   min-width: 240px;
-  max-height: 80vh;
-  background: var(--gray-800);
+  max-height: 85vh;
+  background: #211f2d;
   border-radius: 8px;
 }
 .sidebar section {
@@ -29,13 +29,11 @@
   border-radius: 8px;
   transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.sidebarList a:hover,
-.sidebarList a:focus {
+.sidebarList a:hover, .sidebarList a:focus {
   color: var(--purple-500);
   background-color: var(--gray-700);
 }
-.sidebarList a:hover .sidebarIcon,
-.sidebarList a:focus .sidebarIcon {
+.sidebarList a:hover .sidebarIcon, .sidebarList a:focus .sidebarIcon {
   color: var(--purple-500);
 }
 .sidebarList a:active {
@@ -56,4 +54,4 @@
   color: var(--white);
   font-size: var(--fs-500);
   transition: color 0.2s ease;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

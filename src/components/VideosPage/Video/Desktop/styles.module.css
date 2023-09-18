@@ -1,7 +1,6 @@
 .videoSection {
   display: block;
   width: 100%;
-  padding-right: 1rem;
   position: relative;
 }
 @media only screen and (max-width: 768px) {
@@ -17,15 +16,16 @@
   justify-content: space-around;
   align-items: flex-start;
   gap: 3rem;
+  max-width: 882px;
 }
 .classDescription h2 {
   font-size: 1.3rem;
   font-weight: 600;
 }
 .classDescription p {
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 400;
-  color: var(--gray-200);
+  color: #fff;
 }
 @media only screen and (max-width: 768px) {
   .classDescription {
@@ -73,7 +73,7 @@
 
 .discordBtn {
   margin-bottom: 1rem;
-  background: #00875f;
+  background: #7b61ff;
   color: var(--white);
 }
 .discordBtn svg {
@@ -110,7 +110,7 @@
   width: 63px;
   height: 63px;
   -o-object-fit: cover;
-  object-fit: cover;
+     object-fit: cover;
   border-radius: 50%;
   border: 2px solid var(--purple-200);
 }
@@ -129,9 +129,10 @@
 .material {
   display: flex;
   align-items: center;
-  background: #015f43;
+  background: #7b61ff;
   border-radius: 4px;
-  max-width: 500px;
+  max-width: 108px;
+  height: 77px;
   cursor: pointer;
 }
 
@@ -141,16 +142,17 @@
 }
 
 .materialText {
-  background: #121214;
+  background: #21202d;
   display: flex;
   align-items: center;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
-  gap: 2rem;
   padding-right: 1.5rem;
+  width: 260px;
+  height: 77px;
 }
 .materialText h2 {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 .materialText span {
@@ -188,4 +190,4 @@
   font-size: 14px;
   color: #8d8d99;
   padding-block: 1.4rem;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

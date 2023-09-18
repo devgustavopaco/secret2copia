@@ -6,11 +6,40 @@
   height: 100%;
 }
 .tableContainer :global(.MuiDataGrid-overlay) {
-  background-color: var(--gray-700);
+  background-color: #211f2d;
 }
 .tableContainer :global(.MuiDataGrid-root) {
   color: var(--white);
   border: none;
+}
+.tableContainer :global(.MuiDataGrid-cell) {
+  border-bottom: 1px solid #6f57e1 !important;
+  padding: 10px 0 !important;
+}
+.tableContainer :global(.MuiDataGrid-columnHeaders) {
+  border-bottom: 1px solid #6f57e1 !important;
+  padding: 10px 0 !important;
+}
+.tableContainer :global(.MuiOutlinedInput-root).Mui-focused fieldset {
+  border-color: #6f57e1;
+}
+.tableContainer :global(.MuiOutlinedInput-root):hover fieldset {
+  border-color: #6f57e1;
+}
+.tableContainer :global(.MuiOutlinedInput-root):active fieldset {
+  border-color: #fff;
+}
+.tableContainer :global(.MuiOutlinedInput-root) fieldset {
+  border-color: #6f57e1;
+}
+.tableContainer :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: #fff !important;
+}
+.tableContainer :global(.MuiInputLabel-root.Mui-focused) {
+  color: #fff !important;
+}
+.tableContainer :global(.MuiOutlinedInput-input) {
+  color: white !important;
 }
 
 .BtnAtivar {
@@ -26,7 +55,8 @@
 
 .box {
   width: 100%;
-  background: var(--gray-800);
+  padding: 0 1rem;
+  background: #211f2d;
   border-radius: 8px;
   box-shadow: 3px 5px 10px 6px rgba(0, 0, 0, 0.27);
 }
@@ -37,7 +67,7 @@
 .grid {
   border: none;
   color: var(--white);
-  background-color: var(--gray-800);
+  background: #211f2d;
 }
 .grid p {
   color: var(--white);
@@ -48,4 +78,8 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-} /*# sourceMappingURL=styles.module.css.map */
+}
+
+.customTextField {
+  margin-bottom: 20px !important;
+}/*# sourceMappingURL=styles.module.css.map */

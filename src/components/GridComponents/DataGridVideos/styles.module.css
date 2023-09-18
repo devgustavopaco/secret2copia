@@ -6,11 +6,19 @@
   height: 100%;
 }
 .tableContainer :global(.MuiDataGrid-overlay) {
-  background-color: var(--gray-700);
+  background-color: #211f2d;
 }
 .tableContainer :global(.MuiDataGrid-root) {
   color: var(--white);
   border: none;
+}
+.tableContainer :global(.MuiDataGrid-cell) {
+  border-bottom: 1px solid #6f57e1 !important;
+  padding: 10px 0 !important;
+}
+.tableContainer :global(.MuiDataGrid-columnHeaders) {
+  border-bottom: 1px solid #6f57e1 !important;
+  padding: 10px 0 !important;
 }
 
 .BtnAtivar {
@@ -26,7 +34,8 @@
 
 .box {
   width: 100%;
-  background: var(--gray-800);
+  padding: 0 1rem;
+  background: #211f2d;
   border-radius: 8px;
   box-shadow: 3px 5px 10px 6px rgba(0, 0, 0, 0.27);
 }
@@ -48,4 +57,4 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

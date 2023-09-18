@@ -22,7 +22,7 @@
 }
 .body .halfLeft .contentBox img {
   -o-object-fit: cover;
-  object-fit: cover;
+     object-fit: cover;
   width: 185px;
 }
 .body .halfRight {
@@ -84,8 +84,7 @@
   align-items: center;
   gap: 0.5rem;
 }
-.formBox button:hover,
-.formBox button:focus {
+.formBox button:hover, .formBox button:focus {
   filter: brightness(0.8);
 }
 .formBox button:active {
@@ -143,8 +142,7 @@
   align-items: center;
   gap: 0.5rem;
 }
-.formBoxForget button:hover,
-.formBoxForget button:focus {
+.formBoxForget button:hover, .formBoxForget button:focus {
   filter: brightness(0.8);
 }
 .formBoxForget button:active {
@@ -284,7 +282,8 @@
 }
 @media screen and (max-width: 500px) {
   .body .halfLeft {
-    height: 40vh;
+    height: 30vh;
+    max-width: 100%;
   }
 }
 @keyframes changeBackground {
@@ -300,4 +299,4 @@
   100% {
     background-image: url("/images/login.png");
   }
-} /*# sourceMappingURL=Login.module.css.map */
+}/*# sourceMappingURL=Login.module.css.map */

@@ -11,12 +11,12 @@
 .modalContainer {
   width: 400px;
   height: auto;
-  border-radius: 12px;
-  background: var(--gray-800);
+  border-radius: 6.31px;
+  background: #21202d;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
+  padding: 2.75rem;
   gap: 2rem;
 }
 
@@ -37,10 +37,11 @@
   height: 45px;
   width: 100%;
   border: none;
-  padding: 0.5rem;
   border-radius: 8px;
-  background-color: var(--gray-600);
+  padding-left: 1rem;
+  background-color: #3a3847;
   color: var(--gray-100);
+  margin-bottom: 1rem;
 }
 
 .inputImage {
@@ -84,8 +85,10 @@
   align-items: center;
 }
 .modalHeader h3 {
-  font-size: var(--fs-500);
+  font-size: var(--fs-600);
   font-weight: 600;
+  text-align: center;
+  width: 100%;
 }
 .modalHeader button {
   display: flex;
@@ -98,8 +101,7 @@
   border-radius: 4px;
   transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.modalHeader button:hover,
-.modalHeader button:focus {
+.modalHeader button:hover, .modalHeader button:focus {
   color: var(--purple-500);
   background-color: var(--gray-700);
 }
@@ -134,10 +136,12 @@
 
 .addBtn {
   background-color: var(--purple-500);
+  box-shadow: 0px 2.21px 22.12px rgba(123, 97, 255, 0.3);
+  border-radius: 10px;
   transition: filter 0.2s ease;
+  margin-left: 1rem;
 }
-.addBtn:hover,
-.addBtn:focus {
+.addBtn:hover, .addBtn:focus {
   filter: brightness(0.8);
 }
 .addBtn:active {
@@ -151,8 +155,7 @@
   transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
   border: 1px solid var(--white);
 }
-.voltarBtn:hover,
-.voltarBtn:focus {
+.voltarBtn:hover, .voltarBtn:focus {
   color: var(--purple-200);
   border-color: var(--purple-200);
   filter: brightness(0.8);
@@ -174,12 +177,11 @@
   transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
   border: 1px solid var(--white);
 }
-.cleanImage:hover,
-.cleanImage:focus {
+.cleanImage:hover, .cleanImage:focus {
   color: var(--purple-200);
   border-color: var(--purple-200);
   filter: brightness(0.8);
 }
 .cleanImage:active {
   filter: brightness(0.7);
-} /*# sourceMappingURL=Privacidade.module.css.map */
+}/*# sourceMappingURL=Privacidade.module.css.map */

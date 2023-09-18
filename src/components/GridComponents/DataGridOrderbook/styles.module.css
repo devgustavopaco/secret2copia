@@ -1,39 +1,57 @@
+.MuiDataGrid-colCellTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .tableContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  width: 100%;
+  width: 100% !important;
   height: 100%;
 }
+.tableContainer :global(.MuiDataGrid-virtualScroller) {
+  overflow-x: hidden !important;
+}
+.tableContainer :global(.MuiDataGrid-cellContent) {
+  font-size: 20px;
+  font-weight: 400;
+}
+.tableContainer :global(.MuiDataGrid-row) {
+  border-bottom: 1px solid var(--gray-800);
+}
+.tableContainer :global(.MuiDataGrid-root.MuiDataGrid-root--densityStandard) {
+  background-color: #0d0f12;
+  border: none !important;
+}
+.tableContainer :global(.MuiDataGrid-root .MuiDataGrid-cell) {
+  border: none;
+}
+.tableContainer :global(.MuiDataGrid-columnHeaders) {
+  border: none;
+}
 .tableContainer :global(.MuiDataGrid-overlay) {
-  background-color: var(--gray-700);
+  background-color: #211f2d;
 }
 .tableContainer :global(.MuiDataGrid-root) {
   color: var(--white);
   border: none;
 }
-.tableContainer
-  :global(.MuiDataGrid-root)
-  :global(div[class$="virtualScroller"])::-webkit-scrollbar {
+.tableContainer :global(.MuiDataGrid-root) :global(div[class$="virtualScroller"])::-webkit-scrollbar {
   width: 0.25rem;
 }
-.tableContainer
-  :global(.MuiDataGrid-root)
-  :global(div[class$="virtualScroller"])::-webkit-scrollbar-track {
+.tableContainer :global(.MuiDataGrid-root) :global(div[class$="virtualScroller"])::-webkit-scrollbar-track {
   background-color: var(--gray-500);
   border-radius: 100vw;
 }
-.tableContainer
-  :global(.MuiDataGrid-root)
-  :global(div[class$="virtualScroller"])::-webkit-scrollbar-thumb {
+.tableContainer :global(.MuiDataGrid-root) :global(div[class$="virtualScroller"])::-webkit-scrollbar-thumb {
   background-color: var(--white);
   border-radius: 100vw;
   -webkit-transition: filter 0.2s ease;
   transition: filter 0.2s ease;
 }
-.tableContainer
-  :global(.MuiDataGrid-root)
-  :global(div[class$="virtualScroller"])::-webkit-scrollbar-thumb:hover {
+.tableContainer :global(.MuiDataGrid-root) :global(div[class$="virtualScroller"])::-webkit-scrollbar-thumb:hover {
   filter: brightness(0.8);
 }
 
@@ -54,7 +72,7 @@
   border-radius: 8px;
 }
 .box svg {
-  color: var(--purple-500) !important;
+  display: none;
 }
 
 .gridCompra {
@@ -70,6 +88,8 @@
 .gridCompra :global(.MuiDataGrid-columnHeaderTitle) {
   color: rgb(255, 58, 58);
   font-weight: bold;
+  text-transform: uppercase;
+  font-size: 20px;
 }
 
 .gridVenda {
@@ -83,8 +103,10 @@
   color: var(--white);
 }
 .gridVenda :global(.MuiDataGrid-columnHeaderTitle) {
-  color: rgb(58, 255, 78);
+  color: #49ac87;
   font-weight: bold;
+  text-transform: uppercase;
+  font-size: 20px;
 }
 
 .MuiTablePagination {
@@ -96,4 +118,11 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-} /*# sourceMappingURL=styles.module.css.map */
+}
+
+@media (max-width: 600px) {
+  .tableContainer :global(.MuiDataGrid-cellContent) {
+    font-size: 12px;
+    font-weight: 400;
+  }
+}/*# sourceMappingURL=styles.module.css.map */

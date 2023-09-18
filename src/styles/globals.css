@@ -8,7 +8,7 @@
   --fs-600: 2rem;
   --fs-700: 2.5rem;
   --fs-800: 3rem;
-  --gray-900: #242424;
+  --gray-900: #0d0f12;
   --gray-800: #333333;
   --gray-700: #3d3d3d;
   --gray-600: #444444;
@@ -31,7 +31,7 @@
   --red-500: #ff3838;
   --red-200: #ff8080;
   --toastify-color-light: #fff;
-  --toastify-color-dark: var(--gray-800);
+  --toastify-color-dark: #0d0f12;
   --toastify-color-info: #3498db;
   --toastify-color-success: #07bc0c;
   --toastify-color-warning: #f1c40f;
@@ -99,8 +99,7 @@ html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover {
   filter: brightness(0.8);
 }
-html .input-element:focus::-moz-placeholder,
-body .input-element:focus::-moz-placeholder {
+html .input-element:focus::-moz-placeholder, body .input-element:focus::-moz-placeholder {
   color: transparent;
 }
 html .input-element:focus::placeholder,
@@ -183,4 +182,4 @@ button {
   .container {
     --max-width: 1920px;
   }
-} /*# sourceMappingURL=globals.css.map */
+}/*# sourceMappingURL=globals.css.map */

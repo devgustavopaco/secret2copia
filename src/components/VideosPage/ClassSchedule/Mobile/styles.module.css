@@ -6,6 +6,18 @@
   min-width: 25rem;
   padding: 1.5rem;
 }
+.cronogramaSection .modules {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 1.5rem;
+}
+.cronogramaSection .modules p {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
 .cronogramaSection h2 {
   font-size: 1.5rem;
   font-weight: normal;
@@ -46,6 +58,61 @@
 .content::-webkit-scrollbar-thumb:hover {
   filter: brightness(0.8);
 }
+.content .videoModules {
+  width: 100%;
+  background-color: #21202d;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 435px;
+  cursor: pointer;
+}
+.content .videoModules span {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.content .class {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 1rem;
+}
+.content .class label {
+  display: flex;
+  align-items: center;
+  padding: 2.75rem 0;
+}
+.content .class label input[type=checkbox] {
+  width: 24px;
+  height: 20px;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  border: 2px solid #d9d9d9;
+  background-color: #d9d9d9;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.content .class label input[type=checkbox]:checked {
+  border-color: #7b61ff;
+  background-color: #7b61ff;
+}
+.content .class label img {
+  width: 167px;
+  height: 107px;
+  margin-left: 0.5rem;
+}
+.content .class label span {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-left: 1.3rem;
+}
 
 .containerTriangle {
   display: flex;
@@ -63,6 +130,7 @@
 .classContainer {
   margin-block: 2rem;
   margin-right: 1.5rem;
+  font-family: "IBM Plex Sans", sans-serif;
 }
 
 .date {
@@ -73,11 +141,16 @@
 
 .classRoomSection {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   padding: 0.8rem;
-  border: 1px solid var(--gray-500);
   border-radius: 5px;
   margin-top: 0.6rem;
+}
+.classRoomSection img {
+  width: 167px;
+  height: 107px;
+  margin-right: 1rem;
 }
 .classRoomSection .classRoom {
   margin-top: 0.5rem;
@@ -106,24 +179,4 @@
 .classRoomSection .className {
   font-size: 15px;
   margin-top: 0.8rem;
-}
-.classRoomSection:global(.active),
-.classRoomSection:hover {
-  cursor: pointer;
-  background: #00875f;
-  border: 1px solid #00875f;
-}
-.classRoomSection:global(.active) h6,
-.classRoomSection:hover h6 {
-  border: 1px solid var(--white);
-}
-.classRoomSection:global(.active) .content,
-.classRoomSection:hover .content {
-  color: var(--white);
-}
-.classRoomSection:global(.active) .content span,
-.classRoomSection:global(.active) .content svg,
-.classRoomSection:hover .content span,
-.classRoomSection:hover .content svg {
-  color: var(--white) !important;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

@@ -14,7 +14,7 @@
   width: 550px;
   height: auto;
   border-radius: 12px;
-  background: var(--gray-800);
+  background: #211f2d;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   display: flex;
   flex-direction: column;
@@ -49,39 +49,38 @@
   border: none;
   padding: 0.5rem;
   border-radius: 8px;
-  background-color: var(--gray-600);
-  color: var(--gray-100);
+  background-color: #3a3847;
+  color: white;
 }
 
 .select {
-  color: var(--gray-100);
+  color: white !important;
 }
-.select > div[class$="control"] {
+.select input,
+.select select,
+.select option,
+.select div {
+  color: white !important;
+}
+.select > div[class$=control] {
   cursor: text;
   height: 45px;
-  background-color: var(--gray-600);
-  color: var(--gray-100);
+  background-color: #3a3847;
+  color: var(--white) !important;
   border: none;
   border-color: var(--purple-500);
   box-shadow: none;
   border-radius: 8px;
 }
-.select > div[class$="control"] > div[class$="ValueContainer"] {
-  padding: 0.5rem;
-  color: var(--gray-100);
+.select > div[class$=control] > div[class$=IndicatorsContainer] > div {
+  color: white;
 }
-.select > div[class$="control"] > div[class$="ValueContainer"] div {
-  color: var(--gray-100);
+.select > div[class$=control] > div[class$=IndicatorsContainer] > span {
+  background-color: white !important;
 }
-.select > div[class$="control"] > div[class$="IndicatorsContainer"] > div {
-  color: var(--gray-100);
-}
-.select > div[class$="control"] > div[class$="IndicatorsContainer"] > span {
-  background-color: var(--gray-100);
-}
-.select > div[class$="menu"] {
-  background-color: var(--gray-600);
-  color: var(--gray-100);
+.select > div[class$=menu] {
+  background-color: #3a3847;
+  color: white;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   width: 100%;
 }
@@ -106,8 +105,7 @@
   border-radius: 4px;
   transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.modalHeader button:hover,
-.modalHeader button:focus {
+.modalHeader button:hover, .modalHeader button:focus {
   color: var(--purple-500);
   background-color: var(--gray-700);
 }
@@ -131,8 +129,7 @@
   background-color: var(--purple-500);
   transition: filter 0.2s ease;
 }
-.addBtn:hover,
-.addBtn:focus {
+.addBtn:hover, .addBtn:focus {
   filter: brightness(0.8);
 }
 .addBtn:active {
@@ -146,8 +143,7 @@
   transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
   border: 1px solid var(--white);
 }
-.voltarBtn:hover,
-.voltarBtn:focus {
+.voltarBtn:hover, .voltarBtn:focus {
   color: var(--purple-200);
   border-color: var(--purple-200);
   filter: brightness(0.8);
@@ -163,4 +159,4 @@
   to {
     opacity: 1;
   }
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

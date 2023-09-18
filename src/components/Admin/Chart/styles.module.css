@@ -1,10 +1,10 @@
 .chart {
   margin: 40px 40px;
   padding: 20px;
-  background-color: var(--gray-800);
+  background: #211f2d;
   box-shadow: 3px 5px 10px 6px rgba(0, 0, 0, 0.27);
 }
 
 .chartTitle {
   margin-bottom: 20px;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

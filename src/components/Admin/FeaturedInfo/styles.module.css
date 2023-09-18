@@ -10,7 +10,7 @@
   padding: 30px;
   border-radius: 8px;
   cursor: pointer;
-  background-color: var(--gray-800);
+  background: #211f2d;
   box-shadow: 6px 5px 10px 6px rgba(0, 0, 0, 0.25);
 }
 
@@ -47,4 +47,4 @@
 
 .featuredSub {
   font-size: 14px;
-} /*# sourceMappingURL=styles.module.css.map */
+}/*# sourceMappingURL=styles.module.css.map */

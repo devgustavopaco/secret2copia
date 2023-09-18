@@ -80,6 +80,71 @@
   margin-top: 24px;
 }
 
+.videoSection {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5rem;
+  margin-top: 2rem;
+}
+.videoSection .titleVideo {
+  display: flex;
+  flex-direction: row;
+  font-size: var(--fs-500);
+  font-weight: 500;
+}
+.videoSection .titleVideo .title {
+  margin-left: 0.5rem;
+}
+.videoSection .sliders .videosWatching {
+  display: flex;
+  flex-direction: column;
+  background-color: #21202d;
+}
+.videoSection .sliders .videosWatching img {
+  width: 100%;
+}
+.videoSection .sliders .videosWatching .videosModule {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.3;
+  margin: 1rem;
+}
+.videoSection .sliders .videosWatching .videosTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-left: 1rem;
+  max-width: 230px;
+  margin-right: 1rem;
+}
+.videoSection .sliders .videosWatching .videosButton {
+  color: #7b61ff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+  margin-left: 1rem;
+  margin-bottom: 30px;
+}
+.videoSection .sliders .videosWatching .videosButton .videosIcon {
+  margin-left: 0.3rem;
+}
+.videoSection .titleTools {
+  display: flex;
+  flex-direction: row;
+  font-size: var(--fs-500);
+  font-weight: 500;
+  margin-top: 3.5rem;
+}
+.videoSection .titleTools .title {
+  margin-left: 0.5rem;
+}
+.videoSection .sliders {
+  margin-top: 24px;
+}
+
 @media screen and (max-width: 500px) {
   .container .banner {
     height: 87vh;
@@ -90,4 +155,4 @@
   .container .banner .text {
     font-size: 1rem;
   }
-}/*# sourceMappingURL=Home.module.css.map */
+}/*# sourceMappingURL=Mentoria.module.css.map */
