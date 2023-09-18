@@ -43,8 +43,6 @@ const VideosPage: NextPage = () => {
     refetch,
   } = trpc.useQuery(["videos.getVideos"]);
 
-  // console.log(videos)
-
   const deleteMutation = trpc.useMutation("videos.delete", {
     onSuccess() {
       notify("Video deletada com sucesso!", true);
@@ -52,7 +50,6 @@ const VideosPage: NextPage = () => {
     },
     onError(error) {
       notify("Não foi possível realizar a operação!", false);
-      // console.log(error)
     },
   });
 

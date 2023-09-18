@@ -43,11 +43,9 @@ export function ModalAddCrypto({
     const image = new Image();
     image.src = `https://assets.coincap.io/assets/icons/${ticker.toLowerCase()}@2x.png`;
     image.onload = () => {
-      console.log("image loaded");
       setPreviewImageUrl(image.src);
     };
     image.onerror = () => {
-      console.log("image not found");
       setPreviewImageUrl("");
     };
   };

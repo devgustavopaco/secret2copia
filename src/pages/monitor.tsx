@@ -22,33 +22,43 @@ import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 const Monitoring: NextPage = () => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
+  useEffect(() => {
+    document.body.style.background = "rgba(13, 15, 18, 0.721)";
+
+    return () => {
+      document.body.style.background = "";
+    };
+  }, []);
+
   const { data: ActiveExchanges, isLoading: isLoadingExchanges } =
     trpc.useQuery(["exchange.getActiveExchanges"], { ssr: true });
 
-  const [buyExchanges, setBuyExchanges] = useState<string[]>(() => {
+  const [buyExchanges, setBuyExchanges] = useState<
+    Array<{ name: string; image_url: string }>
+  >(() => {
     if (typeof window !== "undefined") {
-      console.log(localStorage.getItem("buyExchanges"));
       const savedExchanges = localStorage.getItem("buyExchanges");
-      const initialValue = savedExchanges
-        ? JSON.parse(savedExchanges ? savedExchanges : "")
-        : "";
-      return initialValue;
+      return savedExchanges ? JSON.parse(savedExchanges) : [];
     }
 
-    return ActiveExchanges;
+    return ActiveExchanges ? ActiveExchanges : [];
   });
 
-  const [sellExchanges, setSellExchanges] = useState<string[]>(() => {
+  const [sellExchanges, setSellExchanges] = useState<
+    Array<{ name: string; image_url: string }>
+  >(() => {
     if (typeof window !== "undefined") {
       const savedExchanges = localStorage.getItem("sellExchanges");
-      const initialValue = savedExchanges
-        ? JSON.parse(savedExchanges ? savedExchanges : "")
-        : "";
-      return initialValue;
+      return savedExchanges ? JSON.parse(savedExchanges) : [];
     }
 
-    return ActiveExchanges;
+    return ActiveExchanges ? ActiveExchanges : [];
   });
+  const [sidebarClickCount, setSidebarClickCount] = useState(0);
+
+  const clickOnSidebar = () => {
+    setSidebarClickCount((prevCount) => prevCount + 1);
+  };
 
   const updateMutation = trpc.useMutation("user.updateUserDollarValue");
 
@@ -69,6 +79,20 @@ const Monitoring: NextPage = () => {
   ]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedBuyExchanges = localStorage.getItem("buyExchanges");
+      if (savedBuyExchanges) {
+        setBuyExchanges(JSON.parse(savedBuyExchanges));
+      }
+
+      const savedSellExchanges = localStorage.getItem("sellExchanges");
+      if (savedSellExchanges) {
+        setSellExchanges(JSON.parse(savedSellExchanges));
+      }
+    }
+  }, [sidebarClickCount]);
+
+  useEffect(() => {
     if (!queryInfo.data) {
       queryInfo.refetch();
     }
@@ -76,12 +100,20 @@ const Monitoring: NextPage = () => {
 
   const user = queryInfo.data;
 
+  const buyExchangesName = Array.isArray(buyExchanges)
+    ? buyExchanges.map((e) => e.name)
+    : [];
+
+  const sellExchangesName = Array.isArray(sellExchanges)
+    ? sellExchanges.map((e) => e.name)
+    : [];
+
   const { refetch, data, isLoading, isFetching } = trpc.useQuery(
     [
       "orderBook.getAll",
       {
-        buyExchanges,
-        sellExchanges,
+        buyExchanges: buyExchangesName ?? undefined,
+        sellExchanges: sellExchangesName ?? undefined,
         email: userEmail ?? undefined,
       },
     ],
@@ -91,7 +123,6 @@ const Monitoring: NextPage = () => {
         if (failureCount > 3) {
           return false;
         }
-        // console.log(error);
         return true;
       },
       keepPreviousData: true,
@@ -105,7 +136,6 @@ const Monitoring: NextPage = () => {
         if (!isFetching) {
           refetch();
         }
-        // console.log(error);
       },
     }
   );
@@ -126,48 +156,19 @@ const Monitoring: NextPage = () => {
     }
   }, [sellExchanges]);
 
-  const onSelectBuyExchange = useCallback((exchange: string) => {
-    setBuyExchanges((exchanges) => {
-      if (exchanges === undefined) exchanges = [];
-      const newExchanges = [...exchanges];
-      const i = newExchanges.indexOf(exchange);
-      if (i === -1) {
-        newExchanges.push(exchange);
-      } else {
-        newExchanges.splice(i, 1);
-      }
-
-      return newExchanges;
-    });
-  }, []);
-
   // Mobile
   const onSelectBuyExchangeMobile = useCallback(
     (selectedExchanges: readonly Exchange[]) => {
       if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map(
-          (exchange) => exchange.name
-        );
+        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
+          name: exchange.name,
+          image_url: exchange.image_url as string,
+        }));
         setBuyExchanges(selectedExchangesNames);
       }
     },
     []
   );
-
-  const onSelectSellExchange = useCallback((exchange: string) => {
-    setSellExchanges((exchanges) => {
-      if (exchanges === undefined) exchanges = [];
-      const newExchanges = [...exchanges];
-      const i = newExchanges.indexOf(exchange);
-      if (i === -1) {
-        newExchanges.push(exchange);
-      } else {
-        newExchanges.splice(i, 1);
-      }
-
-      return newExchanges;
-    });
-  }, []);
 
   useEffect(() => {
     if (dolarValue === 0) {
@@ -190,7 +191,6 @@ const Monitoring: NextPage = () => {
       if (user) {
         const newDolar =
           isNaN(numValue) || numValue === 0 ? dollarPrice : numValue;
-        console.log(newDolar);
         updateMutation.mutate(
           {
             id: String(user?.id),
@@ -211,10 +211,11 @@ const Monitoring: NextPage = () => {
   const onSelectSellExchangeMobile = useCallback(
     (selectedExchanges: readonly Exchange[]) => {
       if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map(
-          (exchange) => exchange.name
-        );
-        setSellExchanges(selectedExchangesNames);
+        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
+          name: exchange.name,
+          image_url: exchange.image_url as string,
+        }));
+        setBuyExchanges(selectedExchangesNames);
       }
     },
     []
@@ -240,8 +241,6 @@ const Monitoring: NextPage = () => {
       return false;
     });
 
-  console.log(buyExchanges);
-
   return (
     <>
       <Head>
@@ -254,7 +253,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Compra</span>
           <BuyExchangeMobile
             defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={buyExchanges || []}
+            selectedExchanges={buyExchangesName || []}
             onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
             isLoading={isLoading}
           />
@@ -263,7 +262,7 @@ const Monitoring: NextPage = () => {
           <span>Exchanges Venda</span>
           <SellExchangeMobile
             defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={sellExchanges || []}
+            selectedExchanges={sellExchangesName || []}
             onSelectSellExchangeMobile={onSelectSellExchangeMobile}
             isLoading={isLoading}
           />
@@ -285,73 +284,74 @@ const Monitoring: NextPage = () => {
             />
           )}
         </>
+        <div className={styles.backgroundmMonitor}>
+          <div
+            className={`${styles.content} container`}
+            onClick={clickOnSidebar}
+          >
+            <Sidebar
+              dollarPrice={dollarPrice}
+              defaultExchanges={ActiveExchanges || []}
+              buyExchanges={buyExchanges || []}
+              sellExchanges={sellExchanges || []}
+              onChangeDolar={onChangeDolar}
+              dolarValue={dolarValue as number}
+            />
+            <main>
+              <h1>
+                {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
+              </h1>
 
-        <div className={`${styles.content} container`}>
-          <Sidebar
-            dollarPrice={dollarPrice}
-            defaultExchanges={ActiveExchanges || []}
-            buyExchanges={buyExchanges || []}
-            sellExchanges={sellExchanges || []}
-            onSelectBuyExchange={onSelectBuyExchange}
-            onSelectSellExchange={onSelectSellExchange}
-            onChangeDolar={onChangeDolar}
-            dolarValue={dolarValue as number}
-          />
-          <main>
-            <h1>
-              {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
-            </h1>
-
-            {isLoading ||
-            loadingDolarChange ||
-            data?.length === 0 ||
-            sortedOperations?.length === 0 ? (
-              <div className={styles.loading}>
-                <PacmanLoader
-                  size="3rem"
-                  className={styles.loader}
-                  color="#957dff"
-                />
-              </div>
-            ) : (
-              <div className={styles.operations}>
-                {sortedOperations?.map(
-                  (operation) =>
-                    operation && (
-                      <OperationCard
-                        key={operation.coin}
-                        coin={{
-                          image: operation.coinImage,
-                          name: operation.coin,
-                          ask: {
-                            exchange: operation.lowestAsk.exchange,
-                            image_url: operation.lowestAsk.image_url,
-                            price: operation.lowestAsk.price,
-                            isUSD: operation.lowestAsk.isUSD,
-                          },
-                          bid: {
-                            exchange: operation.highestBid.exchange,
-                            image_url: operation.highestBid.image_url,
-                            price: operation.highestBid.price,
-                            isUSD: operation.highestBid.isUSD,
-                          },
-                          fee: operation.fee,
-                          tax: operation.tax,
-                          symbol: operation.ticker,
-                          spread: operation.spread,
-                        }}
-                        dollarPrice={dollarPrice}
-                        onClick={() => {
-                          setSelectedOperation(operation);
-                          // console.log(sortedOperations)
-                          setModalOpenOrderBook(true);
-                        }}
-                      />
-                    )
-                )}
-              </div>
-            )}
-          </main>
+              {isLoading ||
+              loadingDolarChange ||
+              data?.length === 0 ||
+              sortedOperations?.length === 0 ? (
+                <div className={styles.loading}>
+                  <PacmanLoader
+                    size="3rem"
+                    className={styles.loader}
+                    color="#957dff"
+                  />
+                </div>
+              ) : (
+                <div className={styles.operations}>
+                  {sortedOperations?.map(
+                    (operation) =>
+                      operation && (
+                        <OperationCard
+                          key={operation.coin}
+                          coin={{
+                            image: operation.coinImage,
+                            name: operation.coin,
+                            ask: {
+                              exchange: operation.lowestAsk.exchange,
+                              image_url: operation.lowestAsk.image_url,
+                              price: operation.lowestAsk.price,
+                              isUSD: operation.lowestAsk.isUSD,
+                            },
+                            bid: {
+                              exchange: operation.highestBid.exchange,
+                              image_url: operation.highestBid.image_url,
+                              price: operation.highestBid.price,
+                              isUSD: operation.highestBid.isUSD,
+                            },
+                            fee: operation.fee,
+                            tax: operation.tax,
+                            symbol: operation.ticker,
+                            spread: operation.spread,
+                          }}
+                          dollarPrice={dollarPrice}
+                          onClick={() => {
+                            setSelectedOperation(operation);
+                            setModalOpenOrderBook(true);
+                          }}
+                        />
+                      )
+                  )}
+                </div>
+              )}
+            </main>
+          </div>
         </div>
       </div>
     </>

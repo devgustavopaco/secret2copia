@@ -85,16 +85,6 @@ const AdminUsers: NextPage = () => {
     platinum: boolean,
     image?: File | null
   ) => {
-    console.log("handleUserCreate called with", {
-      name,
-      email,
-      phone,
-      pricePaid,
-      password,
-      dolarValue,
-      image,
-    });
-
     let imageUrl;
     let ip = "";
     if (image) {

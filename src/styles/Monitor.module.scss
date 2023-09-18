@@ -1,12 +1,27 @@
+.backgroundmMonitor {
+  background-image: url("/images/teste.png");
+  // position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-position: center;
+  background-repeat: repeat;
+  background-size: cover;
+  // z-index: 9999999999;
+  overflow: hidden;
+}
+
 .content {
   display: flex;
-  margin-top: 25px;
+  overflow-y: auto;
   padding-block: 2rem;
+  max-height: 100vh;
   gap: 1.75rem;
   align-items: flex-start;
   flex-direction: column;
-
   margin-inline: auto;
+  min-height: 100vh;
 
   main {
     flex: 1;
@@ -16,7 +31,9 @@
       display: flex;
       align-items: center;
       position: absolute;
-      top: 18.5%;
+      top: 27;
+      z-index: 1;
+      margin-top: 15px;
       justify-content: space-between;
 
       @media screen and (max-width: 968px) {
@@ -44,6 +61,8 @@
   gap: 1rem 2rem;
 
   margin-top: 1rem;
+  // max-height: calc(1853px - 4.9rem - 104px);
+  overflow-y: auto;
 }
 
 .loading {

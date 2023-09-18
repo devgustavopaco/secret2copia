@@ -73,8 +73,6 @@ export function Header() {
     roleName = "Platinum";
   }
 
-  console.log(user.data, roleName);
-
   return (
     <header className={styles.header}>
       <div className="container">
