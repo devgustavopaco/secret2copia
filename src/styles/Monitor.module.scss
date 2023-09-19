@@ -1,5 +1,5 @@
 .backgroundmMonitor {
-  background-image: url("/images/teste.png");
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/teste.png?alt=media&token=d2a38a91-9767-42d7-9a0c-92efe528221f");
   // position: fixed;
   top: 0;
   bottom: 0;
@@ -10,6 +10,10 @@
   background-size: cover;
   // z-index: 9999999999;
   overflow: hidden;
+
+  @media only screen and (max-width: 768px) {
+    background: var(--gray-900);
+  }
 }
 
 .content {
@@ -129,5 +133,9 @@
 
   @media screen and (min-width: 968px) {
     display: none;
+  }
+
+  @media only screen and (max-width: 768px) {
+    background: var(--gray-900);
   }
 }
