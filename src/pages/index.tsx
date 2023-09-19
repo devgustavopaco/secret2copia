@@ -4,14 +4,13 @@ import type { GetServerSideProps, NextPage } from "next";
 import { unstable_getServerSession } from "next-auth/next";
 import { signIn } from "next-auth/react";
 import Router from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   GoogleReCaptchaProvider,
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
 import { toast } from "react-toastify";
 
-import Image from "next/image";
 import Link from "next/link";
 import { XCircle } from "phosphor-react";
 import styles from "../styles/Login.module.scss";
@@ -35,25 +34,6 @@ const Login: NextPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [backgroundIndex, setBackgroundIndex] = useState(1);
-
-  const backgrounds = [
-    "/images/login.png",
-    "/images/login2.png",
-    "/images/login3.png",
-  ];
-
-  const handleBackgroundChange = useCallback(() => {
-    setBackgroundIndex(
-      (backgroundIndex) => (backgroundIndex + 1) % backgrounds.length
-    );
-  }, []);
-
-  useEffect(() => {
-    const intervalId = setInterval(handleBackgroundChange, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [handleBackgroundChange]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -97,11 +77,6 @@ const Login: NextPage = () => {
   return (
     <>
       <section className={styles.body}>
-        <div style={{ display: "none" }}>
-          {backgrounds.map((bg, index) => (
-            <Image key={index} src={bg} layout="fill" />
-          ))}
-        </div>
         <section className={styles.halfLeft}>
           <div className={styles.contentBox}>
             <img src="images/logoBranca.svg" alt="Logo da nextGain" />
