@@ -15,21 +15,38 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendResetPasswordEmail(
-  email: string,
-  newPassword: string
-) {
+export async function sendResetPasswordEmail(email: string, password: string) {
   const mailOptions = {
     from: process.env.SMTP_FROM_EMAIL,
     to: email,
-    subject: "NextGain - Sua solicitação de redefinição de senha",
-    text: `Prezado usuário da NextGain,\n\nRecebemos uma solicitação para redefinir sua senha. Sua nova senha é:\n\n${newPassword}\n\nFaça o login com esta nova senha e altere-a imediatamente. Se você não solicitou uma redefinição de senha, entre em contato com nossa equipe de suporte.\n\nAtenciosamente,\nEquipe NextGain`,
+    subject: "Bem-vindo(a) à NextGain!",
+    text: `Prezado(a) usuário(a) da NextGain,
+
+É com grande prazer que lhe damos as boas-vindas à maior plataforma de arbitragem manual do Brasil!
+
+Aqui estão suas informações de acesso:
+Nome de Usuário: ${email}
+Senha Temporária: ${password}
+
+Passo Importante: Altere sua Senha
+// ... (you can continue the text version here)`,
     html: `
-            <p>Prezado usuário da NextGain,</p>
-            <p>Recebemos uma solicitação para redefinir sua senha. Sua nova senha é:</p>
-            <p><strong>${newPassword}</strong></p>
-            <p>Faça o login com esta nova senha e altere-a imediatamente. Se você não solicitou uma redefinição de senha, entre em contato com nossa equipe de suporte.</p>
-            <p>Atenciosamente,<br>NextGain</p>
+            <p>Prezado(a) usuário(a) da NextGain,</p>
+            <p>É com grande prazer que lhe damos as boas-vindas à maior plataforma de arbitragem manual do Brasil!</p>
+            <p>Aqui estão suas informações de acesso:</p>
+            <p>Nome de Usuário: <strong>${email}</strong></p>
+            <p>Senha Temporária: <strong>${password}</strong></p>
+            <p><strong>Passo Importante: Altere sua Senha</strong></p>
+            <p>Para garantir a segurança da sua conta, recomendamos que você altere sua senha imediatamente após o primeiro login. Para fazer isso, siga estas etapas simples:</p>
+            <ul>
+              <li>Acesse nextgain.com.br</li>
+              <li>Faça login com o nome de usuário fornecido acima e a senha temporária.</li>
+              <li>Crie uma nova senha na área de privacidade, que seja segura e exclusiva para a sua conta.</li>
+            </ul>
+            <p>Se por algum motivo você não solicitou essas credenciais, entre em contato imediatamente com nossa equipe de suporte para investigarmos qualquer atividade suspeita em sua conta.</p>
+            <p>Estamos empolgados em tê-lo(a) conosco na NextGain e esperamos que você aproveite ao máximo nossa plataforma!</p>
+            <p>Se você tiver alguma dúvida ou precisar de assistência, não hesite em nos contatar a qualquer momento. Eu estarei à disposição para ajudar.</p>
+            <p>Atenciosamente,<br>Gustavo Nigre<br>CEO & Founder<br>NextGain</p>
         `,
   };
 

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
-import styles from "../styles/Home.module.scss";
-import { Header } from "../components/Header";
-import { Swiper, SwiperSlide } from "swiper/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Navigation } from "swiper";
 import "swiper/css";
 import "swiper/css/pagination";
-import { Navigation } from "swiper";
-import Link from "next/link";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Header } from "../components/Header";
+import styles from "../styles/Home.module.scss";
 
 const Home: NextPage = () => {
   const [slidesPerView, setSlidesPerView] = useState(5);
@@ -89,8 +89,8 @@ const Home: NextPage = () => {
               {" "}
               <Link href="/videos/cl9elp8r7006709l1jdsyo8jg">
                 <img
-                  src="images/bannersModulos/entendendoNextGain.png"
-                  alt="Entendendo a Next Gain"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/mundodascrypto.webp?alt=media&token=5acd6d32-c9fa-4c2a-bda4-8e1cd576aa1e"
+                  alt="Mundo das cryptos"
                 />
               </Link>
             </SwiperSlide>
@@ -98,8 +98,8 @@ const Home: NextPage = () => {
               {" "}
               <Link href="/videos/cl9ely3ir013609l1e4bew8qi">
                 <img
-                  src="images/bannersModulos/criacaoDeConta.png"
-                  alt="criação de conta"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/oqeharbitragem.webp?alt=media&token=2965c9e4-d7e5-486c-9654-350eacc69ace"
+                  alt="O que eh arbitragem"
                 />
               </Link>
             </SwiperSlide>
@@ -113,10 +113,11 @@ const Home: NextPage = () => {
               </Link>
             </SwiperSlide>
             <SwiperSlide>
+              {" "}
               <Link href="/videos/cl9em2mz2024109l1slmmabkr">
                 <img
-                  src="images/bannersModulos/corretoras.png"
-                  alt="Corretoras"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/emailseguro.webp?alt=media&token=1c3fb461-4df9-4647-a5ee-c9839d380a86"
+                  alt="Email seguro"
                 />
               </Link>
             </SwiperSlide>
@@ -124,8 +125,8 @@ const Home: NextPage = () => {
               {" "}
               <Link href="/videos/cl9em32qy025409l133i46mil">
                 <img
-                  src="images/bannersModulos/transferenciaESaque.png"
-                  alt="Transferencia e saque"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/criandocontas.webp?alt=media&token=4b4c9b4f-e28c-4128-b64f-93c048f4ba73"
+                  alt="Abrindo conta"
                 />
               </Link>
             </SwiperSlide>
@@ -133,8 +134,8 @@ const Home: NextPage = () => {
               {" "}
               <Link href="/videos/cl9em4tlp012409l23qnhwai5">
                 <img
-                  src="images/bannersModulos/operandoNaPratica.png"
-                  alt="Operando na prática"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/navegando.webp?alt=media&token=69826d5d-95ca-4b47-a744-d1785e6e7689"
+                  alt="Navegando nas corretoras"
                 />
               </Link>
             </SwiperSlide>
@@ -142,8 +143,71 @@ const Home: NextPage = () => {
               {" "}
               <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
                 <img
-                  src="images/bannersModulos/dicasSecretas.png"
-                  alt="Dicas secretas"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/operandonascorretoras.webp?alt=media&token=c1a62982-06a1-42d2-8b40-80a76f0ff83c"
+                  alt="Operando nas corretoras"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/transferenciasedepositos.webp?alt=media&token=3683fc0f-c7f3-4e6d-9797-debf8c3661d0"
+                  alt="Transferencias e depositos"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/exercicios.webp?alt=media&token=6eba82a6-7430-4092-94cd-9843a4fca959"
+                  alt="Exercicios praticos"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/plataformaarbitragem.webp?alt=media&token=3dbe5230-2ae4-4e5b-af3d-6f2237c2c832"
+                  alt="Plataforma de arbitragem"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/operandonocelular.webp?alt=media&token=c1657de0-b46f-495c-bc57-2b1c51fd6355"
+                  alt="Operando no celular"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/minimizandoriscos.webp?alt=media&token=b5d82bc7-d5d9-4496-8e05-b1e8637d8976"
+                  alt="Minimizando os riscos"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/dicas%20e%20bonus.webp?alt=media&token=8939a09a-427d-425e-aeef-4e3bfa903704"
+                  alt="Dicas e Bonus"
+                />
+              </Link>
+            </SwiperSlide>
+            <SwiperSlide>
+              {" "}
+              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/conclusao.webp?alt=media&token=3f858906-cd17-4df5-895a-0adc2fdd875f"
+                  alt="Dicas e Bonus"
                 />
               </Link>
             </SwiperSlide>
