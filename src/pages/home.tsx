@@ -80,7 +80,7 @@ const Home: NextPage = () => {
             <SwiperSlide>
               <Link href="/videos/cl9ellbn4000209l1gnc9wslt">
                 <img
-                  src="images/bannersModulos/boasVindas.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/newboasvindas.webp?alt=media&token=e0081a11-3c7d-4d98-a439-8bbf4c6b4aa2"
                   alt="Boas vindas"
                 />
               </Link>
@@ -96,22 +96,14 @@ const Home: NextPage = () => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <Link href="/videos/cl9ely3ir013609l1e4bew8qi">
+              <Link href="/videos/cl9em0t6n018509l14gmsjjib">
                 <img
                   src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/oqeharbitragem.webp?alt=media&token=2965c9e4-d7e5-486c-9654-350eacc69ace"
                   alt="O que eh arbitragem"
                 />
               </Link>
             </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9em0t6n018509l14gmsjjib">
-                <img
-                  src="images/bannersModulos/entendendoOMonitor.png"
-                  alt="Entendendo o monitor"
-                />
-              </Link>
-            </SwiperSlide>
+
             <SwiperSlide>
               {" "}
               <Link href="/videos/cl9em1ux1022809l18972cfrx">
