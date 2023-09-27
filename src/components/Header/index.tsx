@@ -149,7 +149,7 @@ export function Header() {
           </Link>
           <a
             className={styles.menuItem}
-            href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+            href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -225,7 +225,7 @@ export function Header() {
             <li>
               <a
                 target="_blank"
-                href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+                href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
                 rel="noopener noreferrer"
               >
                 Contato
@@ -311,7 +311,7 @@ export function Header() {
           <li>
             <a
               target="_blank"
-              href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+              href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
               rel="noopener noreferrer"
             >
               Contato
