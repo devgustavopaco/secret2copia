@@ -215,7 +215,7 @@ const Monitoring: NextPage = () => {
           name: exchange.name,
           image_url: exchange.image_url as string,
         }));
-        setBuyExchanges(selectedExchangesNames);
+        setSellExchanges(selectedExchangesNames);
       }
     },
     []
