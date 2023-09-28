@@ -111,19 +111,19 @@ export const modules = [
       },
       {
         id: 2,
-        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras BINANCE",
+        title: "Criando conta na BINANCE",
         url: "/videos/cl9em3fgp026709l11em46dsn",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
       {
         id: 3,
-        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras MERCADO BITCOIN",
+        title: "Criando conta no MERCADO BITCOIN",
         url: "/videos/cl9em3w34028009l12p0l2er2",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
       {
         id: 4,
-        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras CHILLIZ",
+        title: "Criando conta na CHILLIZ",
         url: "/videos/cl9em4hrb010909l2rqf0kj2q",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
