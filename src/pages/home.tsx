@@ -115,7 +115,7 @@ const Home: NextPage = () => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <Link href="">
+              <Link href="/videos/cl9em32qy025409l133i46mil">
                 <img
                   src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/criandocontas.webp?alt=media&token=4b4c9b4f-e28c-4128-b64f-93c048f4ba73"
                   alt="Abrindo conta"
