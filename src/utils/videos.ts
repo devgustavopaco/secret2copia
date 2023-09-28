@@ -105,26 +105,32 @@ export const modules = [
     videos: [
       {
         id: 1,
-        title: "Passo a passo para criar contas em corretoras! ",
+        title: "BÔNUS DE INDICAÇÃO",
         url: "/videos/cl9em32qy025409l133i46mil",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
       {
         id: 2,
         title: "Criando conta, verificação de identidade e configurando segurança nas corretoras BINANCE",
-        url: "/videos/cl9em32qy025409l133i46mil",
-        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
-      },
-      {
-        id: 3,
-        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras CHILIZ",
         url: "/videos/cl9em3fgp026709l11em46dsn",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
       {
-        id: 4,
-        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras MERCADOBITCOIN",
+        id: 3,
+        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras MERCADO BITCOIN",
         url: "/videos/cl9em3w34028009l12p0l2er2",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 4,
+        title: "Criando conta, verificação de identidade e configurando segurança nas corretoras CHILLIZ",
+        url: "/videos/cl9em4hrb010909l2rqf0kj2q",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 5,
+        title: "Contas Criadas",
+        url: "/videos/cln3hvjjk0066p69ma9imj83q",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
     ],
@@ -217,14 +223,38 @@ export const modules = [
   },
   {
     id: 10,
-    moduleTitle: "Módulo 10 - Uso da Plataforma para Arbitragem (EM BREVE)",
+    moduleTitle: "Módulo 10 - Uso da Plataforma para Arbitragem ",
     thumbnail: "images/bannersModulos/dicasSecretas.png",
     link: "/videos/cl9elr6r3000909l2ktyyup5v",
     videos: [
       {
         id: 1,
-        title: "Processo de Saque/Transferencia de Criptomoedas",
-        url: "/videos/cl9elr6r3000909l2ktyyup5v",
+        title: "Conhecendo a Plataforma",
+        url: "/videos/clmt7jl02000cp6a8yrazj36y",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 2,
+        title: "Conhecendo o Monitor de Operações",
+        url: "/videos/clmt7jv45000dp6a8lttv544t",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 3,
+        title: "Analisando o Orderbook da Plataforma",
+        url: "/videos/clmt7k1t2000ep6a8jdx1kgns",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 4,
+        title: "Operando na Prática",
+        url: "/videos/clmt7kb31000fp6a8v87jdzee",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+      {
+        id: 5,
+        title: "Hora de Descansar",
+        url: "/videos/clmt7kgqy000gp6a8ueufwy7m",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
     ],
