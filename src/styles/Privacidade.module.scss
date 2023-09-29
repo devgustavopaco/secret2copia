@@ -1,18 +1,32 @@
 .modalBackground {
   width: 100vw;
-  height: 80vh;
+  height: 100vh;
   position: fixed;
   display: flex;
   padding-inline: 2rem;
   justify-content: center;
   align-items: center;
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/privacidadebanner.webp?alt=media&token=a2a117bb-a1e1-4ee3-833b-304f47c16102&_gl=1*wo3acd*_ga*MTI4MjkzNjc3Ni4xNjg2NjAyODU3*_ga_CW55HF8NVT*MTY5NjAxNDgxNC4zMC4xLjE2OTYwMTQ4MzkuMzUuMC4w");
+  // position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-position: center;
+  background-repeat: repeat;
+  background-size: cover;
+  z-index: -1;
+  overflow: hidden;
+  position: fixed;
 }
 
 .modalContainer {
   width: 400px;
   height: auto;
-  border-radius: 6.31px;
-  background: #21202d;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   display: flex;
   flex-direction: column;
@@ -40,7 +54,7 @@
     border: none;
     border-radius: 8px;
     padding-left: 1rem;
-    background-color: #3a3847;
+    background: rgba(58, 56, 71, 0.6);
     color: var(--gray-100);
     margin-bottom: 1rem;
   }

@@ -138,6 +138,15 @@ export function Header() {
               Mentoria
             </a>
           </Link>
+          <Link href="https://docs.google.com/spreadsheets/u/0/d/1-uxKr9Y1UcPQ0yHd9DwomqTAQFKvQgUQurgjtrXZbhE/edit?usp=sharing&pli=1">
+            <a
+              className={`${styles.menuItem} ${
+                router.pathname === "/planilha" ? styles.active : ""
+              }`}
+            >
+              Planilha
+            </a>
+          </Link>
           <Link href="/privacidade">
             <a
               className={`${styles.menuItem} ${
@@ -210,6 +219,13 @@ export function Header() {
               <Link href="/videos">
                 <a className={router.pathname === "/mentoria" ? "active" : ""}>
                   Mentoria
+                </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="https://docs.google.com/spreadsheets/u/0/d/1-uxKr9Y1UcPQ0yHd9DwomqTAQFKvQgUQurgjtrXZbhE/edit?usp=sharing&pli=1">
+                <a className={router.pathname === "/planilha" ? "active" : ""}>
+                  Planilha
                 </a>
               </Link>
             </li>

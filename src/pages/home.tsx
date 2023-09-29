@@ -229,7 +229,7 @@ const Home: NextPage = () => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <Link href="https://docs.google.com/spreadsheets/d/1LQs3WQZd1p92-uVJjBWN2oSMAAUx3Pq79V-MOhowRUk/edit#gid=0">
+              <Link href="https://docs.google.com/spreadsheets/u/0/d/1-uxKr9Y1UcPQ0yHd9DwomqTAQFKvQgUQurgjtrXZbhE/edit?usp=sharing&pli=1">
                 <img
                   src="images/bannersModulos/planilhadeGanhos.png"
                   alt="Plahnilha de ganhos"
