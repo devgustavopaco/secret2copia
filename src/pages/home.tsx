@@ -160,9 +160,9 @@ const Home: NextPage = () => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <Link href="">
+              <Link href="/videos/clmt7jl02000cp6a8yrazj36y">
                 <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/plataformaarbitragem.webp?alt=media&token=3dbe5230-2ae4-4e5b-af3d-6f2237c2c832"
+                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/modulo10.png?alt=media&token=a694cae3-9f66-4146-902b-f66e8fb63b69&_gl=1*1n76p48*_ga*MTI4MjkzNjc3Ni4xNjg2NjAyODU3*_ga_CW55HF8NVT*MTY5NTk1ODUzNS4yOC4xLjE2OTU5NTg1NjcuMjguMC4w"
                   alt="Plataforma de arbitragem"
                 />
               </Link>
