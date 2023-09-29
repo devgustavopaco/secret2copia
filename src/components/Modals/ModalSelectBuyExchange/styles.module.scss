@@ -2,6 +2,7 @@
   background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/modalBackground.png?alt=media&token=f2af2822-7cb4-406c-8135-632422021ac5");
   position: fixed;
   top: 0;
+  height: 100vh;
   bottom: 0;
   right: 0;
   left: 0;
@@ -16,6 +17,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 100vh;
+  z-index: 999999;
 
   padding-bottom: 200px;
   margin-top: 20px;

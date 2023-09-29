@@ -7,6 +7,8 @@ import styles from "./styles.module.scss";
 interface SidebarProps {
   dollarPrice?: number;
   defaultExchanges: Exchange[];
+
+  onModalChange: (state: boolean) => void;
   buyExchanges: { name: string; image_url: string }[];
   sellExchanges: { name: string; image_url: string }[];
   onChangeDolar: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -19,6 +21,7 @@ export function Sidebar({
   onChangeDolar,
   buyExchanges,
   sellExchanges,
+  onModalChange,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
 
@@ -26,6 +29,7 @@ export function Sidebar({
 
   const toggleModalBuy = (operation: string) => {
     setIsModalBuyOpen(!isModalBuyOpen);
+    onModalChange(!isModalBuyOpen);
     setCurrentOperation(operation);
   };
 
@@ -58,7 +62,10 @@ export function Sidebar({
       {isModalBuyOpen ? (
         <FullScreenModal
           operation={currentOperation}
-          onClose={() => setIsModalBuyOpen(false)}
+          onClose={() => {
+            setIsModalBuyOpen(false);
+            onModalChange(false);
+          }}
         />
       ) : (
         <></>

@@ -22,6 +22,12 @@ import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 const Monitoring: NextPage = () => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
+  const [modalState, setModalState] = useState(false);
+
+  const handleModalState = (state: boolean) => {
+    setModalState(state);
+  };
+
   useEffect(() => {
     document.body.style.background = "rgba(13, 15, 18, 0.721)";
 
@@ -241,6 +247,8 @@ const Monitoring: NextPage = () => {
       return false;
     });
 
+  console.log(modalState);
+
   return (
     <>
       <Head>
@@ -248,7 +256,7 @@ const Monitoring: NextPage = () => {
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
-        <Header />
+        {modalState ? <></> : <Header />}
         <div className={styles.mobileFilter}>
           <span>Exchanges Compra</span>
           <BuyExchangeMobile
@@ -296,6 +304,7 @@ const Monitoring: NextPage = () => {
               sellExchanges={sellExchanges || []}
               onChangeDolar={onChangeDolar}
               dolarValue={dolarValue as number}
+              onModalChange={handleModalState}
             />
             <main>
               <h1>

@@ -240,7 +240,7 @@ const Home: NextPage = () => {
               {" "}
               <a
                 target="_blank"
-                href="https://api.whatsapp.com/send?phone=5511973592971&text=Fala%20Gu%2C%20preciso%20de%20suporte!%20"
+                href="https://api.whatsapp.com/send/?phone=5511948410665&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
                 rel="noopener noreferrer"
               >
                 {" "}
