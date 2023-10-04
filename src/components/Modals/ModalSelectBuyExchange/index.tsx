@@ -17,34 +17,40 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
     }
   );
 
+  const [user, setUser] = useState<any>(null);
   const [groupedExchanges, setGroupedExchanges] = useState<Record<string, any>>(
     {}
   );
   const [selectedExchanges, setSelectedExchanges] = useState<any[]>(() => {
-    if (typeof window !== "undefined") {
-      const storedData = localStorage.getItem(
-        operation === "compra" ? "buyExchanges" : "sellExchanges"
-      );
-      const parsedData = storedData ? JSON.parse(storedData) : [];
-      return Array.isArray(parsedData) ? parsedData : [];
-    }
-    return [];
+    const storedData = localStorage.getItem(
+      operation === "compra" ? "buyExchanges" : "sellExchanges"
+    );
+    return storedData ? JSON.parse(storedData) : [];
   });
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    const storedUserData = localStorage.getItem("user");
+    setUser(storedUserData ? JSON.parse(storedUserData) : null);
   }, []);
 
-  useEffect(() => {
-    if (!activeExchanges) return;
+  const filterByLevel = (exchange: any) => {
+    if (!user) return false;
+    if (user.roleId === "cl9lzkps90007j8u606em93nk") return true;
+    if (user.platinum && exchange.platinum) return true;
+    if (user.gold && exchange.gold) return true;
+    if (user.silver && exchange.silver) return true;
+    if (user.bronze && exchange.bronze) return true;
+    return false;
+  };
 
-    const groups = activeExchanges.reduce<Record<string, any[]>>(
+  useEffect(() => {
+    if (!activeExchanges || !user) return;
+
+    const filteredExchanges = activeExchanges.filter(filterByLevel);
+
+    const groups = filteredExchanges.reduce<Record<string, any[]>>(
       (acc, exchange) => {
         const firstLetter = exchange.name[0]!.toUpperCase();
         if (!acc[firstLetter]) {
@@ -56,28 +62,18 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
       {}
     );
     setGroupedExchanges(groups);
-  }, [activeExchanges, operation]);
+  }, [activeExchanges, user]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    if (e.target.value === "") {
-      const groups: Record<string, any[]> =
-        activeExchanges?.reduce<Record<string, any[]>>((acc, exchange) => {
-          const firstLetter = exchange.name[0]!.toUpperCase();
-          if (!acc[firstLetter]) {
-            acc[firstLetter] = [];
-          }
-          acc[firstLetter]!.push(exchange);
-          return acc;
-        }, {}) || {};
-      setGroupedExchanges(groups);
-      return;
-    }
+
+    const filterByLevelAndSearchTerm = (exchange: any) => {
+      if (!filterByLevel(exchange)) return false;
+      return exchange.name.toLowerCase().includes(e.target.value.toLowerCase());
+    };
 
     const filteredExchanges =
-      activeExchanges?.filter((exchange) =>
-        exchange.name.toLowerCase().includes(e.target.value.toLowerCase())
-      ) || [];
+      activeExchanges?.filter(filterByLevelAndSearchTerm) || [];
 
     const groups: Record<string, any[]> = filteredExchanges.reduce<
       Record<string, any[]>
@@ -89,27 +85,25 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
       acc[firstLetter]!.push(exchange);
       return acc;
     }, {});
-
     setGroupedExchanges(groups);
   };
 
   const handleAddExchangeClick = (exchange: any) => {
     setSelectedExchanges((prev) => {
-      if (prev.find((e) => e.id === exchange.id)) {
-        return prev; // Exchange is already selected, no action needed
-      }
+      if (prev.find((e) => e.id === exchange.id)) return prev;
       if (prev.length >= 4) {
-        operation == "compra"
-          ? alert("Você só pode selecionar 4 opções para compra.")
-          : alert("Você só pode selecionar 4 opções para venda.");
-        return prev; // Can't select more than 4 exchanges, no action needed
+        alert(
+          `Você só pode selecionar 4 opções para ${
+            operation === "compra" ? "compra" : "venda"
+          }.`
+        );
+        return prev;
       }
       const newSelection = [...prev, exchange];
-
-      const storageKey =
-        operation === "compra" ? "buyExchanges" : "sellExchanges";
-      localStorage.setItem(storageKey, JSON.stringify(newSelection));
-
+      localStorage.setItem(
+        operation === "compra" ? "buyExchanges" : "sellExchanges",
+        JSON.stringify(newSelection)
+      );
       return newSelection;
     });
   };
@@ -117,10 +111,10 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
   const handleRemoveExchangeClick = (exchange: any) => {
     setSelectedExchanges((prev) => {
       const newSelection = prev.filter((e) => e.id !== exchange.id);
-      const storageKey =
-        operation === "compra" ? "buyExchanges" : "sellExchanges";
-      localStorage.setItem(storageKey, JSON.stringify(newSelection));
-
+      localStorage.setItem(
+        operation === "compra" ? "buyExchanges" : "sellExchanges",
+        JSON.stringify(newSelection)
+      );
       return newSelection;
     });
   };

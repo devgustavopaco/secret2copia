@@ -67,6 +67,7 @@ export const userRouter = createRouter()
           platinum: true,
           image: true,
           dolarValue: true,
+          roleId: true,
         },
         where: {
           email: input.email,
