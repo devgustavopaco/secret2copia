@@ -104,10 +104,10 @@ export function Header() {
                   }}
                 />
               </div>
-              <span className={styles.tooltiptext}>
+              {/* <span className={styles.tooltiptext}>
                 Atualmente sua conta esta level:
                 <p style={{ color: roleColor }}>{roleName}</p>
-              </span>
+              </span> */}
             </div>
           </div>
 
@@ -279,11 +279,11 @@ export function Header() {
                 }}
               />
             </div>
-            <span className={styles.tooltiptext}>
+            {/* <span className={styles.tooltiptext}>
               Atualmente sua conta esta level:
               <br></br>
               <span style={{ color: roleColor }}>{roleName}</span>
-            </span>
+            </span> */}
           </div>
 
           <button
