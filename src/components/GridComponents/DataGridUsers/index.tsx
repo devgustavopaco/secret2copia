@@ -135,6 +135,8 @@ export function DataGridUsers({
     isLoading = true;
   };
 
+  console.log(data);
+
   return (
     <div className={styles.tableContainer}>
       <TextField

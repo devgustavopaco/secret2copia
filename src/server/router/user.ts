@@ -35,6 +35,11 @@ export const userRouter = createRouter()
           pricePaid: true,
           phone: true,
           dolarValue: true,
+          bronze: true,
+          silver: true,
+          gold: true,
+          platinum: true,
+
         },
         where: {
           email: {
