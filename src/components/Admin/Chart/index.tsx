@@ -1,14 +1,14 @@
-import styles from "./styles.module.scss";
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import styles from "./styles.module.scss";
 
 export function Chart() {
   const data = [
@@ -85,6 +85,8 @@ export function Chart() {
       amt: 2100,
     },
   ];
+
+  //teste
 
   return (
     <div className={styles.chart}>
