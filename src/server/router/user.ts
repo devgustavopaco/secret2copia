@@ -94,7 +94,7 @@ export const userRouter = createRouter()
       id: z.string(),
     }),
     async resolve({ ctx, input }) {
-      console.log("ID do usuário recebido: ", input.id); // Log do ID do usuário recebido
+      console.log("ID do usuário recebido: ", input.id);
 
       const user = await ctx.prisma.user.findUnique({
         where: {
