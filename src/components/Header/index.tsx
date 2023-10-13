@@ -104,10 +104,6 @@ export function Header() {
                   }}
                 />
               </div>
-              {/* <span className={styles.tooltiptext}>
-                Atualmente sua conta esta level:
-                <p style={{ color: roleColor }}>{roleName}</p>
-              </span> */}
             </div>
           </div>
 
