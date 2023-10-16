@@ -1,5 +1,5 @@
 import { Exchange } from "@prisma/client";
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import Select, { OnChangeValue } from "react-select";
 import styles from "./styles.module.scss";
 
@@ -75,7 +75,7 @@ export function BuyExchangeMobile({
     onSelectBuyExchangeMobile(newValue);
   };
 
-  const exchanges = defaultExchanges.filter((exchange) => {
+  const exchangesSelectedBySelect = defaultExchanges.filter((exchange) => {
     return selectedExchanges.includes(exchange.name);
   });
 
@@ -86,11 +86,36 @@ export function BuyExchangeMobile({
     return selectValue.includes(selectedOption);
   };
 
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("user");
+    if (storedUserData) {
+      try {
+        setUser(JSON.parse(storedUserData));
+      } catch (e) {
+        console.error("Invalid user data in local storage", e);
+      }
+    }
+  }, []);
+
+  const filterByLevel = (exchange: any) => {
+    if (!user) return false;
+    if (user.roleId === "cl9lzkps90007j8u606em93nk") return true;
+    if (user.platinum && exchange.platinum) return true;
+    if (user.gold && exchange.gold) return true;
+    if (user.silver && exchange.silver) return true;
+    if (user.bronze && exchange.bronze) return true;
+    return false;
+  };
+
+  const filteredDefaultExchanges = defaultExchanges.filter(filterByLevel);
+
   return (
     <>
       <Select
-        value={exchanges}
-        options={defaultExchanges}
+        value={exchangesSelectedBySelect}
+        options={filteredDefaultExchanges}
         instanceId={useId()}
         className={styles.select}
         isMulti
