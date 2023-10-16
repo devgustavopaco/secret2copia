@@ -74,6 +74,10 @@ export function SellExchangeMobile({
   const handleExchangeSellChange = (
     newValue: OnChangeValue<Exchange, true>
   ) => {
+    if (Array.isArray(newValue) && newValue.length > 4) {
+      alert("Você não pode selecionar mais de 4 corretoras para venda.");
+      return;
+    }
     onSelectSellExchangeMobile(newValue);
   };
 
