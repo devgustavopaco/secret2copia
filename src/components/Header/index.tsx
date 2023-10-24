@@ -76,35 +76,35 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className="container">
-        <Link href="/home">
-          <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img>
-        </Link>
         <img
           className={styles.hamburguer}
           src="/images/menuHamburguer.png"
           alt=""
           onClick={toggleMenu}
         />
+        <Link href="/home">
+          <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img>
+        </Link>
+        <div className={`${styles.tooltip} ${styles.mobileToolTip}`}>
+          <div className={styles.profileImage}>
+            <img
+              src={
+                user && user.data && user.data.image
+                  ? user.data.image
+                  : "images/user.png"
+              }
+              alt="foto de perfil"
+              style={{
+                borderColor: roleColor,
+              }}
+            />
+          </div>
+        </div>
 
         <div className={`${styles.menuContent} ${isOpen ? styles.open : ""}`}>
           <div className={styles.nameHamburguer}>
             <span className={styles.text}>Olá</span>
             <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
-            <div className={styles.tooltip}>
-              <div className={styles.profileImage}>
-                <img
-                  src={
-                    user && user.data && user.data.image
-                      ? user.data.image
-                      : "images/user.png"
-                  }
-                  alt="foto de perfil"
-                  style={{
-                    borderColor: roleColor,
-                  }}
-                />
-              </div>
-            </div>
           </div>
 
           <Link href="/home">
@@ -275,11 +275,6 @@ export function Header() {
                 }}
               />
             </div>
-            {/* <span className={styles.tooltiptext}>
-              Atualmente sua conta esta level:
-              <br></br>
-              <span style={{ color: roleColor }}>{roleName}</span>
-            </span> */}
           </div>
 
           <button

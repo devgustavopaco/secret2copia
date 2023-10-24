@@ -4,7 +4,7 @@ import { BeatLoader } from "react-spinners";
 import { FullScreenModal } from "../Modals/ModalSelectBuyExchange";
 import styles from "./styles.module.scss";
 
-interface SidebarProps {
+export interface SidebarProps {
   dollarPrice?: number;
   defaultExchanges: Exchange[];
 

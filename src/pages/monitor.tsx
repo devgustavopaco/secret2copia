@@ -247,6 +247,11 @@ const Monitoring: NextPage = () => {
       return false;
     });
 
+  const numberFormatter = new Intl.NumberFormat("pt-BR", {
+    style: "decimal",
+    maximumFractionDigits: 3,
+  });
+
   console.log(modalState);
 
   return (
@@ -257,24 +262,7 @@ const Monitoring: NextPage = () => {
       </Head>
       <div>
         {modalState ? <></> : <Header />}
-        <div className={styles.mobileFilter}>
-          <span>Exchanges Compra</span>
-          <BuyExchangeMobile
-            defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={buyExchangesName || []}
-            onSelectBuyExchangeMobile={onSelectBuyExchangeMobile}
-            isLoading={isLoading}
-          />
-        </div>
-        <div className={styles.mobileFilter}>
-          <span>Exchanges Venda</span>
-          <SellExchangeMobile
-            defaultExchanges={ActiveExchanges || []}
-            selectedExchanges={sellExchangesName || []}
-            onSelectSellExchangeMobile={onSelectSellExchangeMobile}
-            isLoading={isLoading}
-          />
-        </div>
+
         <>
           {modalOpenOrderBook && (
             <ModalOrderBook
@@ -297,6 +285,69 @@ const Monitoring: NextPage = () => {
             className={`${styles.content} container`}
             onClick={clickOnSidebar}
           >
+            {modalState ? (
+              <></>
+            ) : (
+              <div className={styles.dolarBlock}>
+                <span>Operações</span>
+                <div className={styles.dolarBlockContent}>
+                  <span>cotação do dólar</span>
+                  <div className={styles.dolarContainer}>
+                    <p>
+                      {dollarPrice ? (
+                        <>
+                          <span>R$</span>{" "}
+                          {numberFormatter.format(dollarPrice ?? -1)}
+                        </>
+                      ) : (
+                        <BeatLoader color="#969696" size="0.5rem" />
+                      )}
+                    </p>
+
+                    {dollarPrice ? (
+                      <div>
+                        <span>R$</span>
+                        <input
+                          className={styles.dolarLabel}
+                          type="number"
+                          value={dolarValue}
+                          onChange={onChangeDolar}
+                          style={{ textAlign: "center" }}
+                          placeholder="Valor do Dólar"
+                        />
+                      </div>
+                    ) : (
+                      <BeatLoader color="#969696" size="0.5rem" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
+              <span>Exchanges Compra</span>
+              <BuyExchangeMobile
+                dollarPrice={dollarPrice}
+                defaultExchanges={ActiveExchanges || []}
+                buyExchanges={buyExchanges || []}
+                sellExchanges={sellExchanges || []}
+                onChangeDolar={onChangeDolar}
+                dolarValue={dolarValue as number}
+                onModalChange={handleModalState}
+              />
+            </div>
+
+            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
+              <span>Exchanges Venda</span>
+              <SellExchangeMobile
+                dollarPrice={dollarPrice}
+                defaultExchanges={ActiveExchanges || []}
+                buyExchanges={buyExchanges || []}
+                sellExchanges={sellExchanges || []}
+                onChangeDolar={onChangeDolar}
+                dolarValue={dolarValue as number}
+                onModalChange={handleModalState}
+              />
+            </div>
             <Sidebar
               dollarPrice={dollarPrice}
               defaultExchanges={ActiveExchanges || []}

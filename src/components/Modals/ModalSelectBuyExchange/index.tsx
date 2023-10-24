@@ -10,6 +10,7 @@ interface ModalExchange {
 }
 
 export function FullScreenModal({ onClose, operation }: ModalExchange) {
+  console.log(operation, "entrei");
   const { data: activeExchanges } = trpc.useQuery(
     ["exchange.getActiveExchanges"],
     {
