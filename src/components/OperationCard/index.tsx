@@ -1,7 +1,7 @@
-import { MdArrowForwardIos } from "react-icons/md";
-import styles from "./styles.module.scss";
 import { useSession } from "next-auth/react";
+import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
+import styles from "./styles.module.scss";
 
 interface OperationCardProps {
   coin: {
@@ -96,7 +96,11 @@ export function OperationCard({
           </p>
         </div>
 
-        <MdArrowForwardIos size={32} opacity={0.3} />
+        <MdArrowForwardIos
+          className={styles.arrowIcon}
+          size={32}
+          opacity={0.3}
+        />
 
         <div>
           <h3>Venda</h3>

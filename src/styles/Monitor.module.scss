@@ -78,6 +78,9 @@
     margin-top: -2rem;
     padding-bottom: 15rem;
     overflow-y: hidden;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 
