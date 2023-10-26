@@ -16,6 +16,7 @@
   @media only screen and (max-width: 768px) {
     width: 179px;
     border-radius: 4.28px;
+    gap: 0px;
   }
 
   @media only screen and (max-width: 413px) {
@@ -39,7 +40,7 @@
     }
 
     @media only screen and (max-width: 768px) {
-      font-size: 12px;
+      font-size: 9px;
     }
   }
 
@@ -112,6 +113,10 @@
     opacity: 0.3;
     color: #fff;
     padding-bottom: 8px;
+
+    @media only screen and (max-width: 768px) {
+      font-size: 12px;
+    }
   }
 
   & > * {
@@ -206,7 +211,7 @@
     font-family: "IBM Plex Sans", sans-serif;
 
     @media only screen and (max-width: 768px) {
-      font-size: 12px;
+      font-size: 9px;
     }
 
     & > * {
@@ -218,7 +223,7 @@
       color: var(--red-200);
 
       @media only screen and (max-width: 768px) {
-        font-size: 12px;
+        font-size: 9px;
       }
     }
 
@@ -228,6 +233,10 @@
       color: var(--white);
       text-transform: uppercase;
       opacity: 0.3;
+
+      @media only screen and (max-width: 768px) {
+        font-size: 12px;
+      }
     }
   }
 }
