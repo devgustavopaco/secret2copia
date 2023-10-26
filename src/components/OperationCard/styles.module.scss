@@ -83,6 +83,11 @@
     height: 2rem;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
+
+    @media only screen and (max-width: 768px) {
+      width: 24px;
+      height: 24px;
+    }
   }
 
   p {
@@ -182,6 +187,9 @@
       font-size: var(--fs-300);
       span {
         font-size: var(--fs-200);
+        @media only screen and (max-width: 768px) {
+          font-size: 9px;
+        }
       }
 
       @media only screen and (max-width: 768px) {
