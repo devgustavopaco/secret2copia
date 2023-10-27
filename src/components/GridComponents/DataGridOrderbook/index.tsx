@@ -129,7 +129,11 @@ export function DataGridOrderbook({
     return uuidV4();
   };
 
-  let updatedData = calculateCumulativePriceAndVolume(data);
+  let updatedData = calculateCumulativePriceAndVolume(data).map(
+    (row, index) => {
+      return { ...row, index };
+    }
+  );
 
   console.table(updatedData);
 
@@ -156,6 +160,11 @@ export function DataGridOrderbook({
               getRowId={createRowId}
               hideFooterPagination
               hideFooter
+              getRowClassName={(params): string => {
+                return params.row.index % 2 === 0
+                  ? (styles.rowColor1 as string)
+                  : (styles.rowColor2 as string);
+              }}
             />
           ) : (
             <DataGrid
@@ -169,6 +178,11 @@ export function DataGridOrderbook({
               getRowId={createRowId}
               hideFooterPagination
               hideFooter
+              getRowClassName={(params): string => {
+                return params.row.index % 2 === 0
+                  ? (styles.rowColor1 as string)
+                  : (styles.rowColor2 as string);
+              }}
             />
           )}
         </Box>
