@@ -137,7 +137,7 @@ const Monitoring: NextPage = () => {
           // Return the index of the next page
           return lastPage.nextCursor;
         },
-        refetchInterval: 10 * 1000,
+        refetchInterval: 20 * 1000,
         retry(failureCount, error) {
           if (failureCount > 3) {
             return false;
@@ -159,10 +159,8 @@ const Monitoring: NextPage = () => {
     );
 
   // Whenever you want to fetch the next page (if you're doing traditional pagination)
-  if (hasNextPage) {
-    setTimeout(() => {
-      fetchNextPage();
-    }, 0.5 * 1000);
+  if (hasNextPage && !isLoading && !isFetching) {
+    fetchNextPage();
   }
 
   const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
