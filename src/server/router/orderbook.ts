@@ -441,6 +441,90 @@ export const orderbookRouter = createRouter()
       return arbitrageOpportunities;
     },
   })
+  .query("getPaginated", {
+    input: z.object({
+      buyExchanges: z.string().array(),
+      sellExchanges: z.string().array(),
+      email: z.string().optional(),
+      limit: z.number().min(1).max(100).nullish(),
+      cursor: z.number().nullish(),
+    }),
+    async resolve({ ctx, input }) {
+      if (!input) {
+        // console.log('Sending empty orderbook')
+        return {
+          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
+          nextCursor: 1,
+        };
+      }
+
+      const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
+
+      if (buyExchanges.length === 0 || sellExchanges.length === 0) {
+        // console.log('Sending empty orderbook: empty buy or sell exchanges')
+        return {
+          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
+          nextCursor: cursor,
+        };
+      }
+
+      let activeCoins = CoinsSingleton.getInstance().coins;
+
+      if (activeCoins.length === 0) {
+        await CoinsSingleton.getInstance().updateCoins();
+      }
+
+      activeCoins = CoinsSingleton.getInstance().coins;
+
+      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
+      const endIndex = startIndex + (limit ?? 50);
+      const paginatedCoins = activeCoins.slice(startIndex, endIndex);
+
+      if (paginatedCoins.length === 0) {
+        // console.log('Sending empty orderbook: no active coins')
+        return {
+          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
+          nextCursor: cursor,
+        };
+      }
+
+      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
+        [];
+
+      for (const coin of paginatedCoins) {
+        arbitrageOpportunitiesPromises.push(
+          fetchArbitrageOpportunity(
+            ctx,
+            {
+              name: coin.name,
+              ticker: coin.ticker,
+              isFanToken: coin.isFanToken,
+              imageUrl: coin.image_url ?? undefined,
+            },
+            buyExchanges,
+            sellExchanges,
+            coin.ExchangeCoinTax,
+            input?.email || ""
+          )
+        );
+      }
+
+      const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
+
+      const arbitrageOpportunities = results.map((result) => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+      });
+
+      let nextCursor = 0;
+      if (endIndex < activeCoins.length) {
+        nextCursor = (cursor ?? 1) + 1;
+      }
+
+      return { arbitrageOpportunities, nextCursor };
+    },
+  })
   .query("getDollar", {
     async resolve({ ctx }) {
       return await ServerSingleton.getInstance().getDollar();

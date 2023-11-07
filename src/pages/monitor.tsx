@@ -20,6 +20,9 @@ import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 
 const Monitoring: NextPage = () => {
+  const [page, setPage] = useState(1);
+  const [allData, setAllData] = useState({});
+
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -114,37 +117,54 @@ const Monitoring: NextPage = () => {
     ? sellExchanges.map((e) => e.name)
     : [];
 
-  const { refetch, data, isLoading, isFetching } = trpc.useQuery(
-    [
-      "orderBook.getAll",
+  const { refetch, data, isLoading, isFetching, hasNextPage, fetchNextPage } =
+    trpc.useInfiniteQuery(
+      [
+        "orderBook.getPaginated",
+        {
+          buyExchanges: buyExchangesName ?? undefined,
+          sellExchanges: sellExchangesName ?? undefined,
+          email: userEmail ?? undefined,
+        },
+      ],
       {
-        buyExchanges: buyExchangesName ?? undefined,
-        sellExchanges: sellExchangesName ?? undefined,
-        email: userEmail ?? undefined,
-      },
-    ],
-    {
-      refetchInterval: 10 * 1000,
-      retry(failureCount, error) {
-        if (failureCount > 3) {
-          return false;
-        }
-        return true;
-      },
-      keepPreviousData: true,
-      onSuccess(data) {
-        if (data?.length === 0 && !isFetching) {
-          refetch();
-        }
-        setLoadingDolarChange(false);
-      },
-      onError(error) {
-        if (!isFetching) {
-          refetch();
-        }
-      },
-    }
-  );
+        getNextPageParam: (lastPage, allPages) => {
+          // You should return `undefined` if there are no more pages
+          // You can calculate this from the lastPage's data, if it has a total count, for example
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50; // Adjust accordingly
+          if (!morePagesExist) return undefined;
+
+          // Return the index of the next page
+          return allPages.length + 1;
+        },
+        refetchInterval: 10 * 1000,
+        retry(failureCount, error) {
+          if (failureCount > 3) {
+            return false;
+          }
+          return true;
+        },
+        keepPreviousData: true,
+        onSuccess(data) {
+          if (data?.pages.flat().length === 0 && !isFetching) {
+            refetch();
+          }
+          setLoadingDolarChange(false);
+        },
+        onError(error) {
+          if (!isFetching) {
+            refetch();
+          }
+        },
+      }
+    );
+
+  // Whenever you want to fetch the next page (if you're doing traditional pagination)
+  if (hasNextPage) {
+    setTimeout(() => {
+      fetchNextPage();
+    }, 1 * 1000);
+  }
 
   const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
     refetchInterval: 20 * 1000,
@@ -204,7 +224,7 @@ const Monitoring: NextPage = () => {
           },
           {
             onSettled: () => {
-              sortedOperations = undefined;
+              sortedOperations = [];
             },
           }
         );
@@ -227,8 +247,11 @@ const Monitoring: NextPage = () => {
     []
   );
 
-  let sortedOperations = data
-    ?.sort((a, b) => {
+  let allArbitrageOpportunities =
+    data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
+
+  let sortedOperations = allArbitrageOpportunities
+    .sort((a, b) => {
       if (a && b) {
         if (a?.spread < b?.spread) {
           return 1;
@@ -364,7 +387,7 @@ const Monitoring: NextPage = () => {
 
               {isLoading ||
               loadingDolarChange ||
-              data?.length === 0 ||
+              allArbitrageOpportunities.length === 0 ||
               sortedOperations?.length === 0 ? (
                 <div className={styles.loading}>
                   <PacmanLoader
