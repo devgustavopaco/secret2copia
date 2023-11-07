@@ -135,7 +135,7 @@ const Monitoring: NextPage = () => {
           if (!morePagesExist) return undefined;
 
           // Return the index of the next page
-          return allPages.length + 1;
+          return lastPage.nextCursor;
         },
         refetchInterval: 10 * 1000,
         retry(failureCount, error) {
