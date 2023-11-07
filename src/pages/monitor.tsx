@@ -385,8 +385,7 @@ const Monitoring: NextPage = () => {
                 {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
               </h1>
 
-              {isLoading ||
-              loadingDolarChange ||
+              {loadingDolarChange ||
               allArbitrageOpportunities.length === 0 ||
               sortedOperations?.length === 0 ? (
                 <div className={styles.loading}>
