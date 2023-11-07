@@ -149,7 +149,6 @@ const Monitoring: NextPage = () => {
           if (data?.pages.flat().length === 0 && !isFetching) {
             refetch();
           }
-          setLoadingDolarChange(false);
         },
         onError(error) {
           if (!isFetching) {
@@ -225,6 +224,7 @@ const Monitoring: NextPage = () => {
           {
             onSettled: () => {
               sortedOperations = [];
+              setLoadingDolarChange(false);
             },
           }
         );
@@ -385,9 +385,7 @@ const Monitoring: NextPage = () => {
                 {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
               </h1>
 
-              {loadingDolarChange ||
-              allArbitrageOpportunities.length === 0 ||
-              sortedOperations?.length === 0 ? (
+              {loadingDolarChange || sortedOperations?.length === 0 ? (
                 <div className={styles.loading}>
                   <PacmanLoader
                     size="3rem"
