@@ -458,7 +458,7 @@ export const orderbookRouter = createRouter()
         };
       }
 
-      const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
+      const { buyExchanges, sellExchanges, cursor = 1, limit = 25 } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         // console.log('Sending empty orderbook: empty buy or sell exchanges')
@@ -476,9 +476,15 @@ export const orderbookRouter = createRouter()
 
       activeCoins = CoinsSingleton.getInstance().coins;
 
-      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
-      const endIndex = startIndex + (limit ?? 50);
+      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 25);
+      const endIndex = startIndex + (limit ?? 25);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
+      console.log(
+        activeCoins.length,
+        startIndex,
+        endIndex,
+        paginatedCoins.length
+      );
 
       if (paginatedCoins.length === 0) {
         // console.log('Sending empty orderbook: no active coins')
@@ -517,7 +523,7 @@ export const orderbookRouter = createRouter()
         }
       });
 
-      let nextCursor = 0;
+      let nextCursor = 1;
       if (endIndex < activeCoins.length) {
         nextCursor = (cursor ?? 1) + 1;
       }

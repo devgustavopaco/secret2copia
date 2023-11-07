@@ -163,7 +163,7 @@ const Monitoring: NextPage = () => {
   if (hasNextPage) {
     setTimeout(() => {
       fetchNextPage();
-    }, 1 * 1000);
+    }, 0.5 * 1000);
   }
 
   const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
