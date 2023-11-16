@@ -265,7 +265,9 @@ const Monitoring: NextPage = () => {
       if (operation) {
         return (
           operation.spread > 0 &&
-          allArbitrageOpportunities.indexOf(operation) === index
+          allArbitrageOpportunities.findIndex(
+            (compareOperation) => compareOperation?.coin === operation.coin
+          ) === index
         );
       }
       return false;
