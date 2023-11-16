@@ -261,9 +261,12 @@ const Monitoring: NextPage = () => {
       }
       return 0;
     })
-    .filter((operation) => {
+    .filter((operation, index) => {
       if (operation) {
-        return operation.spread > 0;
+        return (
+          operation.spread > 0 &&
+          allArbitrageOpportunities.indexOf(operation) === index
+        );
       }
       return false;
     });
