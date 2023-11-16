@@ -22,7 +22,7 @@ async function fetchDollarPriceEur() {
 async function fetchWithProxy(
   url: string,
   proxies: string[],
-  timeout: number = 70000,
+  timeout: number = 4000,
   gateio: boolean = false,
   okx: boolean = false,
   headers?: object
@@ -1729,7 +1729,7 @@ export class OkxStrategy implements ExchangeStrategy {
     const response = await fetchWithProxy(
       url,
       proxies,
-      70000,
+      4000,
       false,
       true,
       headers
@@ -1911,7 +1911,7 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
 
-    const response = await fetchWithProxy(url, proxies, 70000, true);
+    const response = await fetchWithProxy(url, proxies, 4000, true);
 
     const json = (await response.json()) as GateIoTradeOrderbook;
 
