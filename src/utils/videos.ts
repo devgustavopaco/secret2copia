@@ -323,6 +323,12 @@ export const modules = [
         url: "/videos/clmt7u0kj000np6a8r26ykb1y",
         thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
+      {
+        id: 3,
+        title: "Operação deu errado, o que fazer?",
+        url: "/videos/clp1o6fxm0000ld072ibipkrc",
+        thumbnail: "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
     ],
   },
 ];
