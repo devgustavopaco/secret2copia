@@ -215,30 +215,25 @@ const Monitoring: NextPage = () => {
   let allArbitrageOpportunities =
     data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
 
-  let sortedOperations = allArbitrageOpportunities
-    .sort((a, b) => {
-      if (a && b) {
-        if (a?.spread < b?.spread) {
-          return 1;
-        }
-        if (a?.spread > b?.spread) {
-          return -1;
-        }
-        return 0;
-      }
-      return 0;
-    })
-    .filter((operation, index, self) => {
-      if (operation) {
-        const firstIndex = self.findIndex(
-          (compareOperation) => compareOperation?.coin === operation.coin
-        );
+  // Primeiro, cria um mapa das últimas operações para cada moeda
+  let operationsMap = new Map();
+  allArbitrageOpportunities.forEach((operation) => {
+    if (operation && operation.spread > 0) {
+      operationsMap.set(operation.coin, operation);
+    }
+  });
 
-        return operation.spread > 0 && firstIndex === index;
-      }
-      return false;
-    });
-
+  // Depois, converte o mapa em um array para ordenação e filtragem
+  let sortedOperations = Array.from(operationsMap.values()).sort((a, b) => {
+    // Sua lógica de ordenação existente
+    if (a?.spread < b?.spread) {
+      return 1;
+    }
+    if (a?.spread > b?.spread) {
+      return -1;
+    }
+    return 0;
+  });
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
