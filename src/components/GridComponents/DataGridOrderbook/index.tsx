@@ -135,8 +135,6 @@ export function DataGridOrderbook({
     }
   );
 
-  console.table(updatedData);
-
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles

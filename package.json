@@ -29,6 +29,7 @@
     "@trpc/client": "^9.26.2",
     "@trpc/next": "^9.26.2",
     "@trpc/react": "^9.27.4",
+    "@trpc/react-query": "^10.44.0",
     "@trpc/server": "^9.26.2",
     "@types/crypto-js": "^4.1.1",
     "@types/react-tooltip": "^4.0",

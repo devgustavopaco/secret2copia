@@ -12,7 +12,6 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
-import { Exchange } from "@prisma/client";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -20,9 +19,6 @@ import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 
 const Monitoring: NextPage = () => {
-  const [page, setPage] = useState(1);
-  const [allData, setAllData] = useState({});
-
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -144,7 +140,7 @@ const Monitoring: NextPage = () => {
           }
           return true;
         },
-        keepPreviousData: true,
+        keepPreviousData: false,
         onSuccess(data) {
           if (data?.pages.flat().length === 0 && !isFetching) {
             refetch();
@@ -158,7 +154,6 @@ const Monitoring: NextPage = () => {
       }
     );
 
-  // Whenever you want to fetch the next page (if you're doing traditional pagination)
   if (hasNextPage && !isLoading && !isFetching) {
     fetchNextPage();
   }
@@ -178,20 +173,6 @@ const Monitoring: NextPage = () => {
       localStorage.setItem("sellExchanges", JSON.stringify(sellExchanges));
     }
   }, [sellExchanges]);
-
-  // Mobile
-  const onSelectBuyExchangeMobile = useCallback(
-    (selectedExchanges: readonly Exchange[]) => {
-      if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
-          name: exchange.name,
-          image_url: exchange.image_url as string,
-        }));
-        setBuyExchanges(selectedExchangesNames);
-      }
-    },
-    []
-  );
 
   useEffect(() => {
     if (dolarValue === 0) {
@@ -231,20 +212,6 @@ const Monitoring: NextPage = () => {
     [user, dollarPrice]
   );
 
-  // Mobile
-  const onSelectSellExchangeMobile = useCallback(
-    (selectedExchanges: readonly Exchange[]) => {
-      if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
-          name: exchange.name,
-          image_url: exchange.image_url as string,
-        }));
-        setSellExchanges(selectedExchangesNames);
-      }
-    },
-    []
-  );
-
   let allArbitrageOpportunities =
     data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
 
@@ -261,14 +228,13 @@ const Monitoring: NextPage = () => {
       }
       return 0;
     })
-    .filter((operation, index) => {
+    .filter((operation, index, self) => {
       if (operation) {
-        return (
-          operation.spread > 0 &&
-          allArbitrageOpportunities.findIndex(
-            (compareOperation) => compareOperation?.coin === operation.coin
-          ) === index
+        const firstIndex = self.findIndex(
+          (compareOperation) => compareOperation?.coin === operation.coin
         );
+
+        return operation.spread > 0 && firstIndex === index;
       }
       return false;
     });
@@ -277,8 +243,6 @@ const Monitoring: NextPage = () => {
     style: "decimal",
     maximumFractionDigits: 3,
   });
-
-  console.log(modalState);
 
   return (
     <>
@@ -402,7 +366,7 @@ const Monitoring: NextPage = () => {
                     (operation) =>
                       operation && (
                         <OperationCard
-                          key={operation.coin}
+                          key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
                           coin={{
                             image: operation.coinImage,
                             name: operation.coin,
