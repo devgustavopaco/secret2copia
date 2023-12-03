@@ -18,7 +18,12 @@ import { toast } from "react-toastify";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 
-const Monitoring: NextPage = () => {
+interface MonitoringProps {
+  ip: string;
+}
+
+const Monitoring: NextPage<MonitoringProps> = ({ ip }) => {
+  console.log(ip);
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -215,7 +220,6 @@ const Monitoring: NextPage = () => {
   let allArbitrageOpportunities =
     data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
 
-  // Primeiro, cria um mapa das últimas operações para cada moeda
   let operationsMap = new Map();
   allArbitrageOpportunities.forEach((operation) => {
     if (operation && operation.spread > 0) {
@@ -223,9 +227,7 @@ const Monitoring: NextPage = () => {
     }
   });
 
-  // Depois, converte o mapa em um array para ordenação e filtragem
   let sortedOperations = Array.from(operationsMap.values()).sort((a, b) => {
-    // Sua lógica de ordenação existente
     if (a?.spread < b?.spread) {
       return 1;
     }
@@ -403,6 +405,15 @@ const Monitoring: NextPage = () => {
 export default Monitoring;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const forwarded = req.headers["x-forwarded-for"] as string;
+  const ip = forwarded
+    ? forwarded.split(/, /)[0]
+    : req.connection.remoteAddress;
+
+  console.log(ip);
+
   const session = await unstable_getServerSession(
     context.req,
     context.res,
@@ -419,6 +430,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   return {
-    props: {},
+    props: { ip },
   };
 };
