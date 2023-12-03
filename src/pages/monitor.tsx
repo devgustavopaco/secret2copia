@@ -412,8 +412,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     ? forwarded.split(/, /)[0]
     : req.connection.remoteAddress;
 
-  console.log(ip);
-
   const session = await unstable_getServerSession(
     context.req,
     context.res,
