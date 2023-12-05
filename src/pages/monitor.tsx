@@ -12,7 +12,6 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
-import { PrismaClient } from "@prisma/client";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -426,20 +425,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const prisma = new PrismaClient();
+  // const prisma = new PrismaClient();
 
-  try {
-    await prisma.iP.create({
-      data: {
-        userId: session.user?.id as string,
-        ip: ip as string,
-      },
-    });
-  } catch (error) {
-    console.error("Erro ao criar registro IP:", error);
-  } finally {
-    await prisma.$disconnect();
-  }
+  // try {
+  //   await prisma.iP.create({
+  //     data: {
+  //       userId: session.user?.id as string,
+  //       ip: ip as string,
+  //     },
+  //   });
+  // } catch (error) {
+  //   console.error("Erro ao criar registro IP:", error);
+  // } finally {
+  //   await prisma.$disconnect();
+  // }
 
   return {
     props: { ip },
