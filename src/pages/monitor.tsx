@@ -12,12 +12,12 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
-import { PrismaClient } from "@prisma/client";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
+import { updateIP } from "../server/db/checkIP";
 
 interface MonitoringProps {
   ip: string;
@@ -422,29 +422,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const prisma = new PrismaClient();
-
   try {
-    const createdOrUpdateIP = await prisma.iP.upsert({
-      where: {
-        userId: session.id as string,
-      },
-      update: {
-        ip: ip as string,
-      },
-      create: {
-        userId: session.id as string,
-        ip: ip as string,
-      },
-    });
+    const createdOrUpdateIP = await updateIP(
+      session.id as string,
+      ip as string
+    );
     console.log(
       "Registro IP criado ou atualizado com sucesso:",
       createdOrUpdateIP
     );
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
-  } finally {
-    await prisma.$disconnect();
   }
 
   return {
