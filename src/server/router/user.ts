@@ -46,8 +46,8 @@ export const userRouter = createRouter()
           },
           name: search
             ? {
-                contains: search,
-              }
+              contains: search,
+            }
             : undefined,
         },
       });
@@ -147,7 +147,6 @@ export const userRouter = createRouter()
           silver: input.silver,
           gold: input.gold,
           platinum: input.platinum,
-          ip: input.ip,
         },
       });
 
