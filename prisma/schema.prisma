@@ -131,5 +131,5 @@ model ExchangeCoinTax {
 model IP {
   id     String @id @default(cuid())
   ip     String
-  userId String
+  userId String @unique
 }

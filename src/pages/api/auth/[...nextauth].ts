@@ -1,11 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import axios from "axios"; // Import axios
-import NextAuth, {
-  ISODateString,
-  NextAuthOptions,
-  Session,
-  User,
-} from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "../../../server/db/client";
 
@@ -15,18 +10,6 @@ async function verifyRecaptchaToken(token: string) {
     `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
   );
   return response.data.success;
-}
-
-interface CustomSession extends Session {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  expires: ISODateString;
-}
-
-interface CustomUser extends User {
-  ip?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -71,11 +54,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email ou senha inválidos");
         }
 
-        const customUser: CustomUser = {
-          ...user,
-        };
-
-        return customUser;
+        return user;
       },
     }),
   ],
@@ -84,12 +63,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 1 * 3 * 60 * 60,
   },
   callbacks: {
-    async jwt({ token, user }: { token: any; user: CustomUser | null }) {
-      if (user && "ip" in user) {
-        token.ip = (user as CustomUser).ip;
-      }
+    async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
-        token.ip = user.ip;
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
@@ -98,14 +73,13 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      const customSession = session as CustomSession;
       if (token) {
-        customSession.id = token.id as string;
-        customSession.email = token.email as string;
-        customSession.name = token.name as string;
-        customSession.role = token.role as string;
+        session.id = token.id as string;
+        session.email = token.email as string;
+        session.name = token.name as string;
+        session.role = token.role as string;
       }
-      return customSession;
+      return session;
     },
   },
   pages: {

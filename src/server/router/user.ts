@@ -46,8 +46,8 @@ export const userRouter = createRouter()
           },
           name: search
             ? {
-              contains: search,
-            }
+                contains: search,
+              }
             : undefined,
         },
       });

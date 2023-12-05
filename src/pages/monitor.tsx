@@ -1,5 +1,5 @@
 import type { GetServerSideProps, NextPage } from "next";
-import { unstable_getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
+import { PrismaClient } from "@prisma/client";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -410,11 +411,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const forwarded = req.headers["x-forwarded-for"] as string;
   const ip = forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
-  const session = await unstable_getServerSession(
-    req,
-    context.res,
-    authOptions
-  );
+  const session = await getServerSession(req, context.res, authOptions);
 
   if (!session) {
     return {
@@ -425,20 +422,30 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // const prisma = new PrismaClient();
+  const prisma = new PrismaClient();
 
-  // try {
-  //   await prisma.iP.create({
-  //     data: {
-  //       userId: session.user?.id as string,
-  //       ip: ip as string,
-  //     },
-  //   });
-  // } catch (error) {
-  //   console.error("Erro ao criar registro IP:", error);
-  // } finally {
-  //   await prisma.$disconnect();
-  // }
+  try {
+    const createdOrUpdateIP = await prisma.iP.upsert({
+      where: {
+        userId: session.id as string,
+      },
+      update: {
+        ip: ip as string,
+      },
+      create: {
+        userId: session.id as string,
+        ip: ip as string,
+      },
+    });
+    console.log(
+      "Registro IP criado ou atualizado com sucesso:",
+      createdOrUpdateIP
+    );
+  } catch (error) {
+    console.error("Erro ao criar ou atualizar registro IP:", error);
+  } finally {
+    await prisma.$disconnect();
+  }
 
   return {
     props: { ip },
