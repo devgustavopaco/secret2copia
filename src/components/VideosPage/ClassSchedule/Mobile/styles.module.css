@@ -85,12 +85,12 @@
   align-items: center;
   padding: 2.75rem 0;
 }
-.content .class label input[type=checkbox] {
+.content .class label input[type="checkbox"] {
   width: 24px;
   height: 20px;
   -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   border: 2px solid #d9d9d9;
   background-color: #d9d9d9;
   border-radius: 4px;
@@ -98,7 +98,7 @@
   cursor: pointer;
   transition: border-color 0.3s;
 }
-.content .class label input[type=checkbox]:checked {
+.content .class label input[type="checkbox"]:checked {
   border-color: #7b61ff;
   background-color: #7b61ff;
 }
@@ -179,4 +179,4 @@
 .classRoomSection .className {
   font-size: 15px;
   margin-top: 0.8rem;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

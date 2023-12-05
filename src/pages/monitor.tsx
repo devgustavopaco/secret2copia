@@ -12,6 +12,7 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
+import { PrismaClient } from "@prisma/client";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -408,12 +409,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { req } = context;
 
   const forwarded = req.headers["x-forwarded-for"] as string;
-  const ip = forwarded
-    ? forwarded.split(/, /)[0]
-    : req.connection.remoteAddress;
+  const ip = forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
   const session = await unstable_getServerSession(
-    context.req,
+    req,
     context.res,
     authOptions
   );
@@ -422,9 +421,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/",
-        permanent: true,
+        permanent: false,
       },
     };
+  }
+
+  const prisma = new PrismaClient();
+
+  try {
+    await prisma.iP.create({
+      data: {
+        userId: session.user?.id as string,
+        ip: ip as string,
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao criar registro IP:", error);
+  } finally {
+    await prisma.$disconnect();
   }
 
   return {

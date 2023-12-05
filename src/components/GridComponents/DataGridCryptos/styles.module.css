@@ -32,7 +32,8 @@
 .tableContainer :global(.MuiOutlinedInput-root) fieldset {
   border-color: #6f57e1;
 }
-.tableContainer :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+.tableContainer
+  :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
   border-color: #fff !important;
 }
 .tableContainer :global(.MuiInputLabel-root.Mui-focused) {
@@ -82,4 +83,4 @@
 
 .customTextField {
   margin-bottom: 20px !important;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

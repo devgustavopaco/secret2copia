@@ -49,14 +49,6 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials, req) {
-        // Verify the reCAPTCHA token
-
-        // Obtenha o IP do cliente
-        const ip =
-          (req as any).headers?.["x-forwarded-for"] ||
-          (req as any).connection?.remoteAddress ||
-          "";
-
         console.log(req.body);
         if (!(await verifyRecaptchaToken(req.body?.recaptchaToken))) {
           throw new Error("Invalid reCAPTCHA token.");
@@ -79,22 +71,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email ou senha inválidos");
         }
 
-        // Se a autenticação for bem-sucedida, adicione o IP ao objeto do usuário
-        if (user) {
-          user.ip = ip;
-
-          console.log(ip, "TESTEEEEEEEEEEEEEEEEE");
-
-          // Atualizando o IP no banco de dados
-          await prisma.user.update({
-            where: { email: user.email },
-            data: { ip: user.ip },
-          });
-        }
-
         const customUser: CustomUser = {
           ...user,
-          ip,
         };
 
         return customUser;

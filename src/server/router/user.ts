@@ -39,7 +39,6 @@ export const userRouter = createRouter()
           silver: true,
           gold: true,
           platinum: true,
-
         },
         where: {
           email: {
@@ -47,8 +46,8 @@ export const userRouter = createRouter()
           },
           name: search
             ? {
-              contains: search,
-            }
+                contains: search,
+              }
             : undefined,
         },
       });

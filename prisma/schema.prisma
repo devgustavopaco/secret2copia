@@ -62,7 +62,6 @@ model User {
   silver        Boolean
   gold          Boolean
   platinum      Boolean
-  ip            String
 }
 
 model Videos {
@@ -127,4 +126,10 @@ model ExchangeCoinTax {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model IP {
+  id     String @id @default(cuid())
+  ip     String
+  userId String
 }
