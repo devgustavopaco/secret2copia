@@ -1,6 +1,6 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import { Header } from "../components/Header";
@@ -21,9 +21,10 @@ import { updateIP } from "../server/db/checkIP";
 
 interface MonitoringProps {
   ip: string;
+  hasIPChanged: boolean;
 }
 
-const Monitoring: NextPage<MonitoringProps> = ({ ip }) => {
+const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
   console.log(ip);
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
@@ -242,6 +243,14 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip }) => {
     maximumFractionDigits: 3,
   });
 
+  useEffect(() => {
+    if (hasIPChanged) {
+      signOut({
+        callbackUrl: "/",
+      });
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -408,11 +417,14 @@ export default Monitoring;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { req } = context;
 
+  // Obter o IP do usuário
   const forwarded = req.headers["x-forwarded-for"] as string;
   const ip = forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
+  // Obter a sessão do usuário
   const session = await getServerSession(req, context.res, authOptions);
 
+  // Redirecionar se não houver sessão
   if (!session) {
     return {
       redirect: {
@@ -422,20 +434,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  // Inicialize a variável para verificar se o IP mudou
+  let hasIPChanged = false;
+
   try {
-    const createdOrUpdateIP = await updateIP(
-      session.id as string,
-      ip as string
-    );
+    // Atualiza ou cria o registro de IP e verifica se ele mudou
+    const result = await updateIP(session.id as string, ip as string);
+    hasIPChanged = result.hasIPChanged as boolean;
+
+    console.log(hasIPChanged);
     console.log(
       "Registro IP criado ou atualizado com sucesso:",
-      createdOrUpdateIP
+      result.createdOrUpdateIP
     );
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
   }
 
+  // Retorna as propriedades para a página, incluindo o IP e a informação de mudança de IP
   return {
-    props: { ip },
+    props: { ip, hasIPChanged },
   };
 };
