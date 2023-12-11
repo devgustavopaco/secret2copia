@@ -40,6 +40,7 @@ const AdminUsers: NextPage = () => {
     isLoading,
     refetch,
   } = trpc.useQuery(["user.getAllUsers", { search: searchText }]);
+
   useEffect(() => {
     if (idsFromGrid.length !== 0) {
       deleteUserMutation.mutate({

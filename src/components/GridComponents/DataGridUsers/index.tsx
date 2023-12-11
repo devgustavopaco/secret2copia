@@ -12,6 +12,20 @@ import { trpc } from "../../../utils/trpc";
 
 import { useState } from "react";
 import styles from "./styles.module.scss";
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  let day = date.getDate().toString();
+  let month = (date.getMonth() + 1).toString();
+  const year = date.getFullYear().toString();
+
+  // Padding single digits with '0'
+  day = day.length < 2 ? "0" + day : day;
+  month = month.length < 2 ? "0" + month : month;
+
+  return `${day}/${month}/${year}`;
+}
+
 const columns: GridColDef[] = [
   {
     field: "name",
@@ -40,6 +54,14 @@ const columns: GridColDef[] = [
     width: 200,
     editable: true,
     sortable: false,
+  },
+  {
+    field: "createdAt",
+    headerName: "Data de criação",
+    width: 200,
+    editable: true,
+    sortable: true,
+    valueGetter: (params) => formatDate(params.row.createdAt),
   },
   {
     field: "bronze",
