@@ -7,10 +7,14 @@ interface ModalExchange {
   onClose: () => void;
   setOpenModal?: (open: boolean) => void;
   operation?: string | null;
+  isAdmin: boolean;
 }
 
-export function FullScreenModal({ onClose, operation }: ModalExchange) {
-  console.log(operation, "entrei");
+export function FullScreenModal({
+  onClose,
+  operation,
+  isAdmin,
+}: ModalExchange) {
   const { data: activeExchanges } = trpc.useQuery(
     ["exchange.getActiveExchanges"],
     {
@@ -92,7 +96,8 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
   const handleAddExchangeClick = (exchange: any) => {
     setSelectedExchanges((prev) => {
       if (prev.find((e) => e.id === exchange.id)) return prev;
-      if (prev.length >= 4) {
+
+      if (!isAdmin && prev.length >= 4) {
         alert(
           `Você só pode selecionar 4 opções para ${
             operation === "compra" ? "compra" : "venda"
@@ -100,6 +105,7 @@ export function FullScreenModal({ onClose, operation }: ModalExchange) {
         );
         return prev;
       }
+
       const newSelection = [...prev, exchange];
       localStorage.setItem(
         operation === "compra" ? "buyExchanges" : "sellExchanges",

@@ -10,6 +10,7 @@ export function SellExchangeMobile({
   buyExchanges,
   sellExchanges,
   onModalChange,
+  isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
 
@@ -54,6 +55,7 @@ export function SellExchangeMobile({
             setIsModalBuyOpen(false);
             onModalChange(false);
           }}
+          isAdmin={isAdmin}
         />
       ) : (
         <></>

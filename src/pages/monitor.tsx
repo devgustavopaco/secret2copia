@@ -22,10 +22,14 @@ import { updateIP } from "../server/db/checkIP";
 interface MonitoringProps {
   ip: string;
   hasIPChanged: boolean;
+  isAdmin: boolean;
 }
 
-const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
-  console.log(ip);
+const Monitoring: NextPage<MonitoringProps> = ({
+  ip,
+  hasIPChanged,
+  isAdmin,
+}) => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -132,12 +136,8 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
       ],
       {
         getNextPageParam: (lastPage, allPages) => {
-          // You should return `undefined` if there are no more pages
-          // You can calculate this from the lastPage's data, if it has a total count, for example
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 50; // Adjust accordingly
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
           if (!morePagesExist) return undefined;
-
-          // Return the index of the next page
           return lastPage.nextCursor;
         },
         refetchInterval: 20 * 1000,
@@ -196,7 +196,7 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
         });
         return;
       }
-      setLoadingDolarChange(true); // <-- Adicione isto
+      setLoadingDolarChange(true);
       refetch();
       setDolarValue(numValue);
       if (user) {
@@ -330,6 +330,7 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isAdmin={isAdmin}
               />
             </div>
 
@@ -343,6 +344,7 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isAdmin={isAdmin}
               />
             </div>
             <Sidebar
@@ -353,6 +355,7 @@ const Monitoring: NextPage<MonitoringProps> = ({ ip, hasIPChanged }) => {
               onChangeDolar={onChangeDolar}
               dolarValue={dolarValue as number}
               onModalChange={handleModalState}
+              isAdmin={isAdmin}
             />
             <main>
               <h1>
@@ -417,14 +420,11 @@ export default Monitoring;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { req } = context;
 
-  // Obter o IP do usuário
   const forwarded = req.headers["x-forwarded-for"] as string;
   const ip = forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
-  // Obter a sessão do usuário
   const session = await getServerSession(req, context.res, authOptions);
 
-  // Redirecionar se não houver sessão
   if (!session) {
     return {
       redirect: {
@@ -434,25 +434,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // Inicialize a variável para verificar se o IP mudou
   let hasIPChanged = false;
 
-  try {
-    // Atualiza ou cria o registro de IP e verifica se ele mudou
-    const result = await updateIP(session.id as string, ip as string);
-    hasIPChanged = result.hasIPChanged as boolean;
+  let isAdmin = session?.role === "admin" ? true : false;
 
-    console.log(hasIPChanged);
-    console.log(
-      "Registro IP criado ou atualizado com sucesso:",
-      result.createdOrUpdateIP
-    );
+  try {
+    const result = await updateIP(session.id as string, ip as string);
+    hasIPChanged =
+      session?.role === "admin" ? false : (result.hasIPChanged as boolean);
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
   }
 
-  // Retorna as propriedades para a página, incluindo o IP e a informação de mudança de IP
   return {
-    props: { ip, hasIPChanged },
+    props: { ip, hasIPChanged, isAdmin },
   };
 };
