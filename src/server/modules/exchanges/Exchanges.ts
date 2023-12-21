@@ -1373,7 +1373,7 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return (baseToken !== "GAS" && baseToken !== "MDT") ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}` : "";
+    return (baseToken !== "GAS" && baseToken !== "MDT" && baseToken !== "GMT") ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}` : "";
   }
 
 
