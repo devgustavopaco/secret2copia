@@ -453,9 +453,8 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${
-      isFanToken ? "CHZ" : destinationToken.toUpperCase()
-    }`;
+    return `${baseToken.toUpperCase()}${isFanToken ? "CHZ" : destinationToken.toUpperCase()
+      }`;
   }
 
   async fetchOrderbook(
@@ -1323,11 +1322,10 @@ export class ByBitStrategy implements ExchangeStrategy {
 // Mexc ---------------------------------------------------------------------
 
 interface MexcOrderbook {
-  data: {
-    bids: string[][];
-    asks: string[][];
-  };
+  bids: string[][];
+  asks: string[][];
 }
+
 
 export class MexcStrategy implements ExchangeStrategy {
   orderbook: {
@@ -1336,7 +1334,7 @@ export class MexcStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
         let sumVolume = 0;
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
@@ -1354,7 +1352,7 @@ export class MexcStrategy implements ExchangeStrategy {
       }, [] as OrderbookOperation[]) ?? [];
 
     const asks =
-      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
         let sumVolume = 0;
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
@@ -1375,29 +1373,33 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+    return (baseToken !== "GAS" && baseToken !== "MDT") ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}` : "";
   }
 
+
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.mexc.com/api/v3/depth/${pair}`;
+    const url = `https://api.mexc.com/api/v3/depth?symbol=${pair}`;
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MexcOrderbook;
+
     this.orderbook[pair] = json;
 
     return {
       name: "Mexc",
       bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
       },
       ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
       },
       isUSD: true,
     };
   }
+
 }
 
 // Poloniex ---------------------------------------------------------------------
