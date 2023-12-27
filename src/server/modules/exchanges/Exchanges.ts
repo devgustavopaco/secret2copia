@@ -453,8 +453,9 @@ export class ChilizStrategy implements ExchangeStrategy {
     destinationToken: string,
     isFanToken: boolean = false
   ): string {
-    return `${baseToken.toUpperCase()}${isFanToken ? "CHZ" : destinationToken.toUpperCase()
-      }`;
+    return `${baseToken.toUpperCase()}${
+      isFanToken ? "CHZ" : destinationToken.toUpperCase()
+    }`;
   }
 
   async fetchOrderbook(
@@ -1326,7 +1327,6 @@ interface MexcOrderbook {
   asks: string[][];
 }
 
-
 export class MexcStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: MexcOrderbook;
@@ -1373,9 +1373,13 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return (baseToken !== "GAS" && baseToken !== "MDT" && baseToken !== "GMT" && baseToken !== "QI") ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}` : "";
+    return baseToken !== "GAS" &&
+      baseToken !== "MDT" &&
+      baseToken !== "GMT" &&
+      baseToken !== "QI"
+      ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
+      : "";
   }
-
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
     const url = `https://api.mexc.com/api/v3/depth?symbol=${pair}`;
@@ -1399,7 +1403,6 @@ export class MexcStrategy implements ExchangeStrategy {
       isUSD: true,
     };
   }
-
 }
 
 // Poloniex ---------------------------------------------------------------------

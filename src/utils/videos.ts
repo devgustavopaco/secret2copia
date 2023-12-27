@@ -331,6 +331,13 @@ export const modules = [
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
+      {
+        id: 4,
+        title: "Chiliz Atualização na Rede",
+        url: "/videos/clqmtgsbl0000jm08gixytvrb",
+        thumbnail:
+          "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
     ],
   },
   {
