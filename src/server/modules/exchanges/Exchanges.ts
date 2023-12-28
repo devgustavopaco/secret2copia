@@ -1242,6 +1242,8 @@ export class BitfinexStrategy implements ExchangeStrategy {
   }
 }
 
+//Bybit
+
 interface ByBitOrderbook {
   result: {
     bids: string[][];
