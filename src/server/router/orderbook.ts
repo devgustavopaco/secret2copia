@@ -375,72 +375,6 @@ const fetchArbitrageOpportunity = async (
 };
 
 export const orderbookRouter = createRouter()
-  .query("getAll", {
-    input: z
-      .object({
-        buyExchanges: z.string().array(),
-        sellExchanges: z.string().array(),
-        email: z.string().optional(),
-      })
-      .optional(),
-    async resolve({ ctx, input }) {
-      if (!input) {
-        // console.log('Sending empty orderbook')
-        return [];
-      }
-
-      const { buyExchanges, sellExchanges } = input;
-
-      if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        // console.log('Sending empty orderbook: empty buy or sell exchanges')
-        return [];
-      }
-
-      let activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
-
-      activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
-        return [];
-      }
-
-      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
-        [];
-
-      for (const coin of activeCoins) {
-        arbitrageOpportunitiesPromises.push(
-          fetchArbitrageOpportunity(
-            ctx,
-            {
-              name: coin.name,
-              ticker: coin.ticker,
-              isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
-            },
-            buyExchanges,
-            sellExchanges,
-            coin.ExchangeCoinTax,
-            input?.email || ""
-          )
-        );
-      }
-
-      const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
-
-      const arbitrageOpportunities = results.map((result) => {
-        if (result.status === "fulfilled") {
-          return result.value;
-        }
-      });
-
-      return arbitrageOpportunities;
-    },
-  })
   .query("getPaginated", {
     input: z.object({
       buyExchanges: z.string().array(),
@@ -448,6 +382,7 @@ export const orderbookRouter = createRouter()
       email: z.string().optional(),
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number().nullish(),
+      isPlatinum: z.boolean(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
@@ -458,7 +393,7 @@ export const orderbookRouter = createRouter()
         };
       }
 
-      const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
+      const { buyExchanges, sellExchanges, cursor = 1, limit = 100 } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         // console.log('Sending empty orderbook: empty buy or sell exchanges')
@@ -471,17 +406,16 @@ export const orderbookRouter = createRouter()
       let activeCoins = CoinsSingleton.getInstance().coins;
 
       if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
+        await CoinsSingleton.getInstance().updateCoins(input.isPlatinum);
       }
 
       activeCoins = CoinsSingleton.getInstance().coins;
 
-      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
-      const endIndex = startIndex + (limit ?? 50);
+      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 100);
+      const endIndex = startIndex + (limit ?? 80);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
 
       if (paginatedCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: cursor,

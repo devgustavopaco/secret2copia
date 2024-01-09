@@ -4730,8 +4730,6 @@ export class DYDYXStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as DYDYXOrderbook;
 
-    console.log(json);
-
     this.orderbook[pair] = json;
 
     return {
