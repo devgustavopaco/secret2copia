@@ -1,6 +1,5 @@
 import { ReactElement } from "react";
 import { Chart } from "../../../components/Admin/Chart";
-import { FeaturedInfo } from "../../../components/Admin/FeaturedInfo";
 import DashboardLayout from "../../../layouts/DashboardLayout";
 import styles from "../../../styles/teste.module.scss";
 import { NextPageWithLayout } from "../../_app";
@@ -13,7 +12,7 @@ const dashboard: NextPageWithLayout = () => {
             <div className={styles.middletitle}>
               <h1>Vendas</h1>
             </div>
-            <FeaturedInfo />
+            {/* <FeaturedInfo /> */}
             <Chart />
           </div>
         </div>

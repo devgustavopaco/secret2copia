@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -60,7 +60,7 @@ export function Chart() {
   return (
     <div className={styles.chart}>
       <h3 className={styles.chartTitle}>Análise de Cadastros de Usuários</h3>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={500}>
         <LineChart
           data={chartData}
           margin={{
