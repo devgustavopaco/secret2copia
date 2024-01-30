@@ -15,25 +15,28 @@ import { trpc } from "../../../utils/trpc";
 
 interface ChartData {
   name: string;
-  count: number;
+  vendas: number;
 }
 
 const transformUserDataForChart = (userData: any[]): ChartData[] => {
-  const userCountByMonth = new Map<string, number>();
+  const uservendasByMonth = new Map<string, number>();
 
   userData.forEach((user: { createdAt: string | number | Date }) => {
     const monthYear = new Date(user.createdAt).toLocaleString("pt-BR", {
       month: "long",
       year: "numeric",
     });
-    userCountByMonth.set(monthYear, (userCountByMonth.get(monthYear) || 0) + 1);
+    uservendasByMonth.set(
+      monthYear,
+      (uservendasByMonth.get(monthYear) || 0) + 1
+    );
   });
 
   const chartData: ChartData[] = Array.from(
-    userCountByMonth,
-    ([name, count]) => ({
+    uservendasByMonth,
+    ([name, vendas]) => ({
       name,
-      count,
+      vendas,
     })
   );
   return chartData;
@@ -77,7 +80,7 @@ export function Chart() {
           <Legend />
           <Line
             type="monotone"
-            dataKey="count"
+            dataKey="vendas"
             stroke="#8884d8"
             activeDot={{ r: 8 }}
           />
