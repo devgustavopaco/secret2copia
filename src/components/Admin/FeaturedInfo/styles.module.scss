@@ -2,15 +2,16 @@
   width: 100%;
   display: flex;
   justify-content: space-between;
+  gap: 30px;
 }
 
 .featuredItem {
   flex: 1;
-  margin: 0px 40px;
+  margin-block: 40px;
   padding: 30px;
   border-radius: 8px;
   cursor: pointer;
-  background: #211f2d;
+  background: #20173f;
   -webkit-box-shadow: 6px 5px 10px 6px rgba(0, 0, 0, 0.25);
   box-shadow: 6px 5px 10px 6px rgba(0, 0, 0, 0.25);
 }

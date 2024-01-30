@@ -3,6 +3,17 @@ import { hash } from "bcrypt";
 import { z } from "zod";
 import { createRouter } from "./context";
 
+interface UserWhereInput {
+  email?: { not: string };
+  createdAt?: {
+    gte?: Date;
+    lte?: Date;
+  };
+  name?: {
+    contains?: string;
+  };
+}
+
 export async function getDollarValueForUser(ctx: any, email: string) {
   const user = await ctx.prisma.user.findUnique({
     where: { email },
@@ -23,10 +34,33 @@ export const userRouter = createRouter()
   })
   .query("getAllUsers", {
     input: z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
       search: z.string().optional(),
     }),
     resolve({ ctx, input }) {
-      const { search } = input ?? {};
+      // Definindo 'where' com o tipo específico
+      let where: UserWhereInput = {
+        email: {
+          not: "admin@solid.dev.br",
+        },
+      };
+
+      // Adicionando condições de filtro
+      if (input.startDate && input.endDate) {
+        where.createdAt = {
+          gte: new Date(input.startDate),
+          lte: new Date(input.endDate),
+        };
+      }
+
+      if (input.search) {
+        where.name = {
+          contains: input.search,
+        };
+      }
+
+      // Consulta ao banco de dados
       const allUsers = ctx.prisma.user.findMany({
         select: {
           id: true,
@@ -41,19 +75,41 @@ export const userRouter = createRouter()
           platinum: true,
           createdAt: true,
         },
-        where: {
-          email: {
-            not: "admin@solid.dev.br",
-          },
-          name: search
-            ? {
-                contains: search,
-              }
-            : undefined,
-        },
+        where,
       });
 
       return allUsers;
+    },
+  })
+
+  .query("getAllUsersByDateRanges", {
+    input: z.object({
+      dateRanges: z.array(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+        })
+      ),
+    }),
+    async resolve({ ctx, input }) {
+      const userCountsByDateRange = await Promise.all(
+        input.dateRanges.map(async (range) => {
+          const count = await ctx.prisma.user.count({
+            where: {
+              createdAt: {
+                gte: new Date(range.startDate),
+                lte: new Date(range.endDate),
+              },
+              email: {
+                not: "admin@solid.dev.br",
+              },
+            },
+          });
+          return count;
+        })
+      );
+
+      return userCountsByDateRange;
     },
   })
 

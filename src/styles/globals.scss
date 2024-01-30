@@ -90,6 +90,27 @@
   --toastify-color-progress-error: var(--toastify-color-error);
 }
 
+// Estilos globais para a barra de rolagem
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: inherit;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #6f57e1; // Cor roxa para a barra de rolagem
+  border-radius: 20px;
+  border: 2px solid #6f57e1; // Adicionei uma borda sólida para manter a consistência da cor
+}
+
+*::-webkit-scrollbar-corner {
+  background: inherit;
+}
+
 html,
 body {
   padding: 0;

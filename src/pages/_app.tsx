@@ -9,18 +9,30 @@ import "react-toastify/dist/ReactToastify.css";
 import superjson from "superjson";
 import type { AppRouter } from "../server/router";
 import "../styles/globals.scss";
+import { ReactElement, ReactNode } from "react";
+import { NextPage } from "next";
+import { AppProps } from "next/app";
 // Default theme. ~960B
 
 // Optional light theme (extends default). ~400B
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
 
-const MyApp: AppType = ({
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
-}) => {
+}: AppPropsWithLayout) => {
+  const getLayout = Component.getLayout ?? ((page: ReactElement) => page);
+
   return (
     <SessionProvider session={session}>
       <NextNProgress color="#7158e2" />
-      <Component {...pageProps} />
+      {getLayout(<Component {...pageProps} />)}
       <ToastContainer />
     </SessionProvider>
   );

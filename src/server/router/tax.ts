@@ -12,6 +12,28 @@ export const taxRouter = createRouter()
     }
     return next();
   })
+  .query("exchange.getById", {
+    input: z.object({
+      id: z.string(), // Defina o tipo apropriado para o ID
+    }),
+    resolve({ ctx, input }) {
+      const { id } = input;
+
+      // Consulte o banco de dados para obter os detalhes da exchange com o ID fornecido
+      const exchange = ctx.prisma.exchange.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!exchange) {
+        throw new TRPCError({ code: "NOT_FOUND" }); // Trate o caso em que a exchange não é encontrada
+      }
+
+      return exchange;
+    },
+  })
+
   .query("getTaxes", {
     input: z.object({
       search: z.string().optional(),
@@ -33,7 +55,7 @@ export const taxRouter = createRouter()
           },
         },
       });
-
+      console.log(taxes);
       return taxes;
     },
   })

@@ -68,6 +68,7 @@ const AdminExchanges: NextPage = () => {
       const { url } = await uploadToS3(image);
       imageUrl = url;
     }
+    //@ts-ignore
     createCryptoMutation.mutate({
       active: true,
       name,
@@ -98,6 +99,7 @@ const AdminExchanges: NextPage = () => {
       {modalOpen && (
         <ModalAddCrypto
           setOpenModal={setModalOpen}
+          //@ts-ignore
           onSubmit={handleCryptoCreate}
         />
       )}

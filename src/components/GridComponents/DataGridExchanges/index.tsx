@@ -1,8 +1,10 @@
-import { Box, TextField } from "@mui/material";
+import { Box, MenuItem, Select, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
   GridColumns,
+  GridFilterItem,
+  GridFilterModel,
   GridSelectionModel,
 } from "@mui/x-data-grid";
 
@@ -21,12 +23,35 @@ interface DataGridExchangesProps {
   onSearch: (searchTerm: string) => void;
 }
 
+function getAccessLevel(user: {
+  platinum: string;
+  gold: string;
+  silver: string;
+  bronze: string;
+}) {
+  if (user.platinum) {
+    return "Platinum";
+  } else if (user.gold) {
+    return "Gold";
+  } else if (user.silver) {
+    return "Silver";
+  } else if (user.bronze) {
+    return "Bronze";
+  } else {
+    return "Nenhum";
+  }
+}
+
 export function DataGridExchanges({
   data,
   isLoading = false,
   onSelect,
   onSearch,
 }: DataGridExchangesProps) {
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({
+    items: [],
+  });
+  const [convertFilter, setConvertFilter] = useState("");
   const [searchText, setSearchText] = useState<string>("");
   const columns: GridColumns = [
     {
@@ -37,6 +62,31 @@ export function DataGridExchanges({
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
+    },
+    {
+      field: "accessLevel",
+      filterable: true,
+      headerName: "Nível de Acesso",
+      width: 400,
+      sortable: false,
+      valueGetter: (params) => getAccessLevel(params.row),
+      renderCell: (params) => {
+        const level = getAccessLevel(params.row);
+        const levelColor = {
+          Bronze: "bronzeColor",
+          Silver: "silverColor",
+          Gold: "goldColor",
+          Platinum: "platinumColor",
+          Nenhum: "noneColor",
+        };
+        return (
+          <span
+            className={`${styles[levelColor[level]]} ${styles.accessLevelCell}`}
+          >
+            {level}
+          </span>
+        );
+      },
     },
     {
       field: "tag",
@@ -61,55 +111,23 @@ export function DataGridExchanges({
       headerName: "Converte",
       type: "boolean",
       width: 200,
+      filterable: true,
       editable: true,
       sortable: false,
-      filterable: false,
+
       disableColumnMenu: true,
+      renderCell: (params) => {
+        return params.value ? (
+          <div className={`${styles.convertTrue}`}>Converte</div>
+        ) : (
+          <div className={`${styles.convertFalse}`}>Não Converte</div>
+        );
+      },
     },
 
     {
       field: "active",
       headerName: "Ativo",
-      width: 300,
-      type: "boolean",
-      editable: true,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: "bronze",
-      headerName: "Bronze",
-      width: 300,
-      type: "boolean",
-      editable: true,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: "silver",
-      headerName: "Silver",
-      width: 300,
-      type: "boolean",
-      editable: true,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: "gold",
-      headerName: "Gold",
-      width: 300,
-      type: "boolean",
-      editable: true,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-    },
-    {
-      field: "platinum",
-      headerName: "Platinum",
       width: 300,
       type: "boolean",
       editable: true,
@@ -157,16 +175,78 @@ export function DataGridExchanges({
     onSelect(ids as string[]);
   };
 
+  const handleConvertFilterChange = (event: { target: { value: string } }) => {
+    const value = event.target.value;
+    setConvertFilter(value);
+
+    let newFilterItems: {
+      columnField: string;
+      operatorValue: string;
+      value: boolean;
+    }[] = [];
+    if (value === "yes") {
+      newFilterItems = [
+        {
+          columnField: "convert",
+          operatorValue: "is",
+          value: true,
+        },
+      ];
+    } else if (value === "no") {
+      newFilterItems = [
+        {
+          columnField: "convert",
+          operatorValue: "is",
+          value: false,
+        },
+      ];
+    }
+
+    setFilterModel({
+      items: newFilterItems,
+    });
+  };
+
   return (
     <div className={styles.tableContainer}>
-      <TextField
-        id="search-field"
-        label="Pesquisar"
-        placeholder="Pesquisar"
-        value={searchText}
-        onChange={handleSearchChange}
-        className={styles.customTextField}
-      />
+      <div className={styles.filter}>
+        <Select
+          value={filterModel.items[0]?.value || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            setFilterModel({
+              items: value
+                ? [
+                    {
+                      columnField: "accessLevel",
+                      operatorValue: "equals",
+                      value,
+                    },
+                  ]
+                : [],
+            });
+          }}
+          displayEmpty
+          inputProps={{ "aria-label": "Without label" }}
+        >
+          <MenuItem value="">
+            <em>Nenhum</em>
+          </MenuItem>
+          <MenuItem value="Bronze">Bronze</MenuItem>
+          <MenuItem value="Silver">Silver</MenuItem>
+          <MenuItem value="Gold">Gold</MenuItem>
+          <MenuItem value="Platinum">Platinum</MenuItem>
+        </Select>
+
+        <TextField
+          id="search-field"
+          label="Pesquisar"
+          placeholder="Pesquisar"
+          value={searchText}
+          onChange={handleSearchChange}
+          className={styles.customTextField}
+        />
+      </div>
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
           rows={data}
@@ -178,6 +258,8 @@ export function DataGridExchanges({
           onCellEditCommit={handleEditCommit}
           checkboxSelection
           onSelectionModelChange={handleSelectionChanged}
+          filterModel={filterModel}
+          onFilterModelChange={setFilterModel}
         />
       </Box>
     </div>

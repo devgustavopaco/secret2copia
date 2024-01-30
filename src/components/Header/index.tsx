@@ -161,10 +161,12 @@ export function Header() {
             Contato
           </a>
           {auth?.role === "admin" && (
-            <Link href="/admin/users">
+            <Link href="/admin/Newdashboard/dashboard">
               <a
                 className={`${styles.menuItem} ${
-                  router.pathname === "/admin/users" ? styles.active : ""
+                  router.pathname === "/admin/Newdashboard/dashboard"
+                    ? styles.active
+                    : ""
                 }`}
               >
                 Dashboard
@@ -245,10 +247,12 @@ export function Header() {
             </li>
             {auth?.role === "admin" && (
               <li>
-                <Link href="/admin/users">
+                <Link href="/admin/Newdashboard/dashboard">
                   <a
                     className={
-                      router.pathname === "/admin/users" ? "active" : ""
+                      router.pathname === "/admin/Newdashboard/dashboard"
+                        ? "active"
+                        : ""
                     }
                   >
                     Dashboard

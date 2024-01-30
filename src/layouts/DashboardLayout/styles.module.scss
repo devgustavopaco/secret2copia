@@ -1,0 +1,47 @@
+.container {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  grid-template-rows: 4rem 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  min-height: 100vh;
+  width: 100%;
+
+  font-family: var(--font-poppins);
+
+  & > main {
+    grid-area: main;
+    overflow-y: auto;
+    background-color: var(--primary-background-color-500);
+  }
+
+  & > header {
+    grid-area: header;
+    background-color: #20173f;
+  }
+
+  & > nav {
+    grid-area: sidebar;
+    background-color: #20173f;
+  }
+
+  .logo {
+    grid-area: logo;
+    width: 100%;
+    aspect-ratio: 1/1;
+    padding: 0.75rem;
+
+    place-self: center;
+    background-color: var(--black-500);
+  }
+
+  @media screen and (max-width: 600px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 4rem 1fr 4rem;
+    grid-template-areas:
+      "header"
+      "main"
+      "sidebar";
+  }
+}

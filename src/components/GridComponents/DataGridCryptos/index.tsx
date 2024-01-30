@@ -6,13 +6,14 @@ import {
   GridSelectionModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-
+import { useRouter } from "next/router";
 import type { Coin } from "@prisma/client";
 import { CheckCircle, XCircle } from "phosphor-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
+import { GridRowParams } from "@mui/x-data-grid";
 
 interface DataGridCryptosProps {
   data: Coin[];
@@ -27,6 +28,11 @@ export function DataGridCryptos({
   onSelect,
   onSearch,
 }: DataGridCryptosProps) {
+  const router = useRouter();
+
+  const handleRowClick = (param: GridRowParams) => {
+    router.push(`/admin/Newdashboard/moeda-cadastrada?coinId=${param.row.id}`);
+  };
   const [searchText, setSearchText] = useState<string>("");
   const columns: GridColumns = [
     {
@@ -148,6 +154,7 @@ export function DataGridCryptos({
           onCellEditCommit={handleEditCommit}
           checkboxSelection
           onSelectionModelChange={handleSelectionChanged}
+          onRowClick={handleRowClick}
         />
       </Box>
     </div>

@@ -1,6 +1,7 @@
 import { X } from "phosphor-react";
 import { ChangeEvent, FormEvent, useState } from "react";
-
+import { trpc } from "../../../utils/trpc";
+import { useS3Upload } from "next-s3-upload";
 import { ImageDropzone } from "../../ImageDropzone";
 import styles from "./styles.module.scss";
 
@@ -10,7 +11,10 @@ interface ModalAddCryptoProps {
     ticker: string,
     name: string,
     isFanToken: boolean,
-    image?: File | null
+    exchangeId: string,
+    tax: number,
+    confirmations: number,
+    imageUrl?: string
   ) => void;
 }
 
@@ -18,11 +22,19 @@ export function ModalAddCrypto({
   setOpenModal,
   onSubmit,
 }: ModalAddCryptoProps) {
+  let { uploadToS3 } = useS3Upload();
   const [name, setName] = useState("");
   const [ticker, setTicker] = useState("");
   const [isFanToken, setIsFanToken] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [tax, setTax] = useState(0);
+  const [confirmations, setConfirmations] = useState(0);
+  const [selectedExchange, setSelectedExchange] = useState("");
+
+  const { data: exchanges, isLoading: isLoadingExchanges } = trpc.useQuery([
+    "exchange.getActiveExchanges",
+  ]);
 
   const handleImageDrop = (files: File[]) => {
     const selectedImage = files[0];
@@ -54,10 +66,28 @@ export function ModalAddCrypto({
     setIsFanToken(event.target.checked);
   };
 
-  const handleFormSubmit = (event: FormEvent) => {
+  const handleFormSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    onSubmit(ticker, name, isFanToken, image);
+    let imageUrl = previewImageUrl;
+
+    if (image) {
+      try {
+        const { url } = await uploadToS3(image);
+        imageUrl = url;
+      } catch (error) {
+        console.error("Erro ao fazer upload da imagem:", error);
+      }
+    }
+    onSubmit(
+      ticker,
+      name,
+      isFanToken,
+      selectedExchange,
+      tax,
+      confirmations,
+      imageUrl
+    );
     setOpenModal(false);
   };
 
@@ -105,6 +135,48 @@ export function ModalAddCrypto({
               value={name}
               required
               onChange={handleNameChange}
+            />
+          </div>
+          <div className={styles.inputBox}>
+            <span className={styles.details}>Corretoras</span>
+            <select
+              name="Corretoras"
+              value={selectedExchange}
+              onChange={(e) => setSelectedExchange(e.target.value)}
+              required
+            >
+              {isLoadingExchanges ? (
+                <option value="">Carregando...</option>
+              ) : (
+                exchanges?.map((exchange) => (
+                  <option key={exchange.id} value={exchange.id}>
+                    {exchange.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+          <div className={styles.inputBox}>
+            <span className={styles.details}>Taxa</span>
+            <input
+              type="number"
+              placeholder="Taxa"
+              value={tax}
+              onChange={(e) => setTax(Number(e.target.value))}
+              min="0"
+              step="any"
+              required
+            />
+          </div>
+          <div className={styles.inputBox}>
+            <span className={styles.details}>Confirmações</span>
+            <input
+              type="number"
+              placeholder="Confirmações"
+              value={confirmations}
+              onChange={(e) => setConfirmations(Number(e.target.value))}
+              min="0"
+              required
             />
           </div>
           {previewImageUrl != "" ? (

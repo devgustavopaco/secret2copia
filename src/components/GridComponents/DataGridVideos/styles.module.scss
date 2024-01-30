@@ -6,7 +6,7 @@
   height: 100%;
 
   :global(.MuiDataGrid-overlay) {
-    background-color: #211f2d;
+    background-color: #20173f;
   }
   :global(.MuiDataGrid-root) {
     color: var(--white);
@@ -37,12 +37,12 @@
 .box {
   width: 100%;
   padding: 0 1rem;
-  background: #211f2d;
+  background: #20173f;
   border-radius: 8px;
   box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
 
   svg {
-    color: var(--purple-500) !important;
+    color: #6e6893 !important;
   }
 }
 
