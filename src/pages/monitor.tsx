@@ -124,9 +124,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     ? sellExchanges.map((e) => e.name)
     : [];
 
-  const isPlatinum =
-    user?.id === "clflk4hvj00109wu6d482zec0" || user?.platinum === true;
-
   const { refetch, data, isLoading, isFetching, hasNextPage, fetchNextPage } =
     trpc.useInfiniteQuery(
       [
@@ -135,12 +132,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
           buyExchanges: buyExchangesName ?? undefined,
           sellExchanges: sellExchangesName ?? undefined,
           email: userEmail ?? undefined,
-          isPlatinum: isPlatinum,
         },
       ],
       {
         getNextPageParam: (lastPage, allPages) => {
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 100;
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
           if (!morePagesExist) return undefined;
           return lastPage.nextCursor;
         },
