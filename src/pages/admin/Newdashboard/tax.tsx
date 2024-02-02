@@ -79,6 +79,7 @@ const Tax: NextPageWithLayout = () => {
       notify("Não foi possível realizar a operação!", false);
     },
   });
+
   return (
     <>
       {modalOpen && (

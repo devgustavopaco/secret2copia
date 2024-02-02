@@ -6,11 +6,12 @@ import {
   GridSelectionModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-
+import { CheckCircle, XCircle } from "phosphor-react";
 import type { ExchangeCoinTax } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
+import { toast } from "react-toastify";
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[];
@@ -85,11 +86,24 @@ export function DataGridTaxes({
       disableColumnMenu: true,
     },
   ];
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      });
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+    }
+  };
 
   const updateTaxMutation = trpc.useMutation("tax.update", {
-    onSuccess() {},
+    onSuccess() {
+      notify("Taxa alterada com sucesso!", true);
+    },
     onError(error) {
-      console.error(error.message);
+      notify("Não foi possível realizar a operação!", false);
     },
   });
 
@@ -174,4 +188,7 @@ export function DataGridTaxes({
       </Box>
     </div>
   );
+}
+function notify(arg0: string, arg1: boolean) {
+  throw new Error("Function not implemented.");
 }
