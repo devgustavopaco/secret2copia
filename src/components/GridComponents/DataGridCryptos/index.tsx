@@ -8,7 +8,7 @@ import {
 } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import type { Coin } from "@prisma/client";
-import { CheckCircle, XCircle } from "phosphor-react";
+import { CheckCircle, XCircle, Check, XSquare } from "phosphor-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { trpc } from "../../../utils/trpc";
@@ -83,6 +83,11 @@ export function DataGridCryptos({
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box onClick={(e) => e.stopPropagation()}>
+          {params.value ? <Check /> : <XCircle />}
+        </Box>
+      ),
     },
     {
       field: "active",
@@ -93,6 +98,11 @@ export function DataGridCryptos({
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box onClick={(e) => e.stopPropagation()}>
+          {params.value ? <Check /> : <XCircle />}
+        </Box>
+      ),
     },
   ];
 
