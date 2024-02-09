@@ -127,42 +127,75 @@ export const coinRouter = createRouter()
     },
   })
 
+  .mutation("updateExchangeCoinTax", {
+    input: z.object({
+      id: z.string(),
+      tax: z.number().min(0),
+    }),
+    async resolve({ ctx, input }) {
+      const { id, tax } = input;
+
+      try {
+        const updatedExchangeCoinTax = await ctx.prisma.exchangeCoinTax.update({
+          where: { id },
+          data: { tax },
+        });
+
+        return updatedExchangeCoinTax;
+      } catch (error) {
+        console.error(
+          "Erro ao atualizar a taxa da corretora para a moeda:",
+          error
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Não foi possível atualizar a taxa.",
+        });
+      }
+    },
+  })
+
   .mutation("addExchangeToCoin", {
     input: z.object({
       coinId: z.string().cuid(),
-      exchangeId: z.string().cuid(),
+      exchangeIds: z.array(z.string().cuid()),
       tax: z.number().min(0).optional(),
       confirmations: z.number().min(0).optional(),
     }),
     async resolve({ ctx, input }) {
-      // Verificando se a moeda existe
+      const { coinId, exchangeIds, tax = 0, confirmations = 0 } = input;
       const coinExists = await ctx.prisma.coin.findUnique({
-        where: { id: input.coinId },
+        where: { id: coinId },
       });
+
       if (!coinExists) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Coin not found" });
       }
 
-      const exchangeExists = await ctx.prisma.exchange.findUnique({
-        where: { id: input.exchangeId },
-      });
-      if (!exchangeExists) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Exchange not found",
-        });
-      }
+      const exchangeCoinTaxes = await Promise.all(
+        exchangeIds.map(async (exchangeId) => {
+          const exchangeExists = await ctx.prisma.exchange.findUnique({
+            where: { id: exchangeId },
+          });
+          if (!exchangeExists) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Exchange not found: ${exchangeId}`,
+            });
+          }
 
-      const exchangeCoinTax = await ctx.prisma.exchangeCoinTax.create({
-        data: {
-          coinId: input.coinId,
-          exchangeId: input.exchangeId,
-          tax: input.tax || 0,
-          confirmations: input.confirmations || 0,
-        },
-      });
+          return ctx.prisma.exchangeCoinTax.create({
+            data: {
+              coinId,
+              exchangeId,
+              tax,
+              confirmations,
+            },
+          });
+        })
+      );
 
-      return exchangeCoinTax;
+      return exchangeCoinTaxes;
     },
   })
 

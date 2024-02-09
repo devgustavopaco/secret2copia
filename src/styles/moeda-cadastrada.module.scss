@@ -59,6 +59,8 @@
 
   .tax {
     text-align: center;
+    display: flex;
+    align-items: center;
   }
 
   XIcon {
@@ -73,6 +75,7 @@
   display: flex;
   justify-content: space-between;
 }
+.saveButton,
 .addCryptoButton {
   display: flex;
   align-items: center;
@@ -101,4 +104,10 @@
 }
 .arrow {
   cursor: pointer;
+}
+.taxInput {
+  background: none;
+  border: none;
+
+  color: #fff;
 }

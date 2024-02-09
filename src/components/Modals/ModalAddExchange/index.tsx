@@ -10,7 +10,7 @@ export function ModalAddExchange({
   setOpenModal,
   coinId,
 }: ModalAddExchangeProps) {
-  const [selectedExchange, setSelectedExchange] = useState("");
+  const [selectedExchanges, setSelectedExchanges] = useState<string[]>([]);
   const [tax, setTax] = useState(0);
   const [confirmations, setConfirmations] = useState(0);
   const addExchangeToCoinMutation = trpc.useMutation("coin.addExchangeToCoin");
@@ -19,30 +19,36 @@ export function ModalAddExchange({
   ]);
 
   const handleAddExchange = (event: FormEvent) => {
-    console.log({ coinId, exchangeId: selectedExchange, tax, confirmations });
-
     event.preventDefault();
 
-    if (!selectedExchange) {
-      alert("Por favor, selecione uma corretora.");
+    if (!selectedExchanges.length) {
+      alert("Por favor, selecione uma ou mais corretoras.");
       return;
     }
 
     addExchangeToCoinMutation.mutate(
       {
         coinId,
-        exchangeId: selectedExchange,
+        exchangeIds: selectedExchanges,
         tax,
         confirmations,
       },
       {
         onSuccess: () => setOpenModal(false),
         onError: (error) => {
-          alert("Ocorreu um erro ao adicionar a corretora.");
+          alert("Ocorreu um erro ao adicionar as corretoras.");
           console.error(error);
         },
       }
     );
+  };
+
+  const handleSelectionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value
+    );
+    setSelectedExchanges(selectedOptions);
   };
 
   const handleTaxChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -71,9 +77,9 @@ export function ModalAddExchange({
             <span className={styles.details}>Corretoras</span>
             <select
               name="Corretoras"
-              id=""
-              value={selectedExchange}
-              onChange={(e) => setSelectedExchange(e.target.value)}
+              multiple
+              value={selectedExchanges}
+              onChange={handleSelectionChange}
             >
               {isLoadingExchanges ? (
                 <option>Carregando...</option>

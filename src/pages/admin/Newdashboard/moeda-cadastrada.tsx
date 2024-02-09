@@ -12,6 +12,13 @@ import { trpc } from "../../../utils/trpc";
 import { ModalAddExchange } from "../../../components/Modals/ModalAddExchange";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
+type EditedTaxesType = {
+  [key: string]: string;
+};
 
 interface Exchange {
   id: string;
@@ -42,12 +49,16 @@ const Moedacadastrada: NextPageWithLayout = () => {
   const removeExchangeFromCoinMutation = trpc.useMutation(
     "coin.removeExchangeFromCoin"
   );
+  const updateExchangeCoinTaxMutation = trpc.useMutation(
+    "coin.updateExchangeCoinTax"
+  );
   let { uploadToS3 } = useS3Upload();
   const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
   const { coinId: queryCoinId } = router.query;
   const coinId = Array.isArray(queryCoinId) ? queryCoinId[0] : queryCoinId;
   const [coinDetails, setCoinDetails] = useState<CoinDetails | null>(null);
+  const [editedTaxes, setEditedTaxes] = useState<EditedTaxesType>({});
 
   const { data, error } = trpc.useQuery(
     ["coin.getById", { id: coinId as string }],
@@ -137,6 +148,38 @@ const Moedacadastrada: NextPageWithLayout = () => {
     );
   };
 
+  const handleTaxChange = (exchangeId: string, newTaxValue: string) => {
+    setEditedTaxes((prev) => ({ ...prev, [exchangeId]: newTaxValue }));
+  };
+
+  const saveTaxChange = (exchangeCoinTaxId: string, newTaxValue: string) => {
+    const tax = parseFloat(newTaxValue);
+    if (!isNaN(tax)) {
+      updateExchangeCoinTaxMutation.mutate(
+        {
+          id: exchangeCoinTaxId,
+          tax,
+        },
+        {
+          onSuccess: () => {
+            console.log("Taxa atualizada com sucesso!");
+
+            toast.dark("Taxa salva com sucesso!", {
+              icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+            });
+          },
+          onError: (error) => {
+            console.error("Erro ao atualizar a taxa:", error);
+
+            toast.dark("Erro ao salvar a taxa.", {
+              icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+            });
+          },
+        }
+      );
+    }
+  };
+
   return (
     <>
       {modalOpen && (
@@ -145,6 +188,7 @@ const Moedacadastrada: NextPageWithLayout = () => {
           coinId={coinId as string}
         />
       )}
+
       <main className={styles.container}>
         <div className={styles.content}>
           <div className={styles.header}>
@@ -186,8 +230,29 @@ const Moedacadastrada: NextPageWithLayout = () => {
                 />
                 <h3>{exchangeCoinTax.exchange.name}</h3>
                 <div className={styles.tax}>
-                  <p>TAXA ATUAL</p>
-                  <span>{exchangeCoinTax.tax}%</span>
+                  <p>TAXA:</p>
+                  <input
+                    type="number"
+                    value={
+                      editedTaxes[exchangeCoinTax.id] ?? exchangeCoinTax.tax
+                    }
+                    onChange={(e) =>
+                      handleTaxChange(exchangeCoinTax.id, e.target.value)
+                    }
+                    className={styles.taxInput}
+                  />
+                  <button
+                    onClick={() =>
+                      saveTaxChange(
+                        exchangeCoinTax.id,
+                        editedTaxes[exchangeCoinTax.id] ??
+                          exchangeCoinTax.tax.toString()
+                      )
+                    }
+                    className={styles.saveButton}
+                  >
+                    Salvar
+                  </button>
                 </div>
                 <XIcon
                   onClick={() => handleRemoveExchange(exchangeCoinTax.id)}

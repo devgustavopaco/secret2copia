@@ -36,7 +36,17 @@
 }
 
 .inputBox {
-  select,
+  select {
+    height: 100px;
+    width: 100%;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+
+    background-color: #3a3847;
+    color: var(--gray-100);
+  }
+
   input {
     height: 45px;
     width: 100%;
