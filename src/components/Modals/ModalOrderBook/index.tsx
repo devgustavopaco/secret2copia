@@ -50,6 +50,16 @@ export function ModalOrderBook({
     }
   };
 
+  const asksWithTicker = orderbookAsk.orderbook.asks.map((ask) => ({
+    ...ask,
+    ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
+  }));
+
+  const bidsWithTicker = orderbookBid.orderbook.bids.map((bid) => ({
+    ...bid,
+    ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
+  }));
+
   const formatNumber = (value: number) => {
     return parseFloat(value.toFixed(2)); // Converte para número novamente
   };
@@ -112,11 +122,7 @@ export function ModalOrderBook({
 
           <div className={styles.contentTabs}>
             <DataGridOrderbook
-              data={
-                toggleState === "compra"
-                  ? orderbookAsk.orderbook.asks
-                  : orderbookBid.orderbook.bids
-              }
+              data={toggleState === "compra" ? asksWithTicker : bidsWithTicker}
               isUSD={
                 toggleState === "compra"
                   ? orderbookAsk.isUSD

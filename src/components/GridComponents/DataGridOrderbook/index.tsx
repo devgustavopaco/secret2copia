@@ -69,6 +69,33 @@ export function DataGridOrderbook({
     { email: auth?.user?.email as string },
   ]);
 
+  const dynamicDecimalFormatter = (value: number, ticker: string): string => {
+    const currencyDecimalMapping: { [key: string]: number } = {
+      SHIB: 8,
+      ELON: 10,
+      FLOKI: 7,
+      NFT: 9,
+      PEPE: 9,
+      EPX: 6,
+      BONK: 8,
+      WIN: 7,
+      RACA: 7,
+      CAPO: 6,
+      SATS: 9,
+    };
+
+    const fractionDigits = currencyDecimalMapping[ticker] || 3;
+
+    const formatter = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    });
+
+    return formatter.format(value);
+  };
+
   const dolarValue = user?.dolarValue ?? 1;
 
   const columns: GridColumns = [
@@ -85,8 +112,9 @@ export function DataGridOrderbook({
       align: "center", // centraliza as células
 
       valueGetter(params: GridRenderCellParams) {
-        return priceFormatter.format(
-          params.row.price * (isUSD ? dolarValue : 1)
+        return dynamicDecimalFormatter(
+          params.row.price * (isUSD ? dolarValue : 1),
+          params.row.ticker
         );
       },
     },

@@ -38,6 +38,33 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 4,
 });
 
+const dynamicDecimalFormatter = (value: number, ticker: string): string => {
+  const currencyDecimalMapping: { [key: string]: number } = {
+    SHIB: 8,
+    ELON: 10,
+    FLOKI: 7,
+    NFT: 9,
+    PEPE: 9,
+    EPX: 6,
+    BONK: 8,
+    WIN: 7,
+    RACA: 7,
+    CAPO: 6,
+    SATS: 9,
+  };
+
+  const fractionDigits = currencyDecimalMapping[ticker] || 3;
+
+  const formatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+  return formatter.format(value);
+};
+
 export function OperationCard({
   coin,
   dollarPrice = 1,
@@ -92,7 +119,7 @@ export function OperationCard({
           <p>
             <span>R$</span>
             &nbsp;
-            {numberFormatter.format(askPrice)}
+            {dynamicDecimalFormatter(askPrice, coin.symbol)}
           </p>
         </div>
 
@@ -113,7 +140,7 @@ export function OperationCard({
           <p>
             <span>R$</span>
             &nbsp;
-            {numberFormatter.format(bidPrice)}
+            {dynamicDecimalFormatter(bidPrice, coin.symbol)}
           </p>
         </div>
       </div>
