@@ -117,7 +117,6 @@ export function OperationCard({
             {coin.ask.exchange}
           </div>
           <p>
-            <span>R$</span>
             &nbsp;
             {dynamicDecimalFormatter(askPrice, coin.symbol)}
           </p>
@@ -138,7 +137,6 @@ export function OperationCard({
             {coin.bid.exchange}
           </div>
           <p>
-            <span>R$</span>
             &nbsp;
             {dynamicDecimalFormatter(bidPrice, coin.symbol)}
           </p>
