@@ -53,7 +53,7 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
     SATS: 9,
   };
 
-  const fractionDigits = currencyDecimalMapping[ticker] || 3;
+  const fractionDigits = currencyDecimalMapping[ticker] || 4;
 
   const formatter = new Intl.NumberFormat("pt-BR", {
     style: "currency",
