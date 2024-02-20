@@ -65,7 +65,8 @@ const dynamicDecimalFormatter = (value: number, ticker: Ticker) => {
     SATS: 9,
   };
 
-  let fractionDigits = currencyDecimalMapping[ticker];
+  let fractionDigits = currencyDecimalMapping[ticker] || 4;
+
   if (value !== 0 && value < Math.pow(10, -fractionDigits)) {
     fractionDigits = Math.max(Math.ceil(-Math.log10(value)), fractionDigits);
   }
@@ -164,7 +165,7 @@ export function OperationCard({
           </div>
           <p>
             R$ &nbsp;
-            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
+            {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}
           </p>
         </div>
       </div>
