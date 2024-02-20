@@ -3,6 +3,19 @@ import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
+type Ticker =
+  | "SHIB"
+  | "ELON"
+  | "FLOKI"
+  | "NFT"
+  | "PEPE"
+  | "EPX"
+  | "BONK"
+  | "WIN"
+  | "RACA"
+  | "CAPO"
+  | "SATS";
+
 interface OperationCardProps {
   coin: {
     image?: string;
@@ -37,9 +50,8 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 4,
 });
-
-const dynamicDecimalFormatter = (value: number, ticker: string): string => {
-  const currencyDecimalMapping: { [key: string]: number } = {
+const dynamicDecimalFormatter = (value: number, ticker: Ticker) => {
+  const currencyDecimalMapping: { [key in Ticker]: number } = {
     SHIB: 8,
     ELON: 10,
     FLOKI: 7,
@@ -53,16 +65,28 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
     SATS: 9,
   };
 
-  const fractionDigits = currencyDecimalMapping[ticker] || 4;
+  let fractionDigits = currencyDecimalMapping[ticker];
+  if (value !== 0 && value < Math.pow(10, -fractionDigits)) {
+    fractionDigits = Math.max(Math.ceil(-Math.log10(value)), fractionDigits);
+  }
 
   const formatter = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
 
   return formatter.format(value);
+};
+
+const calculatePrice = (
+  price: number,
+  isUSD: boolean,
+  dolarValue: number,
+  symbol: string
+) => {
+  let calculatedPrice = isUSD ? price * dolarValue : price;
+
+  return calculatedPrice;
 };
 
 export function OperationCard({
@@ -78,16 +102,18 @@ export function OperationCard({
 
   const dolarValue = user?.dolarValue ?? 1;
 
-  const bidPrice = coin.bid.isUSD
-    ? parseFloat(
-        (coin.bid.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
-      )
-    : coin.bid.price;
-  const askPrice = coin.ask.isUSD
-    ? parseFloat(
-        (coin.ask.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
-      )
-    : coin.ask.price;
+  const bidPrice = calculatePrice(
+    coin.bid.price,
+    coin.bid.isUSD,
+    dolarValue,
+    coin.symbol
+  );
+  const askPrice = calculatePrice(
+    coin.ask.price,
+    coin.ask.isUSD,
+    dolarValue,
+    coin.symbol
+  );
 
   return (
     <section className={styles.card}>
@@ -117,8 +143,8 @@ export function OperationCard({
             {coin.ask.exchange}
           </div>
           <p>
-            &nbsp;
-            {dynamicDecimalFormatter(askPrice, coin.symbol)}
+            R$ &nbsp;
+            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
           </p>
         </div>
 
@@ -137,8 +163,8 @@ export function OperationCard({
             {coin.bid.exchange}
           </div>
           <p>
-            &nbsp;
-            {dynamicDecimalFormatter(bidPrice, coin.symbol)}
+            R$ &nbsp;
+            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
           </p>
         </div>
       </div>
