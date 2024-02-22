@@ -82,6 +82,8 @@ export function DataGridOrderbook({
       RACA: 7,
       CAPO: 6,
       SATS: 9,
+      BTT: 9,
+      REEF: 6,
     };
 
     const fractionDigits = currencyDecimalMapping[ticker] || 4;

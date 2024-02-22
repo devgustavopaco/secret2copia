@@ -50,8 +50,8 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 4,
 });
-const dynamicDecimalFormatter = (value: number, ticker: Ticker) => {
-  const currencyDecimalMapping: { [key in Ticker]: number } = {
+const dynamicDecimalFormatter = (value: number, ticker: string): string => {
+  const currencyDecimalMapping: { [key: string]: number } = {
     SHIB: 8,
     ELON: 10,
     FLOKI: 7,
@@ -63,6 +63,8 @@ const dynamicDecimalFormatter = (value: number, ticker: Ticker) => {
     RACA: 7,
     CAPO: 6,
     SATS: 9,
+    BTT: 9,
+    REEF: 6,
   };
 
   let fractionDigits = currencyDecimalMapping[ticker] || 4;
