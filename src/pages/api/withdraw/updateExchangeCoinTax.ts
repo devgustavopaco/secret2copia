@@ -32,7 +32,7 @@ export default async function handler(
         .json({ error: "Falha ao atualizar ExchangeCoinTax" });
     }
   } else {
-    res.setHeader("Allow", ["POST"]);
+    res.setHeader("Allow", ["PUT"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
