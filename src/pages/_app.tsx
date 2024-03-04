@@ -1,20 +1,18 @@
 // src/pages/_app.tsx
 import { withTRPC } from "@trpc/next";
+import { NextPage } from "next";
 import { SessionProvider } from "next-auth/react";
-import type { AppType } from "next/dist/shared/lib/utils";
+import { AppProps } from "next/app";
 import NextNProgress from "nextjs-progressbar";
 import "nprogress/nprogress.css";
+import { ReactElement, ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import superjson from "superjson";
 import type { AppRouter } from "../server/router";
 import "../styles/globals.scss";
-import { ReactElement, ReactNode } from "react";
-import { NextPage } from "next";
-import { AppProps } from "next/app";
 // Default theme. ~960B
 
-// Optional light theme (extends default). ~400B
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
