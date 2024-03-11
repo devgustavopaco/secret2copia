@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
-
+//
 type Ticker =
   | "SHIB"
   | "ELON"
