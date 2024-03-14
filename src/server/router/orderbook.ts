@@ -462,7 +462,6 @@ export const orderbookRouter = createRouter()
       const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        // console.log('Sending empty orderbook: empty buy or sell exchanges')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: cursor,

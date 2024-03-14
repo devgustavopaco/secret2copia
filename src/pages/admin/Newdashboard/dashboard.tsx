@@ -12,7 +12,6 @@ const dashboard: NextPageWithLayout = () => {
             <div className={styles.middletitle}>
               <h1>Vendas</h1>
             </div>
-            {/* <FeaturedInfo /> */}
             <Chart />
           </div>
         </div>
