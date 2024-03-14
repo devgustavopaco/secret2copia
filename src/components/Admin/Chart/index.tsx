@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import {
+  Bar,
   CartesianGrid,
+  ComposedChart,
   Legend,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
+  TooltipProps,
   XAxis,
   YAxis,
 } from "recharts";
 import styles from "./styles.module.scss";
 
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 import { trpc } from "../../../utils/trpc";
 import { FeaturedInfo } from "../FeaturedInfo";
 
@@ -18,6 +24,29 @@ type ChartData = {
   name: string;
   vendas: number;
   totalPrice: number;
+};
+
+const CustomTooltip = ({
+  active,
+  payload,
+}: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    const { totalPrice, vendas } = payload[0]?.payload;
+
+    const formattedAmount = totalPrice.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    return (
+      <div className={styles.customTooltip}>
+        <p className="label">{`Valor total: ${formattedAmount}`}</p>
+        <p className="label">{`Usuários cadastrados: ${vendas}`}</p>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 const transformUserDataForChart = (userData: any[]): ChartData[] => {
@@ -68,7 +97,6 @@ export function Chart() {
   useEffect(() => {
     if (users) {
       const transformedData = transformUserDataForChart(users);
-      console.log(transformedData, "transformedData");
       setChartData(transformedData);
     }
   }, [users]);
@@ -82,7 +110,7 @@ export function Chart() {
       <div className={styles.chart}>
         <h3 className={styles.chartTitle}>Análise de Cadastros de Usuários</h3>
         <ResponsiveContainer width="100%" height={500}>
-          <LineChart
+          <ComposedChart
             data={chartData}
             margin={{
               top: 5,
@@ -91,18 +119,31 @@ export function Chart() {
               bottom: 5,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
             <Legend />
-            <Line
+            <CartesianGrid strokeDasharray="3 3" />
+
+            <XAxis dataKey="name" />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{
+                fill: "rgba(0, 0, 0, 0.15)",
+              }}
+            />
+            <YAxis
+              label={{
+                value: "Vendas totais",
+                angle: -90,
+                position: "insideLeft",
+              }}
+            />
+            <Line type="monotone" dataKey="vendas" stroke="#8000ff" />
+            <Bar
               type="monotone"
               dataKey="vendas"
-              stroke="#8884d8"
-              activeDot={{ r: 8 }}
+              fill="#8000ff0f"
+              stroke="#8000ff"
             />
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </>
