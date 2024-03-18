@@ -525,6 +525,7 @@ export const orderbookRouter = createRouter()
       return { arbitrageOpportunities, nextCursor };
     },
   })
+  //
   .query("getDollar", {
     async resolve({ ctx }) {
       return await ServerSingleton.getInstance().getDollar();
