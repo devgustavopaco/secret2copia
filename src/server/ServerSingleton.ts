@@ -72,7 +72,7 @@ export class ServerSingleton {
 
     return this.dolar;
   }
-
+  //
   private async fetchDollarToKrw(): Promise<number> {
     const response = await fetch(
       `https://api.frankfurter.app/latest?from=USD&to=KRW`
