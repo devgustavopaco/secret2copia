@@ -1,17 +1,14 @@
-import { ReactElement, useState } from "react";
-import DashboardLayout from "../../../layouts/DashboardLayout";
-import { NextPageWithLayout } from "../../_app";
-import styles from "../../../styles/user.module.scss";
-import React from "react";
-import { DataGridTaxes } from "../../../components/GridComponents/DataGridTaxes";
-import { trpc } from "../../../utils/trpc";
-import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
-import { ModalAddTax } from "../../../components/Modals/Taxes/ModalAddTax";
-import { toast } from "react-toastify";
 import axios from "axios";
-import { ExchangeCoinTax } from "@prisma/client";
-import { BeatLoader, PacmanLoader } from "react-spinners";
-import { Prisma } from "@prisma/client";
+import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
+import { ReactElement, useState } from "react";
+import { BeatLoader } from "react-spinners";
+import { toast } from "react-toastify";
+import { DataGridTaxes } from "../../../components/GridComponents/DataGridTaxes";
+import { ModalAddTax } from "../../../components/Modals/Taxes/ModalAddTax";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import styles from "../../../styles/user.module.scss";
+import { trpc } from "../../../utils/trpc";
+import { NextPageWithLayout } from "../../_app";
 
 interface WithdrawFeeResponseItem {
   currency: string;
@@ -31,6 +28,9 @@ const Tax: NextPageWithLayout = () => {
   };
   const [isUpdatingBinance, setIsUpdatingBinance] = useState(false);
   const [isUpdatingOKX, setIsUpdatingOKX] = useState(false);
+  const [isUpdatingMEXC, setIsUpdatingMEXC] = useState(false);
+  const [isUpdatingBitso, setIsUpdatingBitso] = useState(false);
+  const [isUpdatingBitfinex, setIsUpdatingBitfinex] = useState(false);
   const [isUpdatingMercadoBitcoin, setIsUpdatingMercadoBitcoin] =
     useState(false);
   const [isUpdatingKuCoin, setIsUpdatingKuCoin] = useState(false);
@@ -130,19 +130,15 @@ const Tax: NextPageWithLayout = () => {
   async function updateAllExchangeCoinTaxes() {
     setIsUpdatingBinance(true);
     try {
-      // Obter tickers registrados para a Binance
       const registeredTickers: string[] = await fetchRegisteredBinanceCoins();
 
-      // Obter dados da API da Binance
       const coinsData = await fetchCoinInfo();
 
-      // Filtrar moedas por tickers registrados
       const filteredCoinsData = coinsData.filter((coin: { ticker: string }) =>
         registeredTickers.includes(coin.ticker)
       );
 
       if (filteredCoinsData.length > 0) {
-        // Mapear moedas filtradas para promessas de atualização
         const updatePromises = filteredCoinsData.map(
           async ({
             ticker,
@@ -357,6 +353,151 @@ const Tax: NextPageWithLayout = () => {
       return [];
     }
   };
+
+  const [apiResponse, setApiResponse] = useState<any>(null);
+
+  const handleApiTest = async () => {
+    try {
+      const response = await axios.get("/api/withdraw/withdrawFeeBitso");
+      setApiResponse(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error calling the API", error);
+    }
+  };
+
+  async function fetchMEXCTaxes() {
+    setIsUpdatingMEXC(true);
+    try {
+      const registeredTickers: string[] = await fetchRegisteredMEXCCoins();
+
+      const response = await axios.get("/api/withdraw/withdrawFeeMexc");
+      const mexcTaxes = response.data;
+      console.log("MEXC taxes:", mexcTaxes);
+
+      const filteredMEXCTaxes = mexcTaxes.filter((coin: any) =>
+        registeredTickers.includes(coin.coin)
+      );
+
+      for (const coin of filteredMEXCTaxes) {
+        const { coin: ticker, networkList } = coin;
+        const withdrawFee =
+          networkList.length > 0 ? parseFloat(networkList[0].withdrawFee) : 0;
+
+        if (!isNaN(withdrawFee) && withdrawFee > 0) {
+          await axios.put("/api/withdraw/updateExchangeCoinTax", {
+            exchangeId: "clalg95ie031208mp6obj6dz1",
+            ticker,
+            tax: withdrawFee,
+          });
+        }
+      }
+
+      notify("Taxas da MEXC atualizadas com sucesso.", true);
+    } catch (error) {
+      console.error("Erro ao buscar/atualizar taxas da MEXC:", error);
+      notify("Erro ao buscar taxas da MEXC.", false);
+    }
+    setIsUpdatingMEXC(false);
+  }
+
+  const fetchRegisteredMEXCCoins = async () => {
+    try {
+      const response = await axios.get("/api/withdraw/getExchangeCoinTax", {
+        params: { exchangeId: "clalg95ie031208mp6obj6dz1" },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar moedas registradas:", error);
+      return [];
+    }
+  };
+  const fetchRegisteredBitfinexCoins = async () => {
+    try {
+      const response = await axios.get("/api/withdraw/getExchangeCoinTax", {
+        params: { exchangeId: "clalfvmve040508l11dyr7iro" },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar moedas registradas:", error);
+      return [];
+    }
+  };
+  async function fetchBitfinexTaxes() {
+    setIsUpdatingBitfinex(true);
+    try {
+      const registeredTickers: string[] = await fetchRegisteredBitfinexCoins();
+
+      const response = await axios.get("/api/withdraw/withdrawFeeBitFinex");
+      const bitfinexTaxes = response.data.withdraw;
+      console.log("Bitfinex taxes:", bitfinexTaxes);
+
+      for (const [ticker, taxInfo] of Object.entries(bitfinexTaxes)) {
+        if (registeredTickers.includes(ticker)) {
+          const withdrawFee = parseFloat((taxInfo as any).withdraw);
+
+          if (!isNaN(withdrawFee) && withdrawFee > 0) {
+            await axios.put("/api/withdraw/updateExchangeCoinTax", {
+              exchangeId: "clalfvmve040508l11dyr7iro",
+              ticker,
+              tax: withdrawFee,
+            });
+          }
+        }
+      }
+
+      notify("Taxas da Bitfinex atualizadas com sucesso.", true);
+    } catch (error) {
+      console.error("Erro ao buscar/atualizar taxas da Bitfinex:", error);
+      notify("Erro ao buscar taxas da Bitfinex.", false);
+    }
+    setIsUpdatingBitfinex(false);
+  }
+
+  const fetchRegisteredBitsoCoins = async () => {
+    try {
+      const response = await axios.get("/api/withdraw/getExchangeCoinTax", {
+        params: { exchangeId: "clalfxkc9005608mpriyf2kj5" },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar moedas registradas:", error);
+      return [];
+    }
+  };
+
+  async function fetchBitsoTaxes() {
+    setIsUpdatingBitso(true);
+    try {
+      const registeredTickers: string[] = await fetchRegisteredBitsoCoins();
+
+      const response = await axios.get("/api/withdraw/withdrawFeeBitso");
+      const bitsoTaxes = response.data.withdraw;
+
+      for (const [ticker, taxInfo] of Object.entries(bitsoTaxes)) {
+        if (registeredTickers.includes(ticker)) {
+          const withdrawFee = parseFloat((taxInfo as any).withdraw?.fee);
+
+          if (!isNaN(withdrawFee) && withdrawFee > 0) {
+            await axios.put("/api/withdraw/updateExchangeCoinTax", {
+              exchangeId: "clalfxkc9005608mpriyf2kj5",
+              ticker,
+              tax: withdrawFee,
+            });
+          }
+        }
+      }
+
+      notify("Taxas da Bitso atualizadas com sucesso.", true);
+    } catch (error) {
+      console.error("Erro ao buscar/atualizar taxas da Bitso:", error);
+      notify("Erro ao buscar taxas da Bitso.", false);
+    }
+    setIsUpdatingBitso(false);
+  }
   return (
     <>
       {modalOpen && (
@@ -454,6 +595,48 @@ const Tax: NextPageWithLayout = () => {
                 </>
               ) : (
                 "Atualizar taxas da KuCoin"
+              )}
+            </button>
+            <button
+              onClick={fetchMEXCTaxes}
+              className={styles.addCryptoButton}
+              disabled={isUpdatingMEXC}
+            >
+              {isUpdatingMEXC ? (
+                <>
+                  <span>Atualizando taxas</span>
+                  <BeatLoader size={8} color={"#FFFFFF"} margin={2} />
+                </>
+              ) : (
+                "Atualizar taxas da Mexc"
+              )}
+            </button>
+            <button
+              onClick={fetchBitfinexTaxes}
+              className={styles.addCryptoButton}
+              disabled={isUpdatingBitfinex}
+            >
+              {isUpdatingBitfinex ? (
+                <>
+                  <span>Atualizando taxas</span>
+                  <BeatLoader size={8} color={"#FFFFFF"} margin={2} />
+                </>
+              ) : (
+                "Atualizar taxas da Bitfinex"
+              )}
+            </button>
+            <button
+              onClick={fetchBitsoTaxes}
+              className={styles.addCryptoButton}
+              disabled={isUpdatingBitso}
+            >
+              {isUpdatingBitso ? (
+                <>
+                  <span>Atualizando taxas</span>
+                  <BeatLoader size={8} color={"#FFFFFF"} margin={2} />
+                </>
+              ) : (
+                "Atualizar taxas da Bitso"
               )}
             </button>
           </div>
