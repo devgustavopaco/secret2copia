@@ -4,7 +4,6 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "../../../server/db/client";
 
-// Function to verify the reCAPTCHA token
 async function verifyRecaptchaToken(token: string) {
   const response = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
@@ -13,10 +12,8 @@ async function verifyRecaptchaToken(token: string) {
 }
 
 export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [
-    // ...add more providers here
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -69,6 +66,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.role = user.role.name;
+        token.jwt = user.jwt;
       }
       return token;
     },
@@ -78,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         session.email = token.email as string;
         session.name = token.name as string;
         session.role = token.role as string;
+        session.jwt = token.jwt as string;
       }
       return session;
     },

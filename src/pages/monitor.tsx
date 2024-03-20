@@ -12,6 +12,7 @@ import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { XCircle } from "phosphor-react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -95,20 +96,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
   ]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedBuyExchanges = localStorage.getItem("buyExchanges");
-      if (savedBuyExchanges) {
-        setBuyExchanges(JSON.parse(savedBuyExchanges));
-      }
-
-      const savedSellExchanges = localStorage.getItem("sellExchanges");
-      if (savedSellExchanges) {
-        setSellExchanges(JSON.parse(savedSellExchanges));
-      }
-    }
-  }, [sidebarClickCount]);
-
-  useEffect(() => {
     if (!queryInfo.data) {
       queryInfo.refetch();
     }
@@ -124,42 +111,88 @@ const Monitoring: NextPage<MonitoringProps> = ({
     ? sellExchanges.map((e) => e.name)
     : [];
 
-  const { refetch, data, isLoading, isFetching, hasNextPage, fetchNextPage } =
-    trpc.useInfiniteQuery(
-      [
-        "orderBook.getPaginated",
-        {
-          buyExchanges: buyExchangesName ?? undefined,
-          sellExchanges: sellExchangesName ?? undefined,
-          email: userEmail ?? undefined,
-        },
-      ],
-      {
-        getNextPageParam: (lastPage, allPages) => {
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
-          if (!morePagesExist) return undefined;
-          return lastPage.nextCursor;
-        },
-        refetchInterval: 20 * 1000,
-        retry(failureCount, error) {
-          if (failureCount > 3) {
-            return false;
-          }
-          return true;
-        },
-        keepPreviousData: false,
-        onSuccess(data) {
-          if (data?.pages.flat().length === 0 && !isFetching) {
-            refetch();
-          }
-        },
-        onError(error) {
-          if (!isFetching) {
-            refetch();
-          }
-        },
-      }
+  const queryClient = useQueryClient();
+
+  const fetchPaginatedOrderbook = async ({
+    pageParam,
+  }: {
+    pageParam: number;
+  }) => {
+    const res = await fetch(
+      `https://akatsukistore.com.br/orderbook/getPaginated?buyExchanges=${encodeURI(
+        buyExchangesName?.join(",")
+      )}&sellExchanges=${encodeURI(
+        sellExchangesName?.join(",")
+      )}&cursor=${pageParam}&limit=25&email=${userEmail}`
     );
+    return res.json();
+  };
+
+  const {
+    refetch,
+    data,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+    isSuccess,
+  } = useInfiniteQuery({
+    queryKey: ["orderBook.getPaginated"],
+    queryFn: fetchPaginatedOrderbook,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
+      if (!morePagesExist) return undefined;
+      return lastPage.nextCursor;
+    },
+    refetchInterval: 20 * 1000,
+    retry(failureCount, error) {
+      if (failureCount > 3) {
+        return false;
+      }
+      return true;
+    },
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      if (data?.pages.flat().length === 0 && !isFetching) {
+        refetch();
+      }
+    }
+    if (isError) {
+      if (!isFetching) {
+        refetch();
+      }
+    }
+  }, [
+    data,
+    isFetching,
+    isError,
+    isSuccess,
+    refetch,
+    buyExchanges,
+    sellExchanges,
+  ]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      refetch();
+      //@ts-ignore
+      queryClient.removeQueries(["orderBook.getPaginated"], { exact: true });
+
+      const savedBuyExchanges = localStorage.getItem("buyExchanges");
+      if (savedBuyExchanges) {
+        setBuyExchanges(JSON.parse(savedBuyExchanges));
+      }
+
+      const savedSellExchanges = localStorage.getItem("sellExchanges");
+      if (savedSellExchanges) {
+        setSellExchanges(JSON.parse(savedSellExchanges));
+      }
+    }
+  }, [sidebarClickCount, refetch]);
 
   if (hasNextPage && !isLoading && !isFetching) {
     fetchNextPage();

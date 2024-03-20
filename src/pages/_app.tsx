@@ -1,4 +1,5 @@
 // src/pages/_app.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { withTRPC } from "@trpc/next";
 import { NextPage } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -21,6 +22,8 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
+const queryClient = new QueryClient();
+
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
@@ -28,11 +31,13 @@ const MyApp = ({
   const getLayout = Component.getLayout ?? ((page: ReactElement) => page);
 
   return (
-    <SessionProvider session={session}>
-      <NextNProgress color="#7158e2" />
-      {getLayout(<Component {...pageProps} />)}
-      <ToastContainer />
-    </SessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionProvider session={session}>
+        <NextNProgress color="#7158e2" />
+        {getLayout(<Component {...pageProps} />)}
+        <ToastContainer />
+      </SessionProvider>
+    </QueryClientProvider>
   );
 };
 

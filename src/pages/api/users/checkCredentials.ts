@@ -1,7 +1,36 @@
-// src/pages/api/examples.ts
-import type { NextApiRequest, NextApiResponse } from "next";
 import { compare } from "bcrypt";
+import jwt from "jsonwebtoken";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../server/db/client";
+
+function generateJwtForUser(
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+    password: string | null;
+    role: {
+      name: string;
+    };
+  } | null
+) {
+  if (!user) throw new Error("User object is null");
+
+  const payload = {
+    id: user.id,
+    email: user.email,
+    role: user.role.name,
+  };
+
+  const secretKey = process.env.JWT_SECRET_KEY as string;
+
+  const expiresIn = "6h";
+
+  const token = jwt.sign(payload, secretKey, { expiresIn });
+
+  return token;
+}
 
 const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = await prisma.user.findUnique({
@@ -27,11 +56,17 @@ const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
     user.password &&
     (await compare(req.body.password, user.password))
   ) {
-    const { password, ...userWithoutPassword } = user;
+    const jwtToken = generateJwtForUser(user);
 
-    res.status(200).json(userWithoutPassword);
+    const { password, ...userWithoutPassword } = user;
+    const responsePayload = {
+      ...userWithoutPassword,
+      jwt: jwtToken,
+    };
+
+    res.status(200).json(responsePayload);
   } else {
-    res.status(400).end("Email ou senha inválidos");
+    res.status(400).send("Email ou senha inválidos");
   }
 };
 
