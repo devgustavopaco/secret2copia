@@ -1,24 +1,23 @@
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import { XCircle } from "phosphor-react";
 import { useCallback, useEffect, useState } from "react";
+import { BeatLoader, PacmanLoader } from "react-spinners";
+import { toast } from "react-toastify";
 import { Header } from "../components/Header";
+import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
+import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
+import { updateIP } from "../server/db/checkIP";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
-
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { XCircle } from "phosphor-react";
-import { BeatLoader, PacmanLoader } from "react-spinners";
-import { toast } from "react-toastify";
-import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
-import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
-import { updateIP } from "../server/db/checkIP";
 
 interface MonitoringProps {
   ip: string;
@@ -129,6 +128,62 @@ const Monitoring: NextPage<MonitoringProps> = ({
     return res.json();
   };
 
+  let queryResult: any;
+
+  if (isAdmin) {
+    queryResult = trpc.useInfiniteQuery(
+      [
+        "orderBook.getPaginated",
+        {
+          buyExchanges: buyExchangesName ?? undefined,
+          sellExchanges: sellExchangesName ?? undefined,
+          email: userEmail ?? undefined,
+        },
+      ],
+      {
+        getNextPageParam: (lastPage) => {
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
+          if (!morePagesExist) return undefined;
+          return lastPage.nextCursor;
+        },
+        refetchInterval: 20 * 1000,
+        retry(failureCount) {
+          return failureCount <= 3;
+        },
+        keepPreviousData: false,
+        onSuccess(data) {
+          if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
+            queryResult.refetch();
+          }
+        },
+        onError() {
+          if (!queryResult.isFetching) {
+            queryResult.refetch();
+          }
+        },
+      }
+    );
+  } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    queryResult = useInfiniteQuery({
+      queryKey: ["orderBook.getPaginated"],
+      queryFn: fetchPaginatedOrderbook,
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
+        if (!morePagesExist) return undefined;
+        return lastPage.nextCursor;
+      },
+      refetchInterval: 20 * 1000,
+      retry(failureCount, error) {
+        if (failureCount > 3) {
+          return false;
+        }
+        return true;
+      },
+    });
+  }
+
   const {
     refetch,
     data,
@@ -138,33 +193,19 @@ const Monitoring: NextPage<MonitoringProps> = ({
     fetchNextPage,
     isError,
     isSuccess,
-  } = useInfiniteQuery({
-    queryKey: ["orderBook.getPaginated"],
-    queryFn: fetchPaginatedOrderbook,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
-      if (!morePagesExist) return undefined;
-      return lastPage.nextCursor;
-    },
-    refetchInterval: 20 * 1000,
-    retry(failureCount, error) {
-      if (failureCount > 3) {
-        return false;
-      }
-      return true;
-    },
-  });
+  } = queryResult;
 
   useEffect(() => {
-    if (isSuccess) {
-      if (data?.pages.flat().length === 0 && !isFetching) {
-        refetch();
+    if (!isAdmin) {
+      if (isSuccess) {
+        if (data?.pages.flat().length === 0 && !isFetching) {
+          refetch();
+        }
       }
-    }
-    if (isError) {
-      if (!isFetching) {
-        refetch();
+      if (isError) {
+        if (!isFetching) {
+          refetch();
+        }
       }
     }
   }, [
@@ -175,6 +216,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     refetch,
     buyExchanges,
     sellExchanges,
+    isAdmin,
   ]);
 
   useEffect(() => {
@@ -254,10 +296,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
   );
 
   let allArbitrageOpportunities =
-    data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
+    data?.pages.flatMap((page: any) => page.arbitrageOpportunities) ?? [];
 
   let operationsMap = new Map();
-  allArbitrageOpportunities.forEach((operation) => {
+  allArbitrageOpportunities.forEach((operation: any) => {
     if (operation && operation.spread > 0) {
       operationsMap.set(operation.coin, operation);
     }
