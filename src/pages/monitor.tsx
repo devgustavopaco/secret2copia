@@ -73,7 +73,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
   });
   const [sidebarClickCount, setSidebarClickCount] = useState(0);
 
-  const clickOnSidebar = () => {
+  const clickOnSidebar = (event: any) => {
+    event.stopPropagation();
     setSidebarClickCount((prevCount) => prevCount + 1);
   };
 
@@ -192,7 +193,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         setSellExchanges(JSON.parse(savedSellExchanges));
       }
     }
-  }, [sidebarClickCount, refetch]);
+  }, [sidebarClickCount, refetch, queryClient]);
 
   if (hasNextPage && !isLoading && !isFetching) {
     fetchNextPage();
@@ -311,10 +312,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
           )}
         </>
         <div className={styles.backgroundmMonitor}>
-          <div
-            className={`${styles.content} container`}
-            onClick={clickOnSidebar}
-          >
+          <div className={`${styles.content} container`}>
             {modalState ? (
               <></>
             ) : (
@@ -353,7 +351,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 </div>
               </div>
             )}
-            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
+            <div
+              className={styles.mobileFilter}
+              onClick={(event) => clickOnSidebar(event)}
+            >
               <span>Exchanges Compra</span>
               <BuyExchangeMobile
                 dollarPrice={dollarPrice}
@@ -367,7 +368,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
               />
             </div>
 
-            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
+            <div
+              className={styles.mobileFilter}
+              onClick={(event) => clickOnSidebar(event)}
+            >
               <span>Exchanges Venda</span>
               <SellExchangeMobile
                 dollarPrice={dollarPrice}
@@ -380,16 +384,18 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 isAdmin={isAdmin}
               />
             </div>
-            <Sidebar
-              dollarPrice={dollarPrice}
-              defaultExchanges={ActiveExchanges || []}
-              buyExchanges={buyExchanges || []}
-              sellExchanges={sellExchanges || []}
-              onChangeDolar={onChangeDolar}
-              dolarValue={dolarValue as number}
-              onModalChange={handleModalState}
-              isAdmin={isAdmin}
-            />
+            <div onClick={(event) => clickOnSidebar(event)}>
+              <Sidebar
+                dollarPrice={dollarPrice}
+                defaultExchanges={ActiveExchanges || []}
+                buyExchanges={buyExchanges || []}
+                sellExchanges={sellExchanges || []}
+                onChangeDolar={onChangeDolar}
+                dolarValue={dolarValue as number}
+                onModalChange={handleModalState}
+                isAdmin={isAdmin}
+              />
+            </div>
             <main>
               <h1>
                 {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
