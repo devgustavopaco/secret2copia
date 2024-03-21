@@ -2,135 +2,134 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
-  binaryTargets   = ["native", "debian-openssl-1.1.x"]
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity"]
+    binaryTargets   = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
+    provider             = "mysql"
+    url                  = env("DATABASE_URL")
+    referentialIntegrity = "prisma"
 }
 
 // Necessary for Next auth
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  videosId          String?
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String?
+    access_token      String?
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String?
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    videosId          String?
 
-  @@unique([provider, providerAccountId])
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  videosId     String?
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    videosId     String?
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  phone         String?
-  sessions      Session[]
-  pricePaid     Float?
-  dolarValue    Float?
-  Account       Account[]
-  role          Role      @relation(fields: [roleId], references: [id])
-  roleId        String
-  bronze        Boolean
-  silver        Boolean
-  gold          Boolean
-  platinum      Boolean
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    password      String?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    phone         String?
+    sessions      Session[]
+    pricePaid     Float?
+    dolarValue    Float?
+    Account       Account[]
+    role          Role      @relation(fields: [roleId], references: [id])
+    roleId        String
+    bronze        Boolean
+    silver        Boolean
+    gold          Boolean
+    platinum      Boolean
 }
 
 model Videos {
-  id                 String   @id @default(cuid())
-  title              String
-  description        String   @db.VarChar(1000)
-  additionalMaterial String?
-  idYoutube          String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+    id                 String   @id @default(cuid())
+    title              String
+    description        String   @db.VarChar(1000)
+    additionalMaterial String?
+    idYoutube          String
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
 }
 
 model Role {
-  id   String @id @default(cuid())
-  name String @unique
-  User User[]
+    id   String @id @default(cuid())
+    name String @unique
+    User User[]
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+    identifier String
+    token      String   @unique
+    expires    DateTime
 
-  @@unique([identifier, token])
+    @@unique([identifier, token])
 }
 
 model Exchange {
-  id              String            @id @default(cuid())
-  tag             String            @unique
-  name            String
-  fee             Float
-  active          Boolean           @default(true)
-  image_url       String?
-  convert         Boolean
-  bronze          Boolean
-  silver          Boolean
-  gold            Boolean
-  platinum        Boolean
-  ExchangeCoinTax ExchangeCoinTax[]
+    id              String            @id @default(cuid())
+    tag             String            @unique
+    name            String
+    fee             Float
+    active          Boolean           @default(true)
+    image_url       String?
+    convert         Boolean
+    bronze          Boolean
+    silver          Boolean
+    gold            Boolean
+    platinum        Boolean
+    ExchangeCoinTax ExchangeCoinTax[]
 }
 
 model Coin {
-  id              String            @id @default(cuid())
-  name            String            @unique
-  ticker          String
-  image_url       String?
-  active          Boolean
-  isFanToken      Boolean           @default(false)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  ExchangeCoinTax ExchangeCoinTax[]
+    id              String            @id @default(cuid())
+    name            String            @unique
+    ticker          String
+    image_url       String?
+    active          Boolean
+    isFanToken      Boolean           @default(false)
+    createdAt       DateTime          @default(now())
+    updatedAt       DateTime          @updatedAt
+    ExchangeCoinTax ExchangeCoinTax[]
 }
 
 model ExchangeCoinTax {
-  id            String   @id @default(cuid())
-  exchangeId    String
-  exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  coinId        String
-  coin          Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
-  tax           Float
-  confirmations Int
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
+    id            String   @id @default(cuid())
+    exchangeId    String
+    exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+    coinId        String
+    coin          Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+    tax           Float
+    confirmations Int
+    active        Boolean  @default(true)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 }
 
 model IP {
-  id     String @id @default(cuid())
-  ip     String
-  userId String @unique
+    id     String @id @default(cuid())
+    ip     String
+    userId String @unique
 }

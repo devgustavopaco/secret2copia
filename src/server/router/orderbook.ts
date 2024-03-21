@@ -7,6 +7,10 @@ import type {
   ExchangeStrategy,
 } from "../modules/exchanges/ExchangeStrategy";
 //
+import { Prisma, PrismaClient } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
+import { NextApiRequest, NextApiResponse } from "next";
+import { Session } from "next-auth";
 import {
   AscendexStrategy,
   BidgetStrategy,
@@ -150,7 +154,7 @@ export interface ArbitrageOpportunity {
     amount: number;
     isUSD: boolean;
     image_url?: string;
-    orderbook: Orderbook;
+    orderbook: Orderbook | undefined;
   };
   highestBid: {
     exchange: string;
@@ -158,7 +162,7 @@ export interface ArbitrageOpportunity {
     amount: number;
     isUSD: boolean;
     image_url?: string;
-    orderbook: Orderbook;
+    orderbook: Orderbook | undefined;
   };
   tax: number;
   fee: number;
@@ -171,7 +175,7 @@ interface FilteredOrderbook {
   amount: number;
   isUSD: boolean;
   image_url?: string;
-  orderbook: Orderbook;
+  orderbook: Orderbook | undefined;
 }
 
 const formatExchangeName = (exchange: string): string => {
@@ -186,8 +190,8 @@ const fetchArbitrageOpportunity = async (
     isFanToken: boolean;
     imageUrl?: string;
   },
-  buyExchanges: string[],
-  sellExchanges: string[],
+  buyExchanges: { name: string; id: string }[],
+  sellExchanges: { name: string; id: string }[],
   taxes: {
     exchange: {
       name: string;
@@ -205,7 +209,7 @@ const fetchArbitrageOpportunity = async (
 
   var uniqueExchanges = Array.from(
     new Set([...buyExchanges, ...sellExchanges])
-  ).map((exchange) => formatExchangeName(exchange));
+  ).map((exchange) => formatExchangeName(exchange.name));
 
   for (const exchange of uniqueExchanges) {
     const exchangeStrategy = exchangeStrategies[exchange];
@@ -235,7 +239,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = buyExchanges.some(
         (element) =>
-          formatExchangeName(element) ===
+          formatExchangeName(element.name) ===
           formatExchangeName(exchange.name.toLowerCase())
       );
       if (isContained) {
@@ -269,7 +273,7 @@ const fetchArbitrageOpportunity = async (
     (acc, exchange) => {
       const isContained = sellExchanges.some(
         (element) =>
-          formatExchangeName(element) ===
+          formatExchangeName(element.name) ===
           formatExchangeName(exchange.name.toLowerCase())
       );
 
@@ -305,37 +309,33 @@ const fetchArbitrageOpportunity = async (
   );
 
   const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange);
-  const lowestAskPair = exchangeStrategies[lowestAskExchangeName]!.formatPair(
+
+  const lowestAskPair = exchangeStrategies[lowestAskExchangeName]?.formatPair(
     ticker,
     "usdt",
     isFanToken
   );
   lowestAsk.orderbook = await exchangeStrategies[
     lowestAskExchangeName
-  ]!.convertOrderbook(lowestAskPair, isFanToken);
+  ]?.convertOrderbook(lowestAskPair ?? "", isFanToken);
 
   const highestBidExchangeName = formatExchangeName(highestBid.exchange);
-  const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
+  const highestBidPair = exchangeStrategies[highestBidExchangeName]?.formatPair(
     ticker,
     "usdt",
     isFanToken
   );
   highestBid.orderbook = await exchangeStrategies[
     highestBidExchangeName
-  ]!.convertOrderbook(highestBidPair, isFanToken);
+  ]?.convertOrderbook(highestBidPair ?? "", isFanToken);
 
   const lowestAskTax = taxes.find(
     (tax) =>
       tax.exchange.name.toLowerCase().trim() ===
       lowestAsk.exchange.toLowerCase().trim()
   );
-  const highestBidTax = taxes.find(
-    (tax) => tax.exchange.name === highestBid.exchange
-  );
 
   const exchanges = ExchangesSingleton.getInstance().exchanges;
-
-  //console.table(exchanges)
 
   const lowestAskExchange = exchanges.find(
     (exchange) =>
@@ -375,84 +375,22 @@ const fetchArbitrageOpportunity = async (
   };
 };
 
+const exchangeSchema = z.object({
+  name: z.string(),
+  id: z.string(),
+});
+
 export const orderbookRouter = createRouter()
-  .query("getAll", {
-    input: z
-      .object({
-        buyExchanges: z.string().array(),
-        sellExchanges: z.string().array(),
-        email: z.string().optional(),
-      })
-      .optional(),
-    async resolve({ ctx, input }) {
-      if (!input) {
-        // console.log('Sending empty orderbook')
-        return [];
-      }
-
-      const { buyExchanges, sellExchanges } = input;
-
-      if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        // console.log('Sending empty orderbook: empty buy or sell exchanges')
-        return [];
-      }
-
-      let activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
-
-      activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
-        return [];
-      }
-
-      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
-        [];
-
-      for (const coin of activeCoins) {
-        arbitrageOpportunitiesPromises.push(
-          fetchArbitrageOpportunity(
-            ctx,
-            {
-              name: coin.name,
-              ticker: coin.ticker,
-              isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
-            },
-            buyExchanges,
-            sellExchanges,
-            coin.ExchangeCoinTax,
-            input?.email || ""
-          )
-        );
-      }
-
-      const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
-
-      const arbitrageOpportunities = results.map((result) => {
-        if (result.status === "fulfilled") {
-          return result.value;
-        }
-      });
-
-      return arbitrageOpportunities;
-    },
-  })
   .query("getPaginated", {
     input: z.object({
-      buyExchanges: z.string().array(),
-      sellExchanges: z.string().array(),
+      buyExchanges: z.array(exchangeSchema),
+      sellExchanges: z.array(exchangeSchema),
       email: z.string().optional(),
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number().nullish(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
-        // console.log('Sending empty orderbook')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: 1,
@@ -470,18 +408,11 @@ export const orderbookRouter = createRouter()
 
       let activeCoins = CoinsSingleton.getInstance().coins;
 
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
-
-      activeCoins = CoinsSingleton.getInstance().coins;
-
       const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
       const endIndex = startIndex + (limit ?? 50);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
 
       if (paginatedCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: cursor,
@@ -492,6 +423,13 @@ export const orderbookRouter = createRouter()
         [];
 
       for (const coin of paginatedCoins) {
+        const [filteredBuyExchanges, filteredSellExchanges] =
+          await filterExchangesBasedOnCoinAvailability(
+            ctx,
+            coin.id,
+            buyExchanges,
+            sellExchanges
+          );
         arbitrageOpportunitiesPromises.push(
           fetchArbitrageOpportunity(
             ctx,
@@ -501,8 +439,8 @@ export const orderbookRouter = createRouter()
               isFanToken: coin.isFanToken,
               imageUrl: coin.image_url ?? undefined,
             },
-            buyExchanges,
-            sellExchanges,
+            filteredBuyExchanges ?? Array({ name: "", id: "" }),
+            filteredSellExchanges ?? Array({ name: "", id: "" }),
             coin.ExchangeCoinTax,
             input?.email || ""
           )
@@ -531,3 +469,44 @@ export const orderbookRouter = createRouter()
       return await ServerSingleton.getInstance().getDollar();
     },
   });
+
+async function filterExchangesBasedOnCoinAvailability(
+  ctx: {
+    req: NextApiRequest | undefined;
+    res: NextApiResponse | undefined;
+    session: Session | null | undefined;
+    prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>;
+  },
+  coinId: string,
+  buyExchanges: {
+    name: string;
+    id: string;
+  }[],
+  sellExchanges: {
+    name: string;
+    id: string;
+  }[]
+) {
+  const availableExchangesForCoin = await ctx.prisma.exchangeCoinTax.findMany({
+    where: {
+      coinId: coinId,
+      active: true,
+    },
+    select: {
+      exchangeId: true,
+    },
+  });
+
+  const availableExchangeIds = new Set(
+    availableExchangesForCoin.map((e) => e.exchangeId)
+  );
+
+  let filteredBuyExchanges = buyExchanges.filter((exchange) =>
+    availableExchangeIds.has(exchange.id)
+  );
+  let filteredSellExchanges = sellExchanges.filter((exchange) =>
+    availableExchangeIds.has(exchange.id)
+  );
+
+  return [filteredBuyExchanges, filteredSellExchanges];
+}

@@ -22,7 +22,7 @@ async function fetchDollarPriceEur() {
 async function fetchWithProxy(
   url: string,
   proxies: string[],
-  timeout: number = 4000,
+  timeout: number = 8000,
   gateio: boolean = false,
   okx: boolean = false,
   headers?: object

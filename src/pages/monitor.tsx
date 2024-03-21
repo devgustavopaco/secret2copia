@@ -1,23 +1,23 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
-import { XCircle } from "phosphor-react";
 import { useCallback, useEffect, useState } from "react";
-import { BeatLoader, PacmanLoader } from "react-spinners";
-import { toast } from "react-toastify";
 import { Header } from "../components/Header";
-import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
-import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
-import { updateIP } from "../server/db/checkIP";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+
+import { XCircle } from "phosphor-react";
+import { BeatLoader, PacmanLoader } from "react-spinners";
+import { toast } from "react-toastify";
+import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
+import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
+import { updateIP } from "../server/db/checkIP";
 
 interface MonitoringProps {
   ip: string;
@@ -50,7 +50,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     trpc.useQuery(["exchange.getActiveExchanges"], { ssr: true });
 
   const [buyExchanges, setBuyExchanges] = useState<
-    Array<{ name: string; image_url: string }>
+    Array<{ name: string; image_url: string; id: string }>
   >(() => {
     if (typeof window !== "undefined") {
       const savedExchanges = localStorage.getItem("buyExchanges");
@@ -61,7 +61,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   });
 
   const [sellExchanges, setSellExchanges] = useState<
-    Array<{ name: string; image_url: string }>
+    Array<{ name: string; image_url: string; id: string }>
   >(() => {
     if (typeof window !== "undefined") {
       const savedExchanges = localStorage.getItem("sellExchanges");
@@ -72,8 +72,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   });
   const [sidebarClickCount, setSidebarClickCount] = useState(0);
 
-  const clickOnSidebar = (event: any) => {
-    event.stopPropagation();
+  const clickOnSidebar = () => {
     setSidebarClickCount((prevCount) => prevCount + 1);
   };
 
@@ -96,135 +95,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   ]);
 
   useEffect(() => {
-    if (!queryInfo.data) {
-      queryInfo.refetch();
-    }
-  }, [queryInfo]);
-
-  const user = queryInfo.data;
-
-  const buyExchangesName = Array.isArray(buyExchanges)
-    ? buyExchanges.map((e) => e.name)
-    : [];
-
-  const sellExchangesName = Array.isArray(sellExchanges)
-    ? sellExchanges.map((e) => e.name)
-    : [];
-
-  const queryClient = useQueryClient();
-
-  const fetchPaginatedOrderbook = async ({
-    pageParam,
-  }: {
-    pageParam: number;
-  }) => {
-    const res = await fetch(
-      `https://akatsukistore.com.br/orderbook/getPaginated?buyExchanges=${encodeURI(
-        buyExchangesName?.join(",")
-      )}&sellExchanges=${encodeURI(
-        sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=25&email=${userEmail}`
-    );
-    return res.json();
-  };
-
-  let queryResult: any;
-
-  if (isAdmin) {
-    queryResult = trpc.useInfiniteQuery(
-      [
-        "orderBook.getPaginated",
-        {
-          buyExchanges: buyExchangesName ?? undefined,
-          sellExchanges: sellExchangesName ?? undefined,
-          email: userEmail ?? undefined,
-        },
-      ],
-      {
-        getNextPageParam: (lastPage) => {
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
-          if (!morePagesExist) return undefined;
-          return lastPage.nextCursor;
-        },
-        refetchInterval: 20 * 1000,
-        retry(failureCount) {
-          return failureCount <= 3;
-        },
-        keepPreviousData: false,
-        onSuccess(data) {
-          if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
-            queryResult.refetch();
-          }
-        },
-        onError() {
-          if (!queryResult.isFetching) {
-            queryResult.refetch();
-          }
-        },
-      }
-    );
-  } else {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    queryResult = useInfiniteQuery({
-      queryKey: ["orderBook.getPaginated"],
-      queryFn: fetchPaginatedOrderbook,
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, allPages) => {
-        const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
-        if (!morePagesExist) return undefined;
-        return lastPage.nextCursor;
-      },
-      refetchInterval: 20 * 1000,
-      retry(failureCount, error) {
-        if (failureCount > 3) {
-          return false;
-        }
-        return true;
-      },
-    });
-  }
-
-  const {
-    refetch,
-    data,
-    isLoading,
-    isFetching,
-    hasNextPage,
-    fetchNextPage,
-    isError,
-    isSuccess,
-  } = queryResult;
-
-  useEffect(() => {
-    if (!isAdmin) {
-      if (isSuccess) {
-        if (data?.pages.flat().length === 0 && !isFetching) {
-          refetch();
-        }
-      }
-      if (isError) {
-        if (!isFetching) {
-          refetch();
-        }
-      }
-    }
-  }, [
-    data,
-    isFetching,
-    isError,
-    isSuccess,
-    refetch,
-    buyExchanges,
-    sellExchanges,
-    isAdmin,
-  ]);
-
-  useEffect(() => {
     if (typeof window !== "undefined") {
-      refetch();
-      //@ts-ignore
-      queryClient.removeQueries(["orderBook.getPaginated"], { exact: true });
-
       const savedBuyExchanges = localStorage.getItem("buyExchanges");
       if (savedBuyExchanges) {
         setBuyExchanges(JSON.parse(savedBuyExchanges));
@@ -235,7 +106,60 @@ const Monitoring: NextPage<MonitoringProps> = ({
         setSellExchanges(JSON.parse(savedSellExchanges));
       }
     }
-  }, [sidebarClickCount, refetch, queryClient]);
+  }, [sidebarClickCount]);
+
+  useEffect(() => {
+    if (!queryInfo.data) {
+      queryInfo.refetch();
+    }
+  }, [queryInfo]);
+
+  const user = queryInfo.data;
+
+  const buyExchangesInfo = Array.isArray(buyExchanges)
+    ? buyExchanges.map((e) => ({ name: e.name, id: e.id }))
+    : [];
+
+  const sellExchangesInfo = Array.isArray(sellExchanges)
+    ? sellExchanges.map((e) => ({ name: e.name, id: e.id }))
+    : [];
+
+  const { refetch, data, isLoading, isFetching, hasNextPage, fetchNextPage } =
+    trpc.useInfiniteQuery(
+      [
+        "orderBook.getPaginated",
+        {
+          buyExchanges: buyExchangesInfo ?? undefined,
+          sellExchanges: sellExchangesInfo ?? undefined,
+          email: userEmail ?? undefined,
+        },
+      ],
+      {
+        getNextPageParam: (lastPage, allPages) => {
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
+          if (!morePagesExist) return undefined;
+          return lastPage.nextCursor;
+        },
+        refetchInterval: 20 * 1000,
+        retry(failureCount, error) {
+          if (failureCount > 3) {
+            return false;
+          }
+          return true;
+        },
+        keepPreviousData: false,
+        onSuccess(data) {
+          if (data?.pages.flat().length === 0 && !isFetching) {
+            refetch();
+          }
+        },
+        onError(error) {
+          if (!isFetching) {
+            refetch();
+          }
+        },
+      }
+    );
 
   if (hasNextPage && !isLoading && !isFetching) {
     fetchNextPage();
@@ -296,10 +220,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
   );
 
   let allArbitrageOpportunities =
-    data?.pages.flatMap((page: any) => page.arbitrageOpportunities) ?? [];
+    data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
 
   let operationsMap = new Map();
-  allArbitrageOpportunities.forEach((operation: any) => {
+  allArbitrageOpportunities.forEach((operation) => {
     if (operation && operation.spread > 0) {
       operationsMap.set(operation.coin, operation);
     }
@@ -354,7 +278,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
           )}
         </>
         <div className={styles.backgroundmMonitor}>
-          <div className={`${styles.content} container`}>
+          <div
+            className={`${styles.content} container`}
+            onClick={clickOnSidebar}
+          >
             {modalState ? (
               <></>
             ) : (
@@ -393,10 +320,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 </div>
               </div>
             )}
-            <div
-              className={styles.mobileFilter}
-              onClick={(event) => clickOnSidebar(event)}
-            >
+            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
               <span>Exchanges Compra</span>
               <BuyExchangeMobile
                 dollarPrice={dollarPrice}
@@ -410,10 +334,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
               />
             </div>
 
-            <div
-              className={styles.mobileFilter}
-              onClick={(event) => clickOnSidebar(event)}
-            >
+            <div className={styles.mobileFilter} onClick={clickOnSidebar}>
               <span>Exchanges Venda</span>
               <SellExchangeMobile
                 dollarPrice={dollarPrice}
@@ -426,18 +347,16 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 isAdmin={isAdmin}
               />
             </div>
-            <div onClick={(event) => clickOnSidebar(event)}>
-              <Sidebar
-                dollarPrice={dollarPrice}
-                defaultExchanges={ActiveExchanges || []}
-                buyExchanges={buyExchanges || []}
-                sellExchanges={sellExchanges || []}
-                onChangeDolar={onChangeDolar}
-                dolarValue={dolarValue as number}
-                onModalChange={handleModalState}
-                isAdmin={isAdmin}
-              />
-            </div>
+            <Sidebar
+              dollarPrice={dollarPrice}
+              defaultExchanges={ActiveExchanges || []}
+              buyExchanges={buyExchanges || []}
+              sellExchanges={sellExchanges || []}
+              onChangeDolar={onChangeDolar}
+              dolarValue={dolarValue as number}
+              onModalChange={handleModalState}
+              isAdmin={isAdmin}
+            />
             <main>
               <h1>
                 {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
