@@ -418,8 +418,6 @@ export const orderbookRouter = createRouter()
 
       const activeCoins = coinsSingleton.coins;
 
-      console.log(activeCoins.length);
-
       const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
       const endIndex = startIndex + (limit ?? 50);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);

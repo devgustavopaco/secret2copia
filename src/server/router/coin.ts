@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { CoinsSingleton } from "../CoinsSingleton";
 import { createRouter } from "./context";
 
 export const coinRouter = createRouter()
@@ -117,8 +116,6 @@ export const coinRouter = createRouter()
           exchangeCoinTax
         );
 
-        await CoinsSingleton.getInstance().updateCoins();
-
         return { coin, exchangeCoinTax };
       } catch (error) {
         console.error("Erro ao criar moeda:", error);
@@ -213,8 +210,6 @@ export const coinRouter = createRouter()
       });
 
       if (coin) {
-        await CoinsSingleton.getInstance().updateCoins();
-
         return {
           success: true,
         };
@@ -243,8 +238,6 @@ export const coinRouter = createRouter()
       });
 
       if (coin) {
-        await CoinsSingleton.getInstance().updateCoins();
-
         return {
           success: true,
         };
