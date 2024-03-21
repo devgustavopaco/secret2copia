@@ -14,7 +14,7 @@ import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface DataGridOrderbookProps {
-  data: { price: number; amount: number }[];
+  data: { price: number; amount: number }[] | undefined;
   isLoading?: boolean;
   isUSD: boolean;
   isPurchase: boolean;
@@ -48,10 +48,14 @@ type DataItem = {
   amount: number;
 };
 
-function calculateCumulativePriceAndVolume(data: DataItem[]): DataItem[] {
-  let cumulativePrice = 0;
+function calculateCumulativePriceAndVolume(
+  data: DataItem[] | undefined
+): DataItem[] {
   let cumulativeVolume = 0;
-  return data.map((item: DataItem) => {
+
+  const processedData = data || [];
+
+  return processedData.map((item: DataItem) => {
     cumulativeVolume += item.amount;
     return { ...item, amount: cumulativeVolume };
   });

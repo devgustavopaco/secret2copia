@@ -17,11 +17,11 @@ interface ModalOrderBookProps {
   dollarPrice: number;
   orderbookBid: {
     isUSD: boolean;
-    orderbook: Orderbook;
+    orderbook: Orderbook | undefined;
   };
   orderbookAsk: {
     isUSD: boolean;
-    orderbook: Orderbook;
+    orderbook: Orderbook | undefined;
   };
   setOpenModal: (open: boolean) => void;
 }
@@ -50,12 +50,12 @@ export function ModalOrderBook({
     }
   };
 
-  const asksWithTicker = orderbookAsk.orderbook.asks.map((ask) => ({
+  const asksWithTicker = orderbookAsk.orderbook?.asks.map((ask) => ({
     ...ask,
     ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
   }));
 
-  const bidsWithTicker = orderbookBid.orderbook.bids.map((bid) => ({
+  const bidsWithTicker = orderbookBid.orderbook?.bids.map((bid) => ({
     ...bid,
     ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
   }));
