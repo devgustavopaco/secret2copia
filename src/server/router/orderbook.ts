@@ -204,8 +204,9 @@ export const orderbookRouter = createRouter()
 
       const { buyExchanges, sellExchanges } = input;
 
+      console.log(buyExchanges, sellExchanges);
+
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        // console.log('Sending empty orderbook: empty buy or sell exchanges')
         return {
           orderbook: new Array<Exchange | undefined>(),
         };
@@ -220,6 +221,7 @@ export const orderbookRouter = createRouter()
         );
 
       const orderbook = await fetchOrderbook(exchangesAndCoins);
+      console.log(orderbook);
 
       return { orderbook };
     },
