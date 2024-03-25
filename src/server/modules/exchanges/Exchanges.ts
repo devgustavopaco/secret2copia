@@ -116,7 +116,22 @@ export class BinanceStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "binance") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (pair.toUpperCase() !== "GALUSDT") {
@@ -129,17 +144,25 @@ export class BinanceStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Binance",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -208,7 +231,22 @@ export class BitsoStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}_usd`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitso") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bitso.com/v3/order_book/?book=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -217,17 +255,25 @@ export class BitsoStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.payload.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks = json.payload.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitso",
-      bid: {
-        price: Number(json.payload.bids[0]!.price),
-        amount: Number(json.payload.bids[0]!.amount),
-      },
-      ask: {
-        price: Number(json.payload.asks[0]!.price),
-        amount: Number(json.payload.asks[0]!.amount),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -294,7 +340,23 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "brasilbitcoin") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     const url = `https://brasilbitcoin.com.br/API/orderbook/${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -303,17 +365,25 @@ export class BrasilBitcoinStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.buy.map((bid) => ({
+      price: Number(bid.preco),
+      amount: Number(bid.quantidade),
+      exchangeUrl: "",
+    }));
+    const asks = json.sell.map((ask) => ({
+      price: Number(ask.preco),
+      amount: Number(ask.preco),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "BrasilBitcoin",
-      bid: {
-        price: Number(json.buy[0]!.preco),
-        amount: Number(json.buy[0]!.quantidade),
-      },
-      ask: {
-        price: Number(json.sell[0]!.preco),
-        amount: Number(json.sell[0]!.quantidade),
-      },
+      bids,
+      asks,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -372,7 +442,22 @@ export class CoinBaseStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}-${destinationToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "coinbase") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.exchange.coinbase.com/products/${pair}/book?level=2`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -381,17 +466,25 @@ export class CoinBaseStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "CoinBase",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -408,7 +501,7 @@ export class ChilizStrategy implements ExchangeStrategy {
 
   chzPrice = 0;
 
-  convertOrderbook(pair: string, isFanToken: boolean = false): Orderbook {
+  convertOrderbook(pair: string, isFanToken = false): Orderbook {
     const bids =
       this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
         let sumVolume = 0;
@@ -451,7 +544,7 @@ export class ChilizStrategy implements ExchangeStrategy {
   formatPair(
     baseToken: string,
     destinationToken: string,
-    isFanToken: boolean = false
+    isFanToken = false
   ): string {
     return `${baseToken.toUpperCase()}${
       isFanToken ? "CHZ" : destinationToken.toUpperCase()
@@ -460,8 +553,20 @@ export class ChilizStrategy implements ExchangeStrategy {
 
   async fetchOrderbook(
     pair: string,
-    isFanToken: boolean = false
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
   ): Promise<Exchange> {
+    if (exchangeName !== "chiliz") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     methodCount++;
 
     if (isFanToken) {
@@ -486,17 +591,30 @@ export class ChilizStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids
+      .map((bid) => ({
+        price: Number(bid[0]) * (isFanToken ? this.chzPrice : 1),
+        amount: Number(bid[1]),
+        exchangeUrl: "",
+      }))
+      .filter((bid) => bid.price && bid.amount);
+
+    const asks = json.asks
+      .map((ask) => ({
+        price: Number(ask[0]) * (isFanToken ? this.chzPrice : 1),
+        amount: Number(ask[1]),
+        exchangeUrl: "",
+      }))
+      .filter((ask) => ask.price && ask.amount);
+
     return {
       name: "Chiliz",
-      bid: {
-        price: Number(json.bids[0]![0]) * (isFanToken ? this.chzPrice : 1),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]) * (isFanToken ? this.chzPrice : 1),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -527,7 +645,13 @@ export class CoinextStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
     const response = await fetch(
       `https://api.coinext.com.br:8443/AP/GetL2Snapshot`,
       {
@@ -542,19 +666,25 @@ export class CoinextStrategy implements ExchangeStrategy {
     const json = (await response.json()) as CoinextOrderbook;
     this.orderbook[pair] = json;
 
-    // TODO: Map até metade
+    const bids = json[0]?.map((bid) => ({
+      price: Number(bid),
+      amount: Number(bid),
+      exchangeUrl: "",
+    }));
+    const asks = json[10]?.map((ask) => ({
+      price: Number(ask),
+      amount: Number(ask),
+      exchangeUrl: "",
+    }));
 
     return {
       name: "Coinext",
-      bid: {
-        price: Number(json[0]![6]),
-        amount: Number(json[0]![9]),
-      },
-      ask: {
-        price: Number(json[10]![6]),
-        amount: Number(json[10]![9]),
-      },
+      bids,
+      asks,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -622,24 +752,47 @@ export class GeminiStategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "gemini") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.gemini.com/v1/book/${pair}`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as GeminiOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Gemini",
-      bid: {
-        price: Number(json.bids[0]!.price),
-        amount: Number(json.bids[0]!.amount),
-      },
-      ask: {
-        price: Number(json.asks[0]!.price),
-        amount: Number(json.asks[0]!.amount),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -700,24 +853,47 @@ export class HuobiStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "huobi") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.huobi.pro/market/depth?symbol=${pair}&type=step0&depth=10`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as HuobiOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.tick.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.tick.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Huobi",
-      bid: {
-        price: Number(json.tick.bids[0]![0]),
-        amount: Number(json.tick.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.tick.asks[0]![0]),
-        amount: Number(json.tick.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -790,8 +966,22 @@ export class KrakenStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}USD`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    // methodCount++;
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "kraken") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
 
     const url = `https://api.kraken.com/0/public/Depth?pair=${pair}&count=50`;
 
@@ -803,17 +993,25 @@ export class KrakenStrategy implements ExchangeStrategy {
 
     this.pairResult = Object.keys(json.result)[0]!;
 
+    const bids = json.result[this.pairResult]!.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.result[this.pairResult]!.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Kraken",
-      bid: {
-        price: Number(json.result[this.pairResult]!.bids[0]![0]),
-        amount: Number(json.result[this.pairResult]!.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result[this.pairResult]!.asks[0]![0]),
-        amount: Number(json.result[this.pairResult]!.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -881,7 +1079,23 @@ export class KuCoinStratefy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "kucoin") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     let url = "";
 
     if (
@@ -897,17 +1111,25 @@ export class KuCoinStratefy implements ExchangeStrategy {
     const json = (await response.json()) as KuCoinOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "KuCoin",
-      bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -968,24 +1190,47 @@ export class NovaDAXStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_BRL`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "novadax") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.novadax.com/v1/market/depth?symbol=${pair}&limit=10`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as NovaDAXOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "NovaDAX",
-      bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1043,29 +1288,53 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
   formatPair(
     baseToken: string,
     destinationToken: string,
-    isFanToken: boolean = false
+    isFanToken = false
   ): string {
     return `${baseToken.toLowerCase()}${isFanToken ? "ft" : ""}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "mercadobitcoin") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://www.mercadobitcoin.net/api/${pair}/orderbook/`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MercadoBitcoinOrderbook;
+
     this.orderbook[pair] = json;
 
+    const { bids, asks } = this.convertOrderbook(pair);
+
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+    }));
+
     return {
-      name: "Mercado Bitcoin",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      name: "MercadoBitcoin",
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1123,7 +1392,23 @@ export class HitBTCStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "hitbtc") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     let url = "";
 
     if (
@@ -1140,17 +1425,25 @@ export class HitBTCStrategy implements ExchangeStrategy {
     const json = (await response.json()) as HitBTCOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.bid.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.ask.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "HitBTC",
-      bid: {
-        price: Number(json.bid[0]![0]),
-        amount: Number(json.bid[0]![1]),
-      },
-      ask: {
-        price: Number(json.ask[0]![0]),
-        amount: Number(json.ask[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1209,7 +1502,23 @@ export class BitfinexStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitfinex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     let url = "";
 
     if (pair.toUpperCase() !== "AMPUSDT") {
@@ -1221,22 +1530,28 @@ export class BitfinexStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
-    // check if bids and asks are not empty
     if (json.bids.length > 0 && json.asks.length > 0) {
+      const bids = json.bids.map((bid) => ({
+        price: Number(bid.price),
+        amount: Number(bid.amount),
+        exchangeUrl: "",
+      }));
+      const asks = json.asks.map((ask) => ({
+        price: Number(ask.price),
+        amount: Number(ask.amount),
+        exchangeUrl: "",
+      }));
+
       return {
         name: "Bitfinex",
-        bid: {
-          price: Number(json.bids[0]!.price),
-          amount: Number(json.bids[0]!.amount),
-        },
-        ask: {
-          price: Number(json.asks[0]!.price),
-          amount: -1 * Number(json.asks[0]!.amount),
-        },
+        bids,
+        asks,
         isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
       };
     } else {
-      // handle the case where bids or asks are empty
       throw new Error("Bids or Asks are empty");
     }
   }
@@ -1298,24 +1613,48 @@ export class ByBitStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api-testnet.bybit.com/derivatives/v3/public/order-book/L2?category=linear&symbol=${pair}`;
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bybit") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
+    const url = `https://api.bybit.com/spot/v3/public/quote/depth?symbol=${pair}`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as ByBitOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.result.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.result.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
-      name: "ByBit",
-      bid: {
-        price: Number(json.result.b[0]![0]),
-        amount: Number(json.result.b[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.a[0]![0]),
-        amount: Number(json.result.a[0]![1]),
-      },
+      name: "Bybit",
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1378,24 +1717,48 @@ export class MexcStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.mexc.com/api/v3/depth/${pair}`;
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "mexc") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+    const url = `https://api.mexc.com/api/v3/depth?symbol=${pair}`;
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MexcOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Mexc",
-      bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1466,24 +1829,48 @@ export class PolonieskStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "poloniex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     const url = `https://api.poloniex.com/markets/${pair}/orderBook`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as PoloniexOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Poloniex",
-      bid: {
-        price: Number(json.bids[0]),
-        amount: Number(json.bids[0]),
-      },
-      ask: {
-        price: Number(json.asks[0]),
-        amount: Number(json.asks[0]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1544,7 +1931,22 @@ export class BitstampStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}usd`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitstamp") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://www.bitstamp.net/api/v2/order_book/${pair}`;
     const response = await fetchWithProxy(url, proxies);
 
@@ -1552,17 +1954,25 @@ export class BitstampStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitstamp",
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
+      asks,
+      bids,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1625,24 +2035,48 @@ export class BidgetStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitget") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     const url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BidgetOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitget",
-      bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1707,7 +2141,22 @@ export class OkxStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "okx") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const apiKey = "75c69478-01e0-4000-ad47-15ca3e6d6ca1";
     const secretKey = "6DCE61E22D667F5C476B9AB7D0159052";
 
@@ -1739,17 +2188,23 @@ export class OkxStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.data[0].bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+    }));
+    const asks = json.data[0].asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+    }));
+
     return {
       name: "Okx",
-      bid: {
-        price: Number(json.data[0].bids[0]![0]),
-        amount: Number(json.data[0].bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data[0].asks[0]![0]),
-        amount: Number(json.data[0].asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1822,7 +2277,23 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitcointrade") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
+
     const url = `https://api.bitcointrade.com.br/v3/public/BRL${pair}/orders`;
     const response = await fetchWithProxy(url, proxies);
 
@@ -1830,17 +2301,25 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid.unit_price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask.unit_price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "BitcoinTrade",
-      bid: {
-        price: Number(json.data.bids[0].unit_price),
-        amount: Number(json.data.bids[0].amount),
-      },
-      ask: {
-        price: Number(json.data.asks[0].unit_price),
-        amount: Number(json.data.asks[0].amount),
-      },
+      bids,
+      asks,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1900,7 +2379,22 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "gateio") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (
@@ -1917,17 +2411,25 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Gateio",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -1990,24 +2492,47 @@ export class CryptoComStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "cryptocom") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.crypto.com/v2/public/get-book?instrument_name=${pair}&depth=10`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as CryptoComOrderbook;
     this.orderbook[pair] = json;
 
+    const bids = json.result.data[0]!.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.result.data[0]!.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Cryptocom",
-      bid: {
-        price: Number(json.result.data[0]!.bids[0]![0]),
-        amount: Number(json.result.data[0]!.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.data[0]!.asks[0]![0]),
-        amount: Number(json.result.data[0]!.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2069,7 +2594,22 @@ export class FoxBitStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toUpperCase()}BRL`;
   }
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "foxbit") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.foxbit.com.br/rest/v3/markets/${pair}/orderbook`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2088,17 +2628,23 @@ export class FoxBitStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+    }));
+
     return {
       name: "Foxbit",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: false,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2163,7 +2709,22 @@ export class CexStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toUpperCase()}/USD`;
   }
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "cex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://cex.io/api/order_book/${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2172,17 +2733,25 @@ export class CexStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Cex",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2259,7 +2828,22 @@ export class BithumpStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bithumb") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bithumb.com/public/orderbook/${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2270,17 +2854,25 @@ export class BithumpStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.quantity),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.quantity),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bithump",
-      bid: {
-        price: Number(json.data.bids[0]!.price) / dollarPriceToKrw,
-        amount: Number(json.data.bids[0]!.quantity),
-      },
-      ask: {
-        price: Number(json.data.asks[0]!.price) / dollarPriceToKrw,
-        amount: Number(json.data.asks[0]!.quantity),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2355,7 +2947,22 @@ export class ProbitStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "probit") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.probit.com/api/exchange/v1/order_book?market_id=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2367,24 +2974,25 @@ export class ProbitStrategy implements ExchangeStrategy {
     const bids = json.data.filter((order) => order.side === "buy");
     const asks = json.data.filter((order) => order.side === "sell");
 
-    const highestBid = bids.reduce((prev, current) =>
-      Number(prev.price) > Number(current.price) ? prev : current
-    );
-    const lowestAsk = asks.reduce((prev, current) =>
-      Number(prev.price) < Number(current.price) ? prev : current
-    );
+    const bids1 = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.quantity),
+      exchangeUrl: "",
+    }));
+    const asks2 = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.quantity),
+      exchangeUrl: "",
+    }));
 
     return {
       name: "Probit",
-      bid: {
-        price: Number(highestBid.price),
-        amount: Number(highestBid.quantity),
-      },
-      ask: {
-        price: Number(lowestAsk.price),
-        amount: Number(lowestAsk.quantity),
-      },
+      bids: bids1,
+      asks: asks2,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2461,7 +3069,22 @@ export class P2PB2BStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "p2pb2b") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.p2pb2b.io/api/v2/public/book?market=${pair}&offset=0&limit=40`;
 
     const responseSell = await fetchWithProxy(`${url}&side=sell`, proxies);
@@ -2492,17 +3115,25 @@ export class P2PB2BStrategy implements ExchangeStrategy {
       },
     };
 
+    const bids1 = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const ask2 = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "P2PB2B",
-      bid: {
-        price: Number(highestBid!.price),
-        amount: Number(highestBid!.amount),
-      },
-      ask: {
-        price: Number(lowestAsk!.price),
-        amount: Number(lowestAsk!.amount),
-      },
+      bids: bids1,
+      asks: ask2,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2543,7 +3174,22 @@ export class DigifinexStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "digifinex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://openapi.digifinex.com/v3/order_book?symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2552,17 +3198,25 @@ export class DigifinexStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Digifinex",
-      bid: {
-        price: Number(json.bids[0]![0]),
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]),
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2588,14 +3242,14 @@ export class CoinwStrategy implements ExchangeStrategy {
       orderbook?.data.bids.map((bid) => ({
         price: Number(bid[0]),
         amount: Number(bid[1]),
-        sumVolume: Number(bid[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(bid[1]),
       })) ?? [];
 
     const asks =
       orderbook?.data.asks.map((ask) => ({
         price: Number(ask[0]),
         amount: Number(ask[1]),
-        sumVolume: Number(ask[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(ask[1]),
       })) ?? [];
 
     return { bids, asks };
@@ -2608,7 +3262,22 @@ export class CoinwStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "coinw") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (pair.toUpperCase() !== "GASUSDT") {
@@ -2621,17 +3290,25 @@ export class CoinwStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.data.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.data.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Coinw",
-      bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2657,14 +3334,14 @@ export class XTStrategy implements ExchangeStrategy {
       orderbook?.result.bids.map((bid) => ({
         price: Number(bid[0]),
         amount: Number(bid[1]),
-        sumVolume: Number(bid[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(bid[1]),
       })) ?? [];
 
     const asks =
       orderbook?.result.asks.map((ask) => ({
         price: Number(ask[0]),
         amount: Number(ask[1]),
-        sumVolume: Number(ask[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(ask[1]),
       })) ?? [];
 
     return { bids, asks };
@@ -2677,7 +3354,22 @@ export class XTStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "xt") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (pair.toUpperCase() !== "GASUSDT") {
@@ -2690,17 +3382,25 @@ export class XTStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.result.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.result.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "XT",
-      bid: {
-        price: Number(json.result.bids[0]![0]),
-        amount: Number(json.result.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.asks[0]![0]),
-        amount: Number(json.result.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2735,14 +3435,14 @@ export class PhemexStrategy implements ExchangeStrategy {
       orderbook?.result.orderbook_p.bids.map((bid) => ({
         price: Number(bid[0]),
         amount: Number(bid[1]),
-        sumVolume: Number(bid[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(bid[1]),
       })) ?? [];
 
     const asks =
       orderbook?.result.orderbook_p.asks.map((ask) => ({
         price: Number(ask[0]),
         amount: Number(ask[1]),
-        sumVolume: Number(ask[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(ask[1]),
       })) ?? [];
 
     return { bids, asks };
@@ -2752,7 +3452,22 @@ export class PhemexStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "phemex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.phemex.com/md/v2/orderbook?symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2761,17 +3476,25 @@ export class PhemexStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.result.orderbook_p.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.result.orderbook_p.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Phemex",
-      bid: {
-        price: Number(json.result.orderbook_p.bids[0]![0]),
-        amount: Number(json.result.orderbook_p.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.result.orderbook_p.asks[0]![0]),
-        amount: Number(json.result.orderbook_p.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2797,14 +3520,14 @@ export class CoincheckStrategy implements ExchangeStrategy {
       orderbook?.bids.map((bid) => ({
         price: Number(bid[0]) / dollarPriceToJpy,
         amount: Number(bid[1]),
-        sumVolume: Number(bid[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(bid[1]),
       })) ?? [];
 
     const asks =
       orderbook?.asks.map((ask) => ({
         price: Number(ask[0]) / dollarPriceToJpy,
         amount: Number(ask[1]),
-        sumVolume: Number(ask[1]), // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: Number(ask[1]),
       })) ?? [];
 
     return { bids, asks };
@@ -2817,7 +3540,22 @@ export class CoincheckStrategy implements ExchangeStrategy {
     return `${baseToken.toLowerCase()}_${destinationToken.toLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "coincheck") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://coincheck.com/api/order_books?pair=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2828,17 +3566,25 @@ export class CoincheckStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Coincheck",
-      bid: {
-        price: Number(json.bids[0]![0]) / dollarPriceToJpy,
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]) / dollarPriceToJpy,
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2903,7 +3649,22 @@ export class AscendexStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}/${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string, isFanToken: boolean): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "ascendex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://ascendex.com/api/pro/v1/depth?symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -2914,17 +3675,25 @@ export class AscendexStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bids1 = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks1 = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Ascendex",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bids1,
+      asks: asks1,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -2946,8 +3715,6 @@ export class LbkexStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: LbkexOrderbook;
   } = {};
-
-  private tokensToRemove = ["por", "tru", "tra"];
 
   convertOrderbook(pair: string): Orderbook {
     let bidSumVolume = 0;
@@ -2984,7 +3751,22 @@ export class LbkexStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toLowerCase()}${destinationToken.toLowerCase()}`;
   }
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "lbkex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (
@@ -3003,17 +3785,25 @@ export class LbkexStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bids1 = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks1 = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "LBank",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bids1,
+      asks: asks1,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3073,7 +3863,22 @@ export class BkexStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bkex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bkex.com/v2/q/depth?symbol=${pair}&depth=20`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3084,17 +3889,25 @@ export class BkexStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bids1 = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks1 = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bkex",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bids1,
+      asks: asks1,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3148,7 +3961,22 @@ export class BitrueStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitrue") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://openapi.bitrue.com/api/v1/depth?symbol=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3159,17 +3987,25 @@ export class BitrueStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitrue",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3225,7 +4061,22 @@ export class BtcexStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "btcex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://www.btcex.com/api/v1/public/cmc_spot_orderbook?market_pair=${pair}&depth=40`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3236,17 +4087,25 @@ export class BtcexStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Btcex",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3301,7 +4160,22 @@ export class CoinsbitStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "coinsbit") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.coinsbit.io/api/v1/public/depth/result?market=${pair}&limit=30`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3312,17 +4186,25 @@ export class CoinsbitStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Coinsbit",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3380,7 +4262,22 @@ export class BingxStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bingx") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://open-api.bingx.com/openApi/swap/v2/quote/depth?symbol=${pair}&limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3391,17 +4288,25 @@ export class BingxStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bingx",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3466,7 +4371,22 @@ export class BigOneStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bigone") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://big.one/api/v3/asset_pairs/${pair}/depth`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3477,17 +4397,25 @@ export class BigOneStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bigone",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3542,7 +4470,22 @@ export class WhitebitStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "whitebit") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://whitebit.com/api/v1/public/depth/result?market=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3553,17 +4496,25 @@ export class WhitebitStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Whitebit",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3623,7 +4574,22 @@ export class BitkubStrategy implements ExchangeStrategy {
     return `${destinationToken.toLocaleUpperCase()}_${baseToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitkub") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bitkub.com/api/market/depth?sym=${pair}&lmt=40`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3634,17 +4600,25 @@ export class BitkubStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid[0]),
+      amount: Number(bid[1]),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask[0]),
+      amount: Number(ask[1]),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitkub",
-      bid: {
-        price: Number(json.bids[0]![0]) / dollarPriceToThb,
-        amount: Number(json.bids[0]![1]),
-      },
-      ask: {
-        price: Number(json.asks[0]![0]) / dollarPriceToThb,
-        amount: Number(json.asks[0]![1]),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3702,7 +4676,22 @@ export class DextradeStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "dextrade") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     let url = "";
 
     if (pair.toUpperCase() !== "GMWUSDT") {
@@ -3717,17 +4706,25 @@ export class DextradeStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Dextrade",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3787,7 +4784,22 @@ export class PionexStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "pionex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.pionex.com/api/v1/market/depth?symbol=${pair}&limit=30`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -3798,17 +4810,25 @@ export class PionexStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Pionex",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3867,28 +4887,51 @@ export class BitforexStrategy implements ExchangeStrategy {
     return `${destinationToken.toLocaleLowerCase()}-${baseToken.toLocaleLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitforex") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bitforex.com/api/v1/market/depth?symbol=coin-${pair}&size=20`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: BitforexOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full BitforexOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitforex",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -3950,28 +4993,51 @@ export class CryptologyStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "cryptology") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api-sandbox.cryptology.com/v1/public/get-order-book?trade_pair=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: CryptologyOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full CryptologyOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Cryptology",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4028,28 +5094,51 @@ export class WooStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "woo") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.woo.org/v1/orderbook/SPOT_${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: WooOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full WooOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Woo",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4116,28 +5205,51 @@ export class LatokenStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}/${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "latoken") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.latoken.com/v2/book/${pair}?limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: LatokenOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full LatokenOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Latoken",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4204,28 +5316,51 @@ export class BlockchainStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}-${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "blockchain") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.blockchain.com/v3/exchange/l2/${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: BlockchainOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full BlockchainOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Blockchain",
-      bid: {
-        price: Number(bids[0]?.price),
-        amount: Number(bids[0]?.amount),
-      },
-      ask: {
-        price: Number(asks[0]?.price),
-        amount: Number(asks[0]?.amount),
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4296,28 +5431,51 @@ export class BitpandaStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitpanda") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.exchange.bitpanda.com/public/v1/order-book/${pair}?depth=20`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: BitpandaOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full BitpandaOrderbook
+    this.orderbook[pair] = json;
 
     const dollarPriceToEur = await fetchDollarPriceEur();
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitpanda",
-      bid: {
-        price: Number(json.bids[0]!.price) / dollarPriceToEur,
-        amount: Number(json.bids[0]!.amount),
-      },
-      ask: {
-        price: Number(json.asks[0]!.price) / dollarPriceToEur,
-        amount: Number(json.asks[0]!.amount),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4377,7 +5535,22 @@ export class CointrStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "cointr") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.cointr.pro/v1/spot/market/depths?instId=${pair}&limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -4388,17 +5561,25 @@ export class CointrStrategy implements ExchangeStrategy {
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Cointr",
-      bid: {
-        price: bids[0]!.price,
-        amount: bids[0]!.amount,
-      },
-      ask: {
-        price: asks[0]!.price,
-        amount: asks[0]!.amount,
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4459,28 +5640,51 @@ export class ExmarketsStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleLowerCase()}-${destinationToken.toLocaleLowerCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "exmarkets") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://exmarkets.com/api/trade/v1/market/order-book?market=${pair}&limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: ExmarketsOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full ExmarketsOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Exmarkets",
-      bid: {
-        price: bids[0]!.price,
-        amount: bids[0]!.amount,
-      },
-      ask: {
-        price: asks[0]!.price,
-        amount: asks[0]!.amount,
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4538,28 +5742,51 @@ export class ZtbStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "ztb") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://www.ztb.im/api/v1/depth?symbol=${pair}&size=40`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: ZtbOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full ZtbOrderbook
+    this.orderbook[pair] = json;
 
     const { bids, asks } = this.convertOrderbook(pair);
 
+    const bidsOrderbook = bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.amount),
+      exchangeUrl: "",
+    }));
+    const asksOrderbook = asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.amount),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Ztb",
-      bid: {
-        price: bids[0]!.price,
-        amount: bids[0]!.amount,
-      },
-      ask: {
-        price: asks[0]!.price,
-        amount: asks[0]!.amount,
-      },
+      bids: bidsOrderbook,
+      asks: asksOrderbook,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4624,28 +5851,51 @@ export class BitflyerStrategy implements ExchangeStrategy {
     return `${baseToken.toLocaleUpperCase()}_${destinationToken.toLocaleUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "bitflyer") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.bitflyer.com/v1/getboard?product_code=${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
     const json: BitflyerOrderbook = await response.json();
 
-    this.orderbook[pair] = json; // store full BitflyerOrderbook
+    this.orderbook[pair] = json;
 
     const dollarPriceToJpy = await fetchDollarPriceJpy();
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.size),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.size),
+      exchangeUrl: "",
+    }));
+
     return {
       name: "Bitflyer",
-      bid: {
-        price: json.bids[0]!.price / dollarPriceToJpy,
-        amount: json.bids[0]!.size,
-      },
-      ask: {
-        price: json.asks[0]!.price / dollarPriceToJpy,
-        amount: Number(json.asks[0]!.size),
-      },
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }
@@ -4715,7 +5965,22 @@ export class DYDYXStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
+  async fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken: boolean
+  ): Promise<Exchange> {
+    if (exchangeName !== "dydx") {
+      return {
+        name: "",
+        isUSD: true,
+        exchangeType: exchangeType,
+        isFanToken,
+        ticker,
+      };
+    }
     const url = `https://api.dydx.exchange/v3/orderbook/${pair}`;
 
     const response = await fetchWithProxy(url, proxies);
@@ -4726,17 +5991,25 @@ export class DYDYXStrategy implements ExchangeStrategy {
 
     this.orderbook[pair] = json;
 
+    const bids = json.bids.map((bid) => ({
+      price: Number(bid.price),
+      amount: Number(bid.size),
+      exchangeUrl: "",
+    }));
+    const asks = json.asks.map((ask) => ({
+      price: Number(ask.price),
+      amount: Number(ask.price),
+      exchangeUrl: "",
+    }));
+
     return {
-      name: "Dydyx",
-      bid: {
-        price: Number(json.bids[0]?.price),
-        amount: Number(json.bids[0]?.size),
-      },
-      ask: {
-        price: Number(json.asks[0]?.price),
-        amount: Number(json.asks[0]?.size),
-      },
+      name: "dydyx",
+      bids,
+      asks,
       isUSD: true,
+      exchangeType: exchangeType,
+      isFanToken,
+      ticker,
     };
   }
 }

@@ -1,8 +1,5 @@
-import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
-import type { Orderbook } from "../../../server/router/orderbook";
-import { trpc } from "../../../utils/trpc";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
 
@@ -17,11 +14,11 @@ interface ModalOrderBookProps {
   dollarPrice: number;
   orderbookBid: {
     isUSD: boolean;
-    orderbook: Orderbook;
+    orderbook: { price: number; amount: number }[] | undefined;
   };
   orderbookAsk: {
     isUSD: boolean;
-    orderbook: Orderbook;
+    orderbook: { price: number; amount: number }[] | undefined;
   };
   setOpenModal: (open: boolean) => void;
 }
@@ -34,6 +31,7 @@ export function ModalOrderBook({
   sellWhere,
   buyEchangeName,
   sellEchangeName,
+  dollarPrice,
   coin,
   symbol,
   setOpenModal,
@@ -50,17 +48,15 @@ export function ModalOrderBook({
     }
   };
 
-  const formatNumber = (value: number) => {
-    return parseFloat(value.toFixed(2)); // Converte para número novamente
-  };
+  const asksWithTicker = orderbookAsk.orderbook?.map((ask) => ({
+    ...ask,
+    ticker: symbol,
+  }));
 
-  const { data: auth } = useSession();
-  const { data: user } = trpc.useQuery([
-    "user.getUserByEmail",
-    { email: auth?.user?.email as string },
-  ]);
-
-  const dolarValue = user?.dolarValue ?? 1;
+  const bidsWithTicker = orderbookBid.orderbook?.map((bid) => ({
+    ...bid,
+    ticker: symbol,
+  }));
 
   return (
     <div
@@ -99,11 +95,12 @@ export function ModalOrderBook({
           </div>
           <div className={styles.buyAndSell}>
             <img
-              src={`${
+              src={
                 coinImage ??
-                `https://assets.coincap.io/assets/icons/${symbol?.toLowerCase()}@2x.png`
-              }`}
-            />
+                `https://assets.coincap.io/assets/icons/${coin?.toLowerCase()}@2x.png`
+              }
+              alt={coin}
+            ></img>
             <p>{coin}</p>
             <MdArrowForwardIos size={32} className={styles.iconArrow} />
             <img src={`${toggleState === "compra" ? sellWhere : buyWhere}`} />
@@ -112,17 +109,14 @@ export function ModalOrderBook({
 
           <div className={styles.contentTabs}>
             <DataGridOrderbook
-              data={
-                toggleState === "compra"
-                  ? orderbookAsk.orderbook.asks
-                  : orderbookBid.orderbook.bids
-              }
+              data={toggleState === "compra" ? asksWithTicker : bidsWithTicker}
               isUSD={
                 toggleState === "compra"
                   ? orderbookAsk.isUSD
                   : orderbookBid.isUSD
               }
               isPurchase={isPurchase}
+              dollarPrice={dollarPrice}
             />
           </div>
         </div>

@@ -1,37 +1,25 @@
 import { Orderbook } from "../../router/orderbook";
 
-export class OrderbookContext {
-  private strategy: ExchangeStrategy;
-
-  constructor(strategy: ExchangeStrategy) {
-    this.strategy = strategy;
-  }
-
-  public setStrategy(strategy: ExchangeStrategy) {
-    this.strategy = strategy;
-  }
-
-  public async fetchOrderbook(
-    baseToken: string,
-    destinationToken: string
-  ): Promise<Exchange> {
-    const pair = this.strategy.formatPair(baseToken, destinationToken);
-    return await this.strategy.fetchOrderbook(pair);
-  }
-}
-
 export interface Exchange {
   name: string;
-  bid: {
+  coinName?: string;
+  bids?: {
     price: number;
     amount: number;
-  };
-  ask: {
+    exchangeUrl?: string;
+  }[];
+  asks?: {
     price: number;
     amount: number;
-  };
+    exchangeUrl?: string;
+  }[];
   image_url?: string;
-  isUSD: boolean;
+  isUSD?: boolean;
+  ticker?: string;
+  coinImage?: string;
+  exchangeUrl?: string;
+  isFanToken?: boolean;
+  exchangeType: "buy" | "sell";
 }
 
 export interface Ticker {
@@ -45,7 +33,13 @@ export interface ExchangeStrategy {
     destinationToken: string,
     isFanToken?: boolean
   ): string;
-  fetchOrderbook(pair: string, isFanToken?: boolean): Promise<Exchange>;
+  fetchOrderbook(
+    pair: string,
+    ticker: string,
+    exchangeName: string,
+    exchangeType: "buy" | "sell",
+    isFanToken?: boolean
+  ): Promise<Exchange>;
   convertOrderbook(
     pair: string,
     isFanToken?: boolean

@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { CoinsSingleton } from "../CoinsSingleton";
-import { ExchangesSingleton } from "../ExchangesSingleton";
+import { CoinsSingleton, ExchangeCoinsRawResult } from "../CoinsSingleton";
 import { ServerSingleton } from "../ServerSingleton";
 import type {
   Exchange,
@@ -64,7 +63,6 @@ import {
   ZtbStrategy,
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
-import { getDollarValueForUser } from "./user";
 
 interface StrategyObject {
   [key: string]: ExchangeStrategy;
@@ -139,81 +137,42 @@ export interface Orderbook {
   asks: OrderbookOperation[];
 }
 
-export interface ArbitrageOpportunity {
-  coin: string;
-  coinImage?: string;
-  ticker: string;
-  lowestAsk: {
-    exchange: string;
-    price: number;
-    amount: number;
-    isUSD: boolean;
-    image_url?: string;
-    orderbook: Orderbook;
-  };
-  highestBid: {
-    exchange: string;
-    price: number;
-    amount: number;
-    isUSD: boolean;
-    image_url?: string;
-    orderbook: Orderbook;
-  };
-  tax: number;
-  fee: number;
-  spread: number;
-}
+const exchangeSchema = z.object({
+  name: z.string(),
+  id: z.string(),
+});
 
-interface FilteredOrderbook {
-  exchange: string;
-  price: number;
-  amount: number;
-  isUSD: boolean;
-  image_url?: string;
-  orderbook: Orderbook;
-}
-
-const formatExchangeName = (exchange: string): string => {
-  return exchange.toLowerCase().replace(/\s/g, "");
-};
-
-const fetchArbitrageOpportunity = async (
-  ctx: any,
-  coin: {
-    name: string;
-    ticker: string;
-    isFanToken: boolean;
-    imageUrl?: string;
-  },
-  buyExchanges: string[],
-  sellExchanges: string[],
-  taxes: {
-    exchange: {
-      name: string;
-      fee: number;
-      image_url: string | null;
-      convert: boolean;
-    };
-    tax: number;
-  }[],
-  email: string
-): Promise<ArbitrageOpportunity> => {
-  const { name, ticker, isFanToken, imageUrl } = coin;
-
+const fetchOrderbook = async (
+  exchangesAndCoins: ExchangeCoinsRawResult[]
+): Promise<Exchange[]> => {
   const orderBookPromises: Promise<Exchange>[] = [];
 
-  var uniqueExchanges = Array.from(
-    new Set([...buyExchanges, ...sellExchanges])
-  ).map((exchange) => formatExchangeName(exchange));
+  for (const exchangeAndCoin of exchangesAndCoins) {
+    const exchangeStrategy = exchangeStrategies[exchangeAndCoin.exchangeName];
 
-  for (const exchange of uniqueExchanges) {
-    const exchangeStrategy = exchangeStrategies[exchange];
     if (exchangeStrategy) {
-      const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
-
-      orderBookPromises.push(
-        exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
+      const coinPair = exchangeStrategy.formatPair(
+        exchangeAndCoin.ticker,
+        "usdt",
+        exchangeAndCoin.isFanToken === 0 ? false : true
       );
+
+      const promise = exchangeStrategy
+        .fetchOrderbook(
+          coinPair,
+          exchangeAndCoin.ticker,
+          exchangeAndCoin.exchangeName,
+          exchangeAndCoin.exchangeType,
+          exchangeAndCoin.isFanToken === 0 ? false : true
+        )
+        .then((result) => ({
+          ...result,
+          coinImage: exchangeAndCoin.imageUrl,
+          coinName: exchangeAndCoin.coinName,
+          exchangeUrl: exchangeAndCoin.exchangeUrl,
+        }));
+
+      orderBookPromises.push(promise);
     }
   }
 
@@ -226,305 +185,46 @@ const fetchArbitrageOpportunity = async (
     return acc;
   }, [] as Exchange[]);
 
-  const dolarValue = await getDollarValueForUser(ctx, email);
-  const dollarPrice = await ServerSingleton.getInstance().getDollar();
-
-  // Lowest buy price
-  const lowestAsk = orderBooks.reduce(
-    (acc, exchange) => {
-      const isContained = buyExchanges.some(
-        (element) =>
-          formatExchangeName(element) ===
-          formatExchangeName(exchange.name.toLowerCase())
-      );
-      if (isContained) {
-        const priceInUSD = exchange.isUSD
-          ? exchange.ask.price
-          : exchange.ask.price / dolarValue;
-
-        if (priceInUSD < acc.price) {
-          return {
-            exchange: exchange.name,
-            isUSD: exchange.isUSD,
-            image_url: exchange.image_url,
-            orderbook: acc.orderbook,
-            ...exchange.ask,
-          };
-        }
-      }
-      return acc;
-    },
-    {
-      exchange: "",
-      price: 9999999999999,
-      amount: 0,
-      image_url: undefined,
-      isUSD: true,
-    } as FilteredOrderbook
-  );
-
-  // Highest sell price
-  const highestBid = orderBooks.reduce(
-    (acc, exchange) => {
-      const isContained = sellExchanges.some(
-        (element) =>
-          formatExchangeName(element) ===
-          formatExchangeName(exchange.name.toLowerCase())
-      );
-
-      const notSelectedBuyExchange =
-        formatExchangeName(lowestAsk.exchange) !==
-        formatExchangeName(exchange.name);
-
-      if (isContained && notSelectedBuyExchange) {
-        const priceInUSD = exchange.isUSD
-          ? exchange.bid.price
-          : exchange.bid.price / dolarValue;
-
-        if (priceInUSD > acc.price) {
-          return {
-            exchange: exchange.name,
-            isUSD: exchange.isUSD,
-            image_url: exchange.image_url,
-            orderbook: acc.orderbook,
-            ...exchange.bid,
-          };
-        }
-      }
-      return acc;
-    },
-    {
-      exchange: "",
-      price: 0,
-      amount: 0,
-      image_url: undefined,
-      isUSD: true,
-      orderbook: {},
-    } as FilteredOrderbook
-  );
-
-  const lowestAskExchangeName = formatExchangeName(lowestAsk.exchange);
-  const lowestAskPair = exchangeStrategies[lowestAskExchangeName]!.formatPair(
-    ticker,
-    "usdt",
-    isFanToken
-  );
-  lowestAsk.orderbook = await exchangeStrategies[
-    lowestAskExchangeName
-  ]!.convertOrderbook(lowestAskPair, isFanToken);
-
-  const highestBidExchangeName = formatExchangeName(highestBid.exchange);
-  const highestBidPair = exchangeStrategies[highestBidExchangeName]!.formatPair(
-    ticker,
-    "usdt",
-    isFanToken
-  );
-  highestBid.orderbook = await exchangeStrategies[
-    highestBidExchangeName
-  ]!.convertOrderbook(highestBidPair, isFanToken);
-
-  const lowestAskTax = taxes.find(
-    (tax) =>
-      tax.exchange.name.toLowerCase().trim() ===
-      lowestAsk.exchange.toLowerCase().trim()
-  );
-  const highestBidTax = taxes.find(
-    (tax) => tax.exchange.name === highestBid.exchange
-  );
-
-  const exchanges = ExchangesSingleton.getInstance().exchanges;
-
-  //console.table(exchanges)
-
-  const lowestAskExchange = exchanges.find(
-    (exchange) =>
-      exchange.name.toLowerCase().trim() ===
-      lowestAsk.exchange.toLowerCase().trim()
-  );
-  const highestBidExchange = exchanges.find(
-    (exchange) =>
-      exchange.name.toLowerCase().trim() ===
-      highestBid.exchange.toLowerCase().trim()
-  );
-
-  const lowestAskFee = lowestAskExchange?.fee ?? 0;
-  const highestBidFee = highestBidExchange?.fee ?? 0;
-
-  lowestAsk.image_url = lowestAskExchange?.image_url ?? "";
-  highestBid.image_url = highestBidExchange?.image_url ?? "";
-
-  const bidPrice = highestBid.isUSD
-    ? highestBid.price * dolarValue
-    : highestBid.price;
-  const askPrice = lowestAsk.isUSD
-    ? lowestAsk.price * dolarValue
-    : lowestAsk.price;
-
-  const spread = (bidPrice - askPrice) / askPrice;
-
-  return {
-    coin: name,
-    coinImage: imageUrl,
-    ticker,
-    lowestAsk,
-    highestBid,
-    tax: (lowestAskTax?.tax ?? 0) * lowestAsk.price,
-    fee: lowestAskFee + highestBidFee,
-    spread,
-  };
+  return orderBooks;
 };
 
 export const orderbookRouter = createRouter()
-  .query("getAll", {
-    input: z
-      .object({
-        buyExchanges: z.string().array(),
-        sellExchanges: z.string().array(),
-        email: z.string().optional(),
-      })
-      .optional(),
+  .query("getOrderbook", {
+    input: z.object({
+      buyExchanges: z.array(exchangeSchema),
+      sellExchanges: z.array(exchangeSchema),
+    }),
     async resolve({ ctx, input }) {
       if (!input) {
         // console.log('Sending empty orderbook')
-        return [];
+        return {
+          orderbook: new Array<Exchange | undefined>(),
+        };
       }
 
       const { buyExchanges, sellExchanges } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         // console.log('Sending empty orderbook: empty buy or sell exchanges')
-        return [];
+        return {
+          orderbook: new Array<Exchange | undefined>(),
+        };
       }
 
-      let activeCoins = CoinsSingleton.getInstance().coins;
+      const coinsSingleton = CoinsSingleton.getInstance();
 
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
-
-      activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
-        return [];
-      }
-
-      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
-        [];
-
-      for (const coin of activeCoins) {
-        arbitrageOpportunitiesPromises.push(
-          fetchArbitrageOpportunity(
-            ctx,
-            {
-              name: coin.name,
-              ticker: coin.ticker,
-              isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
-            },
-            buyExchanges,
-            sellExchanges,
-            coin.ExchangeCoinTax,
-            input?.email || ""
-          )
+      const exchangesAndCoins =
+        await coinsSingleton.updateCoinsBasedOnExchangeIds(
+          buyExchanges.map((exchange) => exchange.id),
+          sellExchanges.map((exchange) => exchange.id)
         );
-      }
 
-      const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
+      const orderbook = await fetchOrderbook(exchangesAndCoins);
 
-      const arbitrageOpportunities = results.map((result) => {
-        if (result.status === "fulfilled") {
-          return result.value;
-        }
-      });
-
-      return arbitrageOpportunities;
+      return { orderbook };
     },
   })
-  .query("getPaginated", {
-    input: z.object({
-      buyExchanges: z.string().array(),
-      sellExchanges: z.string().array(),
-      email: z.string().optional(),
-      limit: z.number().min(1).max(100).nullish(),
-      cursor: z.number().nullish(),
-    }),
-    async resolve({ ctx, input }) {
-      if (!input) {
-        // console.log('Sending empty orderbook')
-        return {
-          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
-          nextCursor: 1,
-        };
-      }
 
-      const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
-
-      if (buyExchanges.length === 0 || sellExchanges.length === 0) {
-        // console.log('Sending empty orderbook: empty buy or sell exchanges')
-        return {
-          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
-          nextCursor: cursor,
-        };
-      }
-
-      let activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
-
-      activeCoins = CoinsSingleton.getInstance().coins;
-
-      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
-      const endIndex = startIndex + (limit ?? 50);
-      const paginatedCoins = activeCoins.slice(startIndex, endIndex);
-
-      if (paginatedCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
-        return {
-          arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
-          nextCursor: cursor,
-        };
-      }
-
-      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
-        [];
-
-      for (const coin of paginatedCoins) {
-        arbitrageOpportunitiesPromises.push(
-          fetchArbitrageOpportunity(
-            ctx,
-            {
-              name: coin.name,
-              ticker: coin.ticker,
-              isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
-            },
-            buyExchanges,
-            sellExchanges,
-            coin.ExchangeCoinTax,
-            input?.email || ""
-          )
-        );
-      }
-
-      const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
-
-      const arbitrageOpportunities = results.map((result) => {
-        if (result.status === "fulfilled") {
-          return result.value;
-        }
-      });
-
-      let nextCursor = 1;
-      if (endIndex < activeCoins.length) {
-        nextCursor = (cursor ?? 1) + 1;
-      }
-
-      return { arbitrageOpportunities, nextCursor };
-    },
-  })
   .query("getDollar", {
     async resolve({ ctx }) {
       return await ServerSingleton.getInstance().getDollar();

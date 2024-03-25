@@ -1,28 +1,76 @@
 import type { GetServerSideProps, NextPage } from "next";
-import { unstable_getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
-import { ArbitrageOpportunity } from "../server/router/orderbook";
+
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
-import { Exchange } from "@prisma/client";
-import { XCircle } from "phosphor-react";
+import { getServerSession } from "next-auth";
 import { BeatLoader, PacmanLoader } from "react-spinners";
-import { toast } from "react-toastify";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
+import { updateIP } from "../server/db/checkIP";
+import { getActiveExchanges } from "../server/db/getActiveExchanges";
+import { getDollar } from "../server/db/getDollar";
+import { Exchange } from "../server/modules/exchanges/ExchangeStrategy";
+import { Orderbook } from "../server/router/orderbook";
 
-const Monitoring: NextPage = () => {
-  const [page, setPage] = useState(1);
-  const [allData, setAllData] = useState({});
+interface OrderBookGroup {
+  [ticker: string]: Exchange[];
+}
 
+interface ExchangeOperation {
+  price: number;
+  amount: number;
+  exchange: string;
+  exchangeUrl: string;
+  isUSD: boolean;
+  orderbook: Orderbook | undefined;
+}
+
+interface ArbitrageOpportunity {
+  coin: string;
+  coinName: string;
+  coinImage: string;
+  highestBid: ExchangeOperation;
+  lowestAsk: ExchangeOperation;
+  spread: number;
+}
+
+interface MonitoringProps {
+  ip: string;
+  hasIPChanged: boolean;
+  isAdmin: boolean;
+  dollarPrice: number;
+
+  ActiveExchanges: {
+    id: string;
+    tag: string;
+    name: string;
+    fee: number;
+    active: boolean;
+    image_url: string | null;
+    convert: boolean;
+    bronze: boolean;
+    silver: boolean;
+    gold: boolean;
+    platinum: boolean;
+  }[];
+}
+
+const Monitoring: NextPage<MonitoringProps> = ({
+  ip,
+  hasIPChanged,
+  isAdmin,
+  dollarPrice,
+  ActiveExchanges,
+}) => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -39,11 +87,8 @@ const Monitoring: NextPage = () => {
     };
   }, []);
 
-  const { data: ActiveExchanges, isLoading: isLoadingExchanges } =
-    trpc.useQuery(["exchange.getActiveExchanges"], { ssr: true });
-
   const [buyExchanges, setBuyExchanges] = useState<
-    Array<{ name: string; image_url: string }>
+    Array<{ name: string; image_url: string; id: string }>
   >(() => {
     if (typeof window !== "undefined") {
       const savedExchanges = localStorage.getItem("buyExchanges");
@@ -54,7 +99,7 @@ const Monitoring: NextPage = () => {
   });
 
   const [sellExchanges, setSellExchanges] = useState<
-    Array<{ name: string; image_url: string }>
+    Array<{ name: string; image_url: string; id: string }>
   >(() => {
     if (typeof window !== "undefined") {
       const savedExchanges = localStorage.getItem("sellExchanges");
@@ -69,23 +114,10 @@ const Monitoring: NextPage = () => {
     setSidebarClickCount((prevCount) => prevCount + 1);
   };
 
-  const updateMutation = trpc.useMutation("user.updateUserDollarValue");
-
-  const { data: auth } = useSession();
-
-  const userEmail = auth?.user?.email;
-
   const [selectedOperation, setSelectedOperation] =
     useState<ArbitrageOpportunity>({} as ArbitrageOpportunity);
 
   const [loadingDolarChange, setLoadingDolarChange] = useState(false);
-
-  const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
-
-  const queryInfo = trpc.useQuery([
-    "user.getUserByEmail",
-    { email: auth?.user?.email as string },
-  ]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -101,71 +133,43 @@ const Monitoring: NextPage = () => {
     }
   }, [sidebarClickCount]);
 
-  useEffect(() => {
-    if (!queryInfo.data) {
-      queryInfo.refetch();
-    }
-  }, [queryInfo]);
-
-  const user = queryInfo.data;
-
-  const buyExchangesName = Array.isArray(buyExchanges)
-    ? buyExchanges.map((e) => e.name)
+  const buyExchangesInfo = Array.isArray(buyExchanges)
+    ? buyExchanges.map((e) => ({ name: e.name, id: e.id }))
     : [];
 
-  const sellExchangesName = Array.isArray(sellExchanges)
-    ? sellExchanges.map((e) => e.name)
+  const sellExchangesInfo = Array.isArray(sellExchanges)
+    ? sellExchanges.map((e) => ({ name: e.name, id: e.id }))
     : [];
 
-  const { refetch, data, isLoading, isFetching, hasNextPage, fetchNextPage } =
-    trpc.useInfiniteQuery(
-      [
-        "orderBook.getPaginated",
-        {
-          buyExchanges: buyExchangesName ?? undefined,
-          sellExchanges: sellExchangesName ?? undefined,
-          email: userEmail ?? undefined,
-        },
-      ],
+  const { refetch, data, isLoading, isFetching } = trpc.useQuery(
+    [
+      "orderBook.getOrderbook",
       {
-        getNextPageParam: (lastPage, allPages) => {
-          // You should return `undefined` if there are no more pages
-          // You can calculate this from the lastPage's data, if it has a total count, for example
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 50; // Adjust accordingly
-          if (!morePagesExist) return undefined;
-
-          // Return the index of the next page
-          return lastPage.nextCursor;
-        },
-        refetchInterval: 20 * 1000,
-        retry(failureCount, error) {
-          if (failureCount > 3) {
-            return false;
-          }
-          return true;
-        },
-        keepPreviousData: true,
-        onSuccess(data) {
-          if (data?.pages.flat().length === 0 && !isFetching) {
-            refetch();
-          }
-        },
-        onError(error) {
-          if (!isFetching) {
-            refetch();
-          }
-        },
-      }
-    );
-
-  // Whenever you want to fetch the next page (if you're doing traditional pagination)
-  if (hasNextPage && !isLoading && !isFetching) {
-    fetchNextPage();
-  }
-
-  const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
-    refetchInterval: 20 * 1000,
-  });
+        buyExchanges: buyExchangesInfo ?? undefined,
+        sellExchanges: sellExchangesInfo ?? undefined,
+      },
+    ],
+    {
+      refetchInterval: 20 * 1000,
+      retry(failureCount, error) {
+        if (failureCount > 3) {
+          return false;
+        }
+        return true;
+      },
+      keepPreviousData: true,
+      onSuccess(data) {
+        if (!data && !isFetching) {
+          refetch();
+        }
+      },
+      onError(error) {
+        if (!isFetching) {
+          refetch();
+        }
+      },
+    }
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -193,87 +197,156 @@ const Monitoring: NextPage = () => {
     []
   );
 
-  useEffect(() => {
-    if (dolarValue === 0) {
-      refetch();
-    }
-  }, []);
-  const onChangeDolar = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const rawValue = e.target.value.replace(/\D/g, "");
-      const numValue = parseFloat(rawValue) / 100;
-      if (isNaN(numValue)) {
-        toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
-          icon: <XCircle size={32} color="#ff3838" weight="fill" />,
-        });
-        return;
+  console.log(data?.orderbook);
+
+  const groupedByTicker = data?.orderbook.reduce(
+    (acc: OrderBookGroup, order) => {
+      if (order && !acc[order.ticker!]) {
+        acc[order.ticker!] = [];
       }
-      setLoadingDolarChange(true); // <-- Adicione isto
-      refetch();
-      setDolarValue(numValue);
-      if (user) {
-        const newDolar =
-          isNaN(numValue) || numValue === 0 ? dollarPrice : numValue;
-        updateMutation.mutate(
-          {
-            id: String(user?.id),
-            dolarValue: newDolar as number,
-          },
-          {
-            onSettled: () => {
-              sortedOperations = [];
-              setLoadingDolarChange(false);
-            },
-          }
-        );
-      }
+      if (order) acc[order.ticker!]?.push(order);
+      return acc;
     },
-    [user, dollarPrice]
+    {} as OrderBookGroup
   );
 
-  // Mobile
-  const onSelectSellExchangeMobile = useCallback(
-    (selectedExchanges: readonly Exchange[]) => {
-      if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
-          name: exchange.name,
-          image_url: exchange.image_url as string,
-        }));
-        setSellExchanges(selectedExchangesNames);
+  const filteredGroupedByTicker = Object.entries(groupedByTicker || {}).reduce(
+    (acc, [ticker, orders]) => {
+      if (orders.length > 1) {
+        acc[ticker] = orders;
       }
+      return acc;
     },
-    []
+    {} as OrderBookGroup
   );
 
-  let allArbitrageOpportunities =
-    data?.pages.flatMap((page) => page.arbitrageOpportunities) ?? [];
+  console.log(filteredGroupedByTicker);
 
-  let sortedOperations = allArbitrageOpportunities
-    .sort((a, b) => {
-      if (a && b) {
-        if (a?.spread < b?.spread) {
-          return 1;
+  const arbitrageOpportunities = Object.keys(filteredGroupedByTicker || {})
+    .map((ticker) => {
+      const orders = filteredGroupedByTicker[ticker];
+
+      const buyOrders = orders?.filter((order) => order.exchangeType === "buy");
+
+      const sellOrders = orders?.filter(
+        (order) => order.exchangeType === "sell"
+      );
+
+      let lowestAsk = {
+        price: Infinity,
+        exchange: "",
+        isUSD: true,
+        exchangeUrl: "",
+        orderbook: Array<
+          | {
+              price: number;
+              amount: number;
+              exchangeUrl?: string;
+            }
+          | undefined
+        >,
+      };
+
+      let highestBid = {
+        price: 0,
+        exchange: "",
+        isUSD: true,
+        exchangeUrl: "",
+        orderbook: Array<
+          | {
+              price: number;
+              amount: number;
+              exchangeUrl?: string;
+            }
+          | undefined
+        >,
+      };
+
+      buyOrders?.forEach((order, index) => {
+        const convertedPrice = order.isUSD
+          ? order.asks && order.asks[0]?.price
+          : order.asks && Number(order.asks[0]?.price ?? 0) / dollarPrice;
+        if (convertedPrice && convertedPrice < lowestAsk.price) {
+          lowestAsk = {
+            orderbook: order.asks,
+            price: convertedPrice,
+            exchange: order.name,
+            exchangeUrl: order.exchangeUrl ?? "",
+            isUSD: order.isUSD ?? false,
+          };
         }
-        if (a?.spread > b?.spread) {
-          return -1;
+      });
+
+      sellOrders?.forEach((order) => {
+        const convertedPrice = order.isUSD
+          ? order.bids && order.bids[0]?.price
+          : order.bids && Number(order.bids[0]?.price ?? 0) / dollarPrice;
+        if (convertedPrice && convertedPrice > highestBid.price) {
+          highestBid = {
+            orderbook: order.bids,
+            price: convertedPrice,
+            exchange: order.name,
+            exchangeUrl: order.exchangeUrl ?? "",
+            isUSD: order.isUSD ?? false,
+          };
         }
-        return 0;
+      });
+
+      let spread = 0;
+      console.log(lowestAsk.price);
+      if (lowestAsk.price !== Infinity && highestBid.price !== 0) {
+        spread = ((highestBid.price - lowestAsk.price) / lowestAsk.price) * 100;
       }
-      return 0;
+
+      return {
+        coin: ticker,
+        lowestAsk,
+        highestBid,
+        coinImage: orders![0]?.coinImage || null,
+        coinName: orders![0]?.coinName || "",
+        spread: Number(spread.toFixed(2)),
+      };
     })
-    .filter((operation) => {
-      if (operation) {
-        return operation.spread > 0;
-      }
-      return false;
+    .filter((opportunity) => {
+      if (opportunity.spread > 0) return true;
+      else return false;
     });
+
+  let operationsMap = new Map();
+  arbitrageOpportunities.forEach((operation) => {
+    if (operation && operation.spread > 0) {
+      operationsMap.set(operation.coin, operation);
+    }
+  });
+
+  let sortedOperations: ArbitrageOpportunity[] = Array.from(
+    operationsMap.values()
+  ).sort((a, b) => {
+    if (a?.spread < b?.spread) {
+      return 1;
+    }
+    if (a?.spread > b?.spread) {
+      return -1;
+    }
+    return 0;
+  });
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
   });
 
-  console.log(modalState);
+  useEffect(() => {
+    if (hasIPChanged) {
+      signOut({
+        callbackUrl: "/",
+      });
+    }
+  }, [hasIPChanged]);
+
+  function onChangeDolar(event: ChangeEvent<HTMLInputElement>): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <>
@@ -287,11 +360,11 @@ const Monitoring: NextPage = () => {
         <>
           {modalOpenOrderBook && (
             <ModalOrderBook
-              symbol={selectedOperation.ticker}
+              symbol={selectedOperation.coin}
               orderbookBid={selectedOperation.highestBid}
               orderbookAsk={selectedOperation.lowestAsk}
-              buyWhere={selectedOperation.highestBid.image_url}
-              sellWhere={selectedOperation.lowestAsk.image_url}
+              buyWhere={selectedOperation.highestBid.exchangeUrl}
+              sellWhere={selectedOperation.lowestAsk.exchangeUrl}
               buyEchangeName={selectedOperation.highestBid.exchange}
               sellEchangeName={selectedOperation.lowestAsk.exchange}
               coin={selectedOperation.coin}
@@ -331,7 +404,7 @@ const Monitoring: NextPage = () => {
                         <input
                           className={styles.dolarLabel}
                           type="number"
-                          value={dolarValue}
+                          value={dollarPrice}
                           onChange={onChangeDolar}
                           style={{ textAlign: "center" }}
                           placeholder="Valor do Dólar"
@@ -352,7 +425,7 @@ const Monitoring: NextPage = () => {
                 buyExchanges={buyExchanges || []}
                 sellExchanges={sellExchanges || []}
                 onChangeDolar={onChangeDolar}
-                dolarValue={dolarValue as number}
+                dolarValue={dollarPrice as number}
                 onModalChange={handleModalState}
               />
             </div>
@@ -365,7 +438,7 @@ const Monitoring: NextPage = () => {
                 buyExchanges={buyExchanges || []}
                 sellExchanges={sellExchanges || []}
                 onChangeDolar={onChangeDolar}
-                dolarValue={dolarValue as number}
+                dolarValue={dollarPrice as number}
                 onModalChange={handleModalState}
               />
             </div>
@@ -375,7 +448,7 @@ const Monitoring: NextPage = () => {
               buyExchanges={buyExchanges || []}
               sellExchanges={sellExchanges || []}
               onChangeDolar={onChangeDolar}
-              dolarValue={dolarValue as number}
+              dolarValue={dollarPrice as number}
               onModalChange={handleModalState}
             />
             <main>
@@ -400,22 +473,22 @@ const Monitoring: NextPage = () => {
                           key={operation.coin}
                           coin={{
                             image: operation.coinImage,
-                            name: operation.coin,
+                            name: operation.coinName,
                             ask: {
                               exchange: operation.lowestAsk.exchange,
-                              image_url: operation.lowestAsk.image_url,
+                              image_url: operation.lowestAsk.exchangeUrl,
                               price: operation.lowestAsk.price,
                               isUSD: operation.lowestAsk.isUSD,
                             },
                             bid: {
                               exchange: operation.highestBid.exchange,
-                              image_url: operation.highestBid.image_url,
+                              image_url: operation.highestBid.exchangeUrl,
                               price: operation.highestBid.price,
                               isUSD: operation.highestBid.isUSD,
                             },
-                            fee: operation.fee,
-                            tax: operation.tax,
-                            symbol: operation.ticker,
+                            fee: /*operation.fee*/ 0,
+                            tax: /*operation.tax*/ 0,
+                            symbol: operation.coin,
                             spread: operation.spread,
                           }}
                           dollarPrice={dollarPrice}
@@ -439,11 +512,11 @@ const Monitoring: NextPage = () => {
 export default Monitoring;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
+  const { req } = context;
+
+  const forwarded = req.headers["x-forwarded-for"] as string;
+  const ip = forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return {
@@ -454,7 +527,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  let hasIPChanged = false;
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  const dollarPrice = await getDollar();
+
+  const ActiveExchanges = await getActiveExchanges(
+    session.user?.email as string
+  );
+
+  try {
+    const result = await updateIP(session.id as string, ip as string);
+    hasIPChanged =
+      session?.role === "admin" ? false : (result.hasIPChanged as boolean);
+  } catch (error) {
+    console.error("Erro ao criar ou atualizar registro IP:", error);
+  }
+
   return {
-    props: {},
+    props: { ip, hasIPChanged, isAdmin, dollarPrice, ActiveExchanges },
   };
 };

@@ -37,6 +37,53 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 4,
 });
+const dynamicDecimalFormatter = (value: number, ticker: string): string => {
+  const currencyDecimalMapping: { [key: string]: number } = {
+    SHIB: 8,
+    ELON: 10,
+    FLOKI: 7,
+    NFT: 9,
+    PEPE: 9,
+    EPX: 6,
+    BONK: 8,
+    WIN: 7,
+    RACA: 7,
+    CAPO: 6,
+    SATS: 9,
+    BTT: 9,
+    REEF: 6,
+  };
+
+  let fractionDigits = currencyDecimalMapping[ticker] || 4;
+
+  if (value !== 0 && value < Math.pow(10, -fractionDigits)) {
+    fractionDigits = Math.max(Math.ceil(-Math.log10(value)), fractionDigits);
+  }
+
+  const formatter = new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+  return formatter.format(value);
+};
+
+const formatterSpread = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const calculatePrice = (
+  price: number,
+  isUSD: boolean,
+  dolarValue: number,
+  symbol: string
+) => {
+  let calculatedPrice = /*isUSD ?*/ price * dolarValue; /*: price*/
+
+  return calculatedPrice;
+};
 
 export function OperationCard({
   coin,
@@ -51,16 +98,18 @@ export function OperationCard({
 
   const dolarValue = user?.dolarValue ?? 1;
 
-  const bidPrice = coin.bid.isUSD
-    ? parseFloat(
-        (coin.bid.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
-      )
-    : coin.bid.price;
-  const askPrice = coin.ask.isUSD
-    ? parseFloat(
-        (coin.ask.price * dolarValue).toFixed(coin.symbol === "SHIB" ? 8 : 4)
-      )
-    : coin.ask.price;
+  const bidPrice = calculatePrice(
+    coin.bid.price,
+    coin.bid.isUSD,
+    dollarPrice,
+    coin.symbol
+  );
+  const askPrice = calculatePrice(
+    coin.ask.price,
+    coin.ask.isUSD,
+    dollarPrice,
+    coin.symbol
+  );
 
   return (
     <section className={styles.card}>
@@ -123,7 +172,7 @@ export function OperationCard({
       <div className={styles["card-footer"]}>
         <p>
           <span>Spread</span>
-          {percentageFormatter.format(coin.spread)}
+          {formatterSpread.format(coin.spread / 100)}
         </p>
         <p>
           <span>Taxas</span>
