@@ -13,6 +13,7 @@ export interface SidebarProps {
   sellExchanges: { name: string; image_url: string }[];
   onChangeDolar: (e: React.ChangeEvent<HTMLInputElement>) => void;
   dolarValue: number;
+  isAdmin: boolean;
 }
 
 export function Sidebar({
@@ -22,6 +23,7 @@ export function Sidebar({
   buyExchanges,
   sellExchanges,
   onModalChange,
+  isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
 
@@ -66,6 +68,7 @@ export function Sidebar({
             setIsModalBuyOpen(false);
             onModalChange(false);
           }}
+          isAdmin={isAdmin}
         />
       ) : (
         <></>

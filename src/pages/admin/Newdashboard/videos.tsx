@@ -1,20 +1,14 @@
-import type { GetServerSideProps, NextPage } from "next";
-import { unstable_getServerSession } from "next-auth";
-import Head from "next/head";
+import { ReactElement, useState } from "react";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import { NextPageWithLayout } from "../../_app";
+import styles from "../../../styles/user.module.scss";
+import React from "react";
+import { ModalAddVideo } from "../../../components/Modals/ModalAddVideo";
 import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
-import { useState } from "react";
+import { DataGridVideos } from "../../../components/GridComponents/DataGridVideos";
+import { trpc } from "../../../utils/trpc";
 import { toast } from "react-toastify";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
-import { DataGridVideos } from "../../components/GridComponents/DataGridVideos";
-import { Header } from "../../components/Header";
-import { ModalAddVideo } from "../../components/Modals/ModalAddVideo";
-import styles from "../../styles/Admin.module.scss";
-import { trpc } from "../../utils/trpc";
-import { authOptions } from "../api/auth/[...nextauth]";
-
-const VideosPage: NextPage = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-
+const Videos: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
@@ -26,6 +20,34 @@ const VideosPage: NextPage = () => {
       });
     }
   };
+  const deleteMutation = trpc.useMutation("videos.delete", {
+    onSuccess() {
+      notify("Video deletada com sucesso!", true);
+      refetch();
+    },
+    onError(error) {
+      notify("Não foi possível realizar a operação!", false);
+    },
+  });
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const {
+    data: videos,
+    isLoading,
+    refetch,
+  } = trpc.useQuery(["videos.getVideos"]);
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids);
+  };
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
+    });
+  };
 
   const createVideoMutation = trpc.useMutation("videos.create", {
     onSuccess() {
@@ -36,23 +58,6 @@ const VideosPage: NextPage = () => {
       notify("Não foi possível realizar a operação!", false);
     },
   });
-
-  const {
-    data: videos,
-    isLoading,
-    refetch,
-  } = trpc.useQuery(["videos.getVideos"]);
-
-  const deleteMutation = trpc.useMutation("videos.delete", {
-    onSuccess() {
-      notify("Video deletada com sucesso!", true);
-      refetch();
-    },
-    onError(error) {
-      notify("Não foi possível realizar a operação!", false);
-    },
-  });
-
   const handleVideoCreate = async (
     title: string,
     description: string,
@@ -73,39 +78,19 @@ const VideosPage: NextPage = () => {
     setModalOpen(false);
   };
 
-  const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids);
-  };
-
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  const handleDeletion = () => {
-    deleteMutation.mutate({
-      ids: selectedIds,
-    });
-  };
-
   return (
     <>
-      <Head>
-        <title>Videos</title>
-        <meta name="description" content="Videos" />
-      </Head>
-
       {modalOpen && (
         <ModalAddVideo
           setOpenModal={handleClose}
           onSubmit={handleVideoCreate}
         />
       )}
-      <Header />
-      <div className={`${styles.content} container`}>
-        <SidebarAdmin />
-        <main>
-          <div className={styles.pageHeader}>
+      <main className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.topPart}>
             <h1>Videos</h1>
-
-            <div className={styles.buttonCryptoList}>
+            <div className={styles.buttons}>
               <button
                 type="button"
                 className={styles.addCryptoButton}
@@ -127,38 +112,20 @@ const VideosPage: NextPage = () => {
               </button>
             </div>
           </div>
-          <div className={styles.container}>
+          <div className={styles.middlePart}>
             <DataGridVideos
               data={videos || []}
               isLoading={isLoading}
               onDelete={handleSelection}
             />
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </>
   );
 };
-
-export default VideosPage;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
-
-  if (!session || session?.role !== "admin") {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+Videos.getLayout = function getLayout(page: ReactElement) {
+  return <DashboardLayout>{page}</DashboardLayout>;
 };
+
+export default Videos;

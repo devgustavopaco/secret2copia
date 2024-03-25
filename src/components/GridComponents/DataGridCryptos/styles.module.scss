@@ -1,12 +1,14 @@
 .tableContainer {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   width: 100%;
   height: 100%;
+  background: #20173f;
+  border-radius: 8px;
 
   :global(.MuiDataGrid-overlay) {
-    background-color: #211f2d;
+    background-color: #20173f;
   }
   :global(.MuiDataGrid-root) {
     color: var(--white);
@@ -45,7 +47,9 @@
   }
 
   :global(.MuiOutlinedInput-input) {
-    color: white !important;
+    background: #fff;
+    color: #000 !important;
+    border-radius: 8px;
   }
 }
 
@@ -64,7 +68,7 @@
 .box {
   width: 100%;
   padding: 0 1rem;
-  background: #211f2d;
+  background: #20173f;
   border-radius: 8px;
   box-shadow: 3px 5px 10px 6px rgb(0 0 0 / 27%);
 
@@ -76,7 +80,7 @@
 .grid {
   border: none;
   color: var(--white);
-  background: #211f2d;
+  background: #20173f;
   p {
     color: var(--white);
   }
@@ -90,5 +94,6 @@
 }
 
 .customTextField {
-  margin-bottom: 20px !important;
+  margin-left: 1rem !important;
+  margin-block: 1rem !important;
 }

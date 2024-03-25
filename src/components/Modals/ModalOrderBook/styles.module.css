@@ -23,7 +23,7 @@
 .buyAndSell img {
   width: 30px;
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   border-radius: 50px;
 }
 .buyAndSell .iconArrow {
@@ -224,7 +224,8 @@
   border-radius: 4px;
   transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.modalHeader .closeModal:hover, .modalHeader .closeModal:focus {
+.modalHeader .closeModal:hover,
+.modalHeader .closeModal:focus {
   color: var(--purple-500);
   background-color: var(--gray-700);
 }
@@ -270,4 +271,4 @@
   .buyAndSell p {
     font-size: 10px;
   }
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

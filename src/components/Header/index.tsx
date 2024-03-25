@@ -154,17 +154,19 @@ export function Header() {
           </Link>
           <a
             className={styles.menuItem}
-            href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
+            href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
             target="_blank"
             rel="noopener noreferrer"
           >
             Contato
           </a>
           {auth?.role === "admin" && (
-            <Link href="/admin/users">
+            <Link href="/admin/Newdashboard/dashboard">
               <a
                 className={`${styles.menuItem} ${
-                  router.pathname === "/admin/users" ? styles.active : ""
+                  router.pathname === "/admin/Newdashboard/dashboard"
+                    ? styles.active
+                    : ""
                 }`}
               >
                 Dashboard
@@ -237,7 +239,7 @@ export function Header() {
             <li>
               <a
                 target="_blank"
-                href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
+                href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
                 rel="noopener noreferrer"
               >
                 Contato
@@ -245,10 +247,12 @@ export function Header() {
             </li>
             {auth?.role === "admin" && (
               <li>
-                <Link href="/admin/users">
+                <Link href="/admin/Newdashboard/dashboard">
                   <a
                     className={
-                      router.pathname === "/admin/users" ? "active" : ""
+                      router.pathname === "/admin/Newdashboard/dashboard"
+                        ? "active"
+                        : ""
                     }
                   >
                     Dashboard
@@ -318,7 +322,7 @@ export function Header() {
           <li>
             <a
               target="_blank"
-              href="https://wa.me/5511948410665?text=Fala+Gu%21+Preciso+de+Suporte%21+"
+              href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
               rel="noopener noreferrer"
             >
               Contato

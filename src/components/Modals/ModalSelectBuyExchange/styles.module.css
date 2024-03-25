@@ -45,7 +45,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(13, 15, 18, 0.7);
   -webkit-backdrop-filter: blur(5px);
-          backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -96,7 +96,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.25);
   -webkit-backdrop-filter: blur(5px);
-          backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   padding-inline: 16px;
   padding-block: 12px;
 }
@@ -152,7 +152,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.25);
   -webkit-backdrop-filter: blur(5px);
-          backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   padding-inline: 18px;
   padding-block: 12px;
 }
@@ -173,7 +173,7 @@
   width: 37.333px;
   height: 37.333px;
   -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
   border-radius: 50%;
   border: 1px solid #fff;
 }
@@ -204,7 +204,7 @@
   border: 2px solid #49ac87 !important;
   background: rgba(73, 172, 135, 0.6) !important;
   -webkit-backdrop-filter: blur(5px);
-          backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
 }
 .orderExchanges .selected:hover {
   border: 2px solid #e95272 !important;
@@ -232,14 +232,14 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.25);
   -webkit-backdrop-filter: blur(5px);
-          backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   cursor: pointer;
 }
 .orderExchanges .exchangeCard img {
   width: 64px;
   height: 64px;
   -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
   margin-inline: auto;
   border-radius: 50%;
   border: 1px solid #fff;
@@ -253,4 +253,4 @@
   font-weight: 500;
   line-height: normal;
   text-transform: uppercase;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

@@ -1,28 +1,17 @@
-import type { GetServerSideProps, NextPage } from "next";
+import { ReactElement, useEffect, useState } from "react";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import { NextPageWithLayout } from "../../_app";
 import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
-import { DataGridUsers } from "../../components/GridComponents/DataGridUsers";
-
-import { unstable_getServerSession } from "next-auth";
+import styles from "../../../styles/user.module.scss";
+import React from "react";
+import { DataGridUsers } from "../../../components/GridComponents/DataGridUsers";
+import { trpc } from "../../../utils/trpc";
+import { ModalAddUser } from "../../../components/Modals/ModalAddUser";
 import { useS3Upload } from "next-s3-upload";
-import Head from "next/head";
-import { useEffect, useState } from "react";
+import { ModalDeleteUser } from "../../../components/Modals/ModalDeleteUser";
 import { toast } from "react-toastify";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
-import { Header } from "../../components/Header";
-import { ModalAddUser } from "../../components/Modals/ModalAddUser";
-import { ModalDeleteUser } from "../../components/Modals/ModalDeleteUser";
-import styles from "../../styles/Admin.module.scss";
-import { trpc } from "../../utils/trpc";
-import { authOptions } from "../api/auth/[...nextauth]";
 
-const AdminUsers: NextPage = () => {
-  let { uploadToS3 } = useS3Upload();
-  const [modalOpenDelete, setModalOpenDelete] = useState(false);
-  const [modalOpenAdd, setModalOpenAdd] = useState(false);
-  const [itemDeleted, setItemDeleted] = useState(false);
-  const [idsFromGrid, setIds] = useState<string[]>([]);
-  const [searchText, setSearchText] = useState("");
-
+const Users: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
@@ -35,11 +24,18 @@ const AdminUsers: NextPage = () => {
     }
   };
 
+  let { uploadToS3 } = useS3Upload();
+  const [idsFromGrid, setIds] = useState<string[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [itemDeleted, setItemDeleted] = useState(false);
+  const [modalOpenAdd, setModalOpenAdd] = useState(false);
+  const [modalOpenDelete, setModalOpenDelete] = useState(false);
   const {
     data: users,
     isLoading,
     refetch,
   } = trpc.useQuery(["user.getAllUsers", { search: searchText }]);
+
   useEffect(() => {
     if (idsFromGrid.length !== 0) {
       deleteUserMutation.mutate({
@@ -47,20 +43,6 @@ const AdminUsers: NextPage = () => {
       });
     }
   }, [itemDeleted]);
-
-  const handleSearch = (newSearchText: string) => {
-    setSearchText(newSearchText);
-  };
-
-  const createUserMutation = trpc.useMutation("user.create", {
-    onSuccess() {
-      notify("Usuário criado com sucesso!", true);
-      refetch();
-    },
-    onError(error) {
-      notify("Não foi possível realizar a operação!", false);
-    },
-  });
 
   const deleteUserMutation = trpc.useMutation("user.delete", {
     onSuccess() {
@@ -71,7 +53,11 @@ const AdminUsers: NextPage = () => {
       notify("Não foi possível realizar a operação!", false);
     },
   });
-  // Create
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
+  };
+
   const handleUserCreate = async (
     name: string,
     email: string,
@@ -139,37 +125,38 @@ const AdminUsers: NextPage = () => {
     }
   };
 
+  const createUserMutation = trpc.useMutation("user.create", {
+    onSuccess() {
+      notify("Usuário criado com sucesso!", true);
+      refetch();
+    },
+    onError(error) {
+      notify("Não foi possível realizar a operação!", false);
+    },
+  });
   const handleUserDelete = (ids: string[]) => {
     setIds(ids);
   };
 
   return (
     <>
-      <Head>
-        <title>Usuários</title>
-        <meta name="description" content="Usuários" />
-      </Head>
-
-      {modalOpenDelete && (
-        <ModalDeleteUser
-          setOpenModal={setModalOpenDelete}
-          deleted={setItemDeleted}
-        />
-      )}
       {modalOpenAdd && (
         <ModalAddUser
           setOpenModal={setModalOpenAdd}
           onSubmit={handleUserCreate}
         />
       )}
-      <Header />
-      <div className={`${styles.content} container`}>
-        <SidebarAdmin />
-        <main>
-          <div className={styles.pageHeader}>
+      {modalOpenDelete && (
+        <ModalDeleteUser
+          setOpenModal={setModalOpenDelete}
+          deleted={setItemDeleted}
+        />
+      )}
+      <main className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.topPart}>
             <h1>Usuários</h1>
-
-            <div className={styles.buttonCryptoList}>
+            <div className={styles.buttons}>
               <button
                 type="button"
                 className={styles.addCryptoButton}
@@ -193,7 +180,7 @@ const AdminUsers: NextPage = () => {
               </button>
             </div>
           </div>
-          <div className={styles.container}>
+          <div className={styles.middlePart}>
             <DataGridUsers
               onDelete={handleUserDelete}
               data={users || []}
@@ -201,31 +188,16 @@ const AdminUsers: NextPage = () => {
               onSearch={handleSearch}
             />
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </>
   );
 };
-
-export default AdminUsers;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
-
-  if (!session || session?.role !== "admin") {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+Users.getLayout = function getLayout(page: ReactElement) {
+  return <DashboardLayout>{page}</DashboardLayout>;
 };
+
+export default Users;
+function notify(arg0: string, arg1: boolean) {
+  throw new Error("Function not implemented.");
+}

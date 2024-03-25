@@ -99,7 +99,8 @@ html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover {
   filter: brightness(0.8);
 }
-html .input-element:focus::-moz-placeholder, body .input-element:focus::-moz-placeholder {
+html .input-element:focus::-moz-placeholder,
+body .input-element:focus::-moz-placeholder {
   color: transparent;
 }
 html .input-element:focus::placeholder,
@@ -182,4 +183,4 @@ button {
   .container {
     --max-width: 1920px;
   }
-}/*# sourceMappingURL=globals.css.map */
+} /*# sourceMappingURL=globals.css.map */

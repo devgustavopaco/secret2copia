@@ -1,0 +1,113 @@
+.container {
+  background-color: #140b2c;
+  .content {
+    padding-block: 40px;
+    padding-inline: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+}
+.header {
+  display: flex;
+  gap: 50px;
+  align-items: center;
+}
+.card,
+.corretoraCard {
+  background: #20173f;
+  padding-block: 15px;
+  padding-inline: 20px;
+  display: flex;
+  gap: 130px;
+  border-radius: 8px;
+  align-items: center;
+
+  p {
+    color: #e5e5e5;
+
+    font-family: Raleway;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 400;
+  }
+  span {
+    color: #fff;
+
+    font-weight: 600;
+  }
+}
+.corretoraCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  padding-inline: 7rem;
+  margin: 1rem 0;
+
+  img {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+  }
+
+  h3,
+  .tax {
+    flex-grow: 1;
+    margin: 0 1rem;
+  }
+
+  .tax {
+    text-align: center;
+    display: flex;
+    align-items: center;
+  }
+
+  XIcon {
+    margin-left: auto;
+  }
+}
+.cards {
+  display: flex;
+  gap: 24px;
+}
+.middleHeader {
+  display: flex;
+  justify-content: space-between;
+}
+.saveButton,
+.addCryptoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--white);
+
+  &:hover {
+    color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
+}
+.tax {
+  display: flex;
+  gap: 30px;
+}
+.middlePart {
+  display: flex;
+  gap: 2rem;
+  flex-direction: column;
+}
+.arrow {
+  cursor: pointer;
+}
+.taxInput {
+  background: none;
+  border: none;
+
+  color: #fff;
+}

@@ -69,7 +69,8 @@
   border-radius: 4px;
   transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.modalHeader button:hover, .modalHeader button:focus {
+.modalHeader button:hover,
+.modalHeader button:focus {
   color: var(--purple-500);
   background-color: var(--gray-700);
 }
@@ -131,4 +132,4 @@
   gap: 1rem;
   margin-inline: auto;
   margin-top: 30px;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

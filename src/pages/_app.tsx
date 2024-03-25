@@ -1,9 +1,12 @@
 // src/pages/_app.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { withTRPC } from "@trpc/next";
+import { NextPage } from "next";
 import { SessionProvider } from "next-auth/react";
-import type { AppType } from "next/dist/shared/lib/utils";
+import { AppProps } from "next/app";
 import NextNProgress from "nextjs-progressbar";
 import "nprogress/nprogress.css";
+import { ReactElement, ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import superjson from "superjson";
@@ -11,18 +14,30 @@ import type { AppRouter } from "../server/router";
 import "../styles/globals.scss";
 // Default theme. ~960B
 
-// Optional light theme (extends default). ~400B
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
 
-const MyApp: AppType = ({
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+const queryClient = new QueryClient();
+
+const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
-}) => {
+}: AppPropsWithLayout) => {
+  const getLayout = Component.getLayout ?? ((page: ReactElement) => page);
+
   return (
-    <SessionProvider session={session}>
-      <NextNProgress color="#7158e2" />
-      <Component {...pageProps} />
-      <ToastContainer />
-    </SessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionProvider session={session}>
+        <NextNProgress color="#7158e2" />
+        {getLayout(<Component {...pageProps} />)}
+        <ToastContainer />
+      </SessionProvider>
+    </QueryClientProvider>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Box, MenuItem, Select, TextField } from "@mui/material";
 import {
   DataGrid,
   GridCellEditCommitParams,
@@ -6,14 +6,16 @@ import {
   GridSelectionModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-
+import { CheckCircle, XCircle } from "phosphor-react";
 import type { ExchangeCoinTax } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
+import { toast } from "react-toastify";
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[];
+
   isLoading?: boolean;
   onSelect: (ids: string[]) => void;
   onSearch: (searchTerm: string) => void;
@@ -26,6 +28,10 @@ export function DataGridTaxes({
   onSearch,
 }: DataGridTaxesProps) {
   const [searchText, setSearchText] = useState<string>("");
+  const [exchangeOptions, setExchangeOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [selectedExchangeName, setSelectedExchangeName] = useState("");
   const columns: GridColumns = [
     {
       field: "exchangeName",
@@ -33,7 +39,7 @@ export function DataGridTaxes({
       width: 250,
       editable: false,
       sortable: false,
-      filterable: false,
+      filterable: true,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
         return params.row.exchange.name;
@@ -80,11 +86,24 @@ export function DataGridTaxes({
       disableColumnMenu: true,
     },
   ];
+  const notify = (text: string, success: boolean) => {
+    if (success) {
+      toast.dark(text, {
+        icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+      });
+    } else {
+      toast.dark(text, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+    }
+  };
 
   const updateTaxMutation = trpc.useMutation("tax.update", {
-    onSuccess() {},
+    onSuccess() {
+      notify("Taxa alterada com sucesso!", true);
+    },
     onError(error) {
-      console.error(error.message);
+      notify("Não foi possível realizar a operação!", false);
     },
   });
 
@@ -104,19 +123,59 @@ export function DataGridTaxes({
     onSearch(event.target.value);
   };
 
+  const { data: exchanges, isLoading: isExchangesLoading } = trpc.useQuery([
+    "exchange.getExchanges",
+    { search: "" },
+  ]);
+  const [selectedExchange, setSelectedExchange] = useState("");
+
+  const filteredData = selectedExchangeName
+    ? data.filter((exchangeTax) => {
+        const exchange = exchanges?.find(
+          (e) => e.id === exchangeTax.exchangeId
+        );
+        return exchange ? exchange.name === selectedExchangeName : false;
+      })
+    : data;
+
+  useEffect(() => {
+    if (exchanges) {
+      setExchangeOptions(
+        exchanges.map((exchange) => ({ id: exchange.id, name: exchange.name }))
+      );
+    }
+  }, [exchanges]);
+
   return (
     <div className={styles.tableContainer}>
-      <TextField
-        id="search-field"
-        label="Pesquisar"
-        placeholder="Pesquisar"
-        value={searchText}
-        onChange={handleSearchChange}
-        className={styles.customTextField}
-      />
+      <div className={styles.header}>
+        <TextField
+          id="search-field"
+          label="Pesquisar"
+          placeholder="Pesquisar"
+          value={searchText}
+          onChange={handleSearchChange}
+          className={styles.customTextField}
+        />
+        <Select
+          value={selectedExchangeName}
+          onChange={(event) => setSelectedExchangeName(event.target.value)}
+          displayEmpty
+          inputProps={{ "aria-label": "Without label" }}
+        >
+          <MenuItem value="">
+            <em>Todas</em>
+          </MenuItem>
+          {exchangeOptions.map((exchange) => (
+            <MenuItem key={exchange.id} value={exchange.name}>
+              {exchange.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </div>
       <Box className={styles.box} sx={{ height: 700 }}>
         <DataGrid
-          rows={data}
+          rows={filteredData}
           columns={columns}
           pageSize={20}
           rowsPerPageOptions={[20]}
@@ -129,4 +188,7 @@ export function DataGridTaxes({
       </Box>
     </div>
   );
+}
+function notify(arg0: string, arg1: boolean) {
+  throw new Error("Function not implemented.");
 }

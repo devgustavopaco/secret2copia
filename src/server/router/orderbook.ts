@@ -5,6 +5,7 @@ import type {
   Exchange,
   ExchangeStrategy,
 } from "../modules/exchanges/ExchangeStrategy";
+//
 import {
   AscendexStrategy,
   BidgetStrategy,
@@ -196,7 +197,6 @@ export const orderbookRouter = createRouter()
     }),
     async resolve({ ctx, input }) {
       if (!input) {
-        // console.log('Sending empty orderbook')
         return {
           orderbook: new Array<Exchange | undefined>(),
         };

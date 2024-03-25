@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { signOut } from "next-auth/react";
 import Head from "next/head";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
@@ -182,20 +182,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
       localStorage.setItem("sellExchanges", JSON.stringify(sellExchanges));
     }
   }, [sellExchanges]);
-
-  // Mobile
-  const onSelectBuyExchangeMobile = useCallback(
-    (selectedExchanges: readonly Exchange[]) => {
-      if (selectedExchanges !== undefined) {
-        const selectedExchangesNames = selectedExchanges.map((exchange) => ({
-          name: exchange.name,
-          image_url: exchange.image_url as string,
-        }));
-        setBuyExchanges(selectedExchangesNames);
-      }
-    },
-    []
-  );
 
   console.log(data?.orderbook);
 
@@ -427,6 +413,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dollarPrice as number}
                 onModalChange={handleModalState}
+                isAdmin={isAdmin}
               />
             </div>
 
@@ -440,6 +427,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dollarPrice as number}
                 onModalChange={handleModalState}
+                isAdmin={isAdmin}
               />
             </div>
             <Sidebar
@@ -450,6 +438,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
               onChangeDolar={onChangeDolar}
               dolarValue={dollarPrice as number}
               onModalChange={handleModalState}
+              isAdmin={isAdmin}
             />
             <main>
               <h1>
@@ -470,7 +459,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                     (operation) =>
                       operation && (
                         <OperationCard
-                          key={operation.coin}
+                          key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
                           coin={{
                             image: operation.coinImage,
                             name: operation.coinName,
@@ -522,7 +511,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/",
-        permanent: true,
+        permanent: false,
       },
     };
   }

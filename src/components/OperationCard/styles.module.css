@@ -35,7 +35,8 @@
   transition: filter 0.2s ease;
   box-shadow: 0px 2.21206px 22.1206px rgba(123, 97, 255, 0.3);
 }
-.card button:hover, .card button:focus {
+.card button:hover,
+.card button:focus {
   filter: brightness(0.8);
 }
 .card button:active {
@@ -148,4 +149,4 @@
   color: var(--white);
   text-transform: uppercase;
   opacity: 0.3;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */

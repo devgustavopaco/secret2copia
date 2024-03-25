@@ -1,26 +1,15 @@
-import type { GetServerSideProps, NextPage } from "next";
-import styles from "../../styles/Admin.module.scss";
-
-import { unstable_getServerSession } from "next-auth";
-import { useS3Upload } from "next-s3-upload";
-import Head from "next/head";
+import { ReactElement, useState } from "react";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import { NextPageWithLayout } from "../../_app";
+import styles from "../../../styles/user.module.scss";
+import React from "react";
 import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
-import { useState } from "react";
+import { useS3Upload } from "next-s3-upload";
+import { DataGridExchanges } from "../../../components/GridComponents/DataGridExchanges";
+import { trpc } from "../../../utils/trpc";
+import { ModalAddExchange } from "../../../components/Modals/Exchange/ModalAddExchange";
 import { toast } from "react-toastify";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
-import { DataGridExchanges } from "../../components/GridComponents/DataGridExchanges";
-import { Header } from "../../components/Header";
-import { ModalAddExchange } from "../../components/Modals/Exchange/ModalAddExchange";
-import { trpc } from "../../utils/trpc";
-import { authOptions } from "../api/auth/[...nextauth]";
-
-const AdminTaxPage: NextPage = () => {
-  let { uploadToS3 } = useS3Upload();
-
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const [searchText, setSearchText] = useState("");
-
+const Exchanges: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
@@ -33,6 +22,8 @@ const AdminTaxPage: NextPage = () => {
     }
   };
 
+  let { uploadToS3 } = useS3Upload();
+
   const createExchangeMutation = trpc.useMutation(["exchange.create"], {
     onSuccess() {
       notify("Exchange criada com sucesso!", true);
@@ -43,12 +34,7 @@ const AdminTaxPage: NextPage = () => {
     },
   });
 
-  const {
-    data: exchanges,
-    isLoading,
-    refetch,
-  } = trpc.useQuery(["exchange.getExchanges", { search: searchText }]);
-
+  const [modalOpen, setModalOpen] = useState(false);
   const deleteMutation = trpc.useMutation("exchange.delete", {
     onSuccess() {
       notify("Exchange deletada com sucesso!", true);
@@ -59,6 +45,31 @@ const AdminTaxPage: NextPage = () => {
     },
   });
 
+  const [searchText, setSearchText] = useState("");
+
+  const {
+    data: exchanges,
+    isLoading,
+    refetch,
+  } = trpc.useQuery(["exchange.getExchanges", { search: searchText }]);
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids);
+  };
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
+    });
+  };
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
+  };
+
+  const handleClose = () => {
+    setModalOpen(false);
+  };
   const handleExchangeCreate = async (
     fee: number,
     tag: string,
@@ -98,47 +109,19 @@ const AdminTaxPage: NextPage = () => {
     });
   };
 
-  const handleClose = () => {
-    setModalOpen(false);
-  };
-
-  const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids);
-  };
-
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  const handleDeletion = () => {
-    deleteMutation.mutate({
-      ids: selectedIds,
-    });
-  };
-
-  const handleSearch = (newSearchText: string) => {
-    setSearchText(newSearchText);
-  };
-
   return (
     <>
-      <Head>
-        <title>Exchanges</title>
-        <meta name="description" content="Exchanges" />
-      </Head>
-
       {modalOpen && (
         <ModalAddExchange
           onClose={handleClose}
           onSubmit={handleExchangeCreate}
         />
       )}
-      <Header />
-      <div className={`${styles.content} container`}>
-        <SidebarAdmin />
-        <main>
-          <div className={styles.pageHeader}>
+      <main className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.topPart}>
             <h1>Exchanges</h1>
-
-            <div className={styles.buttonCryptoList}>
+            <div className={styles.buttons}>
               <button
                 type="button"
                 className={styles.addCryptoButton}
@@ -160,7 +143,7 @@ const AdminTaxPage: NextPage = () => {
               </button>
             </div>
           </div>
-          <div className={styles.container}>
+          <div className={styles.middlePart}>
             <DataGridExchanges
               data={exchanges || []}
               isLoading={isLoading}
@@ -168,31 +151,16 @@ const AdminTaxPage: NextPage = () => {
               onSearch={handleSearch}
             />
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </>
   );
 };
-
-export default AdminTaxPage;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
-
-  if (!session || session?.role !== "admin") {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+Exchanges.getLayout = function getLayout(page: ReactElement) {
+  return <DashboardLayout>{page}</DashboardLayout>;
 };
+
+export default Exchanges;
+function notify(arg0: string, arg1: boolean) {
+  throw new Error("Function not implemented.");
+}

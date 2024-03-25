@@ -10,6 +10,7 @@ export function BuyExchangeMobile({
   buyExchanges,
   sellExchanges,
   onModalChange,
+  isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
 
@@ -49,6 +50,7 @@ export function BuyExchangeMobile({
             setIsModalBuyOpen(false);
             onModalChange(false);
           }}
+          isAdmin={isAdmin}
         />
       ) : (
         <div className={styles.swipperBlock}>

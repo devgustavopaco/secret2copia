@@ -63,16 +63,16 @@ export class ServerSingleton {
 
   private async fetchDollar(): Promise<number> {
     const response = await fetch(
-      `https://economia.awesomeapi.com.br/json/last/USD-BRL`
+      `https://api.frankfurter.app/latest?from=USD&to=BRL`
     );
 
-    const { USDBRL } = await response.json();
+    const data = await response.json();
 
-    this.dolar = Number(USDBRL.bid);
+    this.dolar = Number(data.rates.BRL);
 
     return this.dolar;
   }
-
+  //
   private async fetchDollarToKrw(): Promise<number> {
     const response = await fetch(
       `https://api.frankfurter.app/latest?from=USD&to=KRW`

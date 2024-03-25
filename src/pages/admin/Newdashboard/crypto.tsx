@@ -1,30 +1,16 @@
-import type { GetServerSideProps, NextPage } from "next";
-import { unstable_getServerSession } from "next-auth";
-import { useS3Upload } from "next-s3-upload";
+import { ReactElement, useState } from "react";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import { NextPageWithLayout } from "../../_app";
 import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
-import { useState } from "react";
+import styles from "../../../styles/user.module.scss";
+import React from "react";
+import { trpc } from "../../../utils/trpc";
+import { DataGridCryptos } from "../../../components/GridComponents/DataGridCryptos";
+import { ModalAddCrypto } from "../../../components/Modals/ModalAddCrypto";
+import { useS3Upload } from "next-s3-upload";
 import { toast } from "react-toastify";
-import { SidebarAdmin } from "../../components/Admin/SidebarAdmin";
-import { DataGridCryptos } from "../../components/GridComponents/DataGridCryptos";
-import { Header } from "../../components/Header";
-import { ModalAddCrypto } from "../../components/Modals/ModalAddCrypto";
-import styles from "../../styles/Admin.module.scss";
-import { trpc } from "../../utils/trpc";
-import { authOptions } from "../api/auth/[...nextauth]";
 
-const AdminExchanges: NextPage = () => {
-  let { uploadToS3 } = useS3Upload();
-
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const [searchText, setSearchText] = useState("");
-
-  const {
-    data: coins,
-    isLoading,
-    refetch,
-  } = trpc.useQuery(["coin.getCoins", { search: searchText }]);
-
+const Crypto: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
     if (success) {
       toast.dark(text, {
@@ -35,6 +21,31 @@ const AdminExchanges: NextPage = () => {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       });
     }
+  };
+
+  let { uploadToS3 } = useS3Upload();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
+  const {
+    data: coins,
+    isLoading,
+    refetch,
+  } = trpc.useQuery(["coin.getCoins", { search: searchText }]);
+
+  const handleSelection = (ids: string[]) => {
+    setSelectedIds(ids);
+  };
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const handleDeletion = () => {
+    deleteMutation.mutate({
+      ids: selectedIds,
+    });
+  };
+
+  const handleSearch = (newSearchText: string) => {
+    setSearchText(newSearchText);
   };
 
   const deleteMutation = trpc.useMutation("coin.delete", {
@@ -61,35 +72,21 @@ const AdminExchanges: NextPage = () => {
     ticker: string,
     name: string,
     isFanToken: boolean,
-    image?: File | null
+    exchangeId: string,
+    tax: number,
+    confirmations: number,
+    imageUrl?: string // Changed from 'image'
   ) => {
-    let imageUrl;
-    if (image) {
-      const { url } = await uploadToS3(image);
-      imageUrl = url;
-    }
+    // Use imageUrl directly
     createCryptoMutation.mutate({
       active: true,
       name,
       ticker,
       isFanToken,
-      imageUrl,
-    });
-  };
-
-  const handleSearch = (newSearchText: string) => {
-    setSearchText(newSearchText);
-  };
-
-  const handleSelection = (ids: string[]) => {
-    setSelectedIds(ids);
-  };
-
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  const handleDeletion = () => {
-    deleteMutation.mutate({
-      ids: selectedIds,
+      imageUrl, // Use the imageUrl directly
+      exchangeId,
+      tax,
+      confirmations,
     });
   };
 
@@ -101,14 +98,11 @@ const AdminExchanges: NextPage = () => {
           onSubmit={handleCryptoCreate}
         />
       )}
-      <Header />
-      <div className={`${styles.content} container`}>
-        <SidebarAdmin />
-        <main>
-          <div className={styles.pageHeader}>
+      <main className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.topPart}>
             <h1>Cryptos</h1>
-
-            <div className={styles.buttonCryptoList}>
+            <div className={styles.buttons}>
               <button
                 type="button"
                 className={styles.addCryptoButton}
@@ -130,7 +124,7 @@ const AdminExchanges: NextPage = () => {
               </button>
             </div>
           </div>
-          <div className={styles.container}>
+          <div className={styles.middlePart}>
             <DataGridCryptos
               data={coins || []}
               isLoading={isLoading}
@@ -138,31 +132,16 @@ const AdminExchanges: NextPage = () => {
               onSearch={handleSearch}
             />
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </>
   );
 };
-
-export default AdminExchanges;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(
-    context.req,
-    context.res,
-    authOptions
-  );
-
-  if (!session || session?.role !== "admin") {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+Crypto.getLayout = function getLayout(page: ReactElement) {
+  return <DashboardLayout>{page}</DashboardLayout>;
 };
+
+export default Crypto;
+function notify(arg0: string, arg1: boolean) {
+  throw new Error("Function not implemented.");
+}

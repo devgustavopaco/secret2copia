@@ -2,6 +2,19 @@ import { useSession } from "next-auth/react";
 import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
+//
+type Ticker =
+  | "SHIB"
+  | "ELON"
+  | "FLOKI"
+  | "NFT"
+  | "PEPE"
+  | "EPX"
+  | "BONK"
+  | "WIN"
+  | "RACA"
+  | "CAPO"
+  | "SATS";
 
 interface OperationCardProps {
   coin: {
@@ -139,9 +152,8 @@ export function OperationCard({
             {coin.ask.exchange}
           </div>
           <p>
-            <span>R$</span>
-            &nbsp;
-            {numberFormatter.format(askPrice)}
+            R$ &nbsp;
+            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
           </p>
         </div>
 
@@ -160,9 +172,8 @@ export function OperationCard({
             {coin.bid.exchange}
           </div>
           <p>
-            <span>R$</span>
-            &nbsp;
-            {numberFormatter.format(bidPrice)}
+            R$ &nbsp;
+            {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}
           </p>
         </div>
       </div>
