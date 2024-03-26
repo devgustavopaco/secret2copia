@@ -11,6 +11,8 @@ export interface ExchangeCoinsRawResult {
   ticker: string;
   isFanToken: number;
   imageUrl: string;
+  exchangeFee: number;
+  coinTax: number;
   exchangeType: "buy" | "sell";
 }
 
@@ -43,6 +45,8 @@ export class CoinsSingleton {
         c.isFanToken,
         c.image_url AS imageUrl,
         e.image_url as exchangeUrl,
+        e.fee as exchangeFee,
+        ect.tax AS coinTax,
         ROW_NUMBER() OVER(PARTITION BY e.id ORDER BY c.name) AS rn,
         CASE ${whenClauses} ELSE 'unknown' END AS exchangeType
       FROM Exchange e

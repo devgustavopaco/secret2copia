@@ -14,11 +14,15 @@ interface ModalOrderBookProps {
   dollarPrice: number;
   orderbookBid: {
     isUSD: boolean;
-    orderbook: { price: number; amount: number }[] | undefined;
+    orderbook:
+      | { price: number; amount: number; exchangeFee: number }[]
+      | undefined;
   };
   orderbookAsk: {
     isUSD: boolean;
-    orderbook: { price: number; amount: number }[] | undefined;
+    orderbook:
+      | { price: number; amount: number; exchangeFee: number }[]
+      | undefined;
   };
   setOpenModal: (open: boolean) => void;
 }

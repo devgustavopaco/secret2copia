@@ -30,6 +30,7 @@ interface ExchangeOperation {
   amount: number;
   exchange: string;
   exchangeUrl: string;
+  exchangeFee: number;
   isUSD: boolean;
   orderbook: Orderbook | undefined;
 }
@@ -41,6 +42,8 @@ interface ArbitrageOpportunity {
   highestBid: ExchangeOperation;
   lowestAsk: ExchangeOperation;
   spread: number;
+  exchangeFee: number;
+  coinTax: number;
 }
 
 interface MonitoringProps {
@@ -185,6 +188,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   console.log(data?.orderbook);
 
+  data?.orderbook.forEach((item) => {
+    console.log(item.exchangeFee);
+  });
+
   const groupedByTicker = data?.orderbook.reduce(
     (acc: OrderBookGroup, order) => {
       if (order && !acc[order.ticker!]) {
@@ -206,8 +213,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     {} as OrderBookGroup
   );
 
-  console.log(filteredGroupedByTicker);
-
   const arbitrageOpportunities = Object.keys(filteredGroupedByTicker || {})
     .map((ticker) => {
       const orders = filteredGroupedByTicker[ticker];
@@ -223,11 +228,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
         exchange: "",
         isUSD: true,
         exchangeUrl: "",
+        exchangeFee: 0,
         orderbook: Array<
           | {
               price: number;
               amount: number;
               exchangeUrl?: string;
+              exchangeFee: number;
             }
           | undefined
         >,
@@ -238,11 +245,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
         exchange: "",
         isUSD: true,
         exchangeUrl: "",
+        exchangeFee: 0,
         orderbook: Array<
           | {
               price: number;
               amount: number;
               exchangeUrl?: string;
+              exchangeFee: number;
             }
           | undefined
         >,
@@ -257,6 +266,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
             orderbook: order.asks,
             price: convertedPrice,
             exchange: order.name,
+            exchangeFee: order.exchangeFee,
             exchangeUrl: order.exchangeUrl ?? "",
             isUSD: order.isUSD ?? false,
           };
@@ -272,12 +282,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
             orderbook: order.bids,
             price: convertedPrice,
             exchange: order.name,
+            exchangeFee: order.exchangeFee,
             exchangeUrl: order.exchangeUrl ?? "",
             isUSD: order.isUSD ?? false,
           };
         }
       });
-
+      let totalFee = lowestAsk.exchangeFee + highestBid.exchangeFee;
       let spread = 0;
       console.log(lowestAsk.price);
       if (lowestAsk.price !== Infinity && highestBid.price !== 0) {
@@ -291,6 +302,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
         coinImage: orders![0]?.coinImage || null,
         coinName: orders![0]?.coinName || "",
         spread: Number(spread.toFixed(2)),
+        exchangeFee: totalFee,
+        coinTax: orders![0]?.coinTax || 0,
       };
     })
     .filter((opportunity) => {
@@ -475,8 +488,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
                               price: operation.highestBid.price,
                               isUSD: operation.highestBid.isUSD,
                             },
-                            fee: /*operation.fee*/ 0,
-                            tax: /*operation.tax*/ 0,
+                            fee: operation.exchangeFee,
+                            tax: operation.coinTax * operation.lowestAsk.price,
                             symbol: operation.coin,
                             spread: operation.spread,
                           }}

@@ -38,7 +38,8 @@ export interface ExchangeStrategy {
     ticker: string,
     exchangeName: string,
     exchangeType: "buy" | "sell",
-    isFanToken?: boolean
+    isFanToken?: boolean,
+    exchangeFee?: number
   ): Promise<Exchange>;
   convertOrderbook(
     pair: string,

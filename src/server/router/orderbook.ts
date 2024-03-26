@@ -164,14 +164,19 @@ const fetchOrderbook = async (
           exchangeAndCoin.ticker,
           exchangeAndCoin.exchangeName,
           exchangeAndCoin.exchangeType,
-          exchangeAndCoin.isFanToken === 0 ? false : true
+          exchangeAndCoin.isFanToken === 0 ? false : true,
+          exchangeAndCoin.exchangeFee
         )
-        .then((result) => ({
-          ...result,
-          coinImage: exchangeAndCoin.imageUrl,
-          coinName: exchangeAndCoin.coinName,
-          exchangeUrl: exchangeAndCoin.exchangeUrl,
-        }));
+        .then((result) => {
+          return {
+            ...result,
+            coinImage: exchangeAndCoin.imageUrl,
+            coinName: exchangeAndCoin.coinName,
+            exchangeUrl: exchangeAndCoin.exchangeUrl,
+            exchangeFee: exchangeAndCoin.exchangeFee,
+            coinTax: exchangeAndCoin.coinTax,
+          };
+        });
 
       orderBookPromises.push(promise);
     }
@@ -204,8 +209,6 @@ export const orderbookRouter = createRouter()
 
       const { buyExchanges, sellExchanges } = input;
 
-      console.log(buyExchanges, sellExchanges);
-
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         return {
           orderbook: new Array<Exchange | undefined>(),
@@ -222,7 +225,6 @@ export const orderbookRouter = createRouter()
 
       const orderbook = await fetchOrderbook(exchangesAndCoins);
       console.log(orderbook);
-
       return { orderbook };
     },
   })
