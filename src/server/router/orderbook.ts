@@ -224,7 +224,7 @@ export const orderbookRouter = createRouter()
         );
 
       const orderbook = await fetchOrderbook(exchangesAndCoins);
-      console.log(orderbook);
+
       return { orderbook };
     },
   })

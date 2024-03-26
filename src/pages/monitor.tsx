@@ -19,12 +19,17 @@ import { updateIP } from "../server/db/checkIP";
 import { getActiveExchanges } from "../server/db/getActiveExchanges";
 import { getDollar } from "../server/db/getDollar";
 import { Exchange } from "../server/modules/exchanges/ExchangeStrategy";
-import { Orderbook } from "../server/router/orderbook";
 
 interface OrderBookGroup {
   [ticker: string]: Exchange[];
 }
 
+interface Order {
+  price: number;
+  amount: number;
+  exchangeUrl?: string;
+  exchangeFee: number;
+}
 interface ExchangeOperation {
   price: number;
   amount: number;
@@ -32,7 +37,7 @@ interface ExchangeOperation {
   exchangeUrl: string;
   exchangeFee: number;
   isUSD: boolean;
-  orderbook: Orderbook | undefined;
+  orderbook: Order[];
 }
 
 interface ArbitrageOpportunity {
@@ -224,15 +229,12 @@ const Monitoring: NextPage<MonitoringProps> = ({
         exchangeUrl: "",
         exchangeFee: 0,
         coinTax: 0,
-        orderbook: Array<
-          | {
-              price: number;
-              amount: number;
-              exchangeUrl?: string;
-              exchangeFee: number;
-            }
-          | undefined
-        >,
+        orderbook: Array<{
+          price: 0;
+          amount: 0;
+          exchangeUrl?: "";
+          exchangeFee: 0;
+        }>,
       };
 
       let highestBid = {
@@ -241,15 +243,12 @@ const Monitoring: NextPage<MonitoringProps> = ({
         isUSD: true,
         exchangeUrl: "",
         exchangeFee: 0,
-        orderbook: Array<
-          | {
-              price: number;
-              amount: number;
-              exchangeUrl?: string;
-              exchangeFee: number;
-            }
-          | undefined
-        >,
+        orderbook: Array<{
+          price: number;
+          amount: number;
+          exchangeUrl?: string;
+          exchangeFee: number;
+        }>,
       };
 
       buyOrders?.forEach((order, index) => {
@@ -258,10 +257,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
           : order.asks && Number(order.asks[0]?.price ?? 0) / dollarPrice;
         if (convertedPrice && convertedPrice < lowestAsk.price) {
           lowestAsk = {
-            orderbook: order.asks,
+            //@ts-ignore
+            orderbook: order.asks ?? [
+              { price: 0, amount: 0, exchangeUrl: "", exchangeFee: 0 },
+            ],
             price: convertedPrice,
             exchange: order.name,
-            exchangeFee: order.exchangeFee,
+            exchangeFee: order.exchangeFee ?? 0,
             coinTax: order.coinTax ?? 0,
             exchangeUrl: order.exchangeUrl ?? "",
             isUSD: order.isUSD ?? false,
@@ -275,10 +277,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
           : order.bids && Number(order.bids[0]?.price ?? 0) / dollarPrice;
         if (convertedPrice && convertedPrice > highestBid.price) {
           highestBid = {
+            //@ts-ignore
             orderbook: order.bids,
             price: convertedPrice,
             exchange: order.name,
-            exchangeFee: order.exchangeFee,
+            exchangeFee: order.exchangeFee ?? 0,
             exchangeUrl: order.exchangeUrl ?? "",
             isUSD: order.isUSD ?? false,
           };

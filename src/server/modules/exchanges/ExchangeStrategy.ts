@@ -7,11 +7,13 @@ export interface Exchange {
     price: number;
     amount: number;
     exchangeUrl?: string;
+    exchangeFee?: number;
   }[];
   asks?: {
     price: number;
     amount: number;
     exchangeUrl?: string;
+    exchangeFee?: number;
   }[];
   image_url?: string;
   isUSD?: boolean;
@@ -19,6 +21,8 @@ export interface Exchange {
   coinImage?: string;
   coinTax?: number;
   exchangeUrl?: string;
+
+  exchangeFee?: number;
   isFanToken?: boolean;
   exchangeType: "buy" | "sell";
 }
