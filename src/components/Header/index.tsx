@@ -56,19 +56,19 @@ export function Header() {
   let roleName = "Administrator";
   let roleColor = "#7b61ff";
 
-  if (user && user.data && user.data.bronze === true) {
+  if (user && user.data && !!user.data.bronze) {
     roleColor = "#cd7f32";
     roleName = "Bronze";
   }
-  if (user && user.data && user.data.silver === true) {
+  if (user && user.data && !!user.data.silver) {
     roleColor = "#e0e0e0";
     roleName = "Silver";
   }
-  if (user && user.data && user.data.gold === true) {
+  if (user && user.data && !!user.data.gold) {
     roleColor = "#D4AF37";
     roleName = "Gold";
   }
-  if (user && user.data && user.data.platinum === true) {
+  if (user && user.data && !!user.data.platinum) {
     roleColor = "#E5E4E2";
     roleName = "Platinum";
   }
