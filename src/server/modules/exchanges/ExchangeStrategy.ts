@@ -17,6 +17,7 @@ export interface Exchange {
   isUSD?: boolean;
   ticker?: string;
   coinImage?: string;
+  coinTax?: number;
   exchangeUrl?: string;
   isFanToken?: boolean;
   exchangeType: "buy" | "sell";

@@ -186,12 +186,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
   }, [sellExchanges]);
 
-  console.log(data?.orderbook);
-
-  data?.orderbook.forEach((item) => {
-    console.log(item.exchangeFee);
-  });
-
   const groupedByTicker = data?.orderbook.reduce(
     (acc: OrderBookGroup, order) => {
       if (order && !acc[order.ticker!]) {
@@ -229,6 +223,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         isUSD: true,
         exchangeUrl: "",
         exchangeFee: 0,
+        coinTax: 0,
         orderbook: Array<
           | {
               price: number;
@@ -267,6 +262,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
             price: convertedPrice,
             exchange: order.name,
             exchangeFee: order.exchangeFee,
+            coinTax: order.coinTax ?? 0,
             exchangeUrl: order.exchangeUrl ?? "",
             isUSD: order.isUSD ?? false,
           };
@@ -290,7 +286,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
       });
       let totalFee = lowestAsk.exchangeFee + highestBid.exchangeFee;
       let spread = 0;
-      console.log(lowestAsk.price);
+
       if (lowestAsk.price !== Infinity && highestBid.price !== 0) {
         spread = ((highestBid.price - lowestAsk.price) / lowestAsk.price) * 100;
       }
@@ -303,7 +299,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         coinName: orders![0]?.coinName || "",
         spread: Number(spread.toFixed(2)),
         exchangeFee: totalFee,
-        coinTax: orders![0]?.coinTax || 0,
+        coinTax: lowestAsk.coinTax,
       };
     })
     .filter((opportunity) => {
