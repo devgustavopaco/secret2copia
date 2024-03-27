@@ -217,9 +217,13 @@ export const orderbookRouter = createRouter()
 
       const coinsSingleton = CoinsSingleton.getInstance();
 
+      const transformedBuyOrders = buyExchanges.filter(
+        (exchange) => exchange.id !== "clalg8ity029708mpx5h7ec65"
+      );
+
       const exchangesAndCoins =
         await coinsSingleton.updateCoinsBasedOnExchangeIds(
-          buyExchanges.map((exchange) => exchange.id),
+          transformedBuyOrders.map((exchange) => exchange.id),
           sellExchanges.map((exchange) => exchange.id)
         );
 

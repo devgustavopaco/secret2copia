@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { signOut } from "next-auth/react";
 import Head from "next/head";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Header } from "../components/Header";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
@@ -212,103 +212,108 @@ const Monitoring: NextPage<MonitoringProps> = ({
     {} as OrderBookGroup
   );
 
-  const arbitrageOpportunities = Object.keys(filteredGroupedByTicker || {})
-    .map((ticker) => {
-      const orders = filteredGroupedByTicker[ticker];
+  console.log(filteredGroupedByTicker);
 
-      const buyOrders = orders?.filter((order) => order.exchangeType === "buy");
+  const arbitrageOpportunities = useMemo(() => {
+    return Object.keys(filteredGroupedByTicker || {})
+      .map((ticker) => {
+        const orders = filteredGroupedByTicker[ticker];
 
-      const sellOrders = orders?.filter(
-        (order) => order.exchangeType === "sell"
-      );
+        const buyOrders = orders?.filter(
+          (order) =>
+            order.exchangeType === "buy" && order.name !== "MercadoBitcoin"
+        );
+        console.log(buyOrders);
+        const sellOrders = orders?.filter(
+          (order) => order.exchangeType === "sell"
+        );
 
-      let lowestAsk = {
-        price: Infinity,
-        exchange: "",
-        isUSD: true,
-        exchangeUrl: "",
-        exchangeFee: 0,
-        coinTax: 0,
-        orderbook: Array<{
-          price: 0;
-          amount: 0;
-          exchangeUrl?: "";
-          exchangeFee: 0;
-        }>,
-      };
+        let lowestAsk = {
+          price: Infinity,
+          exchange: "",
+          isUSD: true,
+          exchangeUrl: "",
+          exchangeFee: 0,
+          coinTax: 0,
+          orderbook: Array<{
+            price: 0;
+            amount: 0;
+            exchangeUrl?: "";
+            exchangeFee: 0;
+          }>,
+        };
 
-      let highestBid = {
-        price: 0,
-        exchange: "",
-        isUSD: true,
-        exchangeUrl: "",
-        exchangeFee: 0,
-        orderbook: Array<{
-          price: number;
-          amount: number;
-          exchangeUrl?: string;
-          exchangeFee: number;
-        }>,
-      };
+        let highestBid = {
+          price: 0,
+          exchange: "",
+          isUSD: true,
+          exchangeUrl: "",
+          exchangeFee: 0,
+          orderbook: Array<{
+            price: number;
+            amount: number;
+            exchangeUrl?: string;
+            exchangeFee: number;
+          }>,
+        };
 
-      buyOrders?.forEach((order, index) => {
-        const convertedPrice = order.isUSD
-          ? order.asks && order.asks[0]?.price
-          : order.asks && Number(order.asks[0]?.price ?? 0) / dollarPrice;
-        if (convertedPrice && convertedPrice < lowestAsk.price) {
-          lowestAsk = {
-            //@ts-ignore
-            orderbook: order.asks ?? [
-              { price: 0, amount: 0, exchangeUrl: "", exchangeFee: 0 },
-            ],
-            price: convertedPrice,
-            exchange: order.name,
-            exchangeFee: order.exchangeFee ?? 0,
-            coinTax: order.coinTax ?? 0,
-            exchangeUrl: order.exchangeUrl ?? "",
-            isUSD: order.isUSD ?? false,
-          };
+        buyOrders?.forEach((order) => {
+          const convertedPrice = order.isUSD
+            ? order.asks && order.asks[0]?.price
+            : order.asks && Number(order.asks[0]?.price ?? 0) / dollarPrice;
+          if (convertedPrice && convertedPrice < lowestAsk.price) {
+            lowestAsk = {
+              //@ts-ignore
+              orderbook: order.asks ?? [
+                { price: 0, amount: 0, exchangeUrl: "", exchangeFee: 0 },
+              ],
+              price: convertedPrice,
+              exchange: order.name,
+              exchangeFee: order.exchangeFee ?? 0,
+              coinTax: order.coinTax ?? 0,
+              exchangeUrl: order.exchangeUrl ?? "",
+              isUSD: order.isUSD ?? false,
+            };
+          }
+        });
+
+        sellOrders?.forEach((order) => {
+          const convertedPrice = order.isUSD
+            ? order.bids && order.bids[0]?.price
+            : order.bids && Number(order.bids[0]?.price ?? 0) / dollarPrice;
+          if (convertedPrice && convertedPrice > highestBid.price) {
+            highestBid = {
+              //@ts-ignore
+              orderbook: order.bids,
+              price: convertedPrice,
+              exchange: order.name,
+              exchangeFee: order.exchangeFee ?? 0,
+              exchangeUrl: order.exchangeUrl ?? "",
+              isUSD: order.isUSD ?? false,
+            };
+          }
+        });
+
+        let totalFee = lowestAsk.exchangeFee + highestBid.exchangeFee;
+        let spread = 0;
+        if (lowestAsk.price !== Infinity && highestBid.price !== 0) {
+          spread =
+            ((highestBid.price - lowestAsk.price) / lowestAsk.price) * 100;
         }
-      });
 
-      sellOrders?.forEach((order) => {
-        const convertedPrice = order.isUSD
-          ? order.bids && order.bids[0]?.price
-          : order.bids && Number(order.bids[0]?.price ?? 0) / dollarPrice;
-        if (convertedPrice && convertedPrice > highestBid.price) {
-          highestBid = {
-            //@ts-ignore
-            orderbook: order.bids,
-            price: convertedPrice,
-            exchange: order.name,
-            exchangeFee: order.exchangeFee ?? 0,
-            exchangeUrl: order.exchangeUrl ?? "",
-            isUSD: order.isUSD ?? false,
-          };
-        }
-      });
-      let totalFee = lowestAsk.exchangeFee + highestBid.exchangeFee;
-      let spread = 0;
-
-      if (lowestAsk.price !== Infinity && highestBid.price !== 0) {
-        spread = ((highestBid.price - lowestAsk.price) / lowestAsk.price) * 100;
-      }
-
-      return {
-        coin: ticker,
-        lowestAsk,
-        highestBid,
-        coinImage: orders![0]?.coinImage || null,
-        coinName: orders![0]?.coinName || "",
-        spread: Number(spread.toFixed(2)),
-        exchangeFee: totalFee,
-        coinTax: lowestAsk.coinTax,
-      };
-    })
-    .filter((opportunity) => {
-      if (opportunity.spread > 0) return true;
-      else return false;
-    });
+        return {
+          coin: ticker,
+          lowestAsk,
+          highestBid,
+          coinImage: orders![0]?.coinImage || null,
+          coinName: orders![0]?.coinName || "",
+          spread: Number(spread.toFixed(2)),
+          exchangeFee: totalFee,
+          coinTax: lowestAsk.coinTax,
+        };
+      })
+      .filter((opportunity) => opportunity.spread > 0);
+  }, [filteredGroupedByTicker, dollarPrice]);
 
   let operationsMap = new Map();
   arbitrageOpportunities.forEach((operation) => {
@@ -316,6 +321,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
       operationsMap.set(operation.coin, operation);
     }
   });
+
+  console.log(arbitrageOpportunities);
 
   let sortedOperations: ArbitrageOpportunity[] = Array.from(
     operationsMap.values()
@@ -328,6 +335,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
     return 0;
   });
+
+  console.log(sortedOperations);
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",

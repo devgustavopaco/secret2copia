@@ -1309,7 +1309,7 @@ export class MercadoBitcoinStrategy implements ExchangeStrategy {
         ticker,
       };
     }
-    const url = `https://www.mercadobitcoin.net/api/${pair}/orderbook/`;
+    const url = `https://www.mercadobitcoin.net/api/${pair}/orderbook/?limit=10`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MercadoBitcoinOrderbook;

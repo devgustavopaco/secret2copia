@@ -59,6 +59,8 @@ export class CoinsSingleton {
         AND ect.active = TRUE
     `;
 
+    console.log(queryString);
+
     const results: ExchangeCoinsRawResult[] = await prisma.$queryRaw(
       Prisma.raw(queryString)
     );
