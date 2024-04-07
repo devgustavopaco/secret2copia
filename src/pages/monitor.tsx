@@ -127,7 +127,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         sellExchangesName?.join(",")
       )}&cursor=${pageParam}&limit=25&email=${userEmail}`
     );
-    console.log(res, "AKATSUKI");
+
     return res.json();
   };
 
@@ -166,7 +166,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
         },
       }
     );
-    console.log(queryResult, "VERCEL");
   } else {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     queryResult = useInfiniteQuery({
