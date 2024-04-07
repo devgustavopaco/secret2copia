@@ -23,12 +23,14 @@ interface MonitoringProps {
   ip: string;
   hasIPChanged: boolean;
   isAdmin: boolean;
+  isNewUser: boolean;
 }
 
 const Monitoring: NextPage<MonitoringProps> = ({
   ip,
   hasIPChanged,
   isAdmin,
+  isNewUser,
 }) => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
@@ -125,12 +127,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
         sellExchangesName?.join(",")
       )}&cursor=${pageParam}&limit=25&email=${userEmail}`
     );
+
     return res.json();
   };
 
   let queryResult: any;
 
-  if (isAdmin) {
+  if (isAdmin || isNewUser) {
     queryResult = trpc.useInfiniteQuery(
       [
         "orderBook.getPaginated",
@@ -516,18 +519,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   let hasIPChanged = false;
-
+  let isNewUser = false;
   let isAdmin = session?.role === "admin" ? true : false;
 
   try {
     const result = await updateIP(session.id as string, ip as string);
     hasIPChanged =
       session?.role === "admin" ? false : (result.hasIPChanged as boolean);
+    const userCreationDate = session.createdAt as Date;
+    isNewUser =
+      new Date(userCreationDate) >=
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    console.log("userCreationDate", userCreationDate);
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
   }
 
   return {
-    props: { ip, hasIPChanged, isAdmin },
+    props: { ip, hasIPChanged, isAdmin, isNewUser },
   };
 };
