@@ -12,6 +12,8 @@ declare module "next-auth" {
     name: ?string;
 
     role: ?string;
+
+    createdAt?: Date;
     user?: {
       id?: string;
     } & DefaultSession["user"];

@@ -42,6 +42,7 @@ const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
       name: true,
       email: true,
       image: true,
+      createdAt: true,
       password: true,
       role: {
         select: {

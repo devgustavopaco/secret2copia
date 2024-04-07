@@ -14,11 +14,10 @@ import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface DataGridOrderbookProps {
-  data: { price: number; amount: number }[] | undefined;
+  data: { price: number; amount: number }[];
   isLoading?: boolean;
   isUSD: boolean;
   isPurchase: boolean;
-  dollarPrice: number;
 }
 
 const theme = createTheme({
@@ -49,14 +48,10 @@ type DataItem = {
   amount: number;
 };
 
-function calculateCumulativePriceAndVolume(
-  data: DataItem[] | undefined
-): DataItem[] {
+function calculateCumulativePriceAndVolume(data: DataItem[]): DataItem[] {
+  let cumulativePrice = 0;
   let cumulativeVolume = 0;
-
-  const processedData = data || [];
-
-  return processedData.map((item: DataItem) => {
+  return data.map((item: DataItem) => {
     cumulativeVolume += item.amount;
     return { ...item, amount: cumulativeVolume };
   });
@@ -67,7 +62,6 @@ export function DataGridOrderbook({
   isLoading,
   isUSD,
   isPurchase,
-  dollarPrice,
 }: DataGridOrderbookProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -104,6 +98,8 @@ export function DataGridOrderbook({
     return formatter.format(value);
   };
 
+  const dolarValue = user?.dolarValue ?? 1;
+
   const columns: GridColumns = [
     {
       field: "price",
@@ -114,12 +110,12 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       flex: 1,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: "center", // centraliza o header
+      align: "center", // centraliza as células
 
       valueGetter(params: GridRenderCellParams) {
         return dynamicDecimalFormatter(
-          params.row.price * (isUSD ? dollarPrice : 1),
+          params.row.price * (isUSD ? dolarValue : 1),
           params.row.ticker
         );
       },
@@ -133,8 +129,8 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       flex: 1,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: "center", // centraliza o header
+      align: "center", // centraliza as células
       valueGetter(params: GridRenderCellParams) {
         return numberFormatter.format(params.row.amount);
       },
@@ -148,8 +144,8 @@ export function DataGridOrderbook({
       filterable: false,
       disableColumnMenu: true,
       flex: 1,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: "center", // centraliza o header
+      align: "center", // centraliza as células
       valueGetter(params: GridRenderCellParams) {
         const dolarValue = user?.dolarValue ?? 1;
         return currencyFormatter.format(
@@ -168,8 +164,6 @@ export function DataGridOrderbook({
       return { ...row, index };
     }
   );
-
-  console.log(updatedData);
 
   return (
     <ThemeProvider theme={theme}>
