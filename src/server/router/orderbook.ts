@@ -230,7 +230,6 @@ const fetchArbitrageOpportunity = async (
   const dolarValue = await getDollarValueForUser(ctx, email);
   const dollarPrice = await ServerSingleton.getInstance().getDollar();
 
-  // Lowest buy price
   const lowestAsk = orderBooks.reduce(
     (acc, exchange) => {
       const isContained = buyExchanges.some(
