@@ -93,7 +93,7 @@ const calculatePrice = (
   dolarValue: number,
   symbol: string
 ) => {
-  let calculatedPrice = /*isUSD ?*/ price * dolarValue; /*: price*/
+  let calculatedPrice = isUSD ? price * dolarValue : price;
 
   return calculatedPrice;
 };
