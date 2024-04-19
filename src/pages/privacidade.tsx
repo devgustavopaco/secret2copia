@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -6,9 +6,12 @@ import { CheckCircle, XCircle } from "phosphor-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { toast } from "react-toastify";
 
+import { getServerSession } from "next-auth";
 import { Header } from "../components/Header";
+import { getSupportNumber } from "../server/db/getSuportNumber";
 import styles from "../styles/Privacidade.module.scss";
 import { trpc } from "../utils/trpc";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 const notify = (text: string, success: boolean) => {
   if (success) {
@@ -22,7 +25,13 @@ const notify = (text: string, success: boolean) => {
   }
 };
 
-const Privacidade: NextPage = () => {
+interface PrivacidadeProps {
+  supportNumber: string;
+}
+
+const Privacidade: NextPage<PrivacidadeProps> = ({
+  supportNumber,
+}: PrivacidadeProps) => {
   const { data: auth } = useSession();
 
   const { data: user } = trpc.useQuery([
@@ -87,7 +96,7 @@ const Privacidade: NextPage = () => {
         <title>Privacidade - NEXTGAIN</title>
         <meta name="description" content="Privacidade - NEXTGAIN" />
       </Head>
-      <Header />
+      <Header supportNumber={supportNumber} />
       <section className={styles.container}>
         <div className={styles.modalBackground}>
           <form
@@ -137,23 +146,28 @@ const Privacidade: NextPage = () => {
 
 export default Privacidade;
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//   const session = await unstable_getServerSession(
-//     context.req,
-//     context.res,
-//     authOptions
-//   )
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
 
-//   if (!session) {
-//     return {
-//       props: {},
-//     }
-//   }
+  const session = await getServerSession(req, context.res, authOptions);
 
-//   return {
-//     redirect: {
-//       destination: '/monitor',
-//       permanent: true,
-//     },
-//   }
-// }
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let supportNumber = null;
+  try {
+    supportNumber = await getSupportNumber();
+  } catch (error) {
+    console.error("Error fetching support number:", error);
+  }
+
+  return {
+    props: { supportNumber },
+  };
+};

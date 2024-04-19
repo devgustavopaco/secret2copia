@@ -1,4 +1,5 @@
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
+import { getServerSession } from "next-auth";
 import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -7,11 +8,16 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Header } from "../components/Header";
+import { getSupportNumber } from "../server/db/getSuportNumber";
 import styles from "../styles/Home.module.scss";
+import { authOptions } from "./api/auth/[...nextauth]";
 
-const Home: NextPage = () => {
+interface HomeProps {
+  supportNumber: string;
+}
+
+const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
   const [slidesPerView, setSlidesPerView] = useState(5);
-  const [slidesPerViewTools, setSlidesPerViewTools] = useState(5);
 
   useEffect(() => {
     const handleResize = () => {
@@ -19,10 +25,8 @@ const Home: NextPage = () => {
 
       if (screenWidth < 500) {
         setSlidesPerView(1.5);
-        setSlidesPerViewTools(1.5);
       } else {
         setSlidesPerView(5);
-        setSlidesPerViewTools(5);
       }
     };
 
@@ -40,7 +44,7 @@ const Home: NextPage = () => {
         <title>Home - NEXTGAIN</title>
         <meta name="description" content="Privacidade - NEXTGAIN" />
       </Head>
-      <Header />
+      <Header supportNumber={supportNumber} />
       <div className={styles.container}>
         <div className={`${styles.banner} container`}>
           <img src="images/logoSeries.svg" alt="Next Gain Series" />
@@ -257,3 +261,30 @@ const Home: NextPage = () => {
   );
 };
 export default Home;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let supportNumber = null;
+  try {
+    supportNumber = await getSupportNumber();
+    console.log(supportNumber);
+  } catch (error) {
+    console.error("Error fetching support number:", error);
+  }
+
+  return {
+    props: { supportNumber },
+  };
+};

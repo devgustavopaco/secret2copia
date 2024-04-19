@@ -30,7 +30,7 @@ export function SidebarAdmin() {
           <Link href="/admin/sales/">
             <a className={router.pathname === "/admin/sales" ? "active" : ""}>
               <ChartLineUp className={styles.sidebarIcon} weight="bold" />
-              <span className={styles.sidebarText}>Vendas</span>
+              <span className={styles.sidebarText}>Visão Geral</span>
             </a>
           </Link>
         </nav>
