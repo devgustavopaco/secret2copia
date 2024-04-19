@@ -354,10 +354,10 @@ const fetchArbitrageOpportunity = async (
   highestBid.image_url = highestBidExchange?.image_url ?? "";
 
   const bidPrice = highestBid.isUSD
-    ? highestBid.price * dolarValue
+    ? highestBid.price * dollarPrice
     : highestBid.price;
   const askPrice = lowestAsk.isUSD
-    ? lowestAsk.price * dolarValue
+    ? lowestAsk.price * dollarPrice
     : lowestAsk.price;
 
   const spread = ((bidPrice - askPrice) / askPrice) * 100;
