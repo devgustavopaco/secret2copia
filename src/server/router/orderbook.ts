@@ -360,7 +360,7 @@ const fetchArbitrageOpportunity = async (
     ? lowestAsk.price * dolarValue
     : lowestAsk.price;
 
-  const spread = (bidPrice - askPrice) / askPrice;
+  const spread = ((bidPrice - askPrice) / askPrice) * 100;
 
   return {
     coin: name,
