@@ -242,11 +242,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <a
-                target="_blank"
-                href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
-                rel="noopener noreferrer"
-              >
+              <a target="_blank" href={supportNumber} rel="noopener noreferrer">
                 {" "}
                 <img
                   src="images/bannersModulos/centralRecursos.png"
