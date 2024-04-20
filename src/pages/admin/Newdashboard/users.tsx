@@ -1,15 +1,17 @@
-import { ReactElement, useEffect, useState } from "react";
-import DashboardLayout from "../../../layouts/DashboardLayout";
-import { NextPageWithLayout } from "../../_app";
-import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
-import styles from "../../../styles/user.module.scss";
-import React from "react";
-import { DataGridUsers } from "../../../components/GridComponents/DataGridUsers";
-import { trpc } from "../../../utils/trpc";
-import { ModalAddUser } from "../../../components/Modals/ModalAddUser";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
 import { useS3Upload } from "next-s3-upload";
-import { ModalDeleteUser } from "../../../components/Modals/ModalDeleteUser";
+import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
+import { ReactElement, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { DataGridUsers } from "../../../components/GridComponents/DataGridUsers";
+import { ModalAddUser } from "../../../components/Modals/ModalAddUser";
+import { ModalDeleteUser } from "../../../components/Modals/ModalDeleteUser";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import styles from "../../../styles/user.module.scss";
+import { trpc } from "../../../utils/trpc";
+import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 
 const Users: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
@@ -198,6 +200,32 @@ Users.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Users;
-function notify(arg0: string, arg1: boolean) {
-  throw new Error("Function not implemented.");
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

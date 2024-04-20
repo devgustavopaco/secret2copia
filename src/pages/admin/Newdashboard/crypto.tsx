@@ -1,14 +1,16 @@
-import { ReactElement, useState } from "react";
-import DashboardLayout from "../../../layouts/DashboardLayout";
-import { NextPageWithLayout } from "../../_app";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
+import { useS3Upload } from "next-s3-upload";
 import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
-import styles from "../../../styles/user.module.scss";
-import React from "react";
-import { trpc } from "../../../utils/trpc";
+import { ReactElement, useState } from "react";
+import { toast } from "react-toastify";
 import { DataGridCryptos } from "../../../components/GridComponents/DataGridCryptos";
 import { ModalAddCrypto } from "../../../components/Modals/ModalAddCrypto";
-import { useS3Upload } from "next-s3-upload";
-import { toast } from "react-toastify";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import styles from "../../../styles/user.module.scss";
+import { trpc } from "../../../utils/trpc";
+import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 
 const Crypto: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
@@ -142,6 +144,32 @@ Crypto.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Crypto;
-function notify(arg0: string, arg1: boolean) {
-  throw new Error("Function not implemented.");
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

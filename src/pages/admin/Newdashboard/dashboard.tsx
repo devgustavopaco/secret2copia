@@ -1,3 +1,5 @@
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
 import { CheckCircle, PhoneCall, XCircle } from "phosphor-react";
 import { ReactElement, useState } from "react";
 import { toast } from "react-toastify";
@@ -6,6 +8,7 @@ import { ModalEditSuportContent } from "../../../components/Modals/ModalEditSupo
 import DashboardLayout from "../../../layouts/DashboardLayout";
 import styles from "../../../styles/Dashboard.module.scss";
 import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 
 const Dashboard: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
@@ -84,3 +87,33 @@ Dashboard.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Dashboard;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

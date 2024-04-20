@@ -1,14 +1,16 @@
-import { ReactElement, useState } from "react";
-import DashboardLayout from "../../../layouts/DashboardLayout";
-import { NextPageWithLayout } from "../../_app";
-import styles from "../../../styles/user.module.scss";
-import React from "react";
-import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
 import { useS3Upload } from "next-s3-upload";
-import { DataGridExchanges } from "../../../components/GridComponents/DataGridExchanges";
-import { trpc } from "../../../utils/trpc";
-import { ModalAddExchange } from "../../../components/Modals/Exchange/ModalAddExchange";
+import { CheckCircle, Plus, Trash, XCircle } from "phosphor-react";
+import { ReactElement, useState } from "react";
 import { toast } from "react-toastify";
+import { DataGridExchanges } from "../../../components/GridComponents/DataGridExchanges";
+import { ModalAddExchange } from "../../../components/Modals/Exchange/ModalAddExchange";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import styles from "../../../styles/user.module.scss";
+import { trpc } from "../../../utils/trpc";
+import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 const Exchanges: NextPageWithLayout = () => {
   const notify = (text: string, success: boolean) => {
     if (success) {
@@ -161,6 +163,32 @@ Exchanges.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Exchanges;
-function notify(arg0: string, arg1: boolean) {
-  throw new Error("Function not implemented.");
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

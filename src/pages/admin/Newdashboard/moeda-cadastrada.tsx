@@ -1,20 +1,19 @@
-import { ReactElement, useState } from "react";
-import DashboardLayout from "../../../layouts/DashboardLayout";
-import { NextPageWithLayout } from "../../_app";
-import styles from "../../../styles/moeda-cadastrada.module.scss";
-import React from "react";
-import ArrowIcon from "../../../icons/ArrowIcon";
-import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
-import { ModalAddCrypto } from "../../../components/Modals/ModalAddCrypto";
-import XIcon from "../../../icons/XIcon";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
 import { useS3Upload } from "next-s3-upload";
-import { trpc } from "../../../utils/trpc";
-import { ModalAddExchange } from "../../../components/Modals/ModalAddExchange";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { CheckCircle, CurrencyEth, XCircle } from "phosphor-react";
+import { ReactElement, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ModalAddExchange } from "../../../components/Modals/ModalAddExchange";
+import ArrowIcon from "../../../icons/ArrowIcon";
+import XIcon from "../../../icons/XIcon";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import styles from "../../../styles/moeda-cadastrada.module.scss";
+import { trpc } from "../../../utils/trpc";
+import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 
 type EditedTaxesType = {
   [key: string]: string;
@@ -43,6 +42,18 @@ interface CoinDetails {
   updatedAt: Date;
   ExchangeCoinTax: ExchangeCoinTax[];
 }
+
+const notify = (text: string, success: boolean) => {
+  if (success) {
+    toast.dark(text, {
+      icon: <CheckCircle size={32} color="#07bc0c" weight="fill" />,
+    });
+  } else {
+    toast.dark(text, {
+      icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+    });
+  }
+};
 
 const Moedacadastrada: NextPageWithLayout = () => {
   const [searchText, setSearchText] = useState("");
@@ -271,6 +282,32 @@ Moedacadastrada.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Moedacadastrada;
-function notify(arg0: string, arg1: boolean) {
-  throw new Error("Function not implemented.");
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
 import { CheckCircle, CurrencyEth, Trash, XCircle } from "phosphor-react";
 import { ReactElement, useState } from "react";
 import { BeatLoader } from "react-spinners";
@@ -9,6 +11,7 @@ import DashboardLayout from "../../../layouts/DashboardLayout";
 import styles from "../../../styles/user.module.scss";
 import { trpc } from "../../../utils/trpc";
 import { NextPageWithLayout } from "../../_app";
+import { authOptions } from "../../api/auth/[...nextauth]";
 
 interface WithdrawFeeResponseItem {
   currency: string;
@@ -650,6 +653,32 @@ Tax.getLayout = function getLayout(page: ReactElement) {
 };
 
 export default Tax;
-function notify(arg0: string, arg1: boolean) {
-  throw new Error("Function not implemented.");
-}
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+
+  const session = await getServerSession(req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  let isAdmin = session?.role === "admin" ? true : false;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};
