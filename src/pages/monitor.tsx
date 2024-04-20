@@ -14,6 +14,7 @@ import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
 import { updateIP } from "../server/db/checkIP";
+import { getSupportNumber } from "../server/db/getSuportNumber";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
 import { trpc } from "../utils/trpc";
@@ -21,6 +22,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 
 interface MonitoringProps {
   ip: string;
+  supportNumber: string;
   hasIPChanged: boolean;
   isAdmin: boolean;
   isNewUser: boolean;
@@ -31,6 +33,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   hasIPChanged,
   isAdmin,
   isNewUser,
+  supportNumber,
 }) => {
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
@@ -338,7 +341,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
-        {modalState ? <></> : <Header />}
+        {modalState ? <></> : <Header supportNumber={supportNumber} />}
 
         <>
           {modalOpenOrderBook && (
@@ -522,6 +525,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let hasIPChanged = false;
   let isNewUser = false;
   let isAdmin = session?.role === "admin" ? true : false;
+  let supportNumber = null;
 
   try {
     const result = await updateIP(session.id as string, ip as string);
@@ -531,12 +535,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     isNewUser =
       new Date(userCreationDate) >=
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    console.log("userCreationDate", userCreationDate);
+    supportNumber = await getSupportNumber();
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
   }
 
   return {
-    props: { ip, hasIPChanged, isAdmin, isNewUser },
+    props: { ip, hasIPChanged, isAdmin, isNewUser, supportNumber },
   };
 };

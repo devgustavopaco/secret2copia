@@ -1733,7 +1733,7 @@ export class OkxStrategy implements ExchangeStrategy {
       "OK-ACCESS-PASSPHRASE": "your_passphrase_here",
     };
 
-    const url = `https://www.okx.com/api/v5/market/books?instId=${pair}`;
+    const url = `https://www.okx.com/api/v5/market/books?instId=${pair}&sz=20`;
     const response = await fetchWithProxy(
       url,
       proxies,

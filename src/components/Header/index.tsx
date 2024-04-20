@@ -6,7 +6,11 @@ import { useState } from "react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
-export function Header() {
+interface HeaderProps {
+  supportNumber: string;
+}
+
+export function Header({ supportNumber }: HeaderProps) {
   const { data: auth } = useSession();
 
   let userData = null;
@@ -154,7 +158,7 @@ export function Header() {
           </Link>
           <a
             className={styles.menuItem}
-            href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
+            href={supportNumber}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -237,11 +241,7 @@ export function Header() {
               </Link>
             </li>
             <li>
-              <a
-                target="_blank"
-                href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
-                rel="noopener noreferrer"
-              >
+              <a target="_blank" href={supportNumber} rel="noopener noreferrer">
                 Contato
               </a>
             </li>
@@ -320,11 +320,7 @@ export function Header() {
             </Link>
           </li>
           <li>
-            <a
-              target="_blank"
-              href="https://api.whatsapp.com/send/?phone=5511950727203&text=Fala+Gu%21+Preciso+de+Suporte%21+&type=phone_number&app_absent=0"
-              rel="noopener noreferrer"
-            >
+            <a target="_blank" href={supportNumber} rel="noopener noreferrer">
               Contato
             </a>
           </li>

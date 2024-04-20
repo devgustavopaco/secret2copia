@@ -5,6 +5,13 @@
     padding-inline: 60px;
   }
 }
+
+.middletitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .doubleWidget {
   margin-top: 40px;
   display: flex;
@@ -69,4 +76,22 @@
 }
 .middlePart {
   margin-block: 2rem;
+}
+
+.addCryptoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 1.5px var(--white);
+
+  &:hover {
+    color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
 }

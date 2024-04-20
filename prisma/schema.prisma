@@ -129,3 +129,8 @@ model IP {
     userId String @unique
     ip     String
 }
+
+model SupportPhone {
+    id     String @id @default(cuid())
+    number String @unique
+}
