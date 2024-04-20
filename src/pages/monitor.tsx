@@ -121,7 +121,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam: number;
   }) => {
     const res = await fetch(
-      `https://akatsukistore.com.br/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `http://3.12.84.98:3002/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
