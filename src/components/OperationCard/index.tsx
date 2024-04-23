@@ -109,18 +109,18 @@ export function OperationCard({
     { email: auth?.user?.email as string },
   ]);
 
-  const dolarValue = user?.dolarValue ?? 1;
+  const dolarValue = user?.dolarValue ?? dollarPrice;
 
   const bidPrice = calculatePrice(
     coin.bid.price,
     coin.bid.isUSD,
-    dollarPrice,
+    dolarValue,
     coin.symbol
   );
   const askPrice = calculatePrice(
     coin.ask.price,
     coin.ask.isUSD,
-    dollarPrice,
+    dolarValue,
     coin.symbol
   );
 
