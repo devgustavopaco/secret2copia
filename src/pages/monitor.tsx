@@ -490,27 +490,29 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 <h1>
                   {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
                 </h1>
-                <div className={styles.checkbox}>
-                  <div className={styles.checkText}>
-                    <p>
-                      <strong>Mostrar somente fantokens?</strong>
-                    </p>
-                    <Soccer color="#fff" />
+                {isAdmin && (
+                  <div className={styles.checkbox}>
+                    <div className={styles.checkText}>
+                      <p>
+                        <strong>Mostrar somente fantokens?</strong>
+                      </p>
+                      <Soccer color="#fff" />
+                    </div>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={handleCheckboxChange}
+                        className={isChecked ? "is-checked" : ""}
+                      />
+                      <span
+                        className={`${styles.slider} ${
+                          isChecked ? "is-checked" : ""
+                        }`}
+                      ></span>
+                    </label>
                   </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={handleCheckboxChange}
-                      className={isChecked ? "is-checked" : ""}
-                    />
-                    <span
-                      className={`${styles.slider} ${
-                        isChecked ? "is-checked" : ""
-                      }`}
-                    ></span>
-                  </label>
-                </div>
+                )}
               </div>
               {loadingDolarChange || sortedOperations?.length === 0 ? (
                 isChecked ? (

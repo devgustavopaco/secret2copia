@@ -70,6 +70,7 @@ export function Sidebar({
             setIsModalBuyOpen(false);
             onModalChange(false);
           }}
+          isChecked={isChecked}
           isAdmin={isAdmin}
         />
       ) : (
