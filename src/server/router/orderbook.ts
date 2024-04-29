@@ -448,10 +448,10 @@ export const orderbookRouter = createRouter()
       email: z.string().optional(),
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number().nullish(),
+      isChecked: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
-        // console.log('Sending empty orderbook')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: 1,
@@ -468,10 +468,7 @@ export const orderbookRouter = createRouter()
       }
 
       let activeCoins = CoinsSingleton.getInstance().coins;
-
-      if (activeCoins.length === 0) {
-        await CoinsSingleton.getInstance().updateCoins();
-      }
+      await CoinsSingleton.getInstance().updateCoins(input.isChecked);
 
       activeCoins = CoinsSingleton.getInstance().coins;
 

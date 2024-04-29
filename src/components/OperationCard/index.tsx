@@ -39,6 +39,7 @@ interface OperationCardProps {
   };
   dollarPrice?: number;
   onClick: () => void;
+  isChecked?: boolean;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -101,7 +102,9 @@ const calculatePrice = (
 export function OperationCard({
   coin,
   dollarPrice = 1,
+
   onClick,
+  isChecked,
 }: OperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -125,7 +128,9 @@ export function OperationCard({
   );
 
   return (
-    <section className={styles.card}>
+    <section
+      className={`${styles.card} ${isChecked ? styles.cardChecked : ""}`}
+    >
       <header className={styles["card-header"]}>
         <img
           src={

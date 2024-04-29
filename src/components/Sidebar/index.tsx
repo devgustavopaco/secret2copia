@@ -14,6 +14,7 @@ export interface SidebarProps {
   onChangeDolar: (e: React.ChangeEvent<HTMLInputElement>) => void;
   dolarValue: number;
   isAdmin: boolean;
+  isChecked?: boolean;
 }
 
 export function Sidebar({
@@ -23,6 +24,7 @@ export function Sidebar({
   buyExchanges,
   sellExchanges,
   onModalChange,
+  isChecked,
   isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
@@ -113,11 +115,17 @@ export function Sidebar({
             <p>Exchanges de Compra</p>
           </div>
           <div
-            className={styles.addExchange}
+            className={`${styles.addExchange} ${
+              isChecked ? styles.addChecked : ""
+            }`}
             onClick={() => toggleModalBuy("compra")}
           >
             <p>ADICIONAR</p>
-            <div className={styles.aroundImage}>
+            <div
+              className={`${styles.aroundImage} ${
+                isChecked ? styles.aroundChecked : ""
+              }`}
+            >
               <img src="images/addEXCHANGE.svg" />
             </div>
           </div>
@@ -140,11 +148,17 @@ export function Sidebar({
             <p>Exchanges de Venda</p>
           </div>
           <div
-            className={styles.addExchange}
+            className={`${styles.addExchange} ${
+              isChecked ? styles.addChecked : ""
+            }`}
             onClick={() => toggleModalBuy("venda")}
           >
             <p>ADICIONAR</p>
-            <div className={styles.aroundImage}>
+            <div
+              className={`${styles.aroundImage} ${
+                isChecked ? styles.aroundChecked : ""
+              }`}
+            >
               <img src="images/addEXCHANGE.svg" />
             </div>
           </div>

@@ -27,10 +27,11 @@ export class CoinsSingleton {
     return CoinsSingleton.instance;
   }
 
-  public async updateCoins(): Promise<void> {
+  public async updateCoins(isChecked?: boolean): Promise<void> {
     this.coins = await prisma.coin.findMany({
       where: {
         active: true,
+        ...(isChecked && { isFanToken: true }),
       },
       include: {
         ExchangeCoinTax: {

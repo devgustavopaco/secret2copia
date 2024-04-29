@@ -3,14 +3,16 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { SignOut } from "phosphor-react";
 import { useState } from "react";
+import Logo from "../../icons/Logo";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface HeaderProps {
   supportNumber: string;
+  isChecked?: boolean;
 }
 
-export function Header({ supportNumber }: HeaderProps) {
+export function Header({ supportNumber, isChecked = false }: HeaderProps) {
   const { data: auth } = useSession();
 
   let userData = null;
@@ -87,7 +89,8 @@ export function Header({ supportNumber }: HeaderProps) {
           onClick={toggleMenu}
         />
         <Link href="/home">
-          <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img>
+          {/* <img className={styles.logo} src="/images/Menu/logoMenu.svg"></img> */}
+          <Logo color={isChecked ? "#1daf23" : "#7B61FF"} />
         </Link>
         <div className={`${styles.tooltip} ${styles.mobileToolTip}`}>
           <div className={styles.profileImage}>
@@ -106,7 +109,11 @@ export function Header({ supportNumber }: HeaderProps) {
         </div>
 
         <div className={`${styles.menuContent} ${isOpen ? styles.open : ""}`}>
-          <div className={styles.nameHamburguer}>
+          <div
+            className={`${styles.nameHamburguer} ${
+              isChecked ? styles.nameChecked : ""
+            }`}
+          >
             <span className={styles.text}>Olá</span>
             <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
           </div>
@@ -262,7 +269,9 @@ export function Header({ supportNumber }: HeaderProps) {
             )}
           </ul>
         </nav>
-        <div className={styles.name}>
+        <div
+          className={`${styles.name} ${isChecked ? styles.nameChecked : ""}`}
+        >
           <span className={styles.text}>Olá</span>
           <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
           <div className={styles.tooltip}>
@@ -275,7 +284,7 @@ export function Header({ supportNumber }: HeaderProps) {
                 }
                 alt="foto de perfil"
                 style={{
-                  borderColor: roleColor,
+                  borderColor: isChecked ? "#1daf23" : roleColor,
                 }}
               />
             </div>

@@ -175,6 +175,14 @@
     border: 3px solid #ffffff;
     border-radius: 100%;
   }
+  &.nameChecked {
+    span {
+      color: #1daf23;
+    }
+    .text {
+      color: #fff;
+    }
+  }
 }
 
 .logout-button {
@@ -421,6 +429,11 @@
       margin-left: 1rem;
       border: 4px solid #ffffff;
       border-radius: 100%;
+    }
+    &.nameChecked {
+      span {
+        color: #1daf23;
+      }
     }
   }
 
