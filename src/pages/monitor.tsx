@@ -149,7 +149,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=25&email=${userEmail}`
+      )}&cursor=${pageParam}&limit=25&email=${userEmail}&isChecked=${isChecked}`
     );
 
     return res.json();
@@ -356,6 +356,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    queryClient.removeQueries({
+      queryKey: ["orderBook.getPaginated"],
+    });
+    refetch();
+  }, [isChecked, queryClient, refetch]);
+
   return (
     <>
       <Head>
@@ -443,6 +450,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isChecked={isChecked}
                 isAdmin={isAdmin}
               />
             </div>
@@ -460,6 +468,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isChecked={isChecked}
                 isAdmin={isAdmin}
               />
             </div>

@@ -102,7 +102,7 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
               }
               alt="foto de perfil"
               style={{
-                borderColor: roleColor,
+                borderColor: isChecked ? "#1daf23" : roleColor,
               }}
             />
           </div>

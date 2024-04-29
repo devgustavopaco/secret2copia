@@ -10,6 +10,7 @@ export function SellExchangeMobile({
   buyExchanges,
   sellExchanges,
   onModalChange,
+  isChecked,
   isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
@@ -55,6 +56,7 @@ export function SellExchangeMobile({
             setIsModalBuyOpen(false);
             onModalChange(false);
           }}
+          isChecked={isChecked}
           isAdmin={isAdmin}
         />
       ) : (
@@ -62,11 +64,17 @@ export function SellExchangeMobile({
       )}
       <div className={styles.swipperBlock}>
         <div
-          className={styles.addExchange}
+          className={`${styles.addExchange} ${
+            isChecked ? styles.addChecked : ""
+          }`}
           onClick={() => toggleModalBuy("venda")}
         >
           <p>ADICIONAR</p>
-          <div className={styles.aroundImage}>
+          <div
+            className={`${styles.aroundImage} ${
+              isChecked ? styles.aroundChecked : ""
+            }`}
+          >
             <img src="images/addEXCHANGE.svg" />
           </div>
         </div>
