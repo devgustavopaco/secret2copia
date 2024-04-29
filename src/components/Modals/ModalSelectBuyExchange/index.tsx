@@ -8,12 +8,14 @@ interface ModalExchange {
   setOpenModal?: (open: boolean) => void;
   operation?: string | null;
   isAdmin: boolean;
+  isChecked?: boolean;
 }
 
 export function FullScreenModal({
   onClose,
   operation,
   isAdmin,
+  isChecked,
 }: ModalExchange) {
   const { data: activeExchanges } = trpc.useQuery(
     ["exchange.getActiveExchanges"],
@@ -127,7 +129,11 @@ export function FullScreenModal({
   };
 
   return (
-    <div className={styles.container}>
+    <div
+      className={`${styles.container} ${
+        isChecked ? styles.containerChecked : ""
+      }`}
+    >
       <div className={`${styles.contentModal} container`}>
         <div className={styles.headerModal}>
           <div className={styles.contentHeaderModal}>

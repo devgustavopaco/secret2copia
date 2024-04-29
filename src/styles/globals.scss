@@ -107,6 +107,11 @@
   border: 2px solid #6f57e1; // Adicionei uma borda sólida para manter a consistência da cor
 }
 
+.monitor-scrollbar-active *::-webkit-scrollbar-thumb {
+  background-color: #1daf23; // Nova cor quando isChecked é true
+  border: 2px solid #1daf23; // Consistência de cor
+}
+
 *::-webkit-scrollbar-corner {
   background: inherit;
 }

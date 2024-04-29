@@ -21,6 +21,7 @@
   gap: 10px;
   cursor: pointer;
   width: 230px;
+  transition: background 1.5s ease;
   height: 62px;
 
   p {
@@ -32,6 +33,10 @@
     line-height: normal;
     text-transform: uppercase;
   }
+
+  &.addChecked {
+    background: rgba(100, 255, 97, 0.2);
+  }
 }
 
 .aroundImage {
@@ -41,11 +46,15 @@
   border-radius: 50%;
   display: flex;
   padding: 5px;
+  transition: background 1.5s ease;
 
   img {
     display: flex;
     align-items: center;
     margin-inline: auto;
+  }
+  &.aroundChecked {
+    background: rgba(100, 255, 97, 0.3);
   }
 }
 

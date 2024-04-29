@@ -3,6 +3,7 @@ import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { XCircle } from "phosphor-react";
 import { useCallback, useEffect, useState } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
@@ -13,6 +14,7 @@ import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
+import Soccer from "../icons/Soccer";
 import { updateIP } from "../server/db/checkIP";
 import { getSupportNumber } from "../server/db/getSuportNumber";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
@@ -35,6 +37,25 @@ const Monitoring: NextPage<MonitoringProps> = ({
   isNewUser,
   supportNumber,
 }) => {
+  const [isChecked, setIsChecked] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isChecked && router.pathname === "/monitor") {
+      document.body.classList.add("monitor-scrollbar-active");
+    } else {
+      document.body.classList.remove("monitor-scrollbar-active");
+    }
+
+    return () => {
+      document.body.classList.remove("monitor-scrollbar-active");
+    };
+  }, [isChecked, router.pathname]);
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+  };
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
   const [modalState, setModalState] = useState(false);
@@ -128,7 +149,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=25&email=${userEmail}`
+      )}&cursor=${pageParam}&limit=25&email=${userEmail}&isChecked=${isChecked}`
     );
 
     return res.json();
@@ -144,6 +165,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
           buyExchanges: buyExchangesName ?? undefined,
           sellExchanges: sellExchangesName ?? undefined,
           email: userEmail ?? undefined,
+          isChecked: isChecked,
         },
       ],
       {
@@ -334,6 +356,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    queryClient.removeQueries({
+      queryKey: ["orderBook.getPaginated"],
+    });
+    refetch();
+  }, [isChecked, queryClient, refetch]);
+
   return (
     <>
       <Head>
@@ -341,7 +370,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
-        {modalState ? <></> : <Header supportNumber={supportNumber} />}
+        {modalState ? (
+          <></>
+        ) : (
+          <Header supportNumber={supportNumber} isChecked={isChecked} />
+        )}
 
         <>
           {modalOpenOrderBook && (
@@ -360,7 +393,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
             />
           )}
         </>
-        <div className={styles.backgroundmMonitor}>
+        <div
+          className={`${styles.backgroundmMonitor} ${
+            isChecked ? styles.backgroundChecked : ""
+          }`}
+        >
           <div className={`${styles.content} container`}>
             {modalState ? (
               <></>
@@ -413,6 +450,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isChecked={isChecked}
                 isAdmin={isAdmin}
               />
             </div>
@@ -430,11 +468,13 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 onChangeDolar={onChangeDolar}
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
+                isChecked={isChecked}
                 isAdmin={isAdmin}
               />
             </div>
             <div onClick={(event) => clickOnSidebar(event)}>
               <Sidebar
+                isChecked={isChecked}
                 dollarPrice={dollarPrice}
                 defaultExchanges={ActiveExchanges || []}
                 buyExchanges={buyExchanges || []}
@@ -446,18 +486,50 @@ const Monitoring: NextPage<MonitoringProps> = ({
               />
             </div>
             <main>
-              <h1>
-                {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
-              </h1>
-
-              {loadingDolarChange || sortedOperations?.length === 0 ? (
-                <div className={styles.loading}>
-                  <PacmanLoader
-                    size="3rem"
-                    className={styles.loader}
-                    color="#957dff"
-                  />
+              <div className={styles.topPart}>
+                <h1>
+                  {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
+                </h1>
+                <div className={styles.checkbox}>
+                  <div className={styles.checkText}>
+                    <p>
+                      <strong>Mostrar somente fantokens?</strong>
+                    </p>
+                    <Soccer color="#fff" />
+                  </div>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={handleCheckboxChange}
+                      className={isChecked ? "is-checked" : ""}
+                    />
+                    <span
+                      className={`${styles.slider} ${
+                        isChecked ? "is-checked" : ""
+                      }`}
+                    ></span>
+                  </label>
                 </div>
+              </div>
+              {loadingDolarChange || sortedOperations?.length === 0 ? (
+                isChecked ? (
+                  <div className={styles.loading}>
+                    <PacmanLoader
+                      size="3rem"
+                      className={styles.loader}
+                      color="#007305"
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.loading}>
+                    <PacmanLoader
+                      size="3rem"
+                      className={styles.loader}
+                      color="#957dff"
+                    />
+                  </div>
+                )
               ) : (
                 <div className={styles.operations}>
                   {sortedOperations?.map(
@@ -486,6 +558,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                             spread: operation.spread,
                           }}
                           dollarPrice={dollarPrice}
+                          isChecked={isChecked}
                           onClick={() => {
                             setSelectedOperation(operation);
                             setModalOpenOrderBook(true);

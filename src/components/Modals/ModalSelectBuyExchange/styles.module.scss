@@ -11,6 +11,10 @@
   background-size: cover;
   z-index: 9999999999;
   overflow: hidden;
+
+  &.containerChecked {
+    background-image: url("/newbg1.webp");
+  }
 }
 
 .contentModal {

@@ -1,5 +1,6 @@
 .backgroundmMonitor {
   background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/teste.png?alt=media&token=d2a38a91-9767-42d7-9a0c-92efe528221f");
+  transition: background-image 1.5s ease;
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -20,6 +21,9 @@
   //     url("/images/mobile-nextgain.webp");
   //   background-blend-mode: overlay;
   // }
+  &.backgroundChecked {
+    background-image: url("/newbg1.webp");
+  }
 }
 
 .content {
@@ -209,4 +213,77 @@
       font-weight: 500;
     }
   }
+}
+
+.topPart {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.checkbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: flex-end;
+  width: 100%;
+  gap: 10px;
+}
+.checkText {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+// Dentro de styles.module.scss ou onde você define seus estilos
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px; // Largura do switch
+  height: 34px; // Altura do switch
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px; // Raio da borda para torná-lo redondo
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #34c759;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #34c759;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+input:checked.is-checked + .slider {
+  background-color: #34c759;
 }
