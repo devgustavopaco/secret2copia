@@ -176,7 +176,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  //
 
   let isAdmin = session?.role === "admin" ? true : false;
 
