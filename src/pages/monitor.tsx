@@ -145,7 +145,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam: number;
   }) => {
     const res = await fetch(
-      `http://localhost:3002/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `https://akatsukistore.com.br/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")

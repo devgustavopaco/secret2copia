@@ -1,7 +1,6 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { GetServerSideProps, NextPage } from "next";
-import { getServerSession } from "next-auth/next";
 import { signIn } from "next-auth/react";
 import Router from "next/router";
 import { useState } from "react";
@@ -11,6 +10,7 @@ import {
 } from "react-google-recaptcha-v3";
 import { toast } from "react-toastify";
 
+import { unstable_getServerSession } from "next-auth/next";
 import Link from "next/link";
 import { XCircle } from "phosphor-react";
 import styles from "../styles/Login.module.scss";
@@ -134,8 +134,12 @@ const Login: NextPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  console.log("Session: ", session);
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
   if (!session) {
     return {
       props: {},
