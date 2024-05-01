@@ -145,7 +145,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       props: {},
     };
   }
-
+  //
   return {
     redirect: {
       destination: "/monitor",
