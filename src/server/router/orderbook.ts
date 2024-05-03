@@ -527,3 +527,11 @@ export const orderbookRouter = createRouter()
       return await ServerSingleton.getInstance().getDollar();
     },
   });
+
+orderbookRouter.query("getDollarValueForUser", {
+  input: z.string(),
+  async resolve({ ctx, input }) {
+    return await getDollarValueForUser(ctx, input);
+  },
+});
+export { getDollarValueForUser };

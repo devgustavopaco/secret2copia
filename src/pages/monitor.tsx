@@ -149,7 +149,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=25&email=${userEmail}&isChecked=${isChecked}`
+      )}&cursor=${pageParam}&limit=25&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
     );
 
     return res.json();
@@ -362,6 +362,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
     });
     refetch();
   }, [isChecked, queryClient, refetch]);
+  const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
+    "user.getUserDollarValueByEmail",
+    { email: userEmail ?? "" },
+  ]);
 
   return (
     <>
