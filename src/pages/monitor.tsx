@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -145,7 +145,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam: number;
   }) => {
     const res = await fetch(
-      `https://akatsukistore.com.br/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
@@ -155,94 +155,62 @@ const Monitoring: NextPage<MonitoringProps> = ({
     return res.json();
   };
 
-  let queryResult = trpc.useInfiniteQuery(
-    [
-      "orderBook.getPaginated",
+  let queryResult: any;
+
+  if (isAdmin || isNewUser) {
+    queryResult = trpc.useInfiniteQuery(
+      [
+        "orderBook.getPaginated",
+        {
+          buyExchanges: buyExchangesName ?? undefined,
+          sellExchanges: sellExchangesName ?? undefined,
+          email: userEmail ?? undefined,
+          isChecked: isChecked,
+        },
+      ],
       {
-        buyExchanges: buyExchangesName ?? undefined,
-        sellExchanges: sellExchangesName ?? undefined,
-        email: userEmail ?? undefined,
-        isChecked: isChecked,
-      },
-    ],
-    {
-      getNextPageParam: (lastPage) => {
-        const morePagesExist =
-          lastPage.arbitrageOpportunities.length ===
-          (isAdmin || isNewUser ? 50 : 25);
+        getNextPageParam: (lastPage) => {
+          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
+          if (!morePagesExist) return undefined;
+          return lastPage.nextCursor;
+        },
+        refetchInterval: 20 * 1000,
+        retry(failureCount) {
+          return failureCount <= 3;
+        },
+        keepPreviousData: false,
+        onSuccess(data) {
+          if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
+            queryResult.refetch();
+          }
+        },
+        onError() {
+          if (!queryResult.isFetching) {
+            queryResult.refetch();
+          }
+        },
+      }
+    );
+  } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    queryResult = useInfiniteQuery({
+      queryKey: ["orderBook.getPaginated"],
+      queryFn: fetchPaginatedOrderbook,
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
         if (!morePagesExist) return undefined;
         return lastPage.nextCursor;
       },
       refetchInterval: 20 * 1000,
-      retry: (failureCount) => failureCount <= 3,
-      keepPreviousData: false,
-      onSuccess: (data) => {
-        if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
-          queryResult.refetch();
+      retry(failureCount, error) {
+        if (failureCount > 3) {
+          return false;
         }
+        return true;
       },
-      onError: () => {
-        if (!queryResult.isFetching) {
-          queryResult.refetch();
-        }
-      },
-    }
-  );
-
-  // if (isAdmin || isNewUser) {
-  //   queryResult = trpc.useInfiniteQuery(
-  //     [
-  //       "orderBook.getPaginated",
-  //       {
-  //         buyExchanges: buyExchangesName ?? undefined,
-  //         sellExchanges: sellExchangesName ?? undefined,
-  //         email: userEmail ?? undefined,
-  //         isChecked: isChecked,
-  //       },
-  //     ],
-  //     {
-  //       getNextPageParam: (lastPage) => {
-  //         const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
-  //         if (!morePagesExist) return undefined;
-  //         return lastPage.nextCursor;
-  //       },
-  //       refetchInterval: 20 * 1000,
-  //       retry(failureCount) {
-  //         return failureCount <= 3;
-  //       },
-  //       keepPreviousData: false,
-  //       onSuccess(data) {
-  //         if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
-  //           queryResult.refetch();
-  //         }
-  //       },
-  //       onError() {
-  //         if (!queryResult.isFetching) {
-  //           queryResult.refetch();
-  //         }
-  //       },
-  //     }
-  //   );
-  // } else {
-  //   // eslint-disable-next-line react-hooks/rules-of-hooks
-  //   queryResult = useInfiniteQuery({
-  //     queryKey: ["orderBook.getPaginated"],
-  //     queryFn: fetchPaginatedOrderbook,
-  //     initialPageParam: 1,
-  //     getNextPageParam: (lastPage, allPages) => {
-  //       const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
-  //       if (!morePagesExist) return undefined;
-  //       return lastPage.nextCursor;
-  //     },
-  //     refetchInterval: 20 * 1000,
-  //     retry(failureCount, error) {
-  //       if (failureCount > 3) {
-  //         return false;
-  //       }
-  //       return true;
-  //     },
-  //   });
-  // }
+    });
+  }
 
   const {
     refetch,
