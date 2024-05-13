@@ -367,6 +367,31 @@ const Monitoring: NextPage<MonitoringProps> = ({
     { email: userEmail ?? "" },
   ]);
 
+  const checkOpportunityCriteria = (opportunity: any) => {
+    if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
+      return false;
+    }
+
+    const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
+    const highestBid = opportunity.highestBid.orderbook.bids[0];
+
+    const lowestAskTotalValue =
+      lowestAsk.price *
+      lowestAsk.amount *
+      (opportunity.lowestAsk.isUSD ? dolarValue ?? 1 : 1);
+    const highestBidTotalValue =
+      highestBid.price *
+      highestBid.amount *
+      (opportunity.highestBid.isUSD ? dolarValue ?? 1 : 1);
+
+    const isVolumeCriteriaMet =
+      lowestAsk.amount > 100 && highestBid.amount > 100;
+    const isPriceCriteriaMet =
+      lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
+
+    return isVolumeCriteriaMet && isPriceCriteriaMet;
+  };
+
   return (
     <>
       <Head>
@@ -538,32 +563,25 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {sortedOperations?.map(
-                    (operation) =>
+                  {sortedOperations.map((operation) => {
+                    const meetsCriteria = checkOpportunityCriteria(operation);
+                    return (
                       operation && (
                         <OperationCard
                           key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
                           coin={{
                             image: operation.coinImage,
                             name: operation.coin,
-                            ask: {
-                              exchange: operation.lowestAsk.exchange,
-                              image_url: operation.lowestAsk.image_url,
-                              price: operation.lowestAsk.price,
-                              isUSD: operation.lowestAsk.isUSD,
-                            },
-                            bid: {
-                              exchange: operation.highestBid.exchange,
-                              image_url: operation.highestBid.image_url,
-                              price: operation.highestBid.price,
-                              isUSD: operation.highestBid.isUSD,
-                            },
+                            ask: operation.lowestAsk,
+                            bid: operation.highestBid,
                             fee: operation.fee,
                             tax: operation.tax,
                             symbol: operation.ticker,
                             spread: operation.spread,
                           }}
                           dollarPrice={dollarPrice}
+                          meetsCriteria={meetsCriteria}
+                          isAdmin={isAdmin}
                           isChecked={isChecked}
                           onClick={() => {
                             setSelectedOperation(operation);
@@ -571,7 +589,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
                           }}
                         />
                       )
-                  )}
+                    );
+                  })}
                 </div>
               )}
             </main>

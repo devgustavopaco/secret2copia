@@ -5,18 +5,20 @@
   margin-top: 2.9rem;
   padding: 1rem;
   border-radius: 8px;
+  border: 1px solid #7b61ff;
 
-  background-color: #21202d;
+  background: rgba(33, 32, 45, 0.7);
   color: var(--white);
   transition: background-color 1.5s ease;
   z-index: 2;
 
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   &.cardChecked {
-    background-color: #071f0c;
+    background: rgba(7, 31, 12, 0.3);
+    border: 1px solid #1daf23;
     button {
       background-color: #1daf23;
-      box-shadow: 0px 2.212px 22.121px 0px rgba(29, 175, 35, 0.3);
+      box-shadow: 0px 2.212px 22.121px 0px rgba(29, 175, 35, 0.7);
       transition: background-color 1.5s ease, filter 0.2s ease;
     }
   }
@@ -83,7 +85,7 @@
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: space-between;
 
   img {
     width: 2rem;
@@ -100,6 +102,16 @@
   p {
     font-size: var(--fs-500);
     font-weight: 600;
+  }
+}
+.leftHeader {
+  display: flex;
+  gap: 0.25rem;
+}
+.rightHeader {
+  img {
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -122,7 +134,7 @@
     text-transform: uppercase;
     font-weight: 500;
     font-size: var(--fs-300);
-    opacity: 0.3;
+
     color: #fff;
     padding-bottom: 8px;
 
@@ -247,11 +259,20 @@
       font-size: var(--fs-300);
       color: var(--white);
       text-transform: uppercase;
-      opacity: 0.3;
 
       @media only screen and (max-width: 768px) {
         font-size: 12px;
       }
     }
+  }
+}
+
+.lottieAnimation {
+  width: 40px;
+  height: 40px;
+
+  @media (max-width: 600px) {
+    width: 20px;
+    height: 20px;
   }
 }

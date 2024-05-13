@@ -1,7 +1,14 @@
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
+
+const Lottie = dynamic(() => import("react-lottie"), {
+  ssr: false,
+});
+
 //
 type Ticker =
   | "SHIB"
@@ -40,6 +47,8 @@ interface OperationCardProps {
   dollarPrice?: number;
   onClick: () => void;
   isChecked?: boolean;
+  meetsCriteria?: boolean;
+  isAdmin?: boolean;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -105,6 +114,8 @@ export function OperationCard({
 
   onClick,
   isChecked,
+  meetsCriteria,
+  isAdmin,
 }: OperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -126,23 +137,61 @@ export function OperationCard({
     dolarValue,
     coin.symbol
   );
+  const animationData = isChecked
+    ? require("/public/animations/checkPurple.json")
+    : require("/public/animations/checkGreen.json");
 
+  const [dimension, setDimension] = useState({ width: 40, height: 40 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 600) {
+        setDimension({ width: 20, height: 20 });
+      } else {
+        setDimension({ width: 40, height: 40 });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <section
       className={`${styles.card} ${isChecked ? styles.cardChecked : ""}`}
     >
       <header className={styles["card-header"]}>
-        <img
-          src={
-            coin.image ??
-            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-          }
-          alt={coin.name}
-        />
+        <div className={styles.leftHeader}>
+          <img
+            src={
+              coin.image ??
+              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+            }
+            alt={coin.name}
+          />
 
-        <h2 className={""}>
-          {coin.name} <b>({coin.symbol})</b>
-        </h2>
+          <h2 className={""}>
+            {coin.name} <b>({coin.symbol})</b>
+          </h2>
+        </div>
+
+        <div className={styles.rightHeader}>
+          {meetsCriteria && isAdmin && (
+            <Lottie
+              options={{
+                loop: false,
+                autoplay: true,
+                animationData: animationData,
+                rendererSettings: {
+                  preserveAspectRatio: "xMidYMid slice",
+                },
+              }}
+              height={dimension.height}
+              width={dimension.width}
+            />
+          )}
+        </div>
       </header>
 
       <hr />
@@ -162,11 +211,7 @@ export function OperationCard({
           </p>
         </div>
 
-        <MdArrowForwardIos
-          className={styles.arrowIcon}
-          size={32}
-          opacity={0.3}
-        />
+        <MdArrowForwardIos className={styles.arrowIcon} size={32} />
 
         <div>
           <h3>Venda</h3>
