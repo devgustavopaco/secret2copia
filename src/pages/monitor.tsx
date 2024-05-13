@@ -384,12 +384,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
       highestBid.amount *
       (opportunity.highestBid.isUSD ? dolarValue ?? 1 : 1);
 
-    const isVolumeCriteriaMet =
-      lowestAsk.amount > 100 && highestBid.amount > 100;
     const isPriceCriteriaMet =
       lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
 
-    return isVolumeCriteriaMet && isPriceCriteriaMet;
+    return isPriceCriteriaMet;
   };
 
   return (
