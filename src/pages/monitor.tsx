@@ -369,20 +369,26 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   const checkOpportunityCriteria = (opportunity: any) => {
     if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
+      console.error("Dados de oportunidade faltando");
       return false;
     }
 
     const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
     const highestBid = opportunity.highestBid.orderbook.bids[0];
 
+    if (!lowestAsk || !highestBid) {
+      console.error("Dados de ask ou bid estão incompletos");
+      return false;
+    }
+
     const lowestAskTotalValue =
       lowestAsk.price *
       lowestAsk.amount *
-      (opportunity.lowestAsk.isUSD ? dolarValue ?? 1 : 1);
+      (opportunity.lowestAsk.isUSD ? dollarValue ?? 1 : 1);
     const highestBidTotalValue =
       highestBid.price *
       highestBid.amount *
-      (opportunity.highestBid.isUSD ? dolarValue ?? 1 : 1);
+      (opportunity.highestBid.isUSD ? dollarValue ?? 1 : 1);
 
     const isPriceCriteriaMet =
       lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
