@@ -178,7 +178,7 @@ export function OperationCard({
 
         <div className={styles.rightHeader}>
           {/* {meetsCriteria && isAdmin && ( */}
-          <Lottie
+          {/* <Lottie
             options={{
               loop: false,
               autoplay: true,
@@ -189,7 +189,7 @@ export function OperationCard({
             }}
             height={dimension.height}
             width={dimension.width}
-          />
+          /> */}
           {/* )} */}
         </div>
       </header>
