@@ -367,34 +367,34 @@ const Monitoring: NextPage<MonitoringProps> = ({
     { email: userEmail ?? "" },
   ]);
 
-  const checkOpportunityCriteria = (opportunity: any) => {
-    if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
-      console.error("Dados de oportunidade faltando");
-      return false;
-    }
+  // const checkOpportunityCriteria = (opportunity: any) => {
+  //   if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
+  //     console.error("Dados de oportunidade faltando");
+  //     return false;
+  //   }
 
-    const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
-    const highestBid = opportunity.highestBid.orderbook.bids[0];
+  //   const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
+  //   const highestBid = opportunity.highestBid.orderbook.bids[0];
 
-    if (!lowestAsk || !highestBid) {
-      console.error("Dados de ask ou bid estão incompletos");
-      return false;
-    }
+  //   if (!lowestAsk || !highestBid) {
+  //     console.error("Dados de ask ou bid estão incompletos");
+  //     return false;
+  //   }
 
-    const lowestAskTotalValue =
-      lowestAsk.price *
-      lowestAsk.amount *
-      (opportunity.lowestAsk.isUSD ? dollarValue ?? 1 : 1);
-    const highestBidTotalValue =
-      highestBid.price *
-      highestBid.amount *
-      (opportunity.highestBid.isUSD ? dollarValue ?? 1 : 1);
+  //   const lowestAskTotalValue =
+  //     lowestAsk.price *
+  //     lowestAsk.amount *
+  //     (opportunity.lowestAsk.isUSD ? dollarValue ?? 1 : 1);
+  //   const highestBidTotalValue =
+  //     highestBid.price *
+  //     highestBid.amount *
+  //     (opportunity.highestBid.isUSD ? dollarValue ?? 1 : 1);
 
-    const isPriceCriteriaMet =
-      lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
+  //   const isPriceCriteriaMet =
+  //     lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
 
-    return isPriceCriteriaMet;
-  };
+  //   return isPriceCriteriaMet;
+  // };
 
   return (
     <>
@@ -568,7 +568,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
               ) : (
                 <div className={styles.operations}>
                   {sortedOperations.map((operation) => {
-                    const meetsCriteria = checkOpportunityCriteria(operation);
+                    // const meetsCriteria = checkOpportunityCriteria(operation);
                     return (
                       operation && (
                         <OperationCard
@@ -584,7 +584,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                             spread: operation.spread,
                           }}
                           dollarPrice={dollarPrice}
-                          meetsCriteria={meetsCriteria}
+                          // meetsCriteria={meetsCriteria}
                           isAdmin={isAdmin}
                           isChecked={isChecked}
                           onClick={() => {

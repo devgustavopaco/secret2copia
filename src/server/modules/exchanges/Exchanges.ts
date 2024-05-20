@@ -1853,6 +1853,106 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
   }
 }
 
+// RIPIO ---------------------------------------------------------------------
+
+interface RipioOrderbook {
+  data: {
+    asks: [
+      {
+        amount: number;
+        id: string;
+        price: number;
+      }
+    ];
+    bids: [
+      {
+        amount: number;
+        id: string;
+        price: number;
+      }
+    ];
+  };
+  error_code: number | null;
+  message: string | null;
+}
+
+export class RipioTradeStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: RipioOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid.amount);
+        } else {
+          sumVolume = Number(bid.amount);
+        }
+
+        acc.push({
+          price: Number(bid.price),
+          amount: Number(bid.amount),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask.amount);
+        } else {
+          sumVolume = Number(ask.amount);
+        }
+
+        acc.push({
+          price: Number(ask.price),
+          amount: Number(ask.amount),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const formattedPair = this.formatPair("BRL", pair);
+    const url = `https://api.ripiotrade.co/v4/public/orders/level-3?pair=${formattedPair}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer `,
+      },
+    });
+
+    const json = (await response.json()) as RipioOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Ripio",
+      bid: {
+        price: Number(json.data.bids[0].price),
+        amount: Number(json.data.bids[0].amount),
+      },
+      ask: {
+        price: Number(json.data.asks[0].price),
+        amount: Number(json.data.asks[0].amount),
+      },
+      isUSD: false,
+    };
+  }
+}
+
 // GATE.IO ---------------------------------------------------------------------
 
 interface GateIoTradeOrderbook {

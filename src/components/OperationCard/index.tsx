@@ -114,7 +114,7 @@ export function OperationCard({
 
   onClick,
   isChecked,
-  meetsCriteria,
+  // meetsCriteria,
   isAdmin,
 }: OperationCardProps) {
   const { data: auth } = useSession();
@@ -177,20 +177,20 @@ export function OperationCard({
         </div>
 
         <div className={styles.rightHeader}>
-          {meetsCriteria && isAdmin && (
-            <Lottie
-              options={{
-                loop: false,
-                autoplay: true,
-                animationData: animationData,
-                rendererSettings: {
-                  preserveAspectRatio: "xMidYMid slice",
-                },
-              }}
-              height={dimension.height}
-              width={dimension.width}
-            />
-          )}
+          {/* {meetsCriteria && isAdmin && ( */}
+          <Lottie
+            options={{
+              loop: false,
+              autoplay: true,
+              animationData: animationData,
+              rendererSettings: {
+                preserveAspectRatio: "xMidYMid slice",
+              },
+            }}
+            height={dimension.height}
+            width={dimension.width}
+          />
+          {/* )} */}
         </div>
       </header>
 
