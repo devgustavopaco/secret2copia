@@ -9,15 +9,21 @@ import {
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
 import { toast } from "react-toastify";
+import animationData from "../../public/animations/loadingNextgain.json";
 
 import { unstable_getServerSession } from "next-auth/next";
 import Link from "next/link";
+
+import dynamic from "next/dynamic";
 import { XCircle } from "phosphor-react";
 import styles from "../styles/Login.module.scss";
 import { authOptions } from "./api/auth/[...nextauth]";
+const Lottie = dynamic(() => import("react-lottie"), {
+  ssr: false,
+});
 
 const LoginWithCaptha = () => {
-  const RECAPTCHA_SITE_KEY = "6Lf7sbMlAAAAAP2FYf141iFvvxtf94odSx_kLKBa"; // Add your reCAPTCHA site key
+  const RECAPTCHA_SITE_KEY = "6Lf7sbMlAAAAAP2FYf141iFvvxtf94odSx_kLKBa";
 
   return (
     <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
@@ -34,6 +40,7 @@ const Login: NextPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -49,8 +56,10 @@ const Login: NextPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
     if (!executeRecaptcha) {
+      setIsLoading(false);
       return;
     }
 
@@ -67,11 +76,21 @@ const Login: NextPage = () => {
       toast.dark(response.error, {
         icon: <XCircle size={32} color="#ff3838" weight="fill" />,
       });
+      setIsLoading(false);
       console.error(response.error);
       return Router.push("/");
     }
 
     return Router.push("/home");
+  };
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
   };
 
   return (
@@ -114,7 +133,13 @@ const Login: NextPage = () => {
                 </div>
                 <div className={styles.inputBox}>
                   <button type="submit">
-                    Entrar <img src="images/arrowLogin.svg" alt="" />
+                    {isLoading ? (
+                      <Lottie options={defaultOptions} height={50} width={50} />
+                    ) : (
+                      <>
+                        Entrar <img src="images/arrowLogin.svg" alt="" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
