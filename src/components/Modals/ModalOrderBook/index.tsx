@@ -50,6 +50,8 @@ export function ModalOrderBook({
     }
   };
 
+  console.log(orderbookAsk.orderbook.asks, "COMPRA");
+
   const asksWithTicker = orderbookAsk.orderbook.asks.map((ask) => ({
     ...ask,
     ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker

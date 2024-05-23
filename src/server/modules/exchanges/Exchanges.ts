@@ -1860,14 +1860,14 @@ interface RipioOrderbook {
     asks: [
       {
         amount: number;
-        id: string;
+
         price: number;
       }
     ];
     bids: [
       {
         amount: number;
-        id: string;
+
         price: number;
       }
     ];
@@ -1921,16 +1921,16 @@ export class RipioTradeStrategy implements ExchangeStrategy {
     return { bids, asks };
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+  formatPair(baseToken: string): string {
+    return `${baseToken.toUpperCase()}_BRL`;
   }
 
-  async fetchOrderbook(pair: string): Promise<Exchange> {
-    const formattedPair = this.formatPair("BRL", pair);
-    const url = `https://api.ripiotrade.co/v4/public/orders/level-3?pair=${formattedPair}`;
+  async fetchOrderbook(baseToken: string): Promise<Exchange> {
+    const pair = this.formatPair(baseToken);
+    const url = `https://api.ripiotrade.co/v4/public/orders/level-2?pair=${pair}`;
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer `,
+        Authorization: `U2FsdGVkX19i+/8gMS5Ht3U5rkjU874Gs2BajpJisnqZV57AfXjXuDhfZfgIZoVW`,
       },
     });
 
