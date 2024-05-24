@@ -25,6 +25,7 @@ async function fetchWithProxy(
   timeout: number = 4000,
   gateio: boolean = false,
   okx: boolean = false,
+  ripio: boolean = false,
   headers?: object
 ): Promise<any> {
   const randomIndex = Math.floor(Math.random() * proxies.length);
@@ -45,7 +46,7 @@ async function fetchWithProxy(
       ...defaultOptions,
       headers: { "Content-Type": "application/json" },
     };
-  } else if (okx) {
+  } else {
     fetchOptions = {
       ...defaultOptions,
       headers,
@@ -1734,12 +1735,14 @@ export class OkxStrategy implements ExchangeStrategy {
     };
 
     const url = `https://www.okx.com/api/v5/market/books?instId=${pair}&sz=20`;
+
     const response = await fetchWithProxy(
       url,
       proxies,
       4000,
       false,
       true,
+      false,
       headers
     );
 
@@ -1857,23 +1860,15 @@ export class BitcoinTradeStrategy implements ExchangeStrategy {
 
 interface RipioOrderbook {
   data: {
-    asks: [
-      {
-        amount: number;
-
-        price: number;
-      }
-    ];
-    bids: [
-      {
-        amount: number;
-
-        price: number;
-      }
-    ];
+    asks: {
+      amount: number;
+      price: number;
+    }[];
+    bids: {
+      amount: number;
+      price: number;
+    }[];
   };
-  error_code: number | null;
-  message: string | null;
 }
 
 export class RipioTradeStrategy implements ExchangeStrategy {
@@ -1925,14 +1920,24 @@ export class RipioTradeStrategy implements ExchangeStrategy {
     return `${baseToken.toUpperCase()}_BRL`;
   }
 
-  async fetchOrderbook(baseToken: string): Promise<Exchange> {
-    const pair = this.formatPair(baseToken);
+  async fetchOrderbook(pair: string): Promise<Exchange> {
     const url = `https://api.ripiotrade.co/v4/public/orders/level-2?pair=${pair}`;
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `U2FsdGVkX19i+/8gMS5Ht3U5rkjU874Gs2BajpJisnqZV57AfXjXuDhfZfgIZoVW`,
-      },
-    });
+
+    const auth = `U2FsdGVkX19i+/8gMS5Ht3U5rkjU874Gs2BajpJisnqZV57AfXjXuDhfZfgIZoVW`;
+
+    const headers = {
+      Authorization: auth,
+    };
+
+    const response = await fetchWithProxy(
+      url,
+      proxies,
+      4000,
+      false,
+      false,
+      true,
+      headers
+    );
 
     const json = (await response.json()) as RipioOrderbook;
 
@@ -1941,12 +1946,12 @@ export class RipioTradeStrategy implements ExchangeStrategy {
     return {
       name: "Ripio",
       bid: {
-        price: Number(json.data.bids[0].price),
-        amount: Number(json.data.bids[0].amount),
+        price: Number(json.data.bids[0]!.price),
+        amount: Number(json.data.bids[0]!.amount),
       },
       ask: {
-        price: Number(json.data.asks[0].price),
-        amount: Number(json.data.asks[0].amount),
+        price: Number(json.data.asks[0]!.price),
+        amount: Number(json.data.asks[0]!.amount),
       },
       isUSD: false,
     };
@@ -2641,7 +2646,7 @@ export class DigifinexStrategy implements ExchangeStrategy {
       orderbook?.asks.map((ask) => ({
         price: ask[0],
         amount: ask[1],
-        sumVolume: ask[1], // You may need to change this, depending on how you want to calculate sumVolume
+        sumVolume: ask[1],
       })) ?? [];
 
     return { bids, asks };
