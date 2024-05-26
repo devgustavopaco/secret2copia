@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { Header } from "../components/Header";
+import CurrencyCarousel from "../components/MarketCarousel";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
@@ -28,6 +29,7 @@ interface MonitoringProps {
   hasIPChanged: boolean;
   isAdmin: boolean;
   isNewUser: boolean;
+  tickerData: any[];
 }
 
 const Monitoring: NextPage<MonitoringProps> = ({
@@ -36,6 +38,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   isAdmin,
   isNewUser,
   supportNumber,
+  tickerData,
 }) => {
   const [isChecked, setIsChecked] = useState(false);
 
@@ -406,7 +409,18 @@ const Monitoring: NextPage<MonitoringProps> = ({
         {modalState ? (
           <></>
         ) : (
-          <Header supportNumber={supportNumber} isChecked={isChecked} />
+          <>
+            <Header supportNumber={supportNumber} isChecked={isChecked} />
+            <CurrencyCarousel
+              currencies={tickerData?.map((data) => ({
+                name: data.symbol.replace("USDT", ""),
+                price: `\$${parseFloat(data.lastPrice).toFixed(2)}`,
+                percentage: `${parseFloat(data.priceChangePercent).toFixed(
+                  2
+                )}%`,
+              }))}
+            />
+          </>
         )}
 
         <>
@@ -628,6 +642,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let isNewUser = false;
   let isAdmin = session?.role === "admin" ? true : false;
   let supportNumber = null;
+  let tickerData: any = [];
 
   try {
     const result = await updateIP(session.id as string, ip as string);
@@ -638,11 +653,68 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       new Date(userCreationDate) >=
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     supportNumber = await getSupportNumber();
+
+    const symbols = [
+      "BTCUSDT",
+      "ETHUSDT",
+      "XRPUSDT",
+      "BNBUSDT",
+      "ADAUSDT",
+      "DOTUSDT",
+      "LTCUSDT",
+      "LINKUSDT",
+      "BCHUSDT",
+      "XLMUSDT",
+      "ALICEUSDT",
+      "ATMUSDT",
+      "CHZUSDT",
+      "PSGUSDT",
+      "JUVUSDT",
+      "PORTOUSDT",
+      "ACMUSDT",
+      "SANTOSUSDT",
+      "BARUSDT",
+      "ASRUSDT",
+      "OGUSDT",
+      "CITYUSDT",
+      "BATUSDT",
+      "MANAUSDT",
+      "THETAUSDT",
+    ];
+
+    async function getExchangeRate() {
+      const response = await fetch(
+        "https://api.exchangerate-api.com/v4/latest/USD"
+      );
+      const data = await response.json();
+      return data.rates.BRL; // Obtenha a taxa de câmbio de USD para BRL
+    }
+
+    const fetchData = async (symbol: any, exchangeRate: any) => {
+      try {
+        const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        return {
+          ...data,
+          lastPrice: (parseFloat(data.lastPrice) * exchangeRate).toFixed(2), // Convertendo e formatando o preço
+        };
+      } catch (error) {
+        console.error(`Failed to fetch data for ${symbol}:`, error);
+        return null;
+      }
+    };
+
+    const exchangeRate = await getExchangeRate();
+
+    tickerData = await Promise.all(
+      symbols.map((symbol) => fetchData(symbol, exchangeRate))
+    );
   } catch (error) {
     console.error("Erro ao criar ou atualizar registro IP:", error);
   }
 
   return {
-    props: { ip, hasIPChanged, isAdmin, isNewUser, supportNumber },
+    props: { ip, hasIPChanged, isAdmin, isNewUser, supportNumber, tickerData },
   };
 };
