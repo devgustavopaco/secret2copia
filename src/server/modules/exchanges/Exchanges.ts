@@ -4914,28 +4914,28 @@ export class TokoCryptoStrategy implements ExchangeStrategy {
     let url = "";
 
     if (pair.toUpperCase() !== "GALUSDT") {
-      // url = `https://api.TokoCrypto.com/api/v3/depth?limit=10&symbol=${pair}`;
       url = `https://cloudme-toko.2meta.app/api/v1/depth?limit=10&symbol=${pair}`;
     }
+
+    const dollarPriceToIdr = await fetchDollarPriceIdr();
 
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as TokoCryptoOrderbook;
-    console.log(json, "json");
 
     this.orderbook[pair] = json;
 
     return {
       name: "TokoCrypto",
       bid: {
-        price: Number(json.bids[0]![0]),
+        price: Number(json.bids[0]![0]) / dollarPriceToIdr,
         amount: Number(json.bids[0]![1]),
       },
       ask: {
-        price: Number(json.asks[0]![0]),
+        price: Number(json.asks[0]![0]) / dollarPriceToIdr,
         amount: Number(json.asks[0]![1]),
       },
-      isUSD: false,
+      isUSD: true,
     };
   }
 }
