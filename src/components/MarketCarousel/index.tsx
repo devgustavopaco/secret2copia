@@ -1,16 +1,21 @@
 import GraphNegative from "../../icons/GraphNegative";
 import GraphPositive from "../../icons/GraphPositive";
+import { Currency } from "../../types/dto";
 import styles from "./styles.module.scss";
 
-const CurrencyCarousel = ({ currencies }: any) => {
-  const formatPrice = (price: any) => {
-    return `R${price.replace(".", ",")}`;
+interface CurrencyCarouselProps {
+  tickerData: Currency[];
+}
+
+const CurrencyCarousel = ({ tickerData }: CurrencyCarouselProps) => {
+  const formatPrice = (price: string): string => {
+    return `${price.replace(".", ",")}`;
   };
 
   return (
     <div className={styles.currencyContainer}>
       <div className={styles.currencyRow}>
-        {currencies.map((currency: any, index: any) => (
+        {tickerData.map((currency, index) => (
           <div className={styles.currencyItem} key={index}>
             <div className={styles.LeftSideCurrencyItem}>
               <h3>{currency.name}</h3>

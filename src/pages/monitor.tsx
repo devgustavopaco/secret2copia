@@ -17,9 +17,11 @@ import { OperationCard } from "../components/OperationCard";
 import { Sidebar } from "../components/Sidebar";
 import Soccer from "../icons/Soccer";
 import { updateIP } from "../server/db/checkIP";
+import { fetchTickerData } from "../server/db/fetchTicketData";
 import { getSupportNumber } from "../server/db/getSuportNumber";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/Monitor.module.scss";
+import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 
@@ -29,7 +31,7 @@ interface MonitoringProps {
   hasIPChanged: boolean;
   isAdmin: boolean;
   isNewUser: boolean;
-  tickerData: any[];
+  tickerData: Currency[];
 }
 
 const Monitoring: NextPage<MonitoringProps> = ({
@@ -411,15 +413,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         ) : (
           <>
             <Header supportNumber={supportNumber} isChecked={isChecked} />
-            <CurrencyCarousel
-              currencies={tickerData?.map((data) => ({
-                name: data.symbol.replace("USDT", ""),
-                price: `\$${parseFloat(data.lastPrice).toFixed(2)}`,
-                percentage: `${parseFloat(data.priceChangePercent).toFixed(
-                  2
-                )}%`,
-              }))}
-            />
+            <CurrencyCarousel tickerData={tickerData} />
           </>
         )}
 
@@ -642,7 +636,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let isNewUser = false;
   let isAdmin = session?.role === "admin" ? true : false;
   let supportNumber = null;
-  let tickerData: any = [];
+  let tickerData: Currency[] = [];
 
   try {
     const result = await updateIP(session.id as string, ip as string);
@@ -653,68 +647,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       new Date(userCreationDate) >=
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     supportNumber = await getSupportNumber();
-
-    const symbols = [
-      "BTCUSDT",
-      "ETHUSDT",
-      "XRPUSDT",
-      "BNBUSDT",
-      "ADAUSDT",
-      "DOTUSDT",
-      "LTCUSDT",
-      "LINKUSDT",
-      "BCHUSDT",
-      "XLMUSDT",
-      "ALICEUSDT",
-      "ATMUSDT",
-      "CHZUSDT",
-      "PSGUSDT",
-      "JUVUSDT",
-      "PORTOUSDT",
-      "ACMUSDT",
-      "SANTOSUSDT",
-      "BARUSDT",
-      "ASRUSDT",
-      "OGUSDT",
-      "CITYUSDT",
-      "BATUSDT",
-      "MANAUSDT",
-      "THETAUSDT",
-    ];
-
-    async function getExchangeRate() {
-      const response = await fetch(
-        "https://api.exchangerate-api.com/v4/latest/USD"
-      );
-      const data = await response.json();
-      return data.rates.BRL; // Obtenha a taxa de câmbio de USD para BRL
-    }
-
-    const fetchData = async (symbol: any, exchangeRate: any) => {
-      try {
-        const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        return {
-          ...data,
-          lastPrice: (parseFloat(data.lastPrice) * exchangeRate).toFixed(2), // Convertendo e formatando o preço
-        };
-      } catch (error) {
-        console.error(`Failed to fetch data for ${symbol}:`, error);
-        return null;
-      }
-    };
-
-    const exchangeRate = await getExchangeRate();
-
-    tickerData = await Promise.all(
-      symbols.map((symbol) => fetchData(symbol, exchangeRate))
-    );
+    tickerData = await fetchTickerData();
   } catch (error) {
-    console.error("Erro ao criar ou atualizar registro IP:", error);
+    console.error("Error updating IP record or fetching data:", error);
   }
 
   return {
-    props: { ip, hasIPChanged, isAdmin, isNewUser, supportNumber, tickerData },
+    props: {
+      ip,
+      hasIPChanged,
+      isAdmin,
+      isNewUser,
+      supportNumber,
+      tickerData,
+    },
   };
 };
