@@ -60,6 +60,7 @@ import {
   PolonieskStrategy,
   ProbitStrategy,
   RipioTradeStrategy,
+  TokoCryptoStrategy,
   WhitebitStrategy,
   WooStrategy,
   XTStrategy,
@@ -129,6 +130,7 @@ const exchangeStrategies: StrategyObject = {
   gateio: new GateIoTradeStrategy(),
   foxbit: new FoxBitStrategy(),
   ripio: new RipioTradeStrategy(),
+  tokocrypto: new TokoCryptoStrategy(),
 };
 
 export interface OrderbookOperation {

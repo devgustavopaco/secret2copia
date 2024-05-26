@@ -36,6 +36,14 @@ interface EURResponse {
     EUR: number;
   };
 }
+interface IDRResponse {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    IDR: number;
+  };
+}
 
 export class ServerSingleton {
   private static instance: ServerSingleton;
@@ -45,6 +53,7 @@ export class ServerSingleton {
   private dolarJpy: number;
   private dolarThb: number;
   private dolarEur: number;
+  private dolarIdr: number;
 
   private constructor() {
     this.dolar = 0;
@@ -52,6 +61,7 @@ export class ServerSingleton {
     this.dolarJpy = 0;
     this.dolarThb = 0;
     this.dolarEur = 0;
+    this.dolarIdr = 0;
   }
 
   public static getInstance(): ServerSingleton {
@@ -120,6 +130,18 @@ export class ServerSingleton {
     return this.dolarEur;
   }
 
+  private async fetchDollarToIdr(): Promise<number> {
+    const response = await fetch(
+      `https://api.frankfurter.app/latest?from=USD&to=IDR`
+    );
+
+    const { rates } = (await response.json()) as IDRResponse;
+
+    this.dolarIdr = Number(rates.IDR);
+
+    return this.dolarIdr;
+  }
+
   public async getDollar(): Promise<number> {
     return await this.fetchDollar();
   }
@@ -137,5 +159,8 @@ export class ServerSingleton {
   }
   public async getDollarToEur(): Promise<number> {
     return await this.fetchDollarToEur();
+  }
+  public async getDollarToIdr(): Promise<number> {
+    return await this.fetchDollarToIdr();
   }
 }

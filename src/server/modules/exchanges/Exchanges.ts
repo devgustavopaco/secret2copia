@@ -18,6 +18,9 @@ async function fetchDollarPriceThb() {
 async function fetchDollarPriceEur() {
   return await ServerSingleton.getInstance().getDollarToEur();
 }
+async function fetchDollarPriceIdr() {
+  return await ServerSingleton.getInstance().getDollarToIdr();
+}
 
 async function fetchWithProxy(
   url: string,
@@ -4848,6 +4851,91 @@ export class DYDYXStrategy implements ExchangeStrategy {
         amount: Number(json.asks[0]?.size),
       },
       isUSD: true,
+    };
+  }
+}
+// TOKOCRYPTO
+
+interface TokoCryptoOrderbook {
+  bids: string[][];
+  asks: string[][];
+}
+
+export class TokoCryptoStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: TokoCryptoOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    return `${baseToken.toUpperCase()}IDR`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    let url = "";
+
+    if (pair.toUpperCase() !== "GALUSDT") {
+      // url = `https://api.TokoCrypto.com/api/v3/depth?limit=10&symbol=${pair}`;
+      url = `https://cloudme-toko.2meta.app/api/v1/depth?limit=10&symbol=${pair}`;
+    }
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as TokoCryptoOrderbook;
+    console.log(json, "json");
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "TokoCrypto",
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: false,
     };
   }
 }

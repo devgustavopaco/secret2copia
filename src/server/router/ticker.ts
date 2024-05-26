@@ -52,6 +52,7 @@ import {
   PolonieskStrategy,
   ProbitStrategy,
   RipioTradeStrategy,
+  TokoCryptoStrategy,
   WhitebitStrategy,
   WooStrategy,
   XTStrategy,
@@ -117,6 +118,7 @@ const exchangeStrategies: ExchangeStrategy[] = [
   new BitflyerStrategy(),
   new DYDYXStrategy(),
   new RipioTradeStrategy(),
+  new TokoCryptoStrategy(),
 ];
 
 // export const tickerRouter = createRouter().query("getAll", {
