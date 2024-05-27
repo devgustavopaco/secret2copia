@@ -4866,7 +4866,8 @@ export class TokoCryptoStrategy implements ExchangeStrategy {
     [key: string]: TokoCryptoOrderbook;
   } = {};
 
-  convertOrderbook(pair: string): Orderbook {
+  async convertOrderbook(pair: string, isFanToken: false): Promise<Orderbook> {
+    const dollarPriceToIdr = await fetchDollarPriceIdr();
     const bids =
       this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
         let sumVolume = 0;
@@ -4877,7 +4878,7 @@ export class TokoCryptoStrategy implements ExchangeStrategy {
         }
 
         acc.push({
-          price: Number(bid[0]),
+          price: Number(bid[0]) / Number(dollarPriceToIdr),
           amount: Number(bid[1]),
           sumVolume,
         });
@@ -4895,7 +4896,7 @@ export class TokoCryptoStrategy implements ExchangeStrategy {
         }
 
         acc.push({
-          price: Number(ask[0]),
+          price: Number(ask[0]) / Number(dollarPriceToIdr),
           amount: Number(ask[1]),
           sumVolume,
         });
