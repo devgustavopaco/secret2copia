@@ -37,8 +37,6 @@ export const taxRouter = createRouter()
   .query("getTaxes", {
     input: z.object({
       search: z.string().optional(),
-      limit: z.number().min(1).max(100).optional(), // Adicionando limitação e paginação novamente
-      offset: z.number().nonnegative().optional(),
     }),
     async resolve({ ctx, input }) {
       const { search } = input;
