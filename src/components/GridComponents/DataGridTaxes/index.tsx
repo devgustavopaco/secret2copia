@@ -6,12 +6,12 @@ import {
   GridSelectionModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-import { CheckCircle, XCircle } from "phosphor-react";
 import type { ExchangeCoinTax } from "@prisma/client";
+import { CheckCircle, XCircle } from "phosphor-react";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
-import { toast } from "react-toastify";
 
 interface DataGridTaxesProps {
   data: ExchangeCoinTax[];
@@ -41,10 +41,10 @@ export function DataGridTaxes({
       sortable: false,
       filterable: true,
       disableColumnMenu: true,
-      valueGetter(params: GridRenderCellParams) {
-        return params.row.exchange.name;
-      },
+      valueGetter: (params: GridRenderCellParams<string>) =>
+        params.row.exchangeName,
     },
+
     {
       field: "coinName",
       headerName: "Moeda",
@@ -54,7 +54,7 @@ export function DataGridTaxes({
       filterable: false,
       disableColumnMenu: true,
       valueGetter(params: GridRenderCellParams) {
-        return params.row.coin.name;
+        return params.row.coinName;
       },
     },
     {
