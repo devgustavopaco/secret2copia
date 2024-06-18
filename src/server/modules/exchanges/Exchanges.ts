@@ -1638,7 +1638,12 @@ export class BidgetStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`;
+    let url = "";
+
+    if (pair.toUpperCase() !== "ZKUSDT") {
+      url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`;
+    }
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BidgetOrderbook;
