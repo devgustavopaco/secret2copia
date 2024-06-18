@@ -1,3 +1,4 @@
+import { ExchangeCoinTax, Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createRouter } from "./context";
@@ -37,27 +38,22 @@ export const taxRouter = createRouter()
     input: z.object({
       search: z.string().optional(),
     }),
-    resolve({ ctx, input }) {
-      const { search } = input ?? {};
-      const taxes = ctx.prisma.exchangeCoinTax.findMany({
-        include: {
-          coin: true,
-          exchange: true,
-        },
-        where: {
-          coin: {
-            name: search
-              ? {
-                  contains: search,
-                }
-              : undefined,
-          },
-        },
-      });
-      console.log(taxes);
-      return taxes;
+    async resolve({ ctx, input }) {
+      const { search } = input;
+      const searchString = search ? `%${search}%` : `%`;
+
+      const result = await ctx.prisma.$queryRaw<ExchangeCoinTax[]>(Prisma.sql`
+        SELECT ect.id, ect.exchangeId, ect.coinId, c.name AS coinName, e.name AS exchangeName, ect.tax, ect.confirmations, ect.active, ect.createdAt, ect.updatedAt
+        FROM ExchangeCoinTax AS ect
+        JOIN Coin AS c ON ect.coinId = c.id
+        JOIN Exchange AS e ON ect.exchangeId = e.id
+        WHERE c.name LIKE ${searchString}
+        `);
+
+      return result;
     },
   })
+
   .mutation("create", {
     input: z.object({
       exchangeId: z.string(),

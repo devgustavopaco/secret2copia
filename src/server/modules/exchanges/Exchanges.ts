@@ -1640,7 +1640,11 @@ export class BidgetStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "ZKUSDT") {
+    if (
+      pair.toUpperCase() !== "VELOUSDT" &&
+      pair.toUpperCase() !== "TKOUSDT" &&
+      pair.toUpperCase() !== "ZKUSDT"
+    ) {
       url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`;
     }
 
