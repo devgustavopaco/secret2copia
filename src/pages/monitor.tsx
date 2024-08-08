@@ -150,7 +150,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam: number;
   }) => {
     const res = await fetch(
-      `https://octopus-app-y8cgb.ondigitalocean.app/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
