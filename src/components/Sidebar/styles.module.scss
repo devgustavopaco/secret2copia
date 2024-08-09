@@ -16,7 +16,14 @@
     font-weight: 600;
   }
 }
-
+.updateButton {
+  background: none;
+}
+.dollarPrice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
 .ExchangesSection {
   min-width: 209px;
   .labelExchangeSection {

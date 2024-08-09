@@ -274,9 +274,9 @@ const Monitoring: NextPage<MonitoringProps> = ({
     fetchNextPage();
   }
 
-  const { data: dollarPrice } = trpc.useQuery(["orderBook.getDollar"], {
+  const dollarPrice = trpc.useQuery(["orderBook.getDollar"], {
     refetchInterval: 20 * 1000,
-  });
+  }).data;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -400,7 +400,33 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   //   return isPriceCriteriaMet;
   // };
+  const handleDollarChange = useCallback(() => {
+    if (dolarValue === undefined || dolarValue === 0) {
+      toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+      return;
+    }
 
+    setLoadingDolarChange(true);
+    refetch();
+
+    if (user) {
+      const newDolar = dolarValue === 0 ? dollarPrice : dolarValue;
+      updateMutation.mutate(
+        {
+          id: String(user?.id),
+          dolarValue: newDolar as number,
+        },
+        {
+          onSettled: () => {
+            setLoadingDolarChange(false);
+            // Qualquer outra ação após a atualização, se necessário
+          },
+        }
+      );
+    }
+  }, [dolarValue, user, dollarPrice]);
   return (
     <>
       <Head>
@@ -460,17 +486,22 @@ const Monitoring: NextPage<MonitoringProps> = ({
                     </p>
 
                     {dollarPrice ? (
-                      <div>
-                        <span>R$</span>
-                        <input
-                          className={styles.dolarLabel}
-                          type="number"
-                          value={dolarValue}
-                          onChange={onChangeDolar}
-                          style={{ textAlign: "center" }}
-                          placeholder="Valor do Dólar"
-                        />
-                      </div>
+                      <>
+                        <div>
+                          <span>R$</span>
+                          <input
+                            className={styles.dolarLabel}
+                            type="number"
+                            value={dolarValue}
+                            onChange={onChangeDolar}
+                            style={{ textAlign: "center" }}
+                            placeholder="Valor do Dólar"
+                          />
+                        </div>
+                        <button onClick={handleDollarChange}>
+                          Atualizar Valor do Dólar
+                        </button>
+                      </>
                     ) : (
                       <BeatLoader color="#969696" size="0.5rem" />
                     )}
@@ -524,6 +555,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
                 isAdmin={isAdmin}
+                onDollarChange={handleDollarChange}
               />
             </div>
             <main>
@@ -532,27 +564,29 @@ const Monitoring: NextPage<MonitoringProps> = ({
                   {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
                 </h1>
                 {isAdmin && (
-                  <div className={styles.checkbox}>
-                    <div className={styles.checkText}>
-                      <p>
-                        <strong>Mostrar somente fantokens?</strong>
-                      </p>
-                      <Soccer color="#fff" />
+                  <>
+                    <div className={styles.checkbox}>
+                      <div className={styles.checkText}>
+                        <p>
+                          <strong>Mostrar somente fantokens?</strong>
+                        </p>
+                        <Soccer color="#fff" />
+                      </div>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={handleCheckboxChange}
+                          className={isChecked ? "is-checked" : ""}
+                        />
+                        <span
+                          className={`${styles.slider} ${
+                            isChecked ? "is-checked" : ""
+                          }`}
+                        ></span>
+                      </label>
                     </div>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={handleCheckboxChange}
-                        className={isChecked ? "is-checked" : ""}
-                      />
-                      <span
-                        className={`${styles.slider} ${
-                          isChecked ? "is-checked" : ""
-                        }`}
-                      ></span>
-                    </label>
-                  </div>
+                  </>
                 )}
               </div>
               {loadingDolarChange || sortedOperations?.length === 0 ? (
