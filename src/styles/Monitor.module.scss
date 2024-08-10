@@ -286,3 +286,15 @@ input:checked + .slider:before {
 input:checked.is-checked + .slider {
   background-color: #34c759;
 }
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Certifique-se de que a animação fica no topo */
+}

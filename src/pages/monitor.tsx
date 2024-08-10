@@ -24,6 +24,8 @@ import styles from "../styles/Monitor.module.scss";
 import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+import loadingAnimation from "../animations/dollar.json";
+import Lottie from "react-lottie";
 
 interface MonitoringProps {
   ip: string;
@@ -400,6 +402,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   //   return isPriceCriteriaMet;
   // };
+  const [isUpdatingDollar, setIsUpdatingDollar] = useState(false);
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
       toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
@@ -407,10 +410,21 @@ const Monitoring: NextPage<MonitoringProps> = ({
       });
       return;
     }
+    setIsUpdatingDollar(true);
 
     setLoadingDolarChange(true);
-    refetch();
 
+    // Limpar as operações existentes
+    operationsMap.clear();
+    sortedOperations = [];
+
+    // Remover queries existentes para garantir que o próximo fetch seja limpo
+    queryClient.removeQueries({
+      queryKey: ["orderBook.getPaginated"],
+      exact: true,
+    });
+
+    // Atualizar o valor do dólar no backend
     if (user) {
       const newDolar = dolarValue === 0 ? dollarPrice : dolarValue;
       updateMutation.mutate(
@@ -421,12 +435,27 @@ const Monitoring: NextPage<MonitoringProps> = ({
         {
           onSettled: () => {
             setLoadingDolarChange(false);
-            // Qualquer outra ação após a atualização, se necessário
+
+            // Refazer a busca de oportunidades com o novo valor do dólar
+            queryClient.invalidateQueries({
+              queryKey: ["orderBook.getPaginated"],
+            });
+            window.location.reload();
+            refetch();
           },
         }
       );
     }
-  }, [dolarValue, user, dollarPrice]);
+  }, [dolarValue, user, dollarPrice, refetch, queryClient]);
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: loadingAnimation,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
   return (
     <>
       <Head>
@@ -434,6 +463,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
+        {isUpdatingDollar && loadingAnimation && (
+          <div className={styles.loadingOverlay}>
+            <Lottie options={defaultOptions} height={200} width={200} />
+          </div>
+        )}
         {modalState ? (
           <></>
         ) : (
