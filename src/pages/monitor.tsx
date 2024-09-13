@@ -156,7 +156,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=150&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
+      )}&cursor=${pageParam}&limit=80&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
     );
 
     return res.json();
