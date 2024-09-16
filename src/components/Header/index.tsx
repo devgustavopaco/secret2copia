@@ -145,7 +145,7 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
               Mentoria
             </a>
           </Link>
-          <Link href="https://docs.google.com/spreadsheets/u/0/d/1-uxKr9Y1UcPQ0yHd9DwomqTAQFKvQgUQurgjtrXZbhE/edit?usp=sharing&pli=1">
+          <Link href="https://docs.google.com/spreadsheets/d/1F2GnfblewJ5nNQeCumPk5tAEsGZCp40ZzyJ7PTUwKgM/edit?gid=1671346053#gid=1671346053">
             <a
               className={`${styles.menuItem} ${
                 router.pathname === "/planilha" ? styles.active : ""
@@ -232,7 +232,7 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
               </Link>
             </li>
             <li>
-              <Link href="https://docs.google.com/spreadsheets/u/0/d/1-uxKr9Y1UcPQ0yHd9DwomqTAQFKvQgUQurgjtrXZbhE/edit?usp=sharing&pli=1">
+              <Link href="https://docs.google.com/spreadsheets/d/1F2GnfblewJ5nNQeCumPk5tAEsGZCp40ZzyJ7PTUwKgM/edit?gid=1671346053#gid=1671346053">
                 <a className={router.pathname === "/planilha" ? "active" : ""}>
                   Planilha
                 </a>
