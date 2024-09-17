@@ -97,7 +97,6 @@ const Videos: NextPageWithLayout = () => {
                 type="button"
                 className={styles.addCryptoButton}
                 onClick={handleDeletion}
-                datatype="remove"
               >
                 Remover
                 <Trash size={24} />

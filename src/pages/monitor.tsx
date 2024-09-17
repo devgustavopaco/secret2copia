@@ -152,22 +152,26 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam: number;
   }) => {
     const res = await fetch(
-      `https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `https://nest-js-nigre.vercel.app/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&cursor=${pageParam}&limit=25&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
+      )}&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
     );
 
     return res.json();
   };
-
+  const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
+    "user.getUserDollarValueByEmail",
+    { email: userEmail ?? "" },
+  ]);
   let queryResult: any;
 
   if (isAdmin || isNewUser) {
     queryResult = trpc.useInfiniteQuery(
       [
         "orderBook.getPaginated",
+
         {
           buyExchanges: buyExchangesName ?? undefined,
           sellExchanges: sellExchangesName ?? undefined,
@@ -202,10 +206,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
     // eslint-disable-next-line react-hooks/rules-of-hooks
     queryResult = useInfiniteQuery({
       queryKey: ["orderBook.getPaginated"],
+      enabled: !!dollarValue,
       queryFn: fetchPaginatedOrderbook,
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) => {
-        const morePagesExist = lastPage.arbitrageOpportunities?.length === 25;
+        const morePagesExist = lastPage.arbitrageOpportunities?.length === 100;
         if (!morePagesExist) return undefined;
         return lastPage.nextCursor;
       },
@@ -369,10 +374,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     });
     refetch();
   }, [isChecked, queryClient, refetch]);
-  const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
-    "user.getUserDollarValueByEmail",
-    { email: userEmail ?? "" },
-  ]);
 
   // const checkOpportunityCriteria = (opportunity: any) => {
   //   if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {

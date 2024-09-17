@@ -68,7 +68,6 @@ const Dashboard: NextPageWithLayout = () => {
                 type="button"
                 onClick={handleEditSupportPhone}
                 className={styles.addCryptoButton}
-                datatype="editar telefone"
               >
                 Editar telefone de contato
                 <PhoneCall size={24} />

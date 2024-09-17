@@ -165,7 +165,6 @@ const Users: NextPageWithLayout = () => {
                 onClick={() => {
                   setModalOpenDelete(true);
                 }}
-                datatype="remove"
               >
                 Remover
                 <Trash size={24} />

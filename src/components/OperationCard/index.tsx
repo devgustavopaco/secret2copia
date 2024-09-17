@@ -5,10 +5,6 @@ import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 
-const Lottie = dynamic(() => import("react-lottie"), {
-  ssr: false,
-});
-
 //
 type Ticker =
   | "SHIB"
