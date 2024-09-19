@@ -104,6 +104,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
     return ActiveExchanges ? ActiveExchanges : [];
   });
   const [sidebarClickCount, setSidebarClickCount] = useState(0);
+  interface PaginatedResponse {
+    arbitrageOpportunities: ArbitrageOpportunity[];
+    nextCursor: number | undefined;
+  }
 
   const clickOnSidebar = (event: any) => {
     event.stopPropagation();
@@ -147,20 +151,21 @@ const Monitoring: NextPage<MonitoringProps> = ({
   const queryClient = useQueryClient();
 
   const fetchPaginatedOrderbook = async ({
-    pageParam,
+    pageParam = 1,
   }: {
-    pageParam: number;
+    pageParam?: number;
   }) => {
     const res = await fetch(
       `https://nest-js-nigre.vercel.app/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
-      )}&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}`
+      )}&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}&cursor=${pageParam}&limit=50`
     );
 
     return res.json();
   };
+
   const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
     "user.getUserDollarValueByEmail",
     { email: userEmail ?? "" },
@@ -207,19 +212,12 @@ const Monitoring: NextPage<MonitoringProps> = ({
     queryResult = useInfiniteQuery({
       queryKey: ["orderBook.getPaginated"],
       enabled: !!dollarValue,
-      queryFn: fetchPaginatedOrderbook,
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, allPages) => {
-        const morePagesExist = lastPage.arbitrageOpportunities?.length === 100;
-        if (!morePagesExist) return undefined;
-        return lastPage.nextCursor;
-      },
+      queryFn: fetchPaginatedOrderbook, // Mantendo a função de busca aqui
+      initialPageParam: 1, // Página inicial
+      getNextPageParam: (lastPage: PaginatedResponse) => lastPage.nextCursor, // Obtém o próximo cursor
       refetchInterval: 20 * 1000,
-      retry(failureCount, error) {
-        if (failureCount > 3) {
-          return false;
-        }
-        return true;
+      retry(failureCount) {
+        return failureCount <= 3;
       },
     });
   }
