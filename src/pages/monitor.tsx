@@ -156,7 +156,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     pageParam?: number;
   }) => {
     const res = await fetch(
-      `https://nest-js-nigre.vercel.app/orderbook/getPaginated?buyExchanges=${encodeURI(
+      `https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated?buyExchanges=${encodeURI(
         buyExchangesName?.join(",")
       )}&sellExchanges=${encodeURI(
         sellExchangesName?.join(",")
