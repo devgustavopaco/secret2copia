@@ -33,21 +33,7 @@ const Course = ({ urlParams }: CourseProps) => {
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (urlParams.includes("instagram")) {
-      router.push("/instagram/organico/curso");
-    } else if (urlParams.includes("instagram-ads")) {
-      router.push("/instagram/ads/curso");
-    } else if (urlParams.includes("tiktok")) {
-      router.push("/tiktok/organico/curso");
-    } else if (urlParams.includes("tiktok-ads")) {
-      router.push("/tiktok/ads/curso");
-    } else if (urlParams.includes("facebook-organico")) {
-      router.push("/facebook/organico/curso");
-    } else if (urlParams.includes("facebook-ads")) {
-      router.push("/facebook/ads/curso");
-    } else {
-      router.push("/curso");
-    }
+    router.push("/");
   };
 
   return (
@@ -68,13 +54,13 @@ const Course = ({ urlParams }: CourseProps) => {
         />
         <div className={styles.content}>
           <div className={styles.icon}>
-            <img src="/VectorNG.svg" />
+            <img src="/images/logoBranca.svg" />
           </div>
           <div className={styles.text}>
             <h2>NextGain</h2>
             <h5>
               Aprenda a fazer arbitragem de cryptomoeda na maior platafomra de
-              crypto do mundo.
+              cripto do mundo.
             </h5>
           </div>
         </div>

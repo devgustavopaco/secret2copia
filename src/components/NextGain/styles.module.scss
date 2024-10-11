@@ -17,7 +17,7 @@
       url("/snow.jpeg");
     background-position: center 25%;
     background-size: cover;
-    filter: blur(3px);
+    filter: blur(2px);
     border-radius: 20px;
     z-index: 0;
   }
@@ -31,6 +31,10 @@
 .icon,
 .text {
   transition: transform 0.3s ease-out;
+  img {
+    width: 120px;
+    margin: -12px;
+  }
 }
 
 .lightEffect {
@@ -69,7 +73,7 @@
   z-index: 3;
   h2 {
     color: #fff;
-    font-family: Inter;
+    font-family: "Outfit", sans-serif;
     font-size: 40px;
     font-style: normal;
     font-weight: 700;
@@ -78,7 +82,7 @@
   }
   h5 {
     color: #b8b8b8;
-    font-family: Inter;
+    font-family: "Outfit", sans-serif;
     font-size: 16px;
     font-style: normal;
     font-weight: 400;

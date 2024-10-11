@@ -11,7 +11,7 @@ export default function Home() {
       <section className={styles.container}>
         <div className={styles.content}>
           <div className={styles.logoSection}>
-            <img src="/VectorNG.svg" />
+            <img src="/images/logoBranca.svg" />
           </div>
 
           <div className={styles.right}>
@@ -20,7 +20,7 @@ export default function Home() {
           </div>
 
           <div className={styles.footer}>
-            <img src="/VectorNG.svg" />
+            <img src="/images/logoBranca.svg" />
           </div>
         </div>
       </section>

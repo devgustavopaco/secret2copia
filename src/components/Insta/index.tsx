@@ -29,7 +29,9 @@ const TikTok = () => {
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    router.push("https://www.tiktok.com/@oreidosites");
+    router.push(
+      "https://api.whatsapp.com/send/?phone=5511916226279&text=Fala+Gu%21+Quero+saber+mais+sobre+Arbitragem+Manual%21&type=phone_number&app_absent=0"
+    );
   };
 
   return (
@@ -50,11 +52,12 @@ const TikTok = () => {
         />
         <div className={styles.content}>
           <div className={styles.icon}>
-            <img src="/insta2.png" />
+            <img src="/whats.png" />
           </div>
           <div className={styles.text}>
-            <h2>Perfil no Insta</h2>
-            <h5>Maior criador de conteúdo de crypto!</h5>
+            <h2>Quero saber mais!</h2>
+            <h5>Quer entender mais sobre?</h5>
+            <h5>Clique aqui para falar diretamente comigo!</h5>
           </div>
         </div>
       </section>
