@@ -200,10 +200,10 @@ export const userRouter = createRouter()
           dolarValue: input.dolarValue,
           roleId: userRole!.id,
           image: input.imageUrl,
-          bronze: input.bronze,
-          silver: input.silver,
-          gold: input.gold,
-          platinum: input.platinum,
+          bronze: input.bronze ? 1 : 0,
+          silver: input.silver ? 1 : 0,
+          gold: input.gold ? 1 : 0,
+          platinum: input.platinum ? 1 : 0,
         },
       });
 
@@ -234,10 +234,10 @@ export const userRouter = createRouter()
           pricePaid: input.pricePaid ? Number(input.pricePaid) : undefined,
           phone: input.phone,
           dolarValue: input.dolarValue,
-          bronze: input.bronze,
-          silver: input.silver,
-          gold: input.gold,
-          platinum: input.platinum,
+          bronze: input.bronze ? 1 : 0,
+          silver: input.silver ? 1 : 0,
+          gold: input.gold ? 1 : 0,
+          platinum: input.platinum ? 1 : 0,
         },
       });
 

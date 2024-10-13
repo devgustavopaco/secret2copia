@@ -55,7 +55,7 @@ model User {
   silver        Int       @db.TinyInt
   gold          Int       @db.TinyInt
   platinum      Int       @db.TinyInt
-   trialVersion Boolean? @default(false)
+  trialVersion  Boolean?  @default(false)
   sessions      Session[]
   Account       Account[]
   role          Role      @relation(fields: [roleId], references: [id])
@@ -97,6 +97,7 @@ model Exchange {
   silver          Boolean
   gold            Boolean
   platinum        Boolean
+  registerUrl     String?
   ExchangeCoinTax ExchangeCoinTax[]
 }
 
