@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
+import axios, { CancelTokenSource } from "axios";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { XCircle } from "phosphor-react";
@@ -149,21 +150,41 @@ const Monitoring: NextPage<MonitoringProps> = ({
     : [];
 
   const queryClient = useQueryClient();
+  const [cancelToken, setCancelToken] = useState<CancelTokenSource | null>(
+    null
+  ); // Novo estado para o cancel token
 
   const fetchPaginatedOrderbook = async ({
     pageParam = 1,
   }: {
     pageParam?: number;
   }) => {
-    const res = await fetch(
-      `https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated?buyExchanges=${encodeURI(
-        buyExchangesName?.join(",")
-      )}&sellExchanges=${encodeURI(
-        sellExchangesName?.join(",")
-      )}&email=${userEmail}&isChecked=${isChecked}&dollarValue=${dollarValue}&cursor=${pageParam}&limit=10`
+    // Cancelar a requisição anterior se existir
+    if (cancelToken) {
+      cancelToken.cancel("Canceling previous request.");
+    }
+
+    // Criar novo token para a requisição atual
+    const newCancelToken = axios.CancelToken.source();
+    setCancelToken(newCancelToken);
+
+    const res = await axios.get(
+      `https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated`,
+      {
+        params: {
+          buyExchanges: buyExchangesName?.join(","),
+          sellExchanges: sellExchangesName?.join(","),
+          email: userEmail,
+          isChecked: isChecked,
+          dollarValue: dollarValue,
+          cursor: pageParam,
+          limit: 50,
+        },
+        cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
+      }
     );
 
-    return res.json();
+    return res.data; // Axios já parseia o JSON automaticamente
   };
 
   const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
@@ -235,25 +256,28 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   useEffect(() => {
     if (!isAdmin) {
-      if (isSuccess) {
-        if (data?.pages.flat().length === 0 && !isFetching) {
-          refetch();
-        }
-      }
-      if (isError) {
-        if (!isFetching) {
-          refetch();
-        }
-      }
+      // Cancel existing queries and trigger new ones when parameters change
+      queryClient.removeQueries({
+        queryKey: ["orderBook.getPaginated"],
+        exact: true,
+      });
+
+      refetch(); // Ensure that the new data is fetched with updated parameters
+
+      // Optional: Debounce refetch to prevent rapid re-fetching
+      const debounceRefetch = setTimeout(() => {
+        refetch();
+      }, 300); // Adjust debounce time as needed
+
+      return () => clearTimeout(debounceRefetch); // Clean up timeout on component unmount or re-render
     }
   }, [
-    data,
-    isFetching,
-    isError,
-    isSuccess,
-    refetch,
     buyExchanges,
     sellExchanges,
+    isChecked,
+    dollarValue,
+    queryClient,
+    refetch,
     isAdmin,
   ]);
 
