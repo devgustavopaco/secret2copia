@@ -169,7 +169,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     setCancelToken(newCancelToken);
 
     const res = await axios.get(
-      `https://87c4-2804-d55-405d-c700-edc8-91cb-4051-438b.ngrok-free.app/orderbook/getPaginated`,
+      `https://nigre.avanzzada.tech/orderbook/getPaginated`,
       {
         params: {
           buyExchanges: buyExchangesName?.join(","),
