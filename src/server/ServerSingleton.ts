@@ -77,7 +77,7 @@ export class ServerSingleton {
     );
 
     const data = await response.json();
-    console.log(data);
+
     this.dolar = Number(data.price);
 
     return this.dolar;
