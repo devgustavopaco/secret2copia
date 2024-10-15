@@ -73,12 +73,12 @@ export class ServerSingleton {
 
   private async fetchDollar(): Promise<number> {
     const response = await fetch(
-      `https://api.frankfurter.app/latest?from=USD&to=BRL`
+      `https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`
     );
 
     const data = await response.json();
-
-    this.dolar = Number(data.rates.BRL);
+    console.log(data);
+    this.dolar = Number(data.price);
 
     return this.dolar;
   }
