@@ -267,7 +267,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
       // Optional: Debounce refetch to prevent rapid re-fetching
       const debounceRefetch = setTimeout(() => {
         refetch();
-      }, 300); // Adjust debounce time as needed
+      }, 0); // Adjust debounce time as needed
 
       return () => clearTimeout(debounceRefetch); // Clean up timeout on component unmount or re-render
     }
@@ -363,7 +363,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
   let operationsMap = new Map();
   allArbitrageOpportunities.forEach((operation: any) => {
     if (operation && operation.spread > 0) {
-      operationsMap.set(operation.coin, operation);
+      const existingOperation = operationsMap.get(operation.coin);
+      if (!existingOperation || operation.spread > existingOperation.spread) {
+        operationsMap.set(operation.coin, operation);
+      }
     }
   });
 
