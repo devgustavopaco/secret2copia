@@ -411,6 +411,10 @@ const Monitoring: NextPage<MonitoringProps> = ({
       });
     }
   }, []);
+  const isSpecialUser =
+    userEmail === "herbertcarnaubadesouza@gmail.com" ||
+    userEmail === "theoken05@hotmail.com" ||
+    userEmail === "leolimadorea@gmail.com";
 
   useEffect(() => {
     queryClient.removeQueries({
@@ -656,7 +660,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 <h1>
                   {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
                 </h1>{" "}
-                {!isAdmin && (
+                {!isAdmin && isSpecialUser && (
                   <div className={styles.progressBarContainer}>
                     <div className={styles.progressBarContent}>
                       <progress value={progressPercentage} max="100"></progress>
