@@ -298,3 +298,37 @@ input:checked.is-checked + .slider {
   justify-content: center;
   z-index: 1000; /* Certifique-se de que a animação fica no topo */
 }
+.progressBarContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+  .progressBarContent {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    gap: 10px;
+  }
+  progress {
+    width: 100%;
+    height: 20px;
+
+    &::-webkit-progress-bar {
+      background-color: #f3f3f3;
+      border-radius: 10px;
+    }
+
+    &::-webkit-progress-value {
+      background-color: #4caf50;
+      border-radius: 10px;
+    }
+
+    &::-moz-progress-bar {
+      background-color: #4caf50;
+      border-radius: 10px;
+    }
+  }
+}

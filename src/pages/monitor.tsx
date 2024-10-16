@@ -281,6 +281,25 @@ const Monitoring: NextPage<MonitoringProps> = ({
     isAdmin,
   ]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const progressPercentage = (currentPage / totalPages) * 100;
+
+  useEffect(() => {
+    if (data && data.pages.length > 0) {
+      const totalPagesFromData = data.pages[0]?.totalPages ?? 1;
+      setTotalPages(totalPagesFromData);
+
+      // Extract nextCursor from the last page
+      const lastPage = data.pages[data.pages.length - 1];
+      const nextCursor = lastPage?.nextCursor ?? 1;
+
+      // Calculate currentPage
+      const currentPageFromData = nextCursor - 1;
+      setCurrentPage(currentPageFromData);
+    }
+  }, [data]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       refetch();
@@ -636,7 +655,15 @@ const Monitoring: NextPage<MonitoringProps> = ({
               <div className={styles.topPart}>
                 <h1>
                   {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
-                </h1>
+                </h1>{" "}
+                {!isAdmin && (
+                  <div className={styles.progressBarContainer}>
+                    <div className={styles.progressBarContent}>
+                      <progress value={progressPercentage} max="100"></progress>
+                      <span>{Math.round(progressPercentage)}%</span>
+                    </div>
+                  </div>
+                )}
                 {isAdmin && (
                   <>
                     <div className={styles.checkbox}>
