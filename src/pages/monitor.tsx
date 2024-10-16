@@ -178,7 +178,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
           isChecked: isChecked,
           dollarValue: dollarValue,
           cursor: pageParam,
-          limit: 25,
+          limit: 1,
         },
         cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
       }
