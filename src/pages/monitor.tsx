@@ -169,7 +169,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     setCancelToken(newCancelToken);
 
     const res = await axios.get(
-      `https://nest-js-nigre.vercel.app/orderbook/getPaginated`,
+      `http://localhost:3500/orderbook/getPaginated`,
       {
         params: {
           buyExchanges: buyExchangesName?.join(","),
