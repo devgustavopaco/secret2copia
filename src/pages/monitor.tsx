@@ -167,22 +167,22 @@ const Monitoring: NextPage<MonitoringProps> = ({
     // Criar novo token para a requisição atual
     const newCancelToken = axios.CancelToken.source();
     setCancelToken(newCancelToken);
-
-    const res = await axios.get(
-      `https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated`,
-      {
-        params: {
-          buyExchanges: buyExchangesName?.join(","),
-          sellExchanges: sellExchangesName?.join(","),
-          email: userEmail,
-          isChecked: isChecked,
-          dollarValue: dollarValue,
-          cursor: pageParam,
-          limit: 25,
-        },
-        cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
-      }
-    );
+    const baseURL =
+      userEmail === "leolimadorea@gmail.com"
+        ? "https://nest-js-nigre.vercel.app/orderbook/getPaginated"
+        : "https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated";
+    const res = await axios.get(baseURL, {
+      params: {
+        buyExchanges: buyExchangesName?.join(","),
+        sellExchanges: sellExchangesName?.join(","),
+        email: userEmail,
+        isChecked: isChecked,
+        dollarValue: dollarValue,
+        cursor: pageParam,
+        limit: 25,
+      },
+      cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
+    });
 
     return res.data; // Axios já parseia o JSON automaticamente
   };
