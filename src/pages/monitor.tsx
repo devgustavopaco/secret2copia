@@ -168,7 +168,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
     const newCancelToken = axios.CancelToken.source();
     setCancelToken(newCancelToken);
     const baseURL =
-      userEmail === "guganigre@gmail.com"
+      userEmail === "gugold@gmail.com"
         ? "https://nest-js-nigre.vercel.app/orderbook/getPaginated"
         : userEmail === "leolimadorea@gmail.com"
         ? "https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated" // Replace with the actual URL
