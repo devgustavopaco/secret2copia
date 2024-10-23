@@ -30,7 +30,7 @@ const TikTok = () => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     router.push(
-      "https://api.whatsapp.com/send/?phone=5511916226279&text=Fala+Gu%21+Quero+saber+mais+sobre+Arbitragem+Manual%21&type=phone_number&app_absent=0"
+      "https://api.whatsapp.com/send/?phone=5511932762732&text=Fala+Gu%21+Quero+saber+mais+sobre+Arbitragem+Manual%21&type=phone_number&app_absent=0"
     );
   };
 
