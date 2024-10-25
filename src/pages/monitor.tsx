@@ -171,8 +171,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
       userEmail === "gugold@gmail.com"
         ? "https://nest-js-nigre.vercel.app/orderbook/getPaginated"
         : userEmail === "leolimadorea@gmail.com"
-        ? "https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated" // Replace with the actual URL
-        : "https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated";
+        ? "https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated" // Replace with the actual URL
+        : "https://nestjs-nigre-teste.up.railway.app/orderbook/getPaginated";
     const res = await axios.get(baseURL, {
       params: {
         buyExchanges: buyExchangesName?.join(","),
