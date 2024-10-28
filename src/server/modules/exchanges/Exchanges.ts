@@ -1250,8 +1250,8 @@ export class BitfinexStrategy implements ExchangeStrategy {
 
 interface ByBitOrderbook {
   result: {
-    bids: string[][];
-    asks: string[][];
+    a: string[][]; // Asks
+    b: string[][]; // Bids
   };
 }
 
@@ -1262,7 +1262,7 @@ export class ByBitStrategy implements ExchangeStrategy {
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
-      this.orderbook[pair]?.result.bids.reduce((acc, bid, index) => {
+      this.orderbook[pair]?.result.b.reduce((acc, bid, index) => {
         let sumVolume = 0;
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
@@ -1280,7 +1280,7 @@ export class ByBitStrategy implements ExchangeStrategy {
       }, [] as OrderbookOperation[]) ?? [];
 
     const asks =
-      this.orderbook[pair]?.result.asks.reduce((acc, ask, index) => {
+      this.orderbook[pair]?.result.a.reduce((acc, ask, index) => {
         let sumVolume = 0;
         if (index - 1 >= 0) {
           sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
@@ -1305,7 +1305,7 @@ export class ByBitStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.bybit.com/spot/v3/public/quote/depth?symbol=${pair}`;
+    const url = `https://api.bybit.com/v5/market/orderbook?category=spot&symbol=${pair}&limit=100`;
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as ByBitOrderbook;
@@ -1315,12 +1315,12 @@ export class ByBitStrategy implements ExchangeStrategy {
     return {
       name: "Bybit",
       bid: {
-        price: Number(json.result.bids[0]![0]),
-        amount: Number(json.result.bids[0]![1]),
+        price: Number(json.result.b[0]![0]),
+        amount: Number(json.result.b[0]![1]),
       },
       ask: {
-        price: Number(json.result.asks[0]![0]),
-        amount: Number(json.result.asks[0]![1]),
+        price: Number(json.result.a[0]![0]),
+        amount: Number(json.result.a[0]![1]),
       },
       isUSD: true,
     };
