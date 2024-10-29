@@ -55,6 +55,12 @@ const Login: NextPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    if (!email || !password) {
+      toast.dark("Por favor, preencha o email e a senha.", {
+        icon: <XCircle size={32} color="#ff3838" weight="fill" />,
+      });
+      return;
+    }
     e.preventDefault();
     setIsLoading(true);
 
