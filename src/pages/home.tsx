@@ -270,11 +270,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     "0.0.0.0";
 
   if (!session) {
-    const logUser = await logUserAccess(
-      ip as string,
-      session,
-      req.headers["user-agent"] || ""
-    );
+    await logUserAccess(ip as string, session, req.headers["user-agent"] || "");
     return {
       redirect: {
         destination: "/",
