@@ -264,13 +264,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { req } = context;
 
   const session = await getServerSession(req, context.res, authOptions);
-
+  const userId = session?.user?.id as string;
+  console.log(userId, "userId na home");
   const forwarded = req.headers["x-forwarded-for"] as string;
   const ip =
     (forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress) ??
     "0.0.0.0";
   if (session) {
-    await logUserAccess(ip as string, session, req.headers["user-agent"] || "");
+    await logUserAccess(ip as string, userId, req.headers["user-agent"] || "");
   }
   if (!session) {
     return {

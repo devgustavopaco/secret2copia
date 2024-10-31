@@ -7,11 +7,9 @@ const prisma = new PrismaClient();
 
 export async function logUserAccess(
   ip: string,
-  session: Session,
+  userId: string,
   userAgentString: string
 ) {
-  const userId = session.user?.id;
-
   let city = "Unknown";
   let country = "Unknown";
   let deviceType: DeviceType = DeviceType.DESKTOP;
