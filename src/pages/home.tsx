@@ -265,7 +265,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const session = await getServerSession(req, context.res, authOptions);
   console.log(session, "session na home");
-  const userId = session?.user?.id as string;
+  const userId = session?.id as string;
   console.log(userId, "userId na home");
   const forwarded = req.headers["x-forwarded-for"] as string;
   const ip =
