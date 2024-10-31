@@ -268,13 +268,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const ip =
     (forwarded ? forwarded.split(/, /)[0] : req.socket.remoteAddress) ??
     "0.0.0.0";
-  const logUser = await logUserAccess(
-    ip as string,
-    session,
-    req.headers["user-agent"] || ""
-  );
 
   if (!session) {
+    const logUser = await logUserAccess(
+      ip as string,
+      session,
+      req.headers["user-agent"] || ""
+    );
     return {
       redirect: {
         destination: "/",

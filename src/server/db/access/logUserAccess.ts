@@ -11,6 +11,7 @@ export async function logUserAccess(
   userAgentString: string
 ) {
   const userId = session?.user?.id || null;
+  console.log(userId, "SESSION NA CRIACAO DE LOG");
 
   let city = "Unknown";
   let country = "Unknown";
@@ -37,8 +38,6 @@ export async function logUserAccess(
   if (uaResult.device.type === "mobile") {
     deviceType = DeviceType.MOBILE;
   }
-
-  console.log(uaResult.device);
 
   deviceModel = uaResult.device.model || "Unknown";
   deviceBrand = uaResult.device.vendor || "Unknown";
