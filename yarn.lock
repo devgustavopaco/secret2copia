@@ -2967,6 +2967,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ua-parser-js@npm:^0.7.39":
+  version: 0.7.39
+  resolution: "@types/ua-parser-js@npm:0.7.39"
+  checksum: 81046605eb2815b098228743b7dfde887cc8990369f2ad56e71f1400b4cef5078481c7ca91ca3dddf2e8d4e183fe93224bfdeee13bfe034a1e62d55cfbac9e26
+  languageName: node
+  linkType: hard
+
 "@types/uuid@npm:^8.3.4":
   version: 8.3.4
   resolution: "@types/uuid@npm:8.3.4"
@@ -4420,6 +4427,13 @@ __metadata:
   version: 1.0.0
   resolution: "delegates@npm:1.0.0"
   checksum: a51744d9b53c164ba9c0492471a1a2ffa0b6727451bdc89e31627fdf4adda9d51277cfcbfb20f0a6f08ccb3c436f341df3e92631a3440226d93a8971724771fd
+  languageName: node
+  linkType: hard
+
+"detect-europe-js@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "detect-europe-js@npm:0.1.1"
+  checksum: 61d03bd468f046e166839f5d3006dff3af264f3e2b62ee226d953d1be2140806e6829f6ba11ce7c58ce120d86994821bb6f40626983d53dd401d7603d9d32a27
   languageName: node
   linkType: hard
 
@@ -7868,6 +7882,7 @@ __metadata:
     "@types/react-lottie": ^1.2.10
     "@types/react-tooltip": ^4.0
     "@types/swiper": ^6.0.0
+    "@types/ua-parser-js": ^0.7.39
     "@types/uuid": ^8.3.4
     "@vime/core": ^5.0.35
     "@vime/react": ^5.0.35
@@ -7916,6 +7931,7 @@ __metadata:
     swiper: ^9.3.1
     ts-node: ^10.8.2
     typescript: 4.7.4
+    ua-parser-js: ^2.0.0-rc.1
     uuid: ^8.3.2
     zod: ^3.17.3
   languageName: unknown
@@ -9473,6 +9489,17 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: c084ee1ab865f108c787e6233a5f63c126c482c0c8e87ec998ac5288a2ad54b603e1ea8b8b272355823b833eb31b9fabb99e8c6152283e1cb47e3a76bd6faf6c
+  languageName: node
+  linkType: hard
+
+"ua-parser-js@npm:^2.0.0-rc.1":
+  version: 2.0.0-rc.1
+  resolution: "ua-parser-js@npm:2.0.0-rc.1"
+  dependencies:
+    detect-europe-js: ^0.1.1
+  bin:
+    ua-parser-js: script/cli.js
+  checksum: e9d31621c18ed0d42e8017c7bb30dfba8906ddfd029fb775a2675c1b60f11a1a410881d66154d74fa77538106efdf9f23fa16c805bd99ec60579bf0cf731292b
   languageName: node
   linkType: hard
 

@@ -39,26 +39,27 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?     @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   phone         String?
   pricePaid     Float?
   roleId        String
   dolarValue    Float?
-  bronze        Int       @db.TinyInt
-  silver        Int       @db.TinyInt
-  gold          Int       @db.TinyInt
-  platinum      Int       @db.TinyInt
-  trialVersion  Boolean?  @default(false)
+  bronze        Int         @db.TinyInt
+  silver        Int         @db.TinyInt
+  gold          Int         @db.TinyInt
+  platinum      Int         @db.TinyInt
+  trialVersion  Boolean?    @default(false)
   sessions      Session[]
   Account       Account[]
-  role          Role      @relation(fields: [roleId], references: [id])
+  role          Role        @relation(fields: [roleId], references: [id])
+  accessLogs    AccessLog[]
 }
 
 model Videos {
@@ -172,4 +173,25 @@ model Movement {
   createdAt          DateTime @default(now()) @db.DateTime(0)
 
   @@index([userId], map: "userId_index")
+}
+
+model AccessLog {
+  id          String     @id @default(cuid())
+  userId      String?
+  ip          String
+  city        String?
+  browser     String
+  deviceType  DeviceType
+  isIphone    Boolean
+  createdAt   DateTime   @default(now())
+  deviceBrand String?
+  deviceModel String?
+  user        User?      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AccessLog_userId_fkey")
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
 }
