@@ -7,11 +7,10 @@ const prisma = new PrismaClient();
 
 export async function logUserAccess(
   ip: string,
-  session: Session | null,
+  session: Session,
   userAgentString: string
 ) {
-  const userId = session?.user?.id || null;
-  console.log(userId, "SESSION NA CRIACAO DE LOG");
+  const userId = session.user?.id;
 
   let city = "Unknown";
   let country = "Unknown";
