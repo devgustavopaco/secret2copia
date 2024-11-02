@@ -172,10 +172,10 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
             Contato
           </a>
           {auth?.role === "admin" && (
-            <Link href="/admin/Newdashboard/dashboard">
+            <Link href="https://painel.nextgain.com.br/">
               <a
                 className={`${styles.menuItem} ${
-                  router.pathname === "/admin/Newdashboard/dashboard"
+                  router.pathname === "https://painel.nextgain.com.br/"
                     ? styles.active
                     : ""
                 }`}
@@ -254,10 +254,10 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
             </li>
             {auth?.role === "admin" && (
               <li>
-                <Link href="/admin/Newdashboard/dashboard">
+                <Link href="https://painel.nextgain.com.br/">
                   <a
                     className={
-                      router.pathname === "/admin/Newdashboard/dashboard"
+                      router.pathname === "https://painel.nextgain.com.br/"
                         ? "active"
                         : ""
                     }
