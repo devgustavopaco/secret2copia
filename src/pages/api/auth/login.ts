@@ -11,7 +11,7 @@ export default async function handler(
       const { name, email, password, action, userId } = req.body;
 
       const user = await prisma.user.findUnique({
-        where: { email: email },
+        where: { email: email, roleId: "cl9lzkps90007j8u606em93nk" },
       });
 
       if (!user) {
