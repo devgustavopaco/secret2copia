@@ -47,6 +47,8 @@ const Monitoring: NextPage<MonitoringProps> = ({
 }) => {
   const [isChecked, setIsChecked] = useState(false);
 
+  const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
+  console.log(orphanCoins, "orphanCoins");
   const router = useRouter();
 
   useEffect(() => {
@@ -181,8 +183,14 @@ const Monitoring: NextPage<MonitoringProps> = ({
       },
       cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
     });
+    const {
+      arbitrageOpportunities: newOpportunities,
+      moedasBuscadas,
+      orphanCoins,
+    } = res.data;
+    setOrphanCoins(orphanCoins);
 
-    return res.data; // Axios já parseia o JSON automaticamente
+    return res.data;
   };
 
   const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
@@ -387,15 +395,30 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
   });
 
-  let sortedOperations = Array.from(operationsMap.values()).sort((a, b) => {
-    if (a?.spread < b?.spread) {
-      return 1;
+  const arbitrageTickers = new Set(
+    allArbitrageOpportunities.map((op: ArbitrageOpportunity) => op.ticker)
+  );
+
+  console.log(orphanCoins, "orphanCoins");
+  let sortedOperations = Array.from(operationsMap.values()).sort(
+    (a, b) => b.spread - a.spread // Ordenação decrescente pelo spread
+  );
+
+  // Remover moedas órfãs diretamente em vez de filtrar
+  if (orphanCoins.length > 0) {
+    for (let i = sortedOperations.length - 1; i >= 0; i--) {
+      const operation = sortedOperations[i];
+      const isOrphan = orphanCoins.some(
+        (coin: any) =>
+          coin.ticker.toUpperCase() === operation.ticker.toUpperCase()
+      );
+
+      if (isOrphan) {
+        console.log(`Removendo moeda órfã: ${operation.ticker}`);
+        sortedOperations.splice(i, 1); // Remove a operação órfã diretamente
+      }
     }
-    if (a?.spread > b?.spread) {
-      return -1;
-    }
-    return 0;
-  });
+  }
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
@@ -421,7 +444,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     refetch();
   }, [isChecked, queryClient, refetch]);
 
-  // const checkOpportunityCriteria = (opportunity: any) => {
   //   if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
   //     console.error("Dados de oportunidade faltando");
   //     return false;
@@ -712,34 +734,28 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {sortedOperations.map((operation) => {
-                    // const meetsCriteria = checkOpportunityCriteria(operation);
-                    return (
-                      operation && (
-                        <OperationCard
-                          key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
-                          coin={{
-                            image: operation.coinImage,
-                            name: operation.coin,
-                            ask: operation.lowestAsk,
-                            bid: operation.highestBid,
-                            fee: operation.fee,
-                            tax: operation.tax,
-                            symbol: operation.ticker,
-                            spread: operation.spread,
-                          }}
-                          dollarPrice={dollarPrice}
-                          // meetsCriteria={meetsCriteria}
-                          isAdmin={isAdmin}
-                          isChecked={isChecked}
-                          onClick={() => {
-                            setSelectedOperation(operation);
-                            setModalOpenOrderBook(true);
-                          }}
-                        />
-                      )
-                    );
-                  })}
+                  {sortedOperations.map((operation) => (
+                    <OperationCard
+                      key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
+                      coin={{
+                        image: operation.coinImage,
+                        name: operation.coin,
+                        ask: operation.lowestAsk,
+                        bid: operation.highestBid,
+                        fee: operation.fee,
+                        tax: operation.tax,
+                        symbol: operation.ticker,
+                        spread: operation.spread,
+                      }}
+                      dollarPrice={dollarPrice}
+                      isAdmin={isAdmin}
+                      isChecked={isChecked}
+                      onClick={() => {
+                        setSelectedOperation(operation);
+                        setModalOpenOrderBook(true);
+                      }}
+                    />
+                  ))}
                 </div>
               )}
             </main>
