@@ -405,7 +405,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   );
 
   // Remover moedas órfãs diretamente em vez de filtrar
-  if (orphanCoins.length > 0) {
+  if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
     for (let i = sortedOperations.length - 1; i >= 0; i--) {
       const operation = sortedOperations[i];
       const isOrphan = orphanCoins.some(
