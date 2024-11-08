@@ -395,10 +395,6 @@ const Monitoring: NextPage<MonitoringProps> = ({
     }
   });
 
-  const arbitrageTickers = new Set(
-    allArbitrageOpportunities.map((op: ArbitrageOpportunity) => op.ticker)
-  );
-
   console.log(orphanCoins, "orphanCoins");
   let sortedOperations = Array.from(operationsMap.values()).sort(
     (a, b) => b.spread - a.spread // Ordenação decrescente pelo spread
