@@ -402,8 +402,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   // Remover moedas órfãs diretamente em vez de filtrar
   if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
-    for (let i = sortedOperations.length - 1; i >= 0; i--) {
-      const operation = sortedOperations[i];
+    const filteredOperations = sortedOperations.filter((operation, i) => {
       const isOrphan = orphanCoins.some(
         (coin: any) =>
           coin.ticker.toUpperCase() === operation.ticker.toUpperCase()
@@ -411,9 +410,12 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
       if (isOrphan) {
         console.log(`Removendo moeda órfã: ${operation.ticker}`);
-        sortedOperations.splice(i, 1); // Remove a operação órfã diretamente
       }
-    }
+      return !isOrphan; // Retorna apenas operações que não são órfãs
+    });
+
+    // Atualizar sortedOperations com o novo array
+    sortedOperations = [...filteredOperations];
   }
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
