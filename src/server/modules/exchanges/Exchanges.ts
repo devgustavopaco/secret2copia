@@ -2023,7 +2023,7 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
