@@ -2030,11 +2030,11 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
     let url = "";
 
     if (
-      pair.toUpperCase() !== "NAVIUSDT" &&
-      pair.toUpperCase() !== "ACMUSDT" &&
-      pair.toUpperCase() !== "AXLUSDT" &&
-      pair.toUpperCase() !== "GTCUSDT" &&
-      pair.toUpperCase() !== "BFCUSDT"
+      pair.toUpperCase() !== "NAVI_USDT" &&
+      pair.toUpperCase() !== "ACM_USDT" &&
+      pair.toUpperCase() !== "AXL_USDT" &&
+      pair.toUpperCase() !== "GTC_USDT" &&
+      pair.toUpperCase() !== "BFC_USDT"
     ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
