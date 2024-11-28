@@ -1383,6 +1383,7 @@ export class MexcStrategy implements ExchangeStrategy {
     return baseToken !== "GAS" &&
       baseToken !== "MDT" &&
       baseToken !== "GMT" &&
+      baseToken !== "MULTI" &&
       baseToken !== "QI"
       ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
       : "";
@@ -2031,6 +2032,8 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
     if (
       pair.toUpperCase() !== "NAVIUSDT" &&
       pair.toUpperCase() !== "ACMUSDT" &&
+      pair.toUpperCase() !== "AXLUSDT" &&
+      pair.toUpperCase() !== "GTCUSDT" &&
       pair.toUpperCase() !== "BFCUSDT"
     ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
