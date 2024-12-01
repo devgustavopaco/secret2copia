@@ -2032,6 +2032,7 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
     if (
       pair.toUpperCase() !== "NAVI_USDT" &&
       pair.toUpperCase() !== "ACM_USDT" &&
+      pair.toUpperCase() !== "QI_USDT" &&
       pair.toUpperCase() !== "AXL_USDT" &&
       pair.toUpperCase() !== "GTC_USDT" &&
       pair.toUpperCase() !== "BFC_USDT"
