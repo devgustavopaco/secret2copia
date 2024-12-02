@@ -1,14 +1,16 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import axios, { CancelTokenSource } from "axios";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
-import axios, { CancelTokenSource } from "axios";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { XCircle } from "phosphor-react";
 import { useCallback, useEffect, useState } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
+import loadingAnimation from "../animations/dollar.json";
 import { Header } from "../components/Header";
 import CurrencyCarousel from "../components/MarketCarousel";
 import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
@@ -25,8 +27,7 @@ import styles from "../styles/Monitor.module.scss";
 import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
-import loadingAnimation from "../animations/dollar.json";
-import Lottie from "react-lottie";
+const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface MonitoringProps {
   ip: string;

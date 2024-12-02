@@ -1383,6 +1383,7 @@ export class MexcStrategy implements ExchangeStrategy {
     return baseToken !== "GAS" &&
       baseToken !== "MDT" &&
       baseToken !== "GMT" &&
+      baseToken !== "MULTI" &&
       baseToken !== "QI"
       ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
       : "";
@@ -2023,15 +2024,18 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
     if (
-      pair.toUpperCase() !== "NAVIUSDT" &&
-      pair.toUpperCase() !== "ACMUSDT" &&
-      pair.toUpperCase() !== "BFCUSDT"
+      pair.toUpperCase() !== "NAVI_USDT" &&
+      pair.toUpperCase() !== "ACM_USDT" &&
+      pair.toUpperCase() !== "QI_USDT" &&
+      pair.toUpperCase() !== "AXL_USDT" &&
+      pair.toUpperCase() !== "GTC_USDT" &&
+      pair.toUpperCase() !== "BFC_USDT"
     ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
