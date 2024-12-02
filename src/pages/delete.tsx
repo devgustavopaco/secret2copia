@@ -17,7 +17,8 @@ export default function DeleteAccount() {
           <a href="mailto:suporte@nextgain.com.br" className={styles.email}>
             suporte@nextgain.com.br
           </a>{" "}
-          com o assunto: <strong>"Exclusão de Conta - NextGain"</strong>.
+          com o assunto:{" "}
+          <strong>&quot;Exclusão de Conta - NextGain&quot;</strong>.
         </li>
         <li>
           No corpo do e-mail, informe os seguintes dados:
