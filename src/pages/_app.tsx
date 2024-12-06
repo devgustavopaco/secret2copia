@@ -23,7 +23,7 @@ type AppPropsWithLayout = AppProps & {
 };
 
 const queryClient = new QueryClient();
-
+export const revalidate = 0;
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
