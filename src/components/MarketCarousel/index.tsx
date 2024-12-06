@@ -34,7 +34,7 @@ const CurrencyCarousel = ({ tickerData }: CurrencyCarouselProps) => {
                     : styles.negative
                 }
               >
-                {currency.percentage}%
+                {currency.percentage}
               </p>
             </div>
           </div>
