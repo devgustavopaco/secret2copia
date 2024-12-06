@@ -95,11 +95,7 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
         <div className={`${styles.tooltip} ${styles.mobileToolTip}`}>
           <div className={styles.profileImage}>
             <img
-              src={
-                user && user.data && user.data.image
-                  ? user.data.image
-                  : "images/user.png"
-              }
+              src={"images/user1.jpeg"}
               alt="foto de perfil"
               style={{
                 borderColor: isChecked ? "#1daf23" : roleColor,
@@ -277,7 +273,7 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
           <div className={styles.tooltip}>
             <div className={styles.profileImage}>
               <img
-                src={"images/user.png"}
+                src={"images/user1.jpeg"}
                 alt="foto de perfil"
                 style={{
                   borderColor: isChecked ? "#1daf23" : roleColor,
