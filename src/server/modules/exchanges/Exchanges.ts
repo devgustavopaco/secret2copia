@@ -2734,7 +2734,7 @@ export class CoinwStrategy implements ExchangeStrategy {
     if (baseToken.toUpperCase() === "GAS") {
       return "";
     }
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
