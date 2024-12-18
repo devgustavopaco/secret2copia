@@ -3510,7 +3510,7 @@ export class BingxStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://open-api.bingx.com/openApi/swap/v2/quote/depth?symbol=${pair}&limit=20`;
+    const url = `https://open-api.bingx.com/openApi/spot/v1/market/depth?symbol=${pair}&limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
 
