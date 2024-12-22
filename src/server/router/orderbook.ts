@@ -32,6 +32,7 @@ import {
   ChilizStrategy,
   CoinBaseStrategy,
   CoincheckStrategy,
+  CoinextStrategy,
   CoinsbitStrategy,
   CointrStrategy,
   CoinwStrategy,
@@ -131,6 +132,7 @@ const exchangeStrategies: StrategyObject = {
   foxbit: new FoxBitStrategy(),
   ripio: new RipioTradeStrategy(),
   tokocrypto: new TokoCryptoStrategy(),
+  coinext: new CoinextStrategy(),
 };
 
 export interface OrderbookOperation {

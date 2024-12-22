@@ -514,24 +514,83 @@ export class CoinextStrategy implements ExchangeStrategy {
   } = {};
 
   convertOrderbook(pair: string): Orderbook {
-    // const bids =
-    //   this.orderbook[pair]?.bids.map((bid) => {
-    //     return { price: Number(bid[0]), amount: Number(bid[1]) }
-    //   }) ?? []
+    let cumulativeVolumeBids = 0;
+    const bids =
+      this.orderbook[pair]
+        ?.filter((entry) => entry[9] === 1)
+        .map((bid) => {
+          const amount = Number(bid[8]);
+          cumulativeVolumeBids += amount;
+          return {
+            price: Number(bid[6]),
+            amount,
+            sumVolume: cumulativeVolumeBids,
+          };
+        }) ?? [];
 
-    // const asks =
-    //   this.orderbook[pair]?.asks.map((ask) => {
-    //     return { price: Number(ask[0]), amount: Number(ask[1]) }
-    //   }) ?? []
+    let cumulativeVolumeAsks = 0;
+    const asks =
+      this.orderbook[pair]
+        ?.filter((entry) => entry[9] === 0)
+        .map((ask) => {
+          const amount = Number(ask[8]);
+          cumulativeVolumeAsks += amount;
+          return {
+            price: Number(ask[6]),
+            amount,
+            sumVolume: cumulativeVolumeAsks,
+          };
+        }) ?? [];
 
-    return { bids: [], asks: [] };
+    return { bids, asks };
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
     return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
   }
 
+  async getInstrumentId(
+    pair: string
+  ): Promise<{ instrumentId: number | null; isUSD: boolean }> {
+    const response = await fetch(
+      `https://api.coinext.com.br:8443/AP/GetInstruments`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ OMSId: 1 }),
+      }
+    );
+
+    const instruments = (await response.json()) as {
+      InstrumentId: number;
+      Symbol: string;
+    }[];
+
+    const instrument = instruments.find((item) => item.Symbol === pair);
+
+    const isUSD = pair.endsWith("USD") || pair.endsWith("USDT");
+
+    return {
+      instrumentId: instrument ? instrument.InstrumentId : null,
+      isUSD,
+    };
+  }
+
   async fetchOrderbook(pair: string): Promise<Exchange> {
+    if (!pair) {
+      throw new Error(
+        "O par de moedas deve estar no formato 'BASE/DESTINATION'"
+      );
+    }
+
+    const { instrumentId, isUSD } = await this.getInstrumentId(pair);
+
+    if (!instrumentId) {
+      throw new Error(`InstrumentId não encontrado para o par ${pair}`);
+    }
+
     const response = await fetch(
       `https://api.coinext.com.br:8443/AP/GetL2Snapshot`,
       {
@@ -539,14 +598,17 @@ export class CoinextStrategy implements ExchangeStrategy {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ OMSId: 1, InstrumentId: 1, Depth: 10 }),
+        body: JSON.stringify({
+          OMSId: 1,
+          InstrumentId: instrumentId || 1,
+          Depth: 10,
+        }),
       }
     );
 
     const json = (await response.json()) as CoinextOrderbook;
-    this.orderbook[pair] = json;
 
-    // TODO: Map até metade
+    this.orderbook[pair] = json;
 
     return {
       name: "Coinext",
@@ -558,7 +620,7 @@ export class CoinextStrategy implements ExchangeStrategy {
         price: Number(json[10]![6]),
         amount: Number(json[10]![9]),
       },
-      isUSD: false,
+      isUSD,
     };
   }
 }
