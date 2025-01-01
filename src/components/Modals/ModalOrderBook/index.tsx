@@ -5,6 +5,10 @@ import type { Orderbook } from "../../../server/router/orderbook";
 import { trpc } from "../../../utils/trpc";
 import { DataGridOrderbook } from "../../GridComponents/DataGridOrderbook";
 import styles from "./styles.module.scss";
+import { pro } from "ccxt";
+import InputMask from "react-input-mask";
+import { NumericFormat } from "react-number-format";
+import { toast } from "react-toastify";
 
 interface ModalOrderBookProps {
   coin: string | undefined;
@@ -15,6 +19,7 @@ interface ModalOrderBookProps {
   sellEchangeName: string;
   sellWhere: string | undefined;
   dollarPrice: number;
+
   orderbookBid: {
     isUSD: boolean;
     orderbook: Orderbook;
@@ -24,6 +29,8 @@ interface ModalOrderBookProps {
     orderbook: Orderbook;
   };
   setOpenModal: (open: boolean) => void;
+  fee: number;
+  tax: number;
 }
 
 export function ModalOrderBook({
@@ -36,8 +43,23 @@ export function ModalOrderBook({
   sellEchangeName,
   coin,
   symbol,
+  tax,
+  fee,
   setOpenModal,
 }: ModalOrderBookProps) {
+  const [totalBuy, setTotalBuy] = useState<number | null>(null);
+  const [isCalculatorVisible, setIsCalculatorVisible] = useState(false);
+  const [useCustomValues, setUseCustomValues] = useState(false);
+  const [customBuyPrice, setCustomBuyPrice] = useState("");
+  const [customBuyVolume, setCustomBuyVolume] = useState("");
+  const [customSellPrice, setCustomSellPrice] = useState("");
+  const [customSellVolume, setCustomSellVolume] = useState("");
+
+  const [totalSell, setTotalSell] = useState<number | null>(null);
+  const [profit, setProfit] = useState<number | null>(null);
+  const [grossProfit, setGrossProfit] = useState<number | null>(null);
+  const [totalFees, setTotalFees] = useState<number | null>(null);
+
   const [toggleState, setToggleState] = useState<"compra" | "venda">("compra");
   const [isPurchase, isPurchaseState] = useState<boolean>(false);
 
@@ -50,20 +72,18 @@ export function ModalOrderBook({
     }
   };
 
-  console.log(orderbookAsk.orderbook.asks, "COMPRA");
-
   const asksWithTicker = orderbookAsk.orderbook.asks.map((ask) => ({
     ...ask,
-    ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
+    ticker: symbol,
   }));
 
   const bidsWithTicker = orderbookBid.orderbook.bids.map((bid) => ({
     ...bid,
-    ticker: symbol, // ou qualquer lógica que você utiliza para definir o ticker
+    ticker: symbol,
   }));
 
   const formatNumber = (value: number) => {
-    return parseFloat(value.toFixed(2)); // Converte para número novamente
+    return parseFloat(value.toFixed(2));
   };
 
   const { data: auth } = useSession();
@@ -106,6 +126,7 @@ export function ModalOrderBook({
               Venda
             </button>
           </div>
+
           <div className={styles.textModal}>
             <span>Exchange</span>
           </div>
@@ -121,7 +142,291 @@ export function ModalOrderBook({
             <img src={`${toggleState === "compra" ? sellWhere : buyWhere}`} />
             <p>{toggleState === "compra" ? sellEchangeName : buyEchangeName}</p>
           </div>
+          <button
+            onClick={() => setIsCalculatorVisible((prev) => !prev)}
+            className={styles.calculatorButton}
+            aria-label="Toggle Calculator"
+          >
+            <img src="/icons/calculator.svg" alt="calculator" />
+          </button>
+          {isCalculatorVisible && (
+            <div className={styles.calculatorHeader}>
+              {!useCustomValues ? (
+                <div
+                  style={{ display: "flex", gap: "10px" }}
+                  className={styles.selectContainer}
+                >
+                  <select name="buyPrice" id="buyPrice">
+                    <option value="">Preço de compra</option>
+                    {orderbookAsk.orderbook.asks
+                      .slice(0, 10)
+                      .map((ask, index) => (
+                        <option key={index} value={ask.price}>
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                            minimumFractionDigits: 4,
+                          }).format(
+                            ask.price * (orderbookAsk.isUSD ? dolarValue : 1)
+                          )}
+                        </option>
+                      ))}
+                  </select>
 
+                  <select name="buyVolume" id="buyVolume">
+                    <option value="">Volume de compra</option>
+                    {orderbookAsk.orderbook.asks
+                      .slice(0, 10)
+                      .map((ask, index) => (
+                        <option key={index} value={ask.sumVolume}>
+                          {new Intl.NumberFormat("pt-BR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(ask.sumVolume)}
+                        </option>
+                      ))}
+                  </select>
+
+                  <select name="sellPrice" id="sellPrice">
+                    <option value="">Preço de venda</option>
+                    {orderbookBid.orderbook.bids
+                      .slice(0, 10)
+                      .map((bid, index) => (
+                        <option key={index} value={bid.price}>
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                            minimumFractionDigits: 4,
+                          }).format(
+                            bid.price * (orderbookBid.isUSD ? dolarValue : 1)
+                          )}
+                        </option>
+                      ))}
+                  </select>
+
+                  <select name="sellVolume" id="sellVolume">
+                    <option value="">Volume de venda</option>
+                    {orderbookBid.orderbook.bids
+                      .slice(0, 10)
+                      .map((bid, index) => (
+                        <option key={index} value={bid.sumVolume}>
+                          {new Intl.NumberFormat("pt-BR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }).format(bid.sumVolume)}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              ) : (
+                <>
+                  <div
+                    style={{ display: "flex", gap: "10px" }}
+                    className={styles.selectContainer}
+                  >
+                    <NumericFormat
+                      value={customBuyPrice}
+                      onValueChange={(values) =>
+                        setCustomBuyPrice(values.value)
+                      }
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      decimalScale={4}
+                      fixedDecimalScale={false}
+                      prefix="R$ "
+                      allowNegative={false}
+                      placeholder="Preço de compra"
+                      className="my-input"
+                    />
+                    <NumericFormat
+                      value={customBuyVolume}
+                      onValueChange={(values) =>
+                        setCustomBuyVolume(values.value)
+                      }
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale={false}
+                      allowNegative={false}
+                      placeholder="Volume de compra"
+                      className="my-input"
+                    />
+                    <NumericFormat
+                      value={customSellPrice}
+                      onValueChange={(values) =>
+                        setCustomSellPrice(values.value)
+                      }
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      decimalScale={4}
+                      fixedDecimalScale={false}
+                      prefix="R$ "
+                      allowNegative={false}
+                      placeholder="Preço de venda"
+                      className="my-input"
+                    />
+                    <NumericFormat
+                      value={customSellVolume}
+                      onValueChange={(values) =>
+                        setCustomSellVolume(values.value)
+                      }
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale={false}
+                      allowNegative={false}
+                      placeholder="Volume de venda"
+                      className="my-input"
+                    />
+                  </div>
+                </>
+              )}
+              <div
+                style={{ display: "flex", flexDirection: "row", gap: "10px" }}
+              >
+                <button
+                  onClick={() => setUseCustomValues((prev) => !prev)}
+                  style={{ background: "#fff", color: "#7b61ff" }}
+                >
+                  {useCustomValues
+                    ? "Usar Valores do Mercado"
+                    : "Usar Próprios Valores"}
+                </button>
+                <button
+                  onClick={() => {
+                    let buyPrice, buyVolume, sellPrice, sellVolume;
+
+                    if (useCustomValues) {
+                      // Use custom values
+                      buyPrice = parseFloat(customBuyPrice) || 0;
+                      buyVolume = parseFloat(customBuyVolume) || 0;
+                      sellPrice = parseFloat(customSellPrice) || 0;
+                      sellVolume = parseFloat(customSellVolume) || 0;
+                    } else {
+                      buyPrice =
+                        parseFloat(
+                          (
+                            document.getElementById(
+                              "buyPrice"
+                            ) as HTMLSelectElement
+                          ).value
+                        ) * (orderbookAsk.isUSD ? dolarValue : 1);
+
+                      buyVolume = parseFloat(
+                        (
+                          document.getElementById(
+                            "buyVolume"
+                          ) as HTMLSelectElement
+                        ).value
+                      );
+
+                      sellPrice =
+                        parseFloat(
+                          (
+                            document.getElementById(
+                              "sellPrice"
+                            ) as HTMLSelectElement
+                          ).value
+                        ) * (orderbookBid.isUSD ? dolarValue : 1);
+
+                      sellVolume = parseFloat(
+                        (
+                          document.getElementById(
+                            "sellVolume"
+                          ) as HTMLSelectElement
+                        ).value
+                      );
+                    }
+
+                    if (
+                      isNaN(buyPrice) ||
+                      isNaN(buyVolume) ||
+                      isNaN(sellPrice) ||
+                      isNaN(sellVolume) ||
+                      buyPrice === 0 ||
+                      buyVolume === 0 ||
+                      sellPrice === 0 ||
+                      sellVolume === 0
+                    ) {
+                      toast.warning("Preencha todos os valores necessários!");
+                      return;
+                    }
+
+                    const totalBuyValue = buyPrice * buyVolume;
+                    const totalSellValue = sellPrice * sellVolume;
+
+                    const totalFee = fee * (totalBuyValue + totalSellValue);
+                    const adjustedTax =
+                      tax * (orderbookAsk.isUSD ? dolarValue : 1);
+                    const toFixedTax = parseFloat(adjustedTax.toFixed(2));
+
+                    const totalProfit =
+                      totalSellValue - totalBuyValue - totalFee - toFixedTax;
+                    const grossProfitValue = totalSellValue - totalBuyValue;
+                    const totalFeesValue = totalFee + adjustedTax;
+
+                    setGrossProfit(grossProfitValue);
+                    setTotalFees(totalFeesValue);
+                    setTotalBuy(totalBuyValue);
+                    setTotalSell(totalSellValue);
+                    setProfit(totalProfit);
+                  }}
+                >
+                  Calcular
+                </button>
+              </div>
+              {totalBuy !== null &&
+                totalSell !== null &&
+                grossProfit !== null &&
+                totalFees !== null &&
+                profit !== null && (
+                  <div
+                    className={`${styles.result} ${
+                      profit >= 0 ? styles.positive : styles.negative
+                    }`}
+                  >
+                    <p>
+                      <strong>Total de Compra:</strong> R${" "}
+                      {totalBuy.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p>
+                      <strong>Total de Venda:</strong> R${" "}
+                      {totalSell.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p>
+                      <strong>Lucro Bruto:</strong> R${" "}
+                      {grossProfit.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p>
+                      <strong>Taxas Totais:</strong> R${" "}
+                      {totalFees.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p className="highlight">
+                      <strong>
+                        {profit >= 0 ? "Lucro Líquido:" : "Prejuízo:"}
+                      </strong>{" "}
+                      R${" "}
+                      {Math.abs(profit).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                )}
+            </div>
+          )}
           <div className={styles.contentTabs}>
             <DataGridOrderbook
               data={toggleState === "compra" ? asksWithTicker : bidsWithTicker}
@@ -150,3 +455,4 @@ export function ModalOrderBook({
     </div>
   );
 }
+``;

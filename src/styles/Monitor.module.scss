@@ -1,5 +1,5 @@
 .backgroundmMonitor {
-  background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/teste.png?alt=media&token=d2a38a91-9767-42d7-9a0c-92efe528221f");
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMONITOR.png?alt=media&token=21d6fb02-2b1d-445f-95ec-fdf43af0d28d");
   transition: background-image 1.5s ease;
   width: 100vw;
   height: 100vh;
@@ -16,6 +16,9 @@
   z-index: -1;
   padding-top: 100px;
 
+  &.backgroundCleaned {
+    background-image: url("https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMonitor2.png?alt=media&token=520012a5-d90d-4118-9548-084c4ffbf032");
+  }
   &.backgroundChecked {
     background-image: url("/newbg1.webp");
   }
@@ -285,6 +288,45 @@ input:checked + .slider:before {
 
 input:checked.is-checked + .slider {
   background-color: #34c759;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px; // Raio da borda para torná-lo redondo
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #7158e2;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #7158e2;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+input:checked.is-cleaned + .slider {
+  background-color: #7158e2;
 }
 .loadingOverlay {
   position: fixed;

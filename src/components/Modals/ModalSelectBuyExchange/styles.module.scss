@@ -1,5 +1,5 @@
 .container {
-  background-image: url("https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/modalBackground.png?alt=media&token=f2af2822-7cb4-406c-8135-632422021ac5");
+  background-image: url("https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FCORRETORAS.png?alt=media&token=85a91e5a-461e-482a-9762-c5b157775e32");
   position: fixed;
   top: 0;
   height: 100vh;
@@ -14,6 +14,9 @@
 
   &.containerChecked {
     background-image: url("/newbg1.webp");
+  }
+  &.containerCleaned {
+    background-image: url("https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMonitor2.png?alt=media&token=520012a5-d90d-4118-9548-084c4ffbf032");
   }
 }
 

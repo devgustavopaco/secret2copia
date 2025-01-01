@@ -11,6 +11,7 @@ export function SellExchangeMobile({
   sellExchanges,
   onModalChange,
   isChecked,
+  isCleaned,
   isAdmin,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
@@ -29,16 +30,16 @@ export function SellExchangeMobile({
     maximumFractionDigits: 3,
   });
 
-  const handleDeleteExchange = (type: string, index: number) => {
+  const handleDeleteExchange = (type: string, index: string) => {
     if (type === "compra") {
       const updatedBuyExchanges = buyExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem("buyExchanges", JSON.stringify(updatedBuyExchanges));
     } else if (type === "venda") {
       const updatedSellExchanges = sellExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem(
@@ -58,6 +59,7 @@ export function SellExchangeMobile({
           }}
           isChecked={isChecked}
           isAdmin={isAdmin}
+          isCleaned={isCleaned}
         />
       ) : (
         <></>
@@ -78,19 +80,22 @@ export function SellExchangeMobile({
             <img src="images/addEXCHANGE.svg" />
           </div>
         </div>
-        {sellExchanges.map((exchange, index) => (
-          <div key={index} className={styles.selectedExchanges}>
-            <div className={styles.selectedExchangesBlock}>
-              <img src={exchange.image_url} />
-              <p>{exchange.name}</p>
+        {sellExchanges
+          .slice() // Cria uma cópia do array original
+          .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabeticamente por nome
+          .map((exchange, index) => (
+            <div key={exchange.name} className={styles.selectedExchanges}>
+              <div className={styles.selectedExchangesBlock}>
+                <img src={exchange.image_url} />
+                <p>{exchange.name}</p>
+              </div>
+              <img
+                src="images/X.svg"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleDeleteExchange("venda", exchange.name)}
+              />
             </div>
-            <img
-              src="images/X.svg"
-              style={{ cursor: "pointer" }}
-              onClick={() => handleDeleteExchange("venda", index)}
-            />
-          </div>
-        ))}
+          ))}
       </div>
     </>
   );

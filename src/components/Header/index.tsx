@@ -2,7 +2,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { SignOut } from "phosphor-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "../../icons/Logo";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
@@ -10,9 +10,14 @@ import styles from "./styles.module.scss";
 interface HeaderProps {
   supportNumber: string;
   isChecked?: boolean;
+  invisibleBackground?: boolean;
 }
 
-export function Header({ supportNumber, isChecked = false }: HeaderProps) {
+export function Header({
+  supportNumber,
+  isChecked = false,
+  invisibleBackground,
+}: HeaderProps) {
   const { data: auth } = useSession();
 
   let userData = null;
@@ -22,7 +27,19 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
   user = trpc.useQuery(["user.getUserByEmail", { email }], {
     enabled: email !== "",
   });
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
   try {
     userData = JSON.parse(localStorage.getItem("user") || "null");
   } catch (error) {
@@ -80,7 +97,11 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
   }
 
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${
+        invisibleBackground ? styles.scrolled : ""
+      }`}
+    >
       <div className="container">
         <img
           className={styles.hamburguer}
@@ -269,7 +290,13 @@ export function Header({ supportNumber, isChecked = false }: HeaderProps) {
           className={`${styles.name} ${isChecked ? styles.nameChecked : ""}`}
         >
           <span className={styles.text}>Olá</span>
-          <span>{auth && auth.user ? `, ${auth.user.name}` : ""}</span>
+          <span
+            className={`${styles.normal} ${
+              invisibleBackground ? styles.NewLabel : ""
+            }`}
+          >
+            {auth && auth.user ? `, ${auth.user.name}` : ""}
+          </span>
           <div className={styles.tooltip}>
             <div className={styles.profileImage}>
               <img

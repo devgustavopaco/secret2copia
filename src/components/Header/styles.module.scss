@@ -4,8 +4,9 @@
   height: 85px;
   padding-top: 14px;
   padding-bottom: 24px;
-  background: rgba(13, 15, 18, 0.9);
 
+  transition: background 0.3s ease;
+  background: rgba(13, 15, 18, 0.9);
   :global(.container) {
     font-family: "IBM Plex Sans", sans-serif;
     display: flex;
@@ -19,11 +20,14 @@
 
   @media only screen and (max-width: 768px) {
     border: none;
-    background: rgba(13, 15, 18, 0.9);
+
     height: auto;
     padding-bottom: 0px;
     padding-top: 0px;
   }
+}
+.scrolled {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .logo {
@@ -160,6 +164,9 @@
     font-size: 16px;
     font-weight: 500;
     color: #fff;
+  }
+  .NewLabel {
+    color: #d5cdfe;
   }
 
   span {

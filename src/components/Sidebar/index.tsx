@@ -16,6 +16,7 @@ export interface SidebarProps {
   isAdmin: boolean;
   isChecked?: boolean;
   onDollarChange?: () => void;
+  isCleaned?: boolean;
 }
 
 export function Sidebar({
@@ -28,6 +29,7 @@ export function Sidebar({
   isChecked,
   isAdmin,
   onDollarChange,
+  isCleaned,
 }: SidebarProps) {
   const [isModalBuyOpen, setIsModalBuyOpen] = useState(false);
 
@@ -44,16 +46,16 @@ export function Sidebar({
     maximumFractionDigits: 3,
   });
 
-  const handleDeleteExchange = (type: string, index: number) => {
+  const handleDeleteExchange = (type: string, index: string) => {
     if (type === "compra") {
       const updatedBuyExchanges = buyExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem("buyExchanges", JSON.stringify(updatedBuyExchanges));
     } else if (type === "venda") {
       const updatedSellExchanges = sellExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem(
@@ -67,6 +69,7 @@ export function Sidebar({
     <>
       {isModalBuyOpen ? (
         <FullScreenModal
+          isCleaned={isCleaned}
           operation={currentOperation}
           onClose={() => {
             setIsModalBuyOpen(false);
@@ -150,19 +153,23 @@ export function Sidebar({
               <img src="images/addEXCHANGE.svg" />
             </div>
           </div>
-          {buyExchanges.map((exchange, index) => (
-            <div key={index} className={styles.selectedExchanges}>
-              <div className={styles.selectedExchangesBlock}>
-                <img src={exchange.image_url} />
-                <p>{exchange.name}</p>
+          {buyExchanges
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((exchange, index) => (
+              <div key={exchange.name} className={styles.selectedExchanges}>
+                <div className={styles.selectedExchangesBlock}>
+                  <img src={exchange.image_url} alt={exchange.name} />
+                  <p>{exchange.name}</p>
+                </div>
+                <img
+                  src="images/X.svg"
+                  style={{ cursor: "pointer" }}
+                  alt="Remover"
+                  onClick={() => handleDeleteExchange("compra", exchange.name)}
+                />
               </div>
-              <img
-                src="images/X.svg"
-                style={{ cursor: "pointer" }}
-                onClick={() => handleDeleteExchange("compra", index)}
-              />
-            </div>
-          ))}
+            ))}
         </section>
         <section className={styles.ExchangesSection}>
           <div className={styles.labelExchangeSection}>
@@ -183,19 +190,23 @@ export function Sidebar({
               <img src="images/addEXCHANGE.svg" />
             </div>
           </div>
-          {sellExchanges.map((exchange, index) => (
-            <div key={index} className={styles.selectedExchanges}>
-              <div className={styles.selectedExchangesBlock}>
-                <img src={exchange.image_url} />
-                <p>{exchange.name}</p>
+          {sellExchanges
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((exchange) => (
+              <div key={exchange.name} className={styles.selectedExchanges}>
+                <div className={styles.selectedExchangesBlock}>
+                  <img src={exchange.image_url} alt={exchange.name} />
+                  <p>{exchange.name}</p>
+                </div>
+                <img
+                  src="images/X.svg"
+                  style={{ cursor: "pointer" }}
+                  alt="Remover"
+                  onClick={() => handleDeleteExchange("venda", exchange.name)}
+                />
               </div>
-              <img
-                src="images/X.svg"
-                style={{ cursor: "pointer" }}
-                onClick={() => handleDeleteExchange("venda", index)}
-              />
-            </div>
-          ))}
+            ))}
         </section>
       </aside>
     </>

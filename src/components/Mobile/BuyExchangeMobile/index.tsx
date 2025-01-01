@@ -9,6 +9,7 @@ export function BuyExchangeMobile({
   onChangeDolar,
   buyExchanges,
   sellExchanges,
+  isCleaned,
   onModalChange,
   isChecked,
   isAdmin,
@@ -23,16 +24,16 @@ export function BuyExchangeMobile({
     setCurrentOperation(operation);
   };
 
-  const handleDeleteExchange = (type: string, index: number) => {
+  const handleDeleteExchange = (type: string, index: string) => {
     if (type === "compra") {
       const updatedBuyExchanges = buyExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem("buyExchanges", JSON.stringify(updatedBuyExchanges));
     } else if (type === "venda") {
       const updatedSellExchanges = sellExchanges.filter(
-        (_, idx) => idx !== index
+        (_, idx) => _.name !== index
       );
 
       localStorage.setItem(
@@ -53,6 +54,7 @@ export function BuyExchangeMobile({
           }}
           isChecked={isChecked}
           isAdmin={isAdmin}
+          isCleaned={isCleaned}
         />
       ) : (
         <div className={styles.swipperBlock}>
@@ -71,19 +73,23 @@ export function BuyExchangeMobile({
               <img src="images/addEXCHANGE.svg" />
             </div>
           </div>
-          {buyExchanges.map((exchange, index) => (
-            <div key={index} className={styles.selectedExchanges}>
-              <div className={styles.selectedExchangesBlock}>
-                <img src={exchange.image_url} />
-                <p>{exchange.name}</p>
+          {buyExchanges
+            .slice() // Cria uma cópia do array original
+            .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabeticamente por nome
+            .map((exchange, index) => (
+              <div key={exchange.name} className={styles.selectedExchanges}>
+                <div className={styles.selectedExchangesBlock}>
+                  <img src={exchange.image_url} alt={exchange.name} />
+                  <p>{exchange.name}</p>
+                </div>
+                <img
+                  src="images/X.svg"
+                  alt="Remover"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDeleteExchange("compra", exchange.name)}
+                />
               </div>
-              <img
-                src="images/X.svg"
-                style={{ cursor: "pointer" }}
-                onClick={() => handleDeleteExchange("compra", index)}
-              />
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </>

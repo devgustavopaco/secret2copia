@@ -1,11 +1,13 @@
 .container {
-  background-image: url(https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/bannerNextGain.webp?alt=media&token=66ddbf2d-3aef-4534-b9ca-6854e5b14a01);
+  background-image: url(https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%203173.png?alt=media&token=f1300be0-3ac5-4f9d-8124-aa526497c41b);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+
   .banner {
     display: flex;
     flex-direction: column;
+
     justify-content: center;
     margin-right: auto;
     height: 89vh;
@@ -33,12 +35,14 @@
       max-width: 326px;
       width: 100%;
       height: 56px;
-      background-color: #7b61ff;
-      color: #fff;
-      border: none;
       border-radius: 5px;
+      background: #d5cdfe;
+      box-shadow: 0px 10px 20px 0px rgba(213, 205, 254, 0.3);
+      color: #333;
+      border: none;
+
       font-size: var(--fs-400);
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       display: flex;
       justify-content: center;
@@ -55,7 +59,16 @@
 .mentoring {
   display: flex;
   flex-direction: column;
-  margin-bottom: 5rem;
+  padding-block: 5rem;
+  max-width: unset !important;
+  background: linear-gradient(
+      207deg,
+      #13152c 39.05%,
+      #4e5077 82.57%,
+      #181a40 104.29%
+    ),
+    #13152c;
+
   .titleMentoring {
     display: flex;
     flex-direction: row;

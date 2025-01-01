@@ -9,6 +9,7 @@ interface ModalExchange {
   operation?: string | null;
   isAdmin: boolean;
   isChecked?: boolean;
+  isCleaned?: boolean;
 }
 
 export function FullScreenModal({
@@ -16,6 +17,7 @@ export function FullScreenModal({
   operation,
   isAdmin,
   isChecked,
+  isCleaned,
 }: ModalExchange) {
   const { data: activeExchanges } = trpc.useQuery(
     ["exchange.getActiveExchanges"],
@@ -131,7 +133,11 @@ export function FullScreenModal({
   return (
     <div
       className={`${styles.container} ${
-        isChecked ? styles.containerChecked : ""
+        isCleaned
+          ? styles.containerCleaned
+          : isChecked
+          ? styles.containerChecked
+          : ""
       }`}
     >
       <div className={`${styles.contentModal} container`}>

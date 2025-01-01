@@ -47,6 +47,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
   tickerData,
 }) => {
   const [isChecked, setIsChecked] = useState(false);
+  const [isCleaned, setIsCleaned] = useState(false);
 
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   console.log(orphanCoins, "orphanCoins");
@@ -66,6 +67,9 @@ const Monitoring: NextPage<MonitoringProps> = ({
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
+  };
+  const handleCheckboxCleanChange = () => {
+    setIsCleaned(!isCleaned);
   };
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
 
@@ -540,7 +544,11 @@ const Monitoring: NextPage<MonitoringProps> = ({
           <></>
         ) : (
           <>
-            <Header supportNumber={supportNumber} isChecked={isChecked} />
+            <Header
+              supportNumber={supportNumber}
+              isChecked={isChecked}
+              invisibleBackground={true}
+            />
             <CurrencyCarousel tickerData={tickerData} />
           </>
         )}
@@ -559,12 +567,18 @@ const Monitoring: NextPage<MonitoringProps> = ({
               coinImage={selectedOperation.coinImage}
               setOpenModal={setModalOpenOrderBook}
               dollarPrice={dollarPrice ?? 0}
+              fee={selectedOperation.fee}
+              tax={selectedOperation.tax}
             />
           )}
         </>
         <div
           className={`${styles.backgroundmMonitor} ${
-            isChecked ? styles.backgroundChecked : ""
+            isCleaned
+              ? styles.backgroundCleaned
+              : isChecked
+              ? styles.backgroundChecked
+              : ""
           }`}
         >
           <div className={`${styles.content} container`}>
@@ -639,6 +653,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
                 isChecked={isChecked}
+                isCleaned={isCleaned}
                 isAdmin={isAdmin}
               />
             </div>
@@ -657,6 +672,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
                 isChecked={isChecked}
+                isCleaned={isCleaned}
                 isAdmin={isAdmin}
               />
             </div>
@@ -671,6 +687,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                 dolarValue={dolarValue as number}
                 onModalChange={handleModalState}
                 isAdmin={isAdmin}
+                isCleaned={isCleaned}
                 onDollarChange={handleDollarChange}
               />
             </div>
@@ -687,7 +704,29 @@ const Monitoring: NextPage<MonitoringProps> = ({
                     </div>
                   </div>
                 )}
-                {isAdmin && (
+                <>
+                  <div className={styles.checkbox}>
+                    <div className={styles.checkText}>
+                      <p>
+                        <strong>Modo Clean?</strong>
+                      </p>
+                    </div>
+                    <label className={styles.switch}>
+                      <input
+                        type="checkbox"
+                        checked={isCleaned}
+                        onChange={handleCheckboxCleanChange}
+                        className={isCleaned ? "is-checked" : ""}
+                      />
+                      <span
+                        className={`${styles.slider} ${
+                          isChecked ? "is-checked" : ""
+                        }`}
+                      ></span>
+                    </label>
+                  </div>
+                </>
+                {/* {isAdmin && (
                   <>
                     <div className={styles.checkbox}>
                       <div className={styles.checkText}>
@@ -711,7 +750,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                       </label>
                     </div>
                   </>
-                )}
+                )} */}
               </div>
               {loadingDolarChange || sortedOperations?.length === 0 ? (
                 isChecked ? (
