@@ -505,7 +505,19 @@ export class ChilizStrategy implements ExchangeStrategy {
   }
 }
 
-type CoinextOrderbook = number[][];
+type OrderbookEntry = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
+];
+type CoinextOrderbook = OrderbookEntry[];
 
 // TODO - Implementar InstrumentId de cada moeda
 export class CoinextStrategy implements ExchangeStrategy {
@@ -608,17 +620,26 @@ export class CoinextStrategy implements ExchangeStrategy {
 
     const json = (await response.json()) as CoinextOrderbook;
 
-    this.orderbook[pair] = json;
+    // Ordenar bids (descendente, maior preço primeiro)
+    const bids = json
+      .filter((entry) => entry && entry[9] === 1) // Verifica se entry não é nulo e filtra bids
+      .sort((a, b) => (a && b ? b[6] - a[6] : 0)); // Verifica se a e b não são nulos antes de ordenar
+
+    const asks = json
+      .filter((entry) => entry && entry[9] === 0) // Verifica se entry não é nulo e filtra asks
+      .sort((a, b) => (a && b ? a[6] - b[6] : 0)); // Verifica se a e b não são nulos antes de ordenar
+
+    this.orderbook[pair] = [...bids, ...asks]; // Atualizar o orderbook com bids e asks ordenados
 
     return {
       name: "Coinext",
       bid: {
-        price: Number(json[0]![6]),
-        amount: Number(json[0]![9]),
+        price: Number(bids[0]?.[6] || 0), // Melhor preço de compra (maior bid)
+        amount: Number(bids[0]?.[8] || 0),
       },
       ask: {
-        price: Number(json[10]![6]),
-        amount: Number(json[10]![9]),
+        price: Number(asks[0]?.[6] || 0), // Melhor preço de venda (menor ask)
+        amount: Number(asks[0]?.[8] || 0),
       },
       isUSD,
     };
