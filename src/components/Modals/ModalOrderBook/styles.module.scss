@@ -58,8 +58,13 @@
   word-break: break-all;
   max-height: 700px;
   overflow-y: auto;
+  scrollbar-width: none; /* Para Firefox */
+  -ms-overflow-style: none; /* Para Internet Explorer e Edge */
 }
 
+.container::-webkit-scrollbar {
+  display: none; /* Para Chrome, Safari e outros navegadores baseados em Webkit */
+}
 .textModal {
   margin: 35px auto 19px auto;
   align-items: center;
