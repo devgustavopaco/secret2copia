@@ -51,9 +51,8 @@ export function ModalOrderBook({
   const [isCalculatorVisible, setIsCalculatorVisible] = useState(false);
   const [useCustomValues, setUseCustomValues] = useState(false);
   const [customBuyPrice, setCustomBuyPrice] = useState("");
-  const [customBuyVolume, setCustomBuyVolume] = useState("");
+  const [customVolume, setCustomVolume] = useState("");
   const [customSellPrice, setCustomSellPrice] = useState("");
-  const [customSellVolume, setCustomSellVolume] = useState("");
 
   const [totalSell, setTotalSell] = useState<number | null>(null);
   const [profit, setProfit] = useState<number | null>(null);
@@ -173,18 +172,29 @@ export function ModalOrderBook({
                       ))}
                   </select>
 
-                  <select name="buyVolume" id="buyVolume">
-                    <option value="">Volume de compra</option>
-                    {orderbookAsk.orderbook.asks
-                      .slice(0, 10)
-                      .map((ask, index) => (
-                        <option key={index} value={ask.sumVolume}>
-                          {new Intl.NumberFormat("pt-BR", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }).format(ask.sumVolume)}
-                        </option>
-                      ))}
+                  <select name="volume" id="volume">
+                    <option value="">Volume</option>
+                    {[
+                      ...orderbookAsk.orderbook.asks
+                        .slice(0, 10)
+                        .map((ask) => ({
+                          volume: ask.sumVolume,
+                          type: "Compra",
+                        })),
+                      ...orderbookBid.orderbook.bids
+                        .slice(0, 10)
+                        .map((bid) => ({
+                          volume: bid.sumVolume,
+                          type: "Venda",
+                        })),
+                    ].map((item, index) => (
+                      <option key={index} value={item.volume}>
+                        {new Intl.NumberFormat("pt-BR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }).format(item.volume)}{" "}
+                      </option>
+                    ))}
                   </select>
 
                   <select name="sellPrice" id="sellPrice">
@@ -200,20 +210,6 @@ export function ModalOrderBook({
                           }).format(
                             bid.price * (orderbookBid.isUSD ? dolarValue : 1)
                           )}
-                        </option>
-                      ))}
-                  </select>
-
-                  <select name="sellVolume" id="sellVolume">
-                    <option value="">Volume de venda</option>
-                    {orderbookBid.orderbook.bids
-                      .slice(0, 10)
-                      .map((bid, index) => (
-                        <option key={index} value={bid.sumVolume}>
-                          {new Intl.NumberFormat("pt-BR", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }).format(bid.sumVolume)}
                         </option>
                       ))}
                   </select>
@@ -239,16 +235,14 @@ export function ModalOrderBook({
                       className="my-input"
                     />
                     <NumericFormat
-                      value={customBuyVolume}
-                      onValueChange={(values) =>
-                        setCustomBuyVolume(values.value)
-                      }
+                      value={customVolume}
+                      onValueChange={(values) => setCustomVolume(values.value)}
                       thousandSeparator="."
                       decimalSeparator=","
                       decimalScale={2}
                       fixedDecimalScale={false}
                       allowNegative={false}
-                      placeholder="Volume de compra"
+                      placeholder="Volume"
                       className="my-input"
                     />
                     <NumericFormat
@@ -263,19 +257,6 @@ export function ModalOrderBook({
                       prefix="R$ "
                       allowNegative={false}
                       placeholder="Preço de venda"
-                      className="my-input"
-                    />
-                    <NumericFormat
-                      value={customSellVolume}
-                      onValueChange={(values) =>
-                        setCustomSellVolume(values.value)
-                      }
-                      thousandSeparator="."
-                      decimalSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale={false}
-                      allowNegative={false}
-                      placeholder="Volume de venda"
                       className="my-input"
                     />
                   </div>
@@ -294,14 +275,12 @@ export function ModalOrderBook({
                 </button>
                 <button
                   onClick={() => {
-                    let buyPrice, buyVolume, sellPrice, sellVolume;
+                    let buyPrice, volume, sellPrice;
 
                     if (useCustomValues) {
-                      // Use custom values
                       buyPrice = parseFloat(customBuyPrice) || 0;
-                      buyVolume = parseFloat(customBuyVolume) || 0;
+                      volume = parseFloat(customVolume) || 0;
                       sellPrice = parseFloat(customSellPrice) || 0;
-                      sellVolume = parseFloat(customSellVolume) || 0;
                     } else {
                       buyPrice =
                         parseFloat(
@@ -312,12 +291,9 @@ export function ModalOrderBook({
                           ).value
                         ) * (orderbookAsk.isUSD ? dolarValue : 1);
 
-                      buyVolume = parseFloat(
-                        (
-                          document.getElementById(
-                            "buyVolume"
-                          ) as HTMLSelectElement
-                        ).value
+                      volume = parseFloat(
+                        (document.getElementById("volume") as HTMLSelectElement)
+                          .value
                       );
 
                       sellPrice =
@@ -328,32 +304,22 @@ export function ModalOrderBook({
                             ) as HTMLSelectElement
                           ).value
                         ) * (orderbookBid.isUSD ? dolarValue : 1);
-
-                      sellVolume = parseFloat(
-                        (
-                          document.getElementById(
-                            "sellVolume"
-                          ) as HTMLSelectElement
-                        ).value
-                      );
                     }
 
                     if (
                       isNaN(buyPrice) ||
-                      isNaN(buyVolume) ||
+                      isNaN(volume) ||
                       isNaN(sellPrice) ||
-                      isNaN(sellVolume) ||
                       buyPrice === 0 ||
-                      buyVolume === 0 ||
-                      sellPrice === 0 ||
-                      sellVolume === 0
+                      volume === 0 ||
+                      sellPrice === 0
                     ) {
                       toast.warning("Preencha todos os valores necessários!");
                       return;
                     }
 
-                    const totalBuyValue = buyPrice * buyVolume;
-                    const totalSellValue = sellPrice * sellVolume;
+                    const totalBuyValue = buyPrice * volume;
+                    const totalSellValue = sellPrice * volume;
 
                     const totalFee = fee * (totalBuyValue + totalSellValue);
                     const adjustedTax =
@@ -455,4 +421,3 @@ export function ModalOrderBook({
     </div>
   );
 }
-``;
