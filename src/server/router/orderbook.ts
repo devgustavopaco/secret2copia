@@ -174,6 +174,7 @@ export interface ArbitrageOpportunity {
   fee: number;
   spread: number;
   isFutures?: boolean;
+  isOpen?: boolean;
 }
 
 interface FilteredOrderbook {
@@ -197,6 +198,7 @@ const fetchArbitrageOpportunity = async (
     isFanToken: boolean;
     imageUrl?: string;
     isFutures?: boolean;
+    isOpen?: boolean;
   },
   buyExchanges: string[],
   sellExchanges: string[],
@@ -211,7 +213,7 @@ const fetchArbitrageOpportunity = async (
   }[],
   email: string
 ): Promise<ArbitrageOpportunity> => {
-  const { name, ticker, isFanToken, imageUrl, isFutures } = coin;
+  const { name, ticker, isFanToken, imageUrl, isFutures, isOpen = true } = coin;
 
   const orderBookPromises: Promise<Exchange>[] = [];
 
@@ -244,17 +246,27 @@ const fetchArbitrageOpportunity = async (
 
   const lowestAsk = orderBooks.reduce(
     (acc, exchange) => {
-      const isContained = buyExchanges.some(
-        (element) =>
-          formatExchangeName(element) ===
-          formatExchangeName(exchange.name.toLowerCase())
-      );
+      const isContained = isOpen
+        ? buyExchanges.some(
+            (element) =>
+              formatExchangeName(element) ===
+              formatExchangeName(exchange.name.toLowerCase())
+          )
+        : sellExchanges.some(
+            (element) =>
+              formatExchangeName(element) ===
+              formatExchangeName(exchange.name.toLowerCase())
+          );
+
       if (isContained) {
         const priceInUSD = exchange.isUSD
           ? exchange.ask.price
           : exchange.ask.price / dolarValue;
 
-        if (priceInUSD < acc.price) {
+        if (
+          (isOpen && priceInUSD < acc.price) ||
+          (!isOpen && priceInUSD > acc.price)
+        ) {
           return {
             exchange: exchange.name,
             isUSD: exchange.isUSD,
@@ -268,21 +280,26 @@ const fetchArbitrageOpportunity = async (
     },
     {
       exchange: "",
-      price: 9999999999999,
+      price: isOpen ? 9999999999999 : 0,
       amount: 0,
       image_url: undefined,
       isUSD: true,
     } as FilteredOrderbook
   );
 
-  // Highest sell price
   const highestBid = orderBooks.reduce(
     (acc, exchange) => {
-      const isContained = sellExchanges.some(
-        (element) =>
-          formatExchangeName(element) ===
-          formatExchangeName(exchange.name.toLowerCase())
-      );
+      const isContained = isOpen
+        ? sellExchanges.some(
+            (element) =>
+              formatExchangeName(element) ===
+              formatExchangeName(exchange.name.toLowerCase())
+          )
+        : buyExchanges.some(
+            (element) =>
+              formatExchangeName(element) ===
+              formatExchangeName(exchange.name.toLowerCase())
+          );
 
       const notSelectedBuyExchange =
         formatExchangeName(lowestAsk.exchange) !==
@@ -293,7 +310,10 @@ const fetchArbitrageOpportunity = async (
           ? exchange.bid.price
           : exchange.bid.price / dolarValue;
 
-        if (priceInUSD > acc.price) {
+        if (
+          (isOpen && priceInUSD > acc.price) ||
+          (!isOpen && priceInUSD < acc.price)
+        ) {
           return {
             exchange: exchange.name,
             isUSD: exchange.isUSD,
@@ -307,7 +327,7 @@ const fetchArbitrageOpportunity = async (
     },
     {
       exchange: "",
-      price: 0,
+      price: isOpen ? 0 : 9999999999999,
       amount: 0,
       image_url: undefined,
       isUSD: true,
@@ -346,8 +366,6 @@ const fetchArbitrageOpportunity = async (
 
   const exchanges = ExchangesSingleton.getInstance().exchanges;
 
-  //console.table(exchanges)
-
   const lowestAskExchange = exchanges.find(
     (exchange) =>
       exchange.name.toLowerCase().trim() ===
@@ -372,7 +390,9 @@ const fetchArbitrageOpportunity = async (
     ? lowestAsk.price * dolarValue
     : lowestAsk.price;
 
-  const spread = ((bidPrice - askPrice) / askPrice) * 100;
+  const spread = isOpen
+    ? ((bidPrice - askPrice) / askPrice) * 100
+    : ((askPrice - bidPrice) / bidPrice) * 100;
 
   return {
     coin: name,
@@ -383,6 +403,7 @@ const fetchArbitrageOpportunity = async (
     tax: (lowestAskTax?.tax ?? 0) * lowestAsk.price,
     fee: lowestAskFee + highestBidFee,
     spread,
+    isOpen,
   };
 };
 
@@ -462,6 +483,7 @@ export const orderbookRouter = createRouter()
       cursor: z.number().nullish(),
       isChecked: z.boolean().optional(),
       isFutures: z.boolean().optional(),
+      isOpen: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
@@ -516,6 +538,7 @@ export const orderbookRouter = createRouter()
               isFanToken: coin.isFanToken,
               imageUrl: coin.image_url ?? undefined,
               isFutures: isFutures,
+              isOpen: input.isOpen,
             },
             buyExchanges,
             sellExchanges,

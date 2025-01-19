@@ -48,9 +48,9 @@ const Futuros: NextPage<FuturosProps> = ({
 }) => {
   const [isChecked, setIsChecked] = useState(false);
   const [isCleaned, setIsCleaned] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(true);
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
-  console.log(orphanCoins, "orphanCoins");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -215,6 +215,7 @@ const Futuros: NextPage<FuturosProps> = ({
           email: userEmail ?? undefined,
           isChecked: isChecked,
           isFutures: true,
+          isOpen: isOpen,
         },
       ],
       {
@@ -265,18 +266,16 @@ const Futuros: NextPage<FuturosProps> = ({
     isError,
     isSuccess,
   } = queryResult;
-
+  console.log(queryResult, "queryResult");
   useEffect(() => {
     if (!isAdmin) {
-      // Cancel existing queries and trigger new ones when parameters change
       queryClient.removeQueries({
         queryKey: ["orderBook.getPaginated"],
         exact: true,
       });
 
-      refetch(); // Ensure that the new data is fetched with updated parameters
+      refetch();
 
-      // Optional: Debounce refetch to prevent rapid re-fetching
       const debounceRefetch = setTimeout(() => {
         refetch();
       }, 0); // Adjust debounce time as needed
@@ -401,12 +400,10 @@ const Futuros: NextPage<FuturosProps> = ({
     }
   });
 
-  console.log(orphanCoins, "orphanCoins");
   let sortedOperations = Array.from(operationsMap.values()).sort(
-    (a, b) => b.spread - a.spread // Ordenação decrescente pelo spread
+    (a, b) => b.spread - a.spread
   );
 
-  // Remover moedas órfãs diretamente em vez de filtrar
   if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
     for (let i = sortedOperations.length - 1; i >= 0; i--) {
       const operation = sortedOperations[i];
@@ -417,11 +414,10 @@ const Futuros: NextPage<FuturosProps> = ({
 
       if (isOrphan) {
         console.log(`Removendo moeda órfã: ${operation.ticker}`);
-        sortedOperations.splice(i, 1); // Remove a operação órfã diretamente
+        sortedOperations.splice(i, 1);
       }
     }
 
-    // Redefinir sortedOperations para garantir que React detecte a alteração
     sortedOperations = [...sortedOperations];
   }
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
@@ -529,8 +525,6 @@ const Futuros: NextPage<FuturosProps> = ({
       preserveAspectRatio: "xMidYMid slice",
     },
   };
-
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
@@ -798,7 +792,6 @@ const Futuros: NextPage<FuturosProps> = ({
                         setSelectedOperation(operation);
                         setModalOpenOrderBook(true);
                       }}
-                      isOpen={isOpen}
                     />
                   ))}
                 </div>

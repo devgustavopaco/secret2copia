@@ -53,7 +53,6 @@ interface FuturosOperationCardProps {
   isChecked?: boolean;
   meetsCriteria?: boolean;
   isAdmin?: boolean;
-  isOpen?: boolean;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -116,12 +115,9 @@ const calculatePrice = (
 export function FuturosOperationCard({
   coin,
   dollarPrice = 1,
-
   onClick,
   isChecked,
-  // meetsCriteria,
   isAdmin,
-  isOpen,
 }: FuturosOperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -204,44 +200,31 @@ export function FuturosOperationCard({
 
       <div className={styles["card-content"]}>
         <div>
-          <h3>{isOpen ? "FUTUROS" : "SPOT"}</h3>
+          <h3>SPOT</h3>
           <div>
-            {(isOpen ? coin.bid : coin.ask).image_url && (
-              <img
-                src={(isOpen ? coin.bid : coin.ask).image_url}
-                alt={(isOpen ? coin.bid : coin.ask).exchange}
-              />
+            {coin.ask.exchange}
+            {coin.ask.image_url && (
+              <img src={coin.ask.image_url} alt={coin.ask.exchange} />
             )}
-            {(isOpen ? coin.bid : coin.ask).exchange}
           </div>
           <p>
             R$ &nbsp;
-            {dynamicDecimalFormatter(
-              isOpen ? bidPrice : askPrice,
-              coin.symbol as Ticker
-            )}
+            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
           </p>
         </div>
-
         <img src="/clockwise.svg" alt="" />
 
         <div>
-          <h3>{isOpen ? "SPOT" : "FUTUROS"}</h3>
+          <h3>FUTUROS</h3>
           <div className={styles.textEnd}>
-            {(isOpen ? coin.ask : coin.bid).image_url && (
-              <img
-                src={(isOpen ? coin.ask : coin.bid).image_url}
-                alt={(isOpen ? coin.ask : coin.bid).exchange}
-              />
+            {coin.bid.exchange}
+            {coin.bid.image_url && (
+              <img src={coin.bid.image_url} alt={coin.bid.exchange} />
             )}
-            {(isOpen ? coin.ask : coin.bid).exchange}
           </div>
           <p>
             R$ &nbsp;
-            {dynamicDecimalFormatter(
-              isOpen ? askPrice : bidPrice,
-              coin.symbol as Ticker
-            )}
+            {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}
           </p>
         </div>
       </div>
