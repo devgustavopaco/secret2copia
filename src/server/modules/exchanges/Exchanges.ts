@@ -1496,6 +1496,100 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 }
 
+// Mexc Futures ---------------------------------------------------------------------
+
+interface MexcFuturesOrderbook {
+  success: boolean;
+  code: number;
+  data: {
+    asks: string[][];
+    bids: string[][];
+    timestamp: number;
+  };
+}
+
+export class MexcFuturesStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: MexcFuturesOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (
+      baseToken !== "GAS" &&
+      baseToken !== "MDT" &&
+      baseToken !== "GMT" &&
+      baseToken !== "MULTI" &&
+      baseToken !== "QI"
+    ) {
+      return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    }
+    return "";
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://contract.mexc.com/api/v1/contract/depth/${pair}?limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+    const json = (await response.json()) as MexcFuturesOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Mexc Futures",
+      bid: {
+        price: Number(json.data.bids[0]![0]),
+        amount: Number(json.data.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.data.asks[0]![0]),
+        amount: Number(json.data.asks[0]![1]),
+      },
+      isUSD: true,
+      isFutures: true,
+    };
+  }
+}
+
 // Poloniex ---------------------------------------------------------------------
 
 interface PoloniexOrderbook {
@@ -2140,6 +2234,94 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
         amount: Number(json.asks[0]![1]),
       },
       isUSD: true,
+    };
+  }
+}
+
+// Gate.io Futures ---------------------------------------------------------------------
+
+interface GateIoFuturesOrderbook {
+  asks: [string, string][];
+  bids: [string, string][];
+}
+
+export class GateIoFuturesStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: GateIoFuturesOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (baseToken.toLowerCase() === "POR") {
+      return "";
+    }
+    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    let url = "";
+
+    if (pair.toUpperCase() !== "POR_USDT") {
+      url = `https://fx-api.gateio.ws/api/v4/futures/usdt/order_book?contract=${pair}&limit=100`;
+    }
+
+    const response = await fetchWithProxy(url, proxies);
+
+    const json = (await response.json()) as GateIoFuturesOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Gateio Futures",
+      bid: {
+        price: Number(json.bids[0]![0]),
+        amount: Number(json.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.asks[0]![0]),
+        amount: Number(json.asks[0]![1]),
+      },
+      isUSD: true,
+      isFutures: true,
     };
   }
 }

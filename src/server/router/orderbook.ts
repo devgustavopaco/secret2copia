@@ -44,6 +44,7 @@ import {
   ExmarketsStrategy,
   FoxBitStrategy,
   GateIoTradeStrategy,
+  GateIoFuturesStrategy,
   GeminiStategy,
   HitBTCStrategy,
   HuobiStrategy,
@@ -53,6 +54,7 @@ import {
   LbkexStrategy,
   MercadoBitcoinStrategy,
   MexcStrategy,
+  MexcFuturesStrategy,
   NovaDAXStrategy,
   OkxStrategy,
   P2PB2BStrategy,
@@ -123,12 +125,14 @@ const exchangeStrategies: StrategyObject = {
   bitfinex: new BitfinexStrategy(),
   bybit: new ByBitStrategy(),
   mexc: new MexcStrategy(),
+  mexcFutures: new MexcFuturesStrategy(),
   poloniex: new PolonieskStrategy(),
   bitstamp: new BitstampStrategy(),
   bitget: new BidgetStrategy(),
   okx: new OkxStrategy(),
   bitcointrade: new BitcoinTradeStrategy(),
   gateio: new GateIoTradeStrategy(),
+  gateioFutures: new GateIoFuturesStrategy(),
   foxbit: new FoxBitStrategy(),
   ripio: new RipioTradeStrategy(),
   tokocrypto: new TokoCryptoStrategy(),
@@ -169,6 +173,7 @@ export interface ArbitrageOpportunity {
   tax: number;
   fee: number;
   spread: number;
+  isFutures?: boolean;
 }
 
 interface FilteredOrderbook {
@@ -191,6 +196,7 @@ const fetchArbitrageOpportunity = async (
     ticker: string;
     isFanToken: boolean;
     imageUrl?: string;
+    isFutures?: boolean;
   },
   buyExchanges: string[],
   sellExchanges: string[],
@@ -205,7 +211,7 @@ const fetchArbitrageOpportunity = async (
   }[],
   email: string
 ): Promise<ArbitrageOpportunity> => {
-  const { name, ticker, isFanToken, imageUrl } = coin;
+  const { name, ticker, isFanToken, imageUrl, isFutures } = coin;
 
   const orderBookPromises: Promise<Exchange>[] = [];
 
@@ -219,7 +225,7 @@ const fetchArbitrageOpportunity = async (
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
 
       orderBookPromises.push(
-        exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
+        exchangeStrategy.fetchOrderbook(coinPair, isFanToken, isFutures)
       );
     }
   }
@@ -455,6 +461,7 @@ export const orderbookRouter = createRouter()
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number().nullish(),
       isChecked: z.boolean().optional(),
+      isFutures: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
@@ -464,7 +471,13 @@ export const orderbookRouter = createRouter()
         };
       }
 
-      const { buyExchanges, sellExchanges, cursor = 1, limit = 50 } = input;
+      const {
+        buyExchanges,
+        sellExchanges,
+        cursor = 1,
+        limit = 50,
+        isFutures,
+      } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         return {
@@ -502,6 +515,7 @@ export const orderbookRouter = createRouter()
               ticker: coin.ticker,
               isFanToken: coin.isFanToken,
               imageUrl: coin.image_url ?? undefined,
+              isFutures: isFutures,
             },
             buyExchanges,
             sellExchanges,

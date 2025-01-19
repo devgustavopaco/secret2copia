@@ -587,6 +587,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
             ) : (
               <div className={styles.dolarBlock}>
                 <span>Operações</span>
+
                 <div className={styles.dolarBlockContent}>
                   <span>cotação do dólar</span>
                   <div className={styles.dolarContainer}>

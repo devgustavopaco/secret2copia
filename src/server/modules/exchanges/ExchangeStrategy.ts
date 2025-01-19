@@ -32,6 +32,7 @@ export interface Exchange {
   };
   image_url?: string;
   isUSD: boolean;
+  isFutures?: boolean;
 }
 
 export interface Ticker {
@@ -43,11 +44,17 @@ export interface ExchangeStrategy {
   formatPair(
     baseToken: string,
     destinationToken: string,
-    isFanToken?: boolean
+    isFanToken?: boolean,
+    isFutures?: boolean
   ): string;
-  fetchOrderbook(pair: string, isFanToken?: boolean): Promise<Exchange>;
+  fetchOrderbook(
+    pair: string,
+    isFanToken?: boolean,
+    isFutures?: boolean
+  ): Promise<Exchange>;
   convertOrderbook(
     pair: string,
-    isFanToken?: boolean
+    isFanToken?: boolean,
+    isFutures?: boolean
   ): Orderbook | Promise<Orderbook>;
 }
