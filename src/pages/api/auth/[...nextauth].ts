@@ -30,9 +30,9 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         console.log(req.body);
-        if (!(await verifyRecaptchaToken(req.body?.recaptchaToken))) {
-          throw new Error("Invalid reCAPTCHA token.");
-        }
+        // if (!(await verifyRecaptchaToken(req.body?.recaptchaToken))) {
+        //   throw new Error("Invalid reCAPTCHA token.");
+        // }
 
         const user = await fetch(
           `${process.env.NEXTAUTH_URL}/api/users/checkCredentials`,
