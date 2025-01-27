@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,html,css,scss}\"",
@@ -46,7 +46,7 @@
     "dayjs": "^1.11.4",
     "https-proxy-agent": "^5.0.1",
     "jsonwebtoken": "^9.0.2",
-    "next": "12.2.1",
+    "next": "12.3.4",
     "next-auth": "^4.22.1",
     "next-s3-upload": "^0.2.2",
     "nextjs-progressbar": "^0.0.14",
