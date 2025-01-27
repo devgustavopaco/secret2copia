@@ -999,6 +999,92 @@ export class KuCoinStratefy implements ExchangeStrategy {
   }
 }
 
+// Kucoin Futures ---------------------------------------------------------------------
+
+interface KucoinFuturesOrderbook {
+  code: string;
+  data: {
+    sequence: number;
+    symbol: string;
+    side: string;
+    size: number;
+    price: string;
+    bestBidSize: number;
+    bestBidPrice: string;
+    bestAskSize: number;
+    bestAskPrice: string;
+    tradeId: string;
+    ts: number;
+  };
+}
+
+export class KucoinFuturesStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: KucoinFuturesOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const orderData = this.orderbook[pair]?.data;
+
+    // Since Kucoin futures API provides only best bid/ask, we'll create single entry arrays
+    const bids = [
+      {
+        price: Number(orderData?.bestBidPrice),
+        amount: Number(orderData?.bestBidSize),
+        sumVolume: Number(orderData?.bestBidSize),
+      },
+    ];
+
+    const asks = [
+      {
+        price: Number(orderData?.bestAskPrice),
+        amount: Number(orderData?.bestAskSize),
+        sumVolume: Number(orderData?.bestAskSize),
+      },
+    ];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (
+      baseToken !== "GAS" &&
+      baseToken !== "MDT" &&
+      baseToken !== "GMT" &&
+      baseToken !== "MULTI" &&
+      baseToken !== "QI"
+    ) {
+      return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}M`;
+    }
+    return "";
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api-futures.kucoin.com/api/v1/ticker?symbol=${pair}`;
+
+    const response = await fetchWithProxy(url, proxies);
+    const json = (await response.json()) as KucoinFuturesOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "KuCoin",
+      bid: {
+        price: Number(json.data.bestBidPrice),
+        amount: Number(json.data.bestBidSize),
+      },
+      ask: {
+        price: Number(json.data.bestAskPrice),
+        amount: Number(json.data.bestAskSize),
+      },
+      isUSD: true,
+      isFutures: true,
+    };
+  }
+}
+
+// NovaDAX ---------------------------------------------------------------------
+
 interface NovaDAXOrderbook {
   data: {
     bids: string[][];
@@ -1561,7 +1647,7 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
       baseToken !== "MULTI" &&
       baseToken !== "QI"
     ) {
-      return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+      return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
     }
     return "";
   }
@@ -1575,7 +1661,7 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
     this.orderbook[pair] = json;
 
     return {
-      name: "Mexc Futures",
+      name: "Mexc",
       bid: {
         price: Number(json.data.bids[0]![0]),
         amount: Number(json.data.bids[0]![1]),
@@ -1842,6 +1928,99 @@ export class BidgetStrategy implements ExchangeStrategy {
         amount: Number(json.data.asks[0]![1]),
       },
       isUSD: true,
+    };
+  }
+}
+// Bitget Futures ---------------------------------------------------------------------
+
+interface BitgetFuturesOrderbook {
+  code: string;
+  msg: string;
+  data: {
+    asks: string[][];
+    bids: string[][];
+    timestamp: number;
+  };
+}
+
+export class BitgetFuturesStrategy implements ExchangeStrategy {
+  orderbook: {
+    [key: string]: BitgetFuturesOrderbook;
+  } = {};
+
+  convertOrderbook(pair: string): Orderbook {
+    const bids =
+      this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(bid[1]);
+        } else {
+          sumVolume = Number(bid[1]);
+        }
+
+        acc.push({
+          price: Number(bid[0]),
+          amount: Number(bid[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    const asks =
+      this.orderbook[pair]?.data.asks.reduce((acc, ask, index) => {
+        let sumVolume = 0;
+        if (index - 1 >= 0) {
+          sumVolume = acc[index - 1]!.sumVolume + Number(ask[1]);
+        } else {
+          sumVolume = Number(ask[1]);
+        }
+
+        acc.push({
+          price: Number(ask[0]),
+          amount: Number(ask[1]),
+          sumVolume,
+        });
+
+        return acc;
+      }, [] as OrderbookOperation[]) ?? [];
+
+    return { bids, asks };
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    if (
+      baseToken !== "GAS" &&
+      baseToken !== "MDT" &&
+      baseToken !== "GMT" &&
+      baseToken !== "MULTI" &&
+      baseToken !== "QI"
+    ) {
+      return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}_UMCBL`;
+    }
+    return "";
+  }
+
+  async fetchOrderbook(pair: string): Promise<Exchange> {
+    const url = `https://api.bitget.com/api/mix/v1/market/depth?symbol=${pair}&limit=20`;
+
+    const response = await fetchWithProxy(url, proxies);
+    const json = (await response.json()) as BitgetFuturesOrderbook;
+
+    this.orderbook[pair] = json;
+
+    return {
+      name: "Bitget",
+      bid: {
+        price: Number(json.data.bids[0]![0]),
+        amount: Number(json.data.bids[0]![1]),
+      },
+      ask: {
+        price: Number(json.data.asks[0]![0]),
+        amount: Number(json.data.asks[0]![1]),
+      },
+      isUSD: true,
+      isFutures: true,
     };
   }
 }

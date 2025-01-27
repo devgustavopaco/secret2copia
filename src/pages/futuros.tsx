@@ -27,6 +27,7 @@ import styles from "../styles/futuros.module.scss";
 import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { useWebSocket } from "../hooks/useWebSocket";
 const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface FuturosProps {
@@ -37,6 +38,8 @@ interface FuturosProps {
   isNewUser: boolean;
   tickerData: Currency[];
 }
+
+const FUTURES_EXCHANGES = ["mexc", "bitget", "kucoin"];
 
 const Futuros: NextPage<FuturosProps> = ({
   ip,
@@ -526,6 +529,59 @@ const Futuros: NextPage<FuturosProps> = ({
     },
   };
 
+  console.log("loadingDolarChange:", loadingDolarChange);
+  console.log("sortedOperations:", sortedOperations);
+
+  // Extrair todos os símbolos únicos das operações
+  const symbols =
+    sortedOperations?.reduce((acc: string[], operation) => {
+      if (operation.ticker && !acc.includes(operation.ticker)) {
+        acc.push(operation.ticker);
+      }
+      return acc;
+    }, []) || [];
+
+  // Usar o hook com todos os símbolos
+  const prices = useWebSocket(symbols);
+
+  // Atualizar as operações com os novos preços
+  const updatedOperations = sortedOperations?.map((operation) => {
+    const binancePrice = prices[`binance_${operation.ticker}`];
+    const bitgetPrice = prices[`bitget_${operation.ticker}`];
+    const kucoinPrice = prices[`kucoin_${operation.ticker}`];
+    const mexcPrice = prices[`mexc_${operation.ticker}`];
+
+    return {
+      ...operation,
+      lowestAsk: {
+        ...operation.lowestAsk,
+        price:
+          operation.lowestAsk.exchange === "Binance" && binancePrice
+            ? parseFloat(binancePrice)
+            : operation.lowestAsk.exchange === "Bitget" && bitgetPrice
+            ? parseFloat(bitgetPrice)
+            : // : operation.lowestAsk.exchange === "KuCoin" && kucoinPrice
+            // ? parseFloat(kucoinPrice)
+            operation.lowestAsk.exchange === "MEXC" && mexcPrice
+            ? parseFloat(mexcPrice)
+            : operation.lowestAsk.price,
+      },
+      highestBid: {
+        ...operation.highestBid,
+        price:
+          operation.highestBid.exchange === "Binance" && binancePrice
+            ? parseFloat(binancePrice)
+            : operation.highestBid.exchange === "Bitget" && bitgetPrice
+            ? parseFloat(bitgetPrice)
+            : operation.highestBid.exchange === "KuCoin" && kucoinPrice
+            ? parseFloat(kucoinPrice)
+            : operation.highestBid.exchange === "MEXC" && mexcPrice
+            ? parseFloat(mexcPrice)
+            : operation.highestBid.price,
+      },
+    };
+  });
+
   return (
     <>
       <Head>
@@ -772,7 +828,7 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {sortedOperations.map((operation) => (
+                  {updatedOperations.map((operation) => (
                     <FuturosOperationCard
                       key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
                       coin={{

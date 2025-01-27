@@ -68,6 +68,8 @@ import {
   WooStrategy,
   XTStrategy,
   ZtbStrategy,
+  BitgetFuturesStrategy,
+  KucoinFuturesStrategy,
 } from "../modules/exchanges/Exchanges";
 import { createRouter } from "./context";
 import { getDollarValueForUser } from "./user";
@@ -139,6 +141,12 @@ const exchangeStrategies: StrategyObject = {
   coinext: new CoinextStrategy(),
 };
 
+const futuresExchangeStrategies: { [key: string]: ExchangeStrategy } = {
+  mexc: new MexcFuturesStrategy(),
+  bitget: new BitgetFuturesStrategy(),
+  kucoin: new KucoinFuturesStrategy(),
+};
+
 export interface OrderbookOperation {
   price: number;
   amount: number;
@@ -190,6 +198,13 @@ const formatExchangeName = (exchange: string): string => {
   return exchange.toLowerCase().replace(/\s/g, "");
 };
 
+// Função para verificar se uma exchange suporta futures
+const supportsFutures = (exchangeName: string): boolean => {
+  const formattedExchange = formatExchangeName(exchangeName);
+  // Verifica se existe uma estratégia de futures para esta exchange
+  return !!futuresExchangeStrategies[formattedExchange];
+};
+
 const fetchArbitrageOpportunity = async (
   ctx: any,
   coin: {
@@ -197,11 +212,12 @@ const fetchArbitrageOpportunity = async (
     ticker: string;
     isFanToken: boolean;
     imageUrl?: string;
-    isFutures?: boolean;
     isOpen?: boolean;
   },
   buyExchanges: string[],
   sellExchanges: string[],
+  buyFuturesExchanges: string[],
+  sellFuturesExchanges: string[],
   taxes: {
     exchange: {
       name: string;
@@ -211,23 +227,50 @@ const fetchArbitrageOpportunity = async (
     };
     tax: number;
   }[],
-  email: string
+  email: string,
+  isFutures: boolean
 ): Promise<ArbitrageOpportunity> => {
-  const { name, ticker, isFanToken, imageUrl, isFutures, isOpen = true } = coin;
+  const { name, ticker, isFanToken, imageUrl, isOpen = true } = coin;
+
+  console.log("Iniciando fetchArbitrageOpportunity");
+  console.log("buyExchanges:", buyExchanges);
+  console.log("sellExchanges:", sellExchanges);
+  console.log("isFutures (da seção):", isFutures);
 
   const orderBookPromises: Promise<Exchange>[] = [];
 
-  var uniqueExchanges = Array.from(
-    new Set([...buyExchanges, ...sellExchanges])
-  ).map((exchange) => formatExchangeName(exchange));
+  // Processar exchanges de compra
+  for (const exchange of buyExchanges) {
+    const formattedExchange = formatExchangeName(exchange);
+    const exchangeStrategy = exchangeStrategies[formattedExchange];
 
-  for (const exchange of uniqueExchanges) {
-    const exchangeStrategy = exchangeStrategies[exchange];
     if (exchangeStrategy) {
+      console.log(
+        `Exchange ${exchange} (buy) usando estratégia: ${exchangeStrategy.constructor.name}`
+      );
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
-
       orderBookPromises.push(
-        exchangeStrategy.fetchOrderbook(coinPair, isFanToken, isFutures)
+        exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
+      );
+    }
+  }
+
+  // Processar exchanges de venda
+  for (const exchange of sellExchanges) {
+    const formattedExchange = formatExchangeName(exchange);
+    // Se é futures, usa estratégia futures para venda
+    const exchangeStrategy =
+      isFutures && futuresExchangeStrategies[formattedExchange]
+        ? futuresExchangeStrategies[formattedExchange]
+        : exchangeStrategies[formattedExchange];
+
+    if (exchangeStrategy) {
+      console.log(
+        `Exchange ${exchange} (sell) usando estratégia: ${exchangeStrategy.constructor.name}`
+      );
+      const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
+      orderBookPromises.push(
+        exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
       );
     }
   }
@@ -250,18 +293,20 @@ const fetchArbitrageOpportunity = async (
         ? buyExchanges.some(
             (element) =>
               formatExchangeName(element) ===
-              formatExchangeName(exchange.name.toLowerCase())
+              formatExchangeName(exchange.name.replace(" Futures", ""))
           )
         : sellExchanges.some(
             (element) =>
               formatExchangeName(element) ===
-              formatExchangeName(exchange.name.toLowerCase())
+              formatExchangeName(exchange.name.replace(" Futures", ""))
           );
 
       if (isContained) {
         const priceInUSD = exchange.isUSD
           ? exchange.ask.price
           : exchange.ask.price / dolarValue;
+
+        // Add this log
 
         if (
           (isOpen && priceInUSD < acc.price) ||
@@ -394,6 +439,8 @@ const fetchArbitrageOpportunity = async (
     ? ((bidPrice - askPrice) / askPrice) * 100
     : ((askPrice - bidPrice) / bidPrice) * 100;
 
+  // Add this log
+
   return {
     coin: name,
     coinImage: imageUrl,
@@ -413,7 +460,12 @@ export const orderbookRouter = createRouter()
       .object({
         buyExchanges: z.string().array(),
         sellExchanges: z.string().array(),
+        buyFuturesExchanges: z.string().array().optional(),
+        sellFuturesExchanges: z.string().array().optional(),
         email: z.string().optional(),
+        isChecked: z.boolean().optional(),
+        isOpen: z.boolean().optional(),
+        isFutures: z.boolean().optional(),
       })
       .optional(),
     async resolve({ ctx, input }) {
@@ -422,7 +474,12 @@ export const orderbookRouter = createRouter()
         return [];
       }
 
-      const { buyExchanges, sellExchanges } = input;
+      const {
+        buyExchanges,
+        sellExchanges,
+        buyFuturesExchanges = [],
+        sellFuturesExchanges = [],
+      } = input;
 
       if (buyExchanges.length === 0 || sellExchanges.length === 0) {
         // console.log('Sending empty orderbook: empty buy or sell exchanges')
@@ -454,11 +511,15 @@ export const orderbookRouter = createRouter()
               ticker: coin.ticker,
               isFanToken: coin.isFanToken,
               imageUrl: coin.image_url ?? undefined,
+              isOpen: input.isOpen,
             },
             buyExchanges,
             sellExchanges,
+            buyFuturesExchanges,
+            sellFuturesExchanges,
             coin.ExchangeCoinTax,
-            input?.email || ""
+            input?.email || "",
+            input.isFutures || false
           )
         );
       }
@@ -478,12 +539,14 @@ export const orderbookRouter = createRouter()
     input: z.object({
       buyExchanges: z.string().array(),
       sellExchanges: z.string().array(),
+      buyFuturesExchanges: z.string().array().optional(),
+      sellFuturesExchanges: z.string().array().optional(),
       email: z.string().optional(),
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number().nullish(),
       isChecked: z.boolean().optional(),
-      isFutures: z.boolean().optional(),
       isOpen: z.boolean().optional(),
+      isFutures: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       if (!input) {
@@ -496,6 +559,8 @@ export const orderbookRouter = createRouter()
       const {
         buyExchanges,
         sellExchanges,
+        buyFuturesExchanges = [],
+        sellFuturesExchanges = [],
         cursor = 1,
         limit = 50,
         isFutures,
@@ -525,28 +590,19 @@ export const orderbookRouter = createRouter()
         };
       }
 
-      const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
-        [];
-
-      for (const coin of paginatedCoins) {
-        arbitrageOpportunitiesPromises.push(
-          fetchArbitrageOpportunity(
-            ctx,
-            {
-              name: coin.name,
-              ticker: coin.ticker,
-              isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
-              isFutures: isFutures,
-              isOpen: input.isOpen,
-            },
-            buyExchanges,
-            sellExchanges,
-            coin.ExchangeCoinTax,
-            input?.email || ""
-          )
-        );
-      }
+      const arbitrageOpportunitiesPromises = paginatedCoins.map((coin) =>
+        fetchArbitrageOpportunity(
+          ctx,
+          coin,
+          buyExchanges,
+          sellExchanges,
+          input.buyFuturesExchanges || [],
+          input.sellFuturesExchanges || [],
+          coin.ExchangeCoinTax,
+          input.email || "",
+          input.isFutures || false
+        )
+      );
 
       const results = await Promise.allSettled(arbitrageOpportunitiesPromises);
 
