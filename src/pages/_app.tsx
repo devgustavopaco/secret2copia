@@ -12,13 +12,16 @@ import "react-toastify/dist/ReactToastify.css";
 import superjson from "superjson";
 import type { AppRouter } from "../server/router";
 import "../styles/globals.scss";
+import { Session } from "next-auth";
 // Default theme. ~960B
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-type AppPropsWithLayout = AppProps & {
+type AppPropsWithLayout = AppProps<{
+  session: Session | null;
+}> & {
   Component: NextPageWithLayout;
 };
 
