@@ -24,6 +24,7 @@ type AppPropsWithLayout = AppProps<{
 }> & {
   Component: NextPageWithLayout;
 };
+//rebuild
 
 const queryClient = new QueryClient();
 export const revalidate = 0;
