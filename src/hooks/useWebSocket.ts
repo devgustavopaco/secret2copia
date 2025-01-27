@@ -112,15 +112,15 @@ export const useWebSocket = (symbols: string[]) => {
           });
 
           if (price) {
-            // Só atualiza se tiver preço
             setPrices((prev) => ({
               ...prev,
-              [`bitget_${symbol}`]: price,
+              [`bitget_${symbol}`]: price.toString(),
             }));
           }
         }
       } catch (error) {
         console.error("Erro ao processar mensagem Bitget:", error);
+        console.error("Dados que causaram o erro:", event.data);
       }
     };
 
@@ -159,58 +159,37 @@ export const useWebSocket = (symbols: string[]) => {
           const kucoinWs = new WebSocket(wsEndpoint);
           wsRef.current.kucoin = kucoinWs;
 
-          kucoinWs.onopen = () => {
-            // Subscribe apenas para futuros
-            formattedSymbols.forEach((symbol) => {
-              const subscribeMsg = {
-                id: Date.now(),
-                type: "subscribe",
-                topic: `/contractMarket/tickerV2:${symbol}M`, // Apenas endpoint de futuros
-                response: true,
-              };
-
-              kucoinWs.send(JSON.stringify(subscribeMsg));
-            });
-          };
-          const lastUpdate: { [key: string]: number } = {};
+          // Controle de throttle para KuCoin
+          const lastUpdate: Record<string, number> = {};
           const THROTTLE_MS = 50000; // 50 segundos
 
           kucoinWs.onmessage = (event) => {
             try {
               const data = JSON.parse(event.data);
 
-              if (data.type === "message") {
-                if (data.subject === "tickerV2") {
-                  const symbol = data.topic
-                    .split(":")[1]
-                    .replace("USDT", "")
-                    .replace("M", "");
-                  const price =
-                    data.data.bestBidPrice || data.data.bestAskPrice;
+              if (data.type === "message" && data.subject === "tickerV2") {
+                const symbol = data.topic
+                  .split(":")[1]
+                  .replace("USDT", "")
+                  .replace("M", "");
+                const price = data.data.bestBidPrice || data.data.bestAskPrice;
 
-                  if (price) {
-                    const now = Date.now();
-                    // Só atualiza se passou o tempo de throttle
-                    if (
-                      !lastUpdate[symbol] ||
-                      now - lastUpdate[symbol] >= THROTTLE_MS
-                    ) {
-                      lastUpdate[symbol] = now;
-                      setPrices((prev) => ({
-                        ...prev,
-                        [`kucoin_${symbol}`]: price.toString(),
-                      }));
-                    }
+                if (price) {
+                  const now = Date.now();
+                  const lastUpdateTime = lastUpdate[symbol] || 0;
+
+                  if (now - lastUpdateTime >= THROTTLE_MS) {
+                    lastUpdate[symbol] = now;
+                    setPrices((prev) => ({
+                      ...prev,
+                      [`kucoin_${symbol}`]: price.toString(),
+                    }));
                   }
                 }
               }
             } catch (error) {
               console.error("Erro ao processar mensagem KuCoin:", error);
             }
-          };
-
-          kucoinWs.onerror = (error) => {
-            console.error("Erro no WebSocket KuCoin:", error);
           };
 
           // Ping para manter conexão
@@ -225,13 +204,7 @@ export const useWebSocket = (symbols: string[]) => {
             }
           }, 50000); // 50 segundos para o ping também
 
-          return () => {
-            console.log("Limpando conexão KuCoin");
-            clearInterval(pingKucoinInterval);
-            if (wsRef.current.kucoin) {
-              wsRef.current.kucoin.close();
-            }
-          };
+          return pingKucoinInterval;
         }
       } catch (error) {
         console.error("Erro ao conectar com KuCoin:", error);
@@ -242,7 +215,7 @@ export const useWebSocket = (symbols: string[]) => {
       }
     };
 
-    connectKucoin();
+    const kucoinPingInterval = connectKucoin();
 
     // Tentar conectar à MEXC
     const connectMexc = () => {
