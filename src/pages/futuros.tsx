@@ -532,52 +532,57 @@ const Futuros: NextPage<FuturosProps> = ({
   console.log("loadingDolarChange:", loadingDolarChange);
   console.log("sortedOperations:", sortedOperations);
 
-  // Extrair todos os símbolos únicos das operações
-  const symbols =
-    sortedOperations?.reduce((acc: string[], operation) => {
-      if (operation.ticker && !acc.includes(operation.ticker)) {
-        acc.push(operation.ticker);
+  // Modify how we collect symbols and their exchanges
+  const symbolsWithExchanges = (sortedOperations ?? []).reduce(
+    (
+      acc: Array<{
+        symbol: string;
+        buyExchange: string;
+        sellExchange: string;
+      }>,
+      operation
+    ) => {
+      if (operation.ticker) {
+        acc.push({
+          symbol: operation.ticker,
+          buyExchange: operation.highestBid?.exchange.toLowerCase(),
+          sellExchange: operation.lowestAsk?.exchange.toLowerCase(),
+        });
       }
       return acc;
-    }, []) || [];
+    },
+    []
+  );
 
-  // Usar o hook com todos os símbolos
-  const prices = useWebSocket(symbols);
+  // Pass the symbols with exchanges to the hook
+  const prices = useWebSocket(symbolsWithExchanges);
 
-  // Atualizar as operações com os novos preços
   const updatedOperations = sortedOperations?.map((operation) => {
-    const binancePrice = prices[`binance_${operation.ticker}`];
-    const bitgetPrice = prices[`bitget_${operation.ticker}`];
-    const kucoinPrice = prices[`kucoin_${operation.ticker}`];
-    const mexcPrice = prices[`mexc_${operation.ticker}`];
+    const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
+      operation.ticker
+    }`;
+    const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
+      operation.ticker
+    }`;
+
+    const askPrice = prices[askPriceKey];
+    const bidPrice = prices[bidPriceKey];
 
     return {
       ...operation,
       lowestAsk: {
         ...operation.lowestAsk,
         price:
-          operation.lowestAsk.exchange === "Binance" && binancePrice
-            ? parseFloat(binancePrice)
-            : operation.lowestAsk.exchange === "Bitget" && bitgetPrice
-            ? parseFloat(bitgetPrice)
-            : // : operation.lowestAsk.exchange === "KuCoin" && kucoinPrice
-            // ? parseFloat(kucoinPrice)
-            operation.lowestAsk.exchange === "MEXC" && mexcPrice
-            ? parseFloat(mexcPrice)
-            : operation.lowestAsk.price,
+          typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
+            ? parseFloat(askPrice)
+            : operation.lowestAsk?.price,
       },
       highestBid: {
         ...operation.highestBid,
         price:
-          operation.highestBid.exchange === "Binance" && binancePrice
-            ? parseFloat(binancePrice)
-            : operation.highestBid.exchange === "Bitget" && bitgetPrice
-            ? parseFloat(bitgetPrice)
-            : operation.highestBid.exchange === "KuCoin" && kucoinPrice
-            ? parseFloat(kucoinPrice)
-            : operation.highestBid.exchange === "MEXC" && mexcPrice
-            ? parseFloat(mexcPrice)
-            : operation.highestBid.price,
+          typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
+            ? parseFloat(bidPrice)
+            : operation.highestBid?.price,
       },
     };
   });
@@ -613,10 +618,10 @@ const Futuros: NextPage<FuturosProps> = ({
               symbol={selectedOperation.ticker}
               orderbookBid={selectedOperation.highestBid}
               orderbookAsk={selectedOperation.lowestAsk}
-              buyWhere={selectedOperation.highestBid.image_url}
-              sellWhere={selectedOperation.lowestAsk.image_url}
-              buyEchangeName={selectedOperation.highestBid.exchange}
-              sellEchangeName={selectedOperation.lowestAsk.exchange}
+              buyWhere={selectedOperation.highestBid?.image_url}
+              sellWhere={selectedOperation.lowestAsk?.image_url}
+              buyEchangeName={selectedOperation.highestBid?.exchange}
+              sellEchangeName={selectedOperation.lowestAsk?.exchange}
               coin={selectedOperation.coin}
               coinImage={selectedOperation.coinImage}
               setOpenModal={setModalOpenOrderBook}
@@ -828,9 +833,9 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {updatedOperations.map((operation) => (
+                  {(updatedOperations ?? []).map((operation) => (
                     <FuturosOperationCard
-                      key={`${operation.coin}-${operation.lowestAsk.price}-${operation.highestBid.price}-${operation.spread}`}
+                      key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
                       coin={{
                         image: operation.coinImage,
                         name: operation.coin,
