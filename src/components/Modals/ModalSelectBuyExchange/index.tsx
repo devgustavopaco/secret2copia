@@ -11,7 +11,8 @@ interface ModalExchange {
   isCleaned?: boolean;
 }
 
-const ALLOWED_EXCHANGES = ["Kucoin", "Bitget", "Mexc"];
+const ALLOWED_BUY_EXCHANGES = ["Binance", "Bybit"];
+const ALLOWED_SELL_EXCHANGES = ["Bitget", "Mexc"];
 
 export function FullScreenModal({
   onClose,
@@ -36,7 +37,9 @@ export function FullScreenModal({
 
   const filteredExchanges =
     activeExchanges?.filter((exchange) =>
-      ALLOWED_EXCHANGES.includes(exchange.name)
+      operation === "compra"
+        ? ALLOWED_BUY_EXCHANGES.includes(exchange.name)
+        : ALLOWED_SELL_EXCHANGES.includes(exchange.name)
     ) || [];
 
   const handleAddExchangeClick = (exchange: any) => {
