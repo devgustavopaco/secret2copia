@@ -145,6 +145,7 @@ const futuresExchangeStrategies: { [key: string]: ExchangeStrategy } = {
   mexc: new MexcFuturesStrategy(),
   bitget: new BitgetFuturesStrategy(),
   kucoin: new KucoinFuturesStrategy(),
+  gateio: new GateIoFuturesStrategy(),
 };
 
 export interface OrderbookOperation {
