@@ -229,7 +229,7 @@ export function ModalOrderBook({
                       decimalSeparator=","
                       decimalScale={4}
                       fixedDecimalScale={false}
-                      prefix="R$ "
+                      prefix="$ "
                       allowNegative={false}
                       placeholder="Preço de compra"
                       className="my-input"
@@ -254,7 +254,7 @@ export function ModalOrderBook({
                       decimalSeparator=","
                       decimalScale={4}
                       fixedDecimalScale={false}
-                      prefix="R$ "
+                      prefix="$ "
                       allowNegative={false}
                       placeholder="Preço de venda"
                       className="my-input"
@@ -352,28 +352,28 @@ export function ModalOrderBook({
                     }`}
                   >
                     <p>
-                      <strong>Total de Compra:</strong> R${" "}
+                      <strong>Total de Compra:</strong> ${" "}
                       {totalBuy.toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </p>
                     <p>
-                      <strong>Total de Venda:</strong> R${" "}
+                      <strong>Total de Venda:</strong> ${" "}
                       {totalSell.toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </p>
                     <p>
-                      <strong>Lucro Bruto:</strong> R${" "}
+                      <strong>Lucro Bruto:</strong> ${" "}
                       {grossProfit.toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
                     </p>
                     <p>
-                      <strong>Taxas Totais:</strong> R${" "}
+                      <strong>Taxas Totais:</strong> ${" "}
                       {totalFees.toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -383,7 +383,7 @@ export function ModalOrderBook({
                       <strong>
                         {profit >= 0 ? "Lucro Líquido:" : "Prejuízo:"}
                       </strong>{" "}
-                      R${" "}
+                      ${" "}
                       {Math.abs(profit).toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,

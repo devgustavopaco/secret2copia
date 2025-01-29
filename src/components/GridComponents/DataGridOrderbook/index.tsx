@@ -103,7 +103,7 @@ export function DataGridOrderbook({
   const columns: GridColumns = [
     {
       field: "price",
-      headerName: "Preço (R$)",
+      headerName: "Preço ($)",
       width: 200,
       editable: false,
       sortable: false,
@@ -137,7 +137,7 @@ export function DataGridOrderbook({
     },
     {
       field: "total",
-      headerName: "Total (R$)",
+      headerName: "Total ($)",
       width: 180,
       editable: false,
       sortable: false,

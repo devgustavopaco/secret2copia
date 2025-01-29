@@ -594,7 +594,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                     <p>
                       {dollarPrice ? (
                         <>
-                          <span>R$</span>{" "}
+                          <span>$</span>{" "}
                           {numberFormatter.format(dollarPrice ?? -1)}
                         </>
                       ) : (
@@ -605,7 +605,7 @@ const Monitoring: NextPage<MonitoringProps> = ({
                     {dollarPrice ? (
                       <>
                         <div>
-                          <span>R$</span>
+                          <span>$</span>
                           <input
                             className={styles.dolarLabel}
                             type="number"

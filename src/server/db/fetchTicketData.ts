@@ -43,7 +43,7 @@ export async function fetchTickerData(): Promise<Currency[]> {
         const data = await response.json();
         return {
           name: data.symbol.replace("USDT", ""),
-          price: `R$${(parseFloat(data.lastPrice) * exchangeRate).toFixed(2)}`,
+          price: `$${(parseFloat(data.lastPrice) * exchangeRate).toFixed(2)}`,
           percentage: `${parseFloat(data.priceChangePercent).toFixed(2)}%`,
         };
       } catch (error) {

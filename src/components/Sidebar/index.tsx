@@ -91,7 +91,7 @@ export function Sidebar({
             <p>
               {dollarPrice ? (
                 <>
-                  <span>R$</span> {numberFormatter.format(dollarPrice ?? -1)}
+                  <span>$</span> {numberFormatter.format(dollarPrice ?? -1)}
                 </>
               ) : (
                 <BeatLoader color="#969696" size="0.5rem" />
@@ -100,7 +100,7 @@ export function Sidebar({
 
             {dollarPrice ? (
               <div className={styles.dollarPrice}>
-                <span>R$</span>
+                <span>$</span>
                 <input
                   className={styles.dolarLabel}
                   type="number"

@@ -652,7 +652,7 @@ const Futuros: NextPage<FuturosProps> = ({
                     <p>
                       {dollarPrice ? (
                         <>
-                          <span>R$</span>{" "}
+                          <span>$</span>{" "}
                           {numberFormatter.format(dollarPrice ?? -1)}
                         </>
                       ) : (
@@ -663,7 +663,7 @@ const Futuros: NextPage<FuturosProps> = ({
                     {dollarPrice ? (
                       <>
                         <div>
-                          <span>R$</span>
+                          <span>$</span>
                           <input
                             className={styles.dolarLabel}
                             type="number"

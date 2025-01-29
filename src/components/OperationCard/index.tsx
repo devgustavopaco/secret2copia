@@ -202,7 +202,7 @@ export function OperationCard({
             {coin.ask.exchange}
           </div>
           <p>
-            R$ &nbsp;
+            $ &nbsp;
             {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
           </p>
         </div>
@@ -218,7 +218,7 @@ export function OperationCard({
             {coin.bid.exchange}
           </div>
           <p>
-            R$ &nbsp;
+            $ &nbsp;
             {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}
           </p>
         </div>
@@ -233,7 +233,7 @@ export function OperationCard({
         </p>
         <p>
           <span>Taxas</span>
-          {percentageFormatter.format(coin.fee)} + R$
+          {percentageFormatter.format(coin.fee)} + $
           {(coin.ask.isUSD ? coin.tax * dolarValue : coin.tax).toFixed(2)}
         </p>
       </div>
