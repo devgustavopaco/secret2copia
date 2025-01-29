@@ -10,7 +10,7 @@ export default async function handler(
   if (req.method === "GET") {
     try {
       const exchangeId = req.query.exchangeId as string;
-      const registeredCoins = await prisma.exchangeCoinTax.findMany({
+      const registeredCoins = await prisma.exchangeCoinTaxFuture.findMany({
         where: { exchangeId },
         include: {
           coin: true,

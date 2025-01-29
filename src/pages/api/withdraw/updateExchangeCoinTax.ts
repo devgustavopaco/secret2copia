@@ -11,7 +11,7 @@ export default async function handler(
     const { exchangeId, ticker } = req.body;
     const tax = req.body.tax || 0;
     try {
-      const updated = await prisma.exchangeCoinTax.updateMany({
+      const updated = await prisma.exchangeCoinTaxFuture.updateMany({
         where: {
           exchangeId: exchangeId,
 

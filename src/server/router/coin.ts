@@ -6,7 +6,7 @@ import { createRouter } from "./context";
 export const coinRouter = createRouter()
   .query("getActiveCoins", {
     resolve({ ctx }) {
-      const coins = ctx.prisma.coin.findMany({
+      const coins = ctx.prisma.coinFuture.findMany({
         where: {
           active: true,
         },
@@ -21,7 +21,7 @@ export const coinRouter = createRouter()
     }),
     resolve({ ctx, input }) {
       const { search } = input ?? {};
-      const coins = ctx.prisma.coin.findMany({
+      const coins = ctx.prisma.coinFuture.findMany({
         where: {
           name: search
             ? {
@@ -38,10 +38,10 @@ export const coinRouter = createRouter()
       id: z.string().cuid(),
     }),
     async resolve({ ctx, input }) {
-      const coin = await ctx.prisma.coin.findUnique({
+      const coin = await ctx.prisma.coinFuture.findUnique({
         where: { id: input.id },
         include: {
-          ExchangeCoinTax: {
+          ExchangeCoinTaxFuture: {
             include: {
               exchange: true,
             },
@@ -69,9 +69,10 @@ export const coinRouter = createRouter()
     async resolve({ ctx, input }) {
       const { id } = input;
 
-      const deletedExchangeCoinTax = await ctx.prisma.exchangeCoinTax.delete({
-        where: { id: id },
-      });
+      const deletedExchangeCoinTax =
+        await ctx.prisma.exchangeCoinTaxFuture.delete({
+          where: { id: id },
+        });
 
       return deletedExchangeCoinTax;
     },
@@ -91,7 +92,7 @@ export const coinRouter = createRouter()
       try {
         console.log("Chamada para criar moeda recebida:", input);
 
-        const coin = await ctx.prisma.coin.create({
+        const coin = await ctx.prisma.coinFuture.create({
           data: {
             name: input.name,
             ticker: input.ticker,
@@ -103,7 +104,7 @@ export const coinRouter = createRouter()
 
         console.log("Moeda criada com sucesso:", coin);
 
-        const exchangeCoinTax = await ctx.prisma.exchangeCoinTax.create({
+        const exchangeCoinTax = await ctx.prisma.exchangeCoinTaxFuture.create({
           data: {
             coinId: coin.id,
             exchangeId: input.exchangeId,
@@ -136,10 +137,11 @@ export const coinRouter = createRouter()
       const { id, tax } = input;
 
       try {
-        const updatedExchangeCoinTax = await ctx.prisma.exchangeCoinTax.update({
-          where: { id },
-          data: { tax },
-        });
+        const updatedExchangeCoinTax =
+          await ctx.prisma.exchangeCoinTaxFuture.update({
+            where: { id },
+            data: { tax },
+          });
 
         return updatedExchangeCoinTax;
       } catch (error) {
@@ -184,7 +186,7 @@ export const coinRouter = createRouter()
             });
           }
 
-          return ctx.prisma.exchangeCoinTax.create({
+          return ctx.prisma.exchangeCoinTaxFuture.create({
             data: {
               coinId,
               exchangeId,
@@ -204,7 +206,7 @@ export const coinRouter = createRouter()
       ids: z.string().cuid().array(),
     }),
     async resolve({ ctx, input }) {
-      const coin = await ctx.prisma.coin.deleteMany({
+      const coin = await ctx.prisma.coinFuture.deleteMany({
         where: {
           id: {
             in: input.ids,
@@ -232,7 +234,7 @@ export const coinRouter = createRouter()
       isFanToken: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
-      const coin = await ctx.prisma.coin.update({
+      const coin = await ctx.prisma.coinFuture.update({
         where: {
           id: input.id,
         },

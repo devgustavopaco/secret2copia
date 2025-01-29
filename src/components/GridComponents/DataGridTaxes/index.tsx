@@ -6,7 +6,7 @@ import {
   GridSelectionModel,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
-import type { ExchangeCoinTax } from "@prisma/client";
+import type { ExchangeCoinTaxFuture } from "@prisma/client";
 import { CheckCircle, XCircle } from "phosphor-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -14,7 +14,7 @@ import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
 
 interface DataGridTaxesProps {
-  data: ExchangeCoinTax[];
+  data: ExchangeCoinTaxFuture[];
 
   isLoading?: boolean;
   onSelect: (ids: string[]) => void;

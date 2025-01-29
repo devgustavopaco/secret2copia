@@ -43,7 +43,7 @@ model User {
   name          String?
   email         String?     @unique
   emailVerified DateTime?
-  image         String?
+  image         String? @db.Text
   password      String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -91,7 +91,7 @@ model Exchange {
   tag             String            @unique
   name            String
   fee             Float
-  image_url       String?
+  image_url       String?           @db.Text
   convert         Boolean
   active          Boolean           @default(true)
   bronze          Boolean
@@ -100,18 +100,31 @@ model Exchange {
   platinum        Boolean
   registerUrl     String?
   ExchangeCoinTax ExchangeCoinTax[]
+  ExchangeCoinTaxFuture ExchangeCoinTaxFuture[]
 }
 
 model Coin {
   id              String            @id @default(cuid())
   name            String            @unique
   ticker          String
-  image_url       String?
+  image_url       String?           @db.Text
   active          Boolean
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   isFanToken      Boolean           @default(false)
   ExchangeCoinTax ExchangeCoinTax[]
+}
+
+model CoinFuture {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  ticker          String
+  image_url       String?           @db.Text
+  active          Boolean
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  isFanToken      Boolean           @default(false)
+  ExchangeCoinTaxFuture ExchangeCoinTaxFuture[]
 }
 
 model ExchangeCoinTax {
@@ -125,6 +138,19 @@ model ExchangeCoinTax {
   updatedAt     DateTime @updatedAt
   exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
   coin          Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+}
+
+model ExchangeCoinTaxFuture {
+  id            String   @id @default(cuid())
+  exchangeId    String
+  coinId        String
+  tax           Float
+  confirmations Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  coin          CoinFuture     @relation(fields: [coinId], references: [id], onDelete: Cascade)
 }
 
 model IP {

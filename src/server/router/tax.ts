@@ -1,4 +1,4 @@
-import { ExchangeCoinTax, Prisma } from "@prisma/client";
+import { ExchangeCoinTaxFuture, Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createRouter } from "./context";
@@ -42,13 +42,15 @@ export const taxRouter = createRouter()
       const { search } = input;
       const searchString = search ? `%${search}%` : `%`;
 
-      const result = await ctx.prisma.$queryRaw<ExchangeCoinTax[]>(Prisma.sql`
+      const result = await ctx.prisma.$queryRaw<ExchangeCoinTaxFuture[]>(
+        Prisma.sql`
         SELECT ect.id, ect.exchangeId, ect.coinId, c.name AS coinName, e.name AS exchangeName, ect.tax, ect.confirmations, ect.active, ect.createdAt, ect.updatedAt
-        FROM ExchangeCoinTax AS ect
-        JOIN Coin AS c ON ect.coinId = c.id
+        FROM ExchangeCoinTaxFuture AS ect
+        JOIN CoinFuture AS c ON ect.coinId = c.id
         JOIN Exchange AS e ON ect.exchangeId = e.id
         WHERE c.name LIKE ${searchString}
-        `);
+        `
+      );
 
       return result;
     },
@@ -62,7 +64,7 @@ export const taxRouter = createRouter()
       confirmations: z.number().int().nonnegative(),
     }),
     async resolve({ ctx, input }) {
-      const tax = await ctx.prisma.exchangeCoinTax.create({
+      const tax = await ctx.prisma.exchangeCoinTaxFuture.create({
         data: {
           exchangeId: input.exchangeId,
           coinId: input.coinId,
@@ -82,7 +84,7 @@ export const taxRouter = createRouter()
       active: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
-      const tax = await ctx.prisma.exchangeCoinTax.update({
+      const tax = await ctx.prisma.exchangeCoinTaxFuture.update({
         where: {
           id: input.id,
         },
@@ -113,7 +115,7 @@ export const taxRouter = createRouter()
       ids: z.string().cuid().array(),
     }),
     async resolve({ ctx, input }) {
-      const tax = await ctx.prisma.exchangeCoinTax.deleteMany({
+      const tax = await ctx.prisma.exchangeCoinTaxFuture.deleteMany({
         where: {
           id: {
             in: input.ids,

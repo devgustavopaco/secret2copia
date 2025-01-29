@@ -517,7 +517,7 @@ export const orderbookRouter = createRouter()
             sellExchanges,
             buyFuturesExchanges,
             sellFuturesExchanges,
-            coin.ExchangeCoinTax,
+            coin.ExchangeCoinTaxFuture,
             input?.email || "",
             input.isFutures || false
           )
@@ -598,7 +598,7 @@ export const orderbookRouter = createRouter()
           sellExchanges,
           input.buyFuturesExchanges || [],
           input.sellFuturesExchanges || [],
-          coin.ExchangeCoinTax,
+          coin.ExchangeCoinTaxFuture,
           input.email || "",
           input.isFutures || false
         )

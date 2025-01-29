@@ -1,11 +1,11 @@
-import { Coin } from "@prisma/client";
+import { CoinFuture } from "@prisma/client";
 import { prisma } from "./db/client";
 
 export class CoinsSingleton {
   private static instance: CoinsSingleton;
 
-  public coins: (Coin & {
-    ExchangeCoinTax: {
+  public coins: (CoinFuture & {
+    ExchangeCoinTaxFuture: {
       exchange: {
         name: string;
         fee: number;
@@ -28,13 +28,13 @@ export class CoinsSingleton {
   }
 
   public async updateCoins(isChecked?: boolean): Promise<void> {
-    this.coins = await prisma.coin.findMany({
+    this.coins = await prisma.coinFuture.findMany({
       where: {
         active: true,
         ...(isChecked && { isFanToken: true }),
       },
       include: {
-        ExchangeCoinTax: {
+        ExchangeCoinTaxFuture: {
           where: {
             active: true,
           },
