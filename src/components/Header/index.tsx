@@ -144,13 +144,13 @@ export function Header({
               Home
             </a>
           </Link>
-          <Link href="/monitor">
+          <Link href="/futuros">
             <a
               className={`${styles.menuItem} ${
-                router.pathname === "/monitor" ? styles.active : ""
+                router.pathname === "/futuros" ? styles.active : ""
               }`}
             >
-              Monitor
+              Futuros
             </a>
           </Link>
           <Link href="/videos">
@@ -235,9 +235,9 @@ export function Header({
               </Link>
             </li>
             <li>
-              <Link href="/monitor">
-                <a className={router.pathname === "/monitor" ? "active" : ""}>
-                  Monitor
+              <Link href="/futuros">
+                <a className={router.pathname === "/futuros" ? "active" : ""}>
+                  Futuros
                 </a>
               </Link>
             </li>
@@ -327,9 +327,9 @@ export function Header({
       >
         <ul role="list">
           <li>
-            <Link href="/monitor">
-              <a className={router.pathname === "/monitor" ? "active" : ""}>
-                Monitor
+            <Link href="/futuros">
+              <a className={router.pathname === "/futuros" ? "active" : ""}>
+                Futuros
               </a>
             </Link>
           </li>

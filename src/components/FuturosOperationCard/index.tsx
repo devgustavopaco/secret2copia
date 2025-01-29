@@ -101,14 +101,10 @@ const formatterSpread = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
 });
 
-const calculatePrice = (
-  price: number,
-  isUSD: boolean,
-  dolarValue: number,
-  symbol: string
-) => {
-  let calculatedPrice = isUSD ? price * dolarValue : price;
-
+const calculatePrice = (price: number, isUSD: boolean, dolarValue: number) => {
+  // Inverte a lógica: se isUSD é true, o preço já está em dólar.
+  // Se isUSD for false, então o preço está em BRL e dividimos por dolarValue.
+  const calculatedPrice = isUSD ? price : price / dolarValue;
   return calculatedPrice;
 };
 
@@ -127,18 +123,8 @@ export function FuturosOperationCard({
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
-  const bidPrice = calculatePrice(
-    coin.bid.price,
-    coin.bid.isUSD,
-    dolarValue,
-    coin.symbol
-  );
-  const askPrice = calculatePrice(
-    coin.ask.price,
-    coin.ask.isUSD,
-    dolarValue,
-    coin.symbol
-  );
+  const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
+  const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
   const animationData = isChecked
     ? require("/public/animations/checkPurple.json")
     : require("/public/animations/checkGreen.json");

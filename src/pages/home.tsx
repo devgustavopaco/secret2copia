@@ -513,7 +513,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
             className="mySwiper"
           >
             <SwiperSlide>
-              <Link href="/monitor">
+              <Link href="/futuros">
                 <img
                   src="images/bannersModulos/criptoMonitor.png"
                   alt="Cripto Monitor"

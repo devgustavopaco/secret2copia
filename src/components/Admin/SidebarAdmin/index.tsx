@@ -20,7 +20,7 @@ export function SidebarAdmin() {
         <h2>Painel</h2>
 
         <nav className={styles.sidebarList}>
-          <Link href="/monitor/">
+          <Link href="/futuros/">
             <a className={styles.sidebarListItem}>
               <Monitor className={styles.sidebarIcon} weight="bold" />
               <span className={styles.sidebarText}>Monitor</span>
