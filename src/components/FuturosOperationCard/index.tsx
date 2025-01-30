@@ -145,6 +145,64 @@ export function FuturosOperationCard({
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const spotLinks = {
+    bybit: (coin: string, pair: string) =>
+      `https://www.bybit.com/trade/spot/${coin}/${pair}`,
+    binance: (coin: string, pair: string) =>
+      `https://www.binance.com/en/trade/${coin}_${pair}`,
+    gate: (coin: string, pair: string) =>
+      `https://www.gate.io/trade/${coin}_${pair}`,
+    bitget: (coin: string, pair: string) =>
+      `https://www.bitget.com/spot/${coin}${pair}`,
+    mexc: (coin: string, pair: string) =>
+      `https://www.mexc.com/exchange/${coin}_${pair}`,
+  };
+
+  const futuresLinks = {
+    bybit: (coin: string, pair: string) =>
+      `https://www.bybit.com/trade/${coin}${pair}`,
+    binance: (coin: string, pair: string) =>
+      `https://www.binance.com/en/futures/${coin}${pair}_PERP`,
+    gate: (coin: string, pair: string) =>
+      `https://www.gate.io/futures/USDT/${coin}_${pair}`,
+
+    bitget: (coin: string, pair: string) =>
+      `https://www.bitget.com/futures/${coin}${pair}`,
+    mexc: (coin: string, pair: string) =>
+      `https://futures.mexc.com/exchange/${coin}_${pair}`,
+  };
+
+  function handleRedirect(
+    exchange: string,
+    coin: string,
+    pair: string,
+    isFutures = false
+  ) {
+    let normalizedExchange = exchange.toLowerCase();
+
+    if (normalizedExchange.includes("gate")) {
+      normalizedExchange = "gate";
+    }
+
+    const links = isFutures ? futuresLinks : spotLinks;
+
+    const urlBuilder = links[normalizedExchange as keyof typeof links];
+    if (!urlBuilder) {
+      console.error("Exchange não suportada:", exchange);
+      return;
+    }
+
+    const url = urlBuilder(coin, pair);
+
+    console.log("Tentando abrir URL:", url);
+
+    const newTab = window.open(url, "_blank");
+
+    if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
+      window.location.href = url;
+    }
+  }
+
   return (
     <section
       className={`${styles.card} ${isChecked ? styles.cardChecked : ""}`}
@@ -188,7 +246,18 @@ export function FuturosOperationCard({
         <div>
           <h3>SPOT</h3>
           <div>
-            {coin.ask.exchange}
+            <span
+              onClick={() =>
+                handleRedirect(coin.ask.exchange, coin.symbol, "USDT")
+              }
+              style={{
+                cursor: "pointer",
+                color: "inherit",
+                textDecoration: "none",
+              }}
+            >
+              {coin.ask.exchange}
+            </span>
             {coin.ask.image_url && (
               <img src={coin.ask.image_url} alt={coin.ask.exchange} />
             )}
@@ -203,7 +272,18 @@ export function FuturosOperationCard({
         <div>
           <h3>FUTUROS</h3>
           <div className={styles.textEnd}>
-            {coin.bid.exchange}
+            <span
+              onClick={() =>
+                handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true)
+              }
+              style={{
+                cursor: "pointer",
+                color: "inherit",
+                textDecoration: "none",
+              }}
+            >
+              {coin.bid.exchange}
+            </span>
             {coin.bid.image_url && (
               <img src={coin.bid.image_url} alt={coin.bid.exchange} />
             )}
