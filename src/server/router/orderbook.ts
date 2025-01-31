@@ -212,7 +212,7 @@ const fetchArbitrageOpportunity = async (
     name: string;
     ticker: string;
     isFanToken: boolean;
-    imageUrl?: string;
+    image_url?: string;
     isOpen?: boolean;
   },
   buyExchanges: string[],
@@ -231,12 +231,8 @@ const fetchArbitrageOpportunity = async (
   email: string,
   isFutures: boolean
 ): Promise<ArbitrageOpportunity> => {
-  const { name, ticker, isFanToken, imageUrl, isOpen = true } = coin;
-
-  console.log("Iniciando fetchArbitrageOpportunity");
-  console.log("buyExchanges:", buyExchanges);
-  console.log("sellExchanges:", sellExchanges);
-  console.log("isFutures (da seção):", isFutures);
+  const { name, ticker, isFanToken, image_url, isOpen = true } = coin;
+  console.log(coin.image_url);
 
   const orderBookPromises: Promise<Exchange>[] = [];
 
@@ -246,9 +242,6 @@ const fetchArbitrageOpportunity = async (
     const exchangeStrategy = exchangeStrategies[formattedExchange];
 
     if (exchangeStrategy) {
-      console.log(
-        `Exchange ${exchange} (buy) usando estratégia: ${exchangeStrategy.constructor.name}`
-      );
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
       orderBookPromises.push(
         exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
@@ -266,9 +259,6 @@ const fetchArbitrageOpportunity = async (
         : exchangeStrategies[formattedExchange];
 
     if (exchangeStrategy) {
-      console.log(
-        `Exchange ${exchange} (sell) usando estratégia: ${exchangeStrategy.constructor.name}`
-      );
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
       orderBookPromises.push(
         exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
@@ -445,7 +435,7 @@ const fetchArbitrageOpportunity = async (
 
   return {
     coin: name,
-    coinImage: imageUrl,
+    coinImage: image_url,
     ticker,
     lowestAsk,
     highestBid,
@@ -503,7 +493,7 @@ export const orderbookRouter = createRouter()
 
       const arbitrageOpportunitiesPromises: Promise<ArbitrageOpportunity>[] =
         [];
-
+      console.log(activeCoins[0]?.image_url, "IMAGEURL");
       for (const coin of activeCoins) {
         arbitrageOpportunitiesPromises.push(
           fetchArbitrageOpportunity(
@@ -512,7 +502,7 @@ export const orderbookRouter = createRouter()
               name: coin.name,
               ticker: coin.ticker,
               isFanToken: coin.isFanToken,
-              imageUrl: coin.image_url ?? undefined,
+              image_url: coin.image_url ?? undefined,
               isOpen: input.isOpen,
             },
             buyExchanges,
@@ -595,7 +585,13 @@ export const orderbookRouter = createRouter()
       const arbitrageOpportunitiesPromises = paginatedCoins.map((coin) =>
         fetchArbitrageOpportunity(
           ctx,
-          coin,
+          {
+            name: coin.name,
+            ticker: coin.ticker,
+            isFanToken: coin.isFanToken,
+            image_url: coin.image_url ?? undefined,
+            isOpen: input.isOpen,
+          },
           buyExchanges,
           sellExchanges,
           input.buyFuturesExchanges || [],

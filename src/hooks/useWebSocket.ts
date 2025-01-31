@@ -70,11 +70,9 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
 
       // If symbols changed, reconnect the websocket with new subscriptions
       if (hasChanges && symbols.size > 0) {
-        console.log(`Reconnecting ${exchange} due to symbol changes`);
         wsRef.current[exchange as keyof typeof wsRef.current]?.close();
         // The existing connection logic will handle reconnection
       } else if (hasChanges && symbols.size === 0) {
-        console.log(`Closing connection for ${exchange} - no symbols needed`);
         wsRef.current[exchange as keyof typeof wsRef.current]?.close();
         wsRef.current[exchange as keyof typeof wsRef.current] = undefined;
       }
@@ -97,7 +95,6 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
       wsRef.current.binance = binanceWs;
 
       binanceWs.onopen = () => {
-        console.log("Binance WebSocket conectado");
         const subscribeMsg = {
           method: "SUBSCRIBE",
           params:
@@ -115,10 +112,7 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
           const data = JSON.parse(event.data);
           if (data.e === "24hrTicker") {
             const symbol = data.s.replace("USDT", ""); // Remove USDT para armazenar
-            console.log("Recebido preço Binance:", {
-              symbol,
-              price: data.c,
-            });
+
             setPrices((prev) => ({
               ...prev,
               [`binance_${symbol}`]: data.c,
@@ -141,7 +135,6 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
         wsRef.current.bitget = bitgetWs;
 
         bitgetWs.onopen = () => {
-          console.log("Bitget WebSocket conectado");
           try {
             const subscribeMsg = {
               op: "subscribe",
@@ -160,7 +153,6 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
         };
 
         bitgetWs.onclose = () => {
-          console.log("Bitget WebSocket fechado, tentando reconectar...");
           setTimeout(connectBitget, 5000);
         };
 
@@ -175,12 +167,6 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
             if (data.arg?.channel === "ticker" && data.data?.[0]) {
               const symbol = data.arg.instId.replace("USDT", "");
               const price = data.data[0].lastPr;
-
-              console.log("Recebido preço Bitget:", {
-                symbol,
-                price,
-                rawData: data.data[1],
-              });
 
               if (price) {
                 // Só atualiza se tiver preço
@@ -396,10 +382,7 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
                 relevantTickers.forEach((ticker: any) => {
                   const symbol = ticker.symbol.split("_")[0];
                   const price = ticker.lastPrice;
-                  console.log("Recebido preço MEXC:", {
-                    symbol,
-                    price,
-                  });
+
                   if (price) {
                     setPrices((prev) => {
                       const oldPrice = prev[`mexc_${symbol}`];

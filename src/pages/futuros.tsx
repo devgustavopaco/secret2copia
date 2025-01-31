@@ -422,6 +422,7 @@ const Futuros: NextPage<FuturosProps> = ({
     }
 
     sortedOperations = [...sortedOperations];
+    console.log(sortedOperations);
   }
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
