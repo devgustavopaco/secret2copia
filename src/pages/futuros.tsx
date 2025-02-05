@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { XCircle } from "phosphor-react";
+import { XCircle, Pause, Play } from "phosphor-react";
 import { useCallback, useEffect, useState } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -53,6 +53,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
+  const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
 
   const router = useRouter();
 
@@ -269,7 +270,7 @@ const Futuros: NextPage<FuturosProps> = ({
     isError,
     isSuccess,
   } = queryResult;
-  console.log(queryResult, "queryResult");
+
   useEffect(() => {
     if (!isAdmin) {
       queryClient.removeQueries({
@@ -530,9 +531,6 @@ const Futuros: NextPage<FuturosProps> = ({
     },
   };
 
-  console.log("loadingDolarChange:", loadingDolarChange);
-  console.log("sortedOperations:", sortedOperations);
-
   // Modify how we collect symbols and their exchanges
   const symbolsWithExchanges = (sortedOperations ?? []).reduce(
     (
@@ -556,7 +554,7 @@ const Futuros: NextPage<FuturosProps> = ({
   );
 
   // Pass the symbols with exchanges to the hook
-  const prices = useWebSocket(symbolsWithExchanges);
+  const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
 
   const updatedOperations = sortedOperations?.map((operation) => {
     const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
@@ -768,6 +766,49 @@ const Futuros: NextPage<FuturosProps> = ({
                 )}
                 <>
                   <div className={styles.checkbox}>
+                    <div className={styles.websocketControl}>
+                      <button
+                        onClick={() => setIsWebSocketPaused(!isWebSocketPaused)}
+                        className={`${styles.websocketToggleButton} ${
+                          isWebSocketPaused ? styles.paused : ""
+                        }`}
+                      >
+                        <Pause
+                          className={styles.pauseIcon}
+                          style={{ color: "#fff" }}
+                        />
+                        <Play
+                          className={styles.continueIcon}
+                          style={{ color: "#fff" }}
+                        />
+                        <svg
+                          viewBox="0 0 100 100"
+                          className={styles.rotatingText}
+                        >
+                          <defs>
+                            <path
+                              id="circlePath"
+                              d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0"
+                            />
+                          </defs>
+                          <text>
+                            <textPath
+                              xlinkHref="#circlePath"
+                              startOffset="0%"
+                              style={{
+                                fill: "white",
+                                fontSize: "12px",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {isWebSocketPaused
+                                ? "Continuar Atualizações de Preço"
+                                : "Pausar Atualizações de Preço"}
+                            </textPath>
+                          </text>
+                        </svg>
+                      </button>
+                    </div>
                     <div className={styles.checkText}>
                       <p>
                         <strong>Modo Clean?</strong>
@@ -852,7 +893,6 @@ const Futuros: NextPage<FuturosProps> = ({
                       isChecked={isChecked}
                       onClick={() => {
                         setSelectedOperation(operation);
-                        setModalOpenOrderBook(true);
                       }}
                     />
                   ))}

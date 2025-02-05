@@ -205,128 +205,70 @@ export function FuturosOperationCard({
 
   return (
     <section
-      className={`${styles.card} ${isChecked ? styles.cardChecked : ""}`}
+      className={`${styles.card} ${isChecked ? styles.cardChecked : ""} ${
+        coin.spread > 0 ? styles.longPosition : styles.shortPosition
+      }`}
+      onClick={onClick}
     >
-      <header className={styles["card-header"]}>
-        <div className={styles.leftHeader}>
-          <img
-            src={
-              coin.image ??
-              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-            }
-            alt={coin.name}
-          />
-
-          <h2 className={""}>
-            {coin.name} <b>({coin.symbol})</b>
-          </h2>
-        </div>
-
-        <div className={styles.rightHeader}>
-          {/* {meetsCriteria && isAdmin && ( */}
-          {/* <Lottie
-            options={{
-              loop: false,
-              autoplay: true,
-              animationData: animationData,
-              rendererSettings: {
-                preserveAspectRatio: "xMidYMid slice",
-              },
-            }}
-            height={dimension.height}
-            width={dimension.width}
-          /> */}
-          {/* )} */}
-        </div>
-      </header>
-
-      <hr />
-
-      <div className={styles["card-content"]}>
-        <div>
-          <h3>SPOT</h3>
-          <div>
-            <span
-              onClick={() =>
-                handleRedirect(coin.ask.exchange, coin.symbol, "USDT")
-              }
-              style={{
-                cursor: "pointer",
-                color: "inherit",
-                textDecoration: "none",
-              }}
-            >
-              {coin.ask.exchange}
-            </span>
-            {coin.ask.image_url && (
-              <img src={coin.ask.image_url} alt={coin.ask.exchange} />
-            )}
-          </div>
-          <p>
-            $ &nbsp;
-            {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}
-          </p>
-        </div>
-        <img src="/clockwise.svg" alt="" />
-
-        <div>
-          <h3>FUTUROS</h3>
-          <div className={styles.textEnd}>
-            <span
-              onClick={() =>
-                handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true)
-              }
-              style={{
-                cursor: "pointer",
-                color: "inherit",
-                textDecoration: "none",
-              }}
-            >
-              {coin.bid.exchange}
-            </span>
-            {coin.bid.image_url && (
-              <img src={coin.bid.image_url} alt={coin.bid.exchange} />
-            )}
-          </div>
-          <p>
-            $ &nbsp;
-            {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}
-          </p>
-        </div>
+      <div className={`${styles.cardColumn} ${styles.symbolColumn}`}>
+        <img
+          src={
+            coin.image ??
+            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+          }
+          alt={coin.name}
+        />
+        <p>{coin.symbol}</p>
       </div>
 
-      <hr />
-      <div className={styles.volumeContainer}>
-        <div className={styles.volumeLeft}>
-          <img src="/funnel.svg" alt="Volume" />
-          <span>VOLUME</span>
-        </div>
-        <span className={styles.volumeValue}>
+      <div className={styles.cardColumn}>
+        <h3>Spot</h3>
+        <p
+          onClick={() => handleRedirect(coin.ask.exchange, coin.symbol, "USDT")}
+          style={{
+            cursor: "pointer",
+            textDecoration: "underline",
+            color: "inherit",
+          }}
+        >
+          {coin.ask.exchange}
+        </p>
+        <p>$ {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}</p>
+      </div>
+
+      <div className={styles.cardColumn}>
+        <h3>Futuros</h3>
+        <p
+          onClick={() =>
+            handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true)
+          }
+          style={{
+            cursor: "pointer",
+            textDecoration: "underline",
+            color: "inherit",
+          }}
+        >
+          {coin.bid.exchange}
+        </p>
+        <p>$ {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}</p>
+      </div>
+
+      <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>
+        <h3>Spread</h3>
+        <p>{formatterSpread.format(coin.spread / 100)}</p>
+      </div>
+
+      <div className={styles.cardColumn}>
+        <h3>Volume</h3>
+        <p>
           {numberFormatter.format(
             Math.min(
               coin.ask.orderbook?.asks[0]?.sumVolume || 0,
               coin.bid.orderbook?.bids[0]?.sumVolume || 0
             )
           )}
-        </span>
-      </div>
-      <hr />
-
-      <div className={styles["card-footer"]}>
-        <p>
-          <span>Spread</span>
-          {formatterSpread.format(coin.spread / 100)}
-        </p>
-        <p>
-          <span>Taxas</span>
-          {percentageFormatter.format(coin.fee)} + $
-          {(coin.ask.isUSD ? coin.tax * dolarValue : coin.tax).toFixed(2)}
         </p>
       </div>
-
-      {/* <button type="button" onClick={onClick}>
-        Order Book
-      </button> */}
     </section>
   );
 }

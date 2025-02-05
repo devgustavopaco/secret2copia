@@ -21,7 +21,10 @@ interface SymbolExchange {
   sellExchange: string;
 }
 
-export const useWebSocket = (symbols: SymbolExchange[]) => {
+export const useWebSocket = (
+  symbols: SymbolExchange[],
+  isPaused: boolean = false // Novo parâmetro
+) => {
   const [prices, setPrices] = useState<Record<string, string>>({});
   const wsRef = useRef<{
     binance?: WebSocket;
@@ -42,6 +45,17 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
   });
 
   useEffect(() => {
+    // Se estiver pausado, não faça nada
+    if (isPaused) {
+      // Feche todas as conexões WebSocket
+      Object.values(wsRef.current).forEach((ws) => {
+        if (ws) ws.close();
+      });
+      wsRef.current = {}; // Limpa todas as referências de websocket
+      setPrices({}); // Limpa os preços
+      return;
+    }
+
     // Organize current symbols by exchange
     const currentSymbols: Record<string, Set<string>> = {
       binance: new Set(),
@@ -425,7 +439,7 @@ export const useWebSocket = (symbols: SymbolExchange[]) => {
       });
       clearInterval(mexcPingInterval);
     };
-  }, [symbols]);
+  }, [symbols, isPaused]); // Adicione isPaused como dependência
 
   return prices;
 };

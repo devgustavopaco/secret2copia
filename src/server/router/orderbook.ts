@@ -232,7 +232,6 @@ const fetchArbitrageOpportunity = async (
   isFutures: boolean
 ): Promise<ArbitrageOpportunity> => {
   const { name, ticker, isFanToken, image_url, isOpen = true } = coin;
-  console.log(coin.image_url);
 
   const orderBookPromises: Promise<Exchange>[] = [];
 
