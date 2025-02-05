@@ -200,7 +200,7 @@ export function FuturosOperationCard({
 
     if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
       window.location.href = url;
-    } //push
+    }
   }
 
   return (
