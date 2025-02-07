@@ -117,7 +117,14 @@ export class BinanceStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    // Casos especiais do Excel
+    const specialCases: Record<string, string> = {
+      TKO: "TKO_USDT",
+      ZK: "ZK_USDT",
+    };
+
+    const token = baseToken.toUpperCase();
+    return specialCases[token] || `${token}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1470,7 +1477,7 @@ export class ByBitStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    return `${baseToken.toUpperCase()}/${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1549,13 +1556,22 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return baseToken !== "GAS" &&
-      baseToken !== "MDT" &&
-      baseToken !== "GMT" &&
-      baseToken !== "MULTI" &&
-      baseToken !== "QI"
-      ? `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`
-      : "";
+    // Casos especiais do Excel
+    const specialCases: Record<string, string> = {
+      URO: "URO_USDT",
+      CATTON: "CATTON_USDT",
+      ELIZA: "AI16ZELIZA_USDT",
+      ART: "ART_USDT",
+      CULT: "CULT_USDT",
+      HOLD: "HOLD_USDT",
+      TKO: "TKO_USDT",
+      ZK: "ZKSYNC_USDT",
+      GST: "GST_USDT",
+      VELO: "VELO_USDT",
+    };
+
+    const token = baseToken.toUpperCase();
+    return specialCases[token] || `${token}_${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1898,7 +1914,19 @@ export class BidgetStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}`;
+    // Casos especiais do Excel
+    const specialCases: Record<string, string> = {
+      URO: "UROUSDT",
+      CLR: "CELRUSDT",
+      ELIZA: "ELIZAUSDT",
+      HOLD: "HOLDCOINUSDT",
+      FIRE: "FIREUSDT",
+      ZK: "ZKUSDT",
+      VELO: "VELOUSDT",
+    };
+
+    const token = baseToken.toUpperCase();
+    return specialCases[token] || `${token}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -2380,7 +2408,21 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+    // Casos especiais do Excel
+    const specialCases: Record<string, string> = {
+      CATTON: "CATTON_USDT",
+      ELIZA: "ELIZA_USDT",
+      ART: "ARTELA_USDT",
+      CULT: "MILADYCULT_USDT",
+      HOLD: "HOLD_USDT",
+      TKO: "TKO_USDT",
+      ZK: "ZK_USDT",
+      GST: "GST_USDT",
+      VELO: "VELO_USDT",
+    };
+
+    const token = baseToken.toUpperCase();
+    return specialCases[token] || `${token}_${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
@@ -2391,7 +2433,9 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       pair.toUpperCase() !== "QI_USDT" &&
       pair.toUpperCase() !== "AXL_USDT" &&
       pair.toUpperCase() !== "GTC_USDT" &&
-      pair.toUpperCase() !== "BFC_USDT"
+      pair.toUpperCase() !== "BFC_USDT" &&
+      pair.toUpperCase() !== "MCUSDT" &&
+      pair.toUpperCase() !== "MIRUSDT"
     ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
@@ -2470,7 +2514,7 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (baseToken.toLowerCase() === "POR") {
+    if (baseToken.toLowerCase() === "por") {
       return "";
     }
     return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
@@ -3244,7 +3288,7 @@ export class XTStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    if (baseToken.toLowerCase() === "POR") {
+    if (baseToken.toLowerCase() === "por") {
       return "";
     }
     return `${baseToken.toLowerCase()}${destinationToken.toUpperCase()}`;
