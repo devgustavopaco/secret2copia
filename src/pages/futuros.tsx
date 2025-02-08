@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { XCircle, Pause, Play } from "phosphor-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import loadingAnimation from "../animations/dollar.json";
@@ -22,12 +22,13 @@ import Soccer from "../icons/Soccer";
 import { updateIP } from "../server/db/checkIP";
 import { fetchTickerData } from "../server/db/fetchTicketData";
 import { getSupportNumber } from "../server/db/getSuportNumber";
-import { ArbitrageOpportunity } from "../server/router/orderbook";
+import { ArbitrageOpportunity as ImportedArbitrageOpportunity } from "../server/router/orderbook";
 import styles from "../styles/futuros.module.scss";
 import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { useWebSocket } from "../hooks/useWebSocket";
+import { getCorrectSymbol } from "../constants/symbolMappings";
 const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface FuturosProps {
@@ -117,7 +118,7 @@ const Futuros: NextPage<FuturosProps> = ({
   });
   const [sidebarClickCount, setSidebarClickCount] = useState(0);
   interface PaginatedResponse {
-    arbitrageOpportunities: ArbitrageOpportunity[];
+    arbitrageOpportunities: ImportedArbitrageOpportunity[];
     nextCursor: number | undefined;
   }
 
@@ -133,7 +134,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const userEmail = auth?.user?.email;
 
   const [selectedOperation, setSelectedOperation] =
-    useState<ArbitrageOpportunity>({} as ArbitrageOpportunity);
+    useState<ImportedArbitrageOpportunity>({} as ImportedArbitrageOpportunity);
 
   const [loadingDolarChange, setLoadingDolarChange] = useState(false);
 
@@ -206,13 +207,34 @@ const Futuros: NextPage<FuturosProps> = ({
     "user.getUserDollarValueByEmail",
     { email: userEmail ?? "" },
   ]);
+
+  // Função para validar se um par é suportado nas exchanges
+  const isValidPair = useCallback(
+    (
+      operation: ImportedArbitrageOpportunity | undefined
+    ): operation is ImportedArbitrageOpportunity => {
+      if (!operation) return false;
+      const buySymbol = getCorrectSymbol(
+        operation.highestBid.exchange,
+        operation.ticker,
+        true
+      );
+      const sellSymbol = getCorrectSymbol(
+        operation.lowestAsk.exchange,
+        operation.ticker,
+        false
+      );
+      return buySymbol !== null && sellSymbol !== null;
+    },
+    []
+  );
+
   let queryResult: any;
 
   if (isAdmin || isNewUser) {
     queryResult = trpc.useInfiniteQuery(
       [
         "orderBook.getPaginated",
-
         {
           buyExchanges: buyExchangesName ?? undefined,
           sellExchanges: sellExchangesName ?? undefined,
@@ -233,6 +255,14 @@ const Futuros: NextPage<FuturosProps> = ({
           return failureCount <= 3;
         },
         keepPreviousData: false,
+        select: (data) => ({
+          pages: data.pages.map((page) => ({
+            ...page,
+            arbitrageOpportunities:
+              page.arbitrageOpportunities.filter(isValidPair),
+          })),
+          pageParams: data.pageParams,
+        }),
         onSuccess(data) {
           if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
             queryResult.refetch();
@@ -449,33 +479,6 @@ const Futuros: NextPage<FuturosProps> = ({
     refetch();
   }, [isChecked, queryClient, refetch]);
 
-  //   if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
-  //     console.error("Dados de oportunidade faltando");
-  //     return false;
-  //   }
-
-  //   const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
-  //   const highestBid = opportunity.highestBid.orderbook.bids[0];
-
-  //   if (!lowestAsk || !highestBid) {
-  //     console.error("Dados de ask ou bid estão incompletos");
-  //     return false;
-  //   }
-
-  //   const lowestAskTotalValue =
-  //     lowestAsk.price *
-  //     lowestAsk.amount *
-  //     (opportunity.lowestAsk.isUSD ? dollarValue ?? 1 : 1);
-  //   const highestBidTotalValue =
-  //     highestBid.price *
-  //     highestBid.amount *
-  //     (opportunity.highestBid.isUSD ? dollarValue ?? 1 : 1);
-
-  //   const isPriceCriteriaMet =
-  //     lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
-
-  //   return isPriceCriteriaMet;
-  // };
   const [isUpdatingDollar, setIsUpdatingDollar] = useState(false);
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
@@ -557,34 +560,100 @@ const Futuros: NextPage<FuturosProps> = ({
   const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
 
   const updatedOperations = sortedOperations?.map((operation) => {
-    const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
-      operation.ticker
-    }`;
-    const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
-      operation.ticker
-    }`;
+    const buySymbol = getCorrectSymbol(
+      operation.highestBid?.exchange,
+      operation.ticker,
+      false
+    );
+    const sellSymbol = getCorrectSymbol(
+      operation.lowestAsk?.exchange,
+      operation.ticker,
+      true
+    );
 
-    const askPrice = prices[askPriceKey];
-    const bidPrice = prices[bidPriceKey];
+    const buyPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${buySymbol}`;
+    const sellPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${sellSymbol}`;
 
-    return {
-      ...operation,
-      lowestAsk: {
-        ...operation.lowestAsk,
-        price:
-          typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
-            ? parseFloat(askPrice)
-            : operation.lowestAsk?.price,
-      },
-      highestBid: {
-        ...operation.highestBid,
-        price:
-          typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
-            ? parseFloat(bidPrice)
-            : operation.highestBid?.price,
-      },
-    };
+    console.log("Operation price keys:", {
+      symbol: operation.ticker,
+      buyPriceKey,
+      sellPriceKey,
+      buySymbol,
+      sellSymbol,
+    });
+
+    const askPrice = prices[buyPriceKey];
+    const bidPrice = prices[sellPriceKey];
+
+    const validAskPrice =
+      typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
+        ? parseFloat(askPrice)
+        : operation.lowestAsk?.price;
+    const validBidPrice =
+      typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
+        ? parseFloat(bidPrice)
+        : operation.highestBid?.price;
+
+    // Só atualiza se ambos os preços forem válidos
+    if (
+      validAskPrice &&
+      validBidPrice &&
+      validAskPrice > 0 &&
+      validBidPrice > 0
+    ) {
+      const newSpread = ((validBidPrice - validAskPrice) / validAskPrice) * 100;
+      return {
+        ...operation,
+        spread: newSpread,
+        lowestAsk: {
+          ...operation.lowestAsk,
+          price: validAskPrice,
+        },
+        highestBid: {
+          ...operation.highestBid,
+          price: validBidPrice,
+        },
+      };
+    }
+
+    // Se algum preço for inválido, mantém os valores originais
+    return operation;
   });
+
+  const operations = useMemo(() => {
+    return updatedOperations.map((operation) => {
+      const buySymbol = getCorrectSymbol(
+        operation.highestBid?.exchange,
+        operation.ticker,
+        false
+      );
+      const sellSymbol = getCorrectSymbol(
+        operation.lowestAsk?.exchange,
+        operation.ticker,
+        true
+      );
+
+      const buyPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${buySymbol}`;
+      const sellPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${sellSymbol}`;
+
+      console.log("Operation price keys:", {
+        symbol: operation.ticker,
+        buyPriceKey,
+        sellPriceKey,
+        buySymbol,
+        sellSymbol,
+      });
+
+      const askPrice = prices[buyPriceKey];
+      const bidPrice = prices[sellPriceKey];
+
+      return {
+        ...operation,
+        askPrice: askPrice ? parseFloat(askPrice) : null,
+        bidPrice: bidPrice ? parseFloat(bidPrice) : null,
+      };
+    });
+  }, [updatedOperations, prices]);
 
   return (
     <>
@@ -875,7 +944,7 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {(updatedOperations ?? []).map((operation) => (
+                  {(operations ?? []).map((operation) => (
                     <FuturosOperationCard
                       key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
                       coin={{
@@ -892,7 +961,9 @@ const Futuros: NextPage<FuturosProps> = ({
                       isAdmin={isAdmin}
                       isChecked={isChecked}
                       onClick={() => {
-                        setSelectedOperation(operation);
+                        setSelectedOperation(
+                          operation as ImportedArbitrageOpportunity
+                        );
                       }}
                     />
                   ))}

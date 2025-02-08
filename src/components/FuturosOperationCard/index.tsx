@@ -5,6 +5,7 @@ import { MdArrowForwardIos } from "react-icons/md";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 import Image from "next/image";
+import { getCorrectSymbol } from "../../constants/symbolMappings";
 
 //
 type Ticker =
@@ -123,8 +124,79 @@ export function FuturosOperationCard({
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
+  console.log("Raw values:", {
+    symbol: coin.symbol,
+    askExchange: coin.ask.exchange,
+    askPrice: coin.ask.price,
+    askIsUSD: coin.ask.isUSD,
+    bidExchange: coin.bid.exchange,
+    bidPrice: coin.bid.price,
+    bidIsUSD: coin.bid.isUSD,
+    dolarValue,
+  });
+
+  // Get correct symbols for each exchange
+  const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
+  const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
+
+  // Se algum dos símbolos for null, não renderizar o card
+  if (!buySymbol || !sellSymbol) {
+    console.warn(
+      `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
+    );
+    return null;
+  }
+
+  // Create price keys using correct symbols
+  const buyPriceKey = `${coin.bid.exchange.toLowerCase()}_${buySymbol}`;
+  const sellPriceKey = `${coin.ask.exchange.toLowerCase()}_${sellSymbol}`;
+
+  // Log the keys being used
+  console.log("Price keys:", {
+    buyPriceKey,
+    sellPriceKey,
+    buySymbol,
+    sellSymbol,
+  });
+
   const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
   const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
+
+  console.log("Calculated prices:", {
+    symbol: coin.symbol,
+    askPrice,
+    bidPrice,
+    spread: ((bidPrice - askPrice) / askPrice) * 100,
+  });
+
+  // Formata os pares para spot e futuros
+  const spotPair = formatPairForExchange(coin.ask.exchange, coin.symbol, false);
+  const futuresPair = formatPairForExchange(
+    coin.bid.exchange,
+    coin.symbol,
+    true
+  );
+
+  console.log("Comparando pares:", {
+    symbol: coin.symbol,
+    spot: {
+      exchange: coin.ask.exchange,
+      pair: spotPair,
+      price: askPrice,
+      rawPrice: coin.ask.price,
+      isUSD: coin.ask.isUSD,
+    },
+    futures: {
+      exchange: coin.bid.exchange,
+      pair: futuresPair,
+      price: bidPrice,
+      rawPrice: coin.bid.price,
+      isUSD: coin.bid.isUSD,
+    },
+  });
+
+  const spread = ((bidPrice - askPrice) / askPrice) * 100;
+
   const animationData = isChecked
     ? require("/public/animations/checkPurple.json")
     : require("/public/animations/checkGreen.json");
@@ -220,7 +292,6 @@ export function FuturosOperationCard({
         ART: "ART",
         CULT: "CULT",
         HOLD: "HOLD",
-        FIRE: "FIRE",
         TKO: "TKO",
         ZK: "ZKSYNC",
         GST: "GST",
@@ -232,6 +303,134 @@ export function FuturosOperationCard({
       return `https://futures.mexc.com/exchange/${specialCoin}_${pair}`;
     },
   };
+
+  function formatPairForExchange(
+    exchange: string,
+    coin: string,
+    isFutures: boolean = false
+  ): string {
+    const normalizedExchange = exchange.toLowerCase();
+
+    const formatters = {
+      bitget: {
+        spot: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "UROUSDT",
+            CLR: "CELRUSDT",
+            ELIZA: "ELIZAUSDT",
+            HOLD: "HOLDCOINUSDT",
+            FIRE: "FIREUSDT",
+            ZK: "ZKUSDT",
+            VELO: "VELOUSDT",
+          };
+          return specialCases[c] || `${c}USDT`;
+        },
+        futures: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "UROUSDT",
+            CLR: "CELRUSDT",
+            ELIZA: "ELIZAUSDT",
+            HOLD: "HOLDCOINUSDT",
+            FIRE: "FIREUSDT",
+            ZK: "ZKUSDT",
+            VELO: "VELOUSDT",
+          };
+          return specialCases[c] || `${c}USDT`;
+        },
+      },
+      gate: {
+        spot: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "URO_USDT",
+            CATTON: "CATTON_USDT",
+            ELIZA: "ELIZA_USDT",
+            ART: "ARTELA_USDT",
+            CULT: "MILADYCULT_USDT",
+            HOLD: "HOLD_USDT",
+            TKO: "TKO_USDT",
+            ZK: "ZK_USDT",
+            GST: "GST_USDT",
+            VELO: "VELO_USDT",
+          };
+          return specialCases[c] || `${c}_USDT`;
+        },
+        futures: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "URO_USDT",
+            CATTON: "CATTON_USDT",
+            ELIZA: "ELIZA_USDT",
+            ART: "ARTELA_USDT",
+            CULT: "MILADYCULT_USDT",
+            HOLD: "HOLD_USDT",
+            TKO: "TKO_USDT",
+            ZK: "ZK_USDT",
+            GST: "GST_USDT",
+            VELO: "VELO_USDT",
+          };
+          return specialCases[c] || `${c}_USDT`;
+        },
+      },
+      mexc: {
+        spot: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "URO_USDT",
+            CATTON: "CATTON_USDT",
+            ELIZA: "ELIZA_USDT",
+            ART: "ART_USDT",
+            CULT: "CULT_USDT",
+            HOLD: "HOLD_USDT",
+            TKO: "TKO_USDT",
+            ZK: "ZKSYNC_USDT",
+            GST: "GST_USDT",
+            VELO: "VELO_USDT",
+          };
+          return specialCases[c] || `${c}_USDT`;
+        },
+        futures: (c: string) => {
+          const specialCases: Record<string, string> = {
+            URO: "URO_USDT",
+            CATTON: "CATTON_USDT",
+            ELIZA: "AI16ZELIZA_USDT",
+            ART: "ART_USDT",
+            CULT: "CULT_USDT",
+            HOLD: "HOLD_USDT",
+            TKO: "TKO_USDT",
+            ZK: "ZKSYNC_USDT",
+            GST: "GST_USDT",
+            VELO: "VELO_USDT",
+          };
+          return specialCases[c] || `${c}_USDT`;
+        },
+      },
+      kucoin: {
+        spot: (c: string) => {
+          const specialCases: Record<string, string> = {
+            CULT: "MILADYCULT-USDT",
+            HOLD: "HOLDCOIN-USDT",
+            FIRE: "FIRE-USDT",
+            VELO: "VELO-USDT",
+          };
+          return specialCases[c] || `${c}-USDT`;
+        },
+        futures: (c: string) => {
+          const specialCases: Record<string, string> = {
+            CULT: "MILADYCULT-USDT",
+            HOLD: "HOLDCOIN-USDT",
+            FIRE: "FIRE-USDT",
+            VELO: "VELO-USDT",
+          };
+          return specialCases[c] || `${c}-USDT`;
+        },
+      },
+    };
+
+    const formatter = formatters[normalizedExchange as keyof typeof formatters];
+    if (!formatter) return isFutures ? `${coin}USDT` : `${coin}_USDT`;
+
+    return isFutures
+      ? formatter.futures(coin.toUpperCase())
+      : formatter.spot(coin.toUpperCase());
+  }
 
   function handleRedirect(
     exchange: string,
@@ -246,6 +445,11 @@ export function FuturosOperationCard({
     }
 
     const links = isFutures ? futuresLinks : spotLinks;
+    const formattedPair = formatPairForExchange(
+      normalizedExchange,
+      coin,
+      isFutures
+    );
 
     const urlBuilder = links[normalizedExchange as keyof typeof links];
     if (!urlBuilder) {
@@ -256,6 +460,7 @@ export function FuturosOperationCard({
     const url = urlBuilder(coin, pair);
 
     console.log("Tentando abrir URL:", url);
+    console.log("Par formatado:", formattedPair);
 
     const newTab = window.open(url, "_blank");
 
@@ -267,7 +472,7 @@ export function FuturosOperationCard({
   return (
     <section
       className={`${styles.card} ${isChecked ? styles.cardChecked : ""} ${
-        coin.spread > 0 ? styles.longPosition : styles.shortPosition
+        spread > 0 ? styles.longPosition : styles.shortPosition
       }`}
       onClick={onClick}
     >
@@ -316,7 +521,7 @@ export function FuturosOperationCard({
 
       <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>
         <h3>Spread</h3>
-        <p>{formatterSpread.format(coin.spread / 100)}</p>
+        <p>{spread > 0 ? formatterSpread.format(spread / 100) : "-"}</p>
       </div>
 
       <div className={styles.cardColumn}>

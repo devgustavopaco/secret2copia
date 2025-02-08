@@ -71,10 +71,26 @@ interface BinanceOrderbook {
   asks: string[][];
 }
 
+// Adiciona função de normalização de símbolos
+function normalizeSymbol(symbol: string): string {
+  // Remove caracteres especiais e espaços
+  return symbol.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+}
+
 export class BinanceStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: BinanceOrderbook;
   } = {};
+
+  normalizeSymbol(symbol: string): string {
+    return normalizeSymbol(symbol);
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    const normalizedBase = this.normalizeSymbol(baseToken);
+    const normalizedDest = this.normalizeSymbol(destinationToken);
+    return `${normalizedBase}${normalizedDest}`;
+  }
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
@@ -114,17 +130,6 @@ export class BinanceStrategy implements ExchangeStrategy {
       }, [] as OrderbookOperation[]) ?? [];
 
     return { bids, asks };
-  }
-
-  formatPair(baseToken: string, destinationToken: string): string {
-    // Casos especiais do Excel
-    const specialCases: Record<string, string> = {
-      TKO: "TKO_USDT",
-      ZK: "ZK_USDT",
-    };
-
-    const token = baseToken.toUpperCase();
-    return specialCases[token] || `${token}${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1477,7 +1482,24 @@ export class ByBitStrategy implements ExchangeStrategy {
   }
 
   formatPair(baseToken: string, destinationToken: string): string {
-    return `${baseToken.toUpperCase()}/${destinationToken.toUpperCase()}`;
+    const specialCases: Record<string, string> = {
+      FIRE: "FIRE/USDT",
+      VELO: "VELO/USDT",
+      URO: "URO/USDT",
+      CLR: "CELR/USDT",
+      CATTON: "CATTON/USDT",
+      ELIZA: "AI16ZELIZA/USDT",
+      ELIZAWAKESUP: "ELIZA/USDT",
+      ART: "ART/USDT",
+      CULT: "CULT/USDT",
+      HOLD: "HOLD/USDT",
+      TKO: "TKO/USDT",
+      ZK: "ZKSYNC/USDT",
+      GST: "GST/USDT",
+    };
+
+    const base = baseToken.toUpperCase();
+    return specialCases[base] ?? `${base}/${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
@@ -1514,6 +1536,30 @@ export class MexcStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: MexcOrderbook;
   } = {};
+
+  normalizeSymbol(symbol: string): string {
+    return normalizeSymbol(symbol);
+  }
+
+  formatPair(baseToken: string, destinationToken: string): string {
+    const specialCases: Record<string, string> = {
+      ELIZA: "ELIZA_USDT",
+      ELIZAWAKESUP: "ELIZA_USDT",
+      ART: "ART_USDT",
+      CULT: "CULT_USDT",
+      HOLD: "HOLD_USDT",
+      TKO: "TKO_USDT",
+      ZK: "ZKSYNC_USDT",
+      GST: "GST_USDT",
+      VELO: "VELO_USDT",
+      URO: "URO_USDT",
+      CLR: "CELR_USDT",
+      CATTON: "CATTON_USDT",
+    };
+
+    const base = baseToken.toUpperCase();
+    return specialCases[base] ?? `${base}_${destinationToken.toUpperCase()}`;
+  }
 
   convertOrderbook(pair: string): Orderbook {
     const bids =
@@ -1555,27 +1601,11 @@ export class MexcStrategy implements ExchangeStrategy {
     return { bids, asks };
   }
 
-  formatPair(baseToken: string, destinationToken: string): string {
-    // Casos especiais do Excel
-    const specialCases: Record<string, string> = {
-      URO: "URO_USDT",
-      CATTON: "CATTON_USDT",
-      ELIZA: "AI16ZELIZA_USDT",
-      ART: "ART_USDT",
-      CULT: "CULT_USDT",
-      HOLD: "HOLD_USDT",
-      TKO: "TKO_USDT",
-      ZK: "ZKSYNC_USDT",
-      GST: "GST_USDT",
-      VELO: "VELO_USDT",
-    };
-
-    const token = baseToken.toUpperCase();
-    return specialCases[token] || `${token}_${destinationToken.toUpperCase()}`;
-  }
-
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.mexc.com/api/v3/depth?symbol=${pair}`;
+    const url = `https://api.mexc.com/api/v3/depth?symbol=${pair.replace(
+      "_",
+      ""
+    )}&limit=50`;
 
     const response = await fetchWithProxy(url, proxies);
 
@@ -1630,7 +1660,6 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
           amount: Number(bid[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
@@ -1648,29 +1677,39 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
           amount: Number(ask[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
     return { bids, asks };
   }
 
+  /**
+   * Monta o par de Futuros para a Mexc considerando casos especiais do seu Excel.
+   */
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken !== "GAS" &&
-      baseToken !== "MDT" &&
-      baseToken !== "GMT" &&
-      baseToken !== "MULTI" &&
-      baseToken !== "QI"
-    ) {
-      return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
-    }
-    return "";
+    const specialCases: Record<string, string> = {
+      ELIZA: "AI16ZELIZA_USDT",
+      ELIZAWAKESUP: "ELIZA_USDT",
+      ART: "ART_USDT",
+      CULT: "CULT_USDT",
+      HOLD: "HOLD_USDT",
+      TKO: "TKO_USDT",
+      ZK: "ZKSYNC_USDT",
+      GST: "GST_USDT",
+      VELO: "VELO_USDT",
+      CLR: "CELR_USDT",
+      CATTON: "CATTON_USDT",
+    };
+
+    const base = baseToken.toUpperCase();
+    return specialCases[base] ?? `${base}_${destinationToken.toUpperCase()}`;
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://contract.mexc.com/api/v1/contract/depth/${pair}?limit=20`;
+    // Exemplo: https://contract.mexc.com/api/v1/contract/depth/BTC_USDT?limit=20
+    // pair: "BTC_USDT"
 
+    const url = `https://contract.mexc.com/api/v1/contract/depth/${pair}?limit=20`;
     const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as MexcFuturesOrderbook;
 
@@ -1923,6 +1962,10 @@ export class BidgetStrategy implements ExchangeStrategy {
       FIRE: "FIREUSDT",
       ZK: "ZKUSDT",
       VELO: "VELOUSDT",
+      CATTON: "CATTONUSDT",
+      ART: "ARTELAUSDT",
+      CULT: "MILADYCULTUSDT",
+      GST: "GSTUSDT",
     };
 
     const token = baseToken.toUpperCase();
@@ -1932,28 +1975,41 @@ export class BidgetStrategy implements ExchangeStrategy {
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (
-      pair.toUpperCase() !== "VELOUSDT" &&
-      pair.toUpperCase() !== "TKOUSDT" &&
-      pair.toUpperCase() !== "ZKUSDT"
-    ) {
-      url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${pair}_SPBL`;
-    }
+    // Casos especiais do Excel
+    const specialCases: Record<string, string> = {
+      UROUSDT: "URO_USDT_SPBL",
+      CELRUSDT: "CLR_USDT_SPBL",
+      ELIZAUSDT: "ELIZA_USDT_SPBL",
+      HOLDCOINUSDT: "HOLDCOIN_USDT_SPBL",
+      FIREUSDT: "FIRE_USDT_SPBL",
+      ZKUSDT: "ZK_USDT_SPBL",
+      VELOUSDT: "VELO_USDT_SPBL",
+      CATTONUSDT: "CATTON_USDT_SPBL",
+      ARTELAUSDT: "ARTELA_USDT_SPBL",
+      MILADYCULTUSDT: "MILADYCULT_USDT_SPBL",
+      GSTUSDT: "GST_USDT_SPBL",
+    };
+
+    // Verifica se é um caso especial
+    const formattedPair =
+      specialCases[pair] || `${pair.replace("USDT", "_USDT")}_SPBL`;
+    url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${formattedPair}`;
 
     const response = await fetchWithProxy(url, proxies);
 
-    const json = (await response.json()) as BidgetOrderbook;
+    const json = (await response.json()) as BitgetFuturesOrderbook;
+
     this.orderbook[pair] = json;
 
     return {
       name: "Bitget",
       bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
+        price: Number(json.data?.bids[0]![0]),
+        amount: Number(json.data?.bids[0]![1]),
       },
       ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
+        price: Number(json.data?.asks[0]![0]),
+        amount: Number(json.data?.asks[0]![1]),
       },
       isUSD: true,
     };
@@ -1976,6 +2032,7 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
     [key: string]: BitgetFuturesOrderbook;
   } = {};
 
+  // Converte o formato do orderbook da Bitget para o seu formato interno
   convertOrderbook(pair: string): Orderbook {
     const bids =
       this.orderbook[pair]?.data.bids.reduce((acc, bid, index) => {
@@ -1991,7 +2048,6 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
           amount: Number(bid[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
@@ -2009,43 +2065,91 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
           amount: Number(ask[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
     return { bids, asks };
   }
 
+  /**
+   * 1) Mapeia tokens "internos" (ou do Excel) para o token que você
+   *    de fato quer montar no par de futuros.
+   * 2) Caso não seja um token especial, apenas concatena BASE + DEST + "_UMCBL".
+   */
   formatPair(baseToken: string, destinationToken: string): string {
-    if (
-      baseToken !== "GAS" &&
-      baseToken !== "MDT" &&
-      baseToken !== "GMT" &&
-      baseToken !== "MULTI" &&
-      baseToken !== "QI"
-    ) {
-      return `${baseToken.toUpperCase()}${destinationToken.toUpperCase()}_UMCBL`;
+    // Casos especiais (exemplo iguais aos do Spot, mas agora para Futuros)
+    // Se "CLR" internamente significa "CELR" na Bitget, etc.
+    const specialCases: Record<string, string> = {
+      URO: "UROUSDT",
+      CLR: "CELRUSDT",
+      ELIZA: "ELIZAUSDT",
+      HOLD: "HOLDCOINUSDT",
+      FIRE: "FIREUSDT",
+      ZK: "ZKUSDT",
+      VELO: "VELOUSDT",
+      CATTON: "CATTONUSDT",
+      ART: "ARTELAUSDT",
+      CULT: "MILADYCULTUSDT",
+      GST: "GSTUSDT",
+    };
+
+    // Se estiver no objeto acima, pega o valor correspondente;
+    // senão, concatena normalmente.
+    const token = baseToken.toUpperCase();
+    const mappedToken = specialCases[token];
+
+    if (mappedToken) {
+      // Se for um caso especial, adicione o sufixo de Futuros "_UMCBL"
+      return `${mappedToken}_UMCBL`;
+    } else {
+      // Caso geral
+      return `${token}${destinationToken.toUpperCase()}_UMCBL`;
     }
-    return "";
   }
 
+  /**
+   * Faz a chamada HTTP para buscar o orderbook de Futuros na Bitget,
+   * tratando também os pares especiais (mapeando para "symbol=XYZ_UMCBL" correto).
+   */
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    const url = `https://api.bitget.com/api/mix/v1/market/depth?symbol=${pair}&limit=20`;
+    // Casos especiais para a chamada final da API:
+    // se "CLR" virou "CELRUSDT_UMCBL" no formatPair, e a API quiser "CLR_USDT_UMCBL",
+    // você arruma aqui. A ideia é idêntica ao Spot, só que agora com sufixo "_UMCBL".
+    const specialCases: Record<string, string> = {
+      UROUSDT_UMCBL: "URO_USDT_UMCBL",
+      CELRUSDT_UMCBL: "CLR_USDT_UMCBL",
+      ELIZAUSDT_UMCBL: "ELIZA_USDT_UMCBL",
+      HOLDCOINUSDT_UMCBL: "HOLDCOIN_USDT_UMCBL",
+      FIREUSDT_UMCBL: "FIRE_USDT_UMCBL",
+      ZKUSDT_UMCBL: "ZK_USDT_UMCBL",
+      VELOUSDT_UMCBL: "VELO_USDT_UMCBL",
+      CATTONUSDT_UMCBL: "CATTON_USDT_UMCBL",
+      ARTELAUSDT_UMCBL: "ARTELA_USDT_UMCBL",
+      MILADYCULTUSDT_UMCBL: "MILADYCULT_USDT_UMCBL",
+      GSTUSDT_UMCBL: "GST_USDT_UMCBL",
+    };
+
+    // Se `pair` estiver nesse objeto, use a forma especial; senão, use `pair` mesmo
+    const formattedPair = specialCases[pair] || pair;
+
+    const url = `https://api.bitget.com/api/mix/v1/market/depth?symbol=${formattedPair}&limit=20`;
 
     const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as BitgetFuturesOrderbook;
 
+    // Salva em memória
     this.orderbook[pair] = json;
 
+    // Monta a resposta no seu formato de "Exchange"
     return {
       name: "Bitget",
       bid: {
-        price: Number(json.data.bids[0]![0]),
-        amount: Number(json.data.bids[0]![1]),
+        price: Number(json.data.bids?.[0]?.[0] ?? 0),
+        amount: Number(json.data.bids?.[0]?.[1] ?? 0),
       },
       ask: {
-        price: Number(json.data.asks[0]![0]),
-        amount: Number(json.data.asks[0]![1]),
+        price: Number(json.data.asks?.[0]?.[0] ?? 0),
+        amount: Number(json.data.asks?.[0]?.[1] ?? 0),
       },
       isUSD: true,
       isFutures: true,
@@ -2410,8 +2514,8 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     // Casos especiais do Excel
     const specialCases: Record<string, string> = {
-      CATTON: "CATTON_USDT",
       ELIZA: "ELIZA_USDT",
+      ELIZAWAKESUP: "ELIZASOL_USDT",
       ART: "ARTELA_USDT",
       CULT: "MILADYCULT_USDT",
       HOLD: "HOLD_USDT",
@@ -2419,10 +2523,11 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       ZK: "ZK_USDT",
       GST: "GST_USDT",
       VELO: "VELO_USDT",
+      CATTON: "CATTON_USDT",
     };
 
-    const token = baseToken.toUpperCase();
-    return specialCases[token] || `${token}_${destinationToken.toUpperCase()}`;
+    const base = baseToken.toUpperCase();
+    return specialCases[base] ?? `${base}_${destinationToken.toUpperCase()}`;
   }
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
@@ -2463,6 +2568,8 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
 
 // Gate.io Futures ---------------------------------------------------------------------
 
+// Gate.io Futures ---------------------------------------------------------------------
+
 interface GateIoFuturesOrderbook {
   asks: [string, string][];
   bids: [string, string][];
@@ -2473,6 +2580,7 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
     [key: string]: GateIoFuturesOrderbook;
   } = {};
 
+  // Converte para o seu formato de Orderbook
   convertOrderbook(pair: string): Orderbook {
     const bids =
       this.orderbook[pair]?.bids.reduce((acc, bid, index) => {
@@ -2488,7 +2596,6 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
           amount: Number(bid[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
@@ -2506,29 +2613,57 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
           amount: Number(ask[1]),
           sumVolume,
         });
-
         return acc;
       }, [] as OrderbookOperation[]) ?? [];
 
     return { bids, asks };
   }
 
+  // Formata o par para o Futuros da Gate.io
   formatPair(baseToken: string, destinationToken: string): string {
-    if (baseToken.toLowerCase() === "por") {
+    // Casos especiais: "baseToken" → "contrato_futuros" da Gate.io
+    // Exemplo: se na planilha consta CATTON mas a Gate.io usa CATTON_USDT
+    const specialCases: Record<string, string> = {
+      ELIZA: "ELIZA_USDT",
+      ART: "ARTELA_USDT",
+      CULT: "MILADYCULT_USDT",
+      HOLD: "HOLD_USDT",
+      TKO: "TKO_USDT",
+      ZK: "ZK_USDT",
+      GST: "GST_USDT",
+      VELO: "VELO_USDT",
+      CATTON: "CATTON_USDT",
+    };
+
+    const token = baseToken.toUpperCase();
+    // Se houver caso especial, retorna o nome "pronto";
+    // caso contrário, usa "BASE_DESTINO", p.ex. "BTC_USDT".
+    const mapped =
+      specialCases[token] ?? `${token}_${destinationToken.toUpperCase()}`;
+
+    // Se quiser bloquear algum token específico (ex. "POR"), devolva string vazia
+    if (token === "POR") {
       return "";
     }
-    return `${baseToken.toUpperCase()}_${destinationToken.toUpperCase()}`;
+
+    return mapped;
   }
 
+  // Faz a chamada HTTP para buscar o orderbook do Futuros
   async fetchOrderbook(pair: string): Promise<Exchange> {
     let url = "";
 
-    if (pair.toUpperCase() !== "POR_USDT") {
-      url = `https://fx-api.gateio.ws/api/v4/futures/usdt/order_book?contract=${pair}&limit=100`;
-    }
+    // Exemplo de filtro para tokens que não devem ser chamados:
+    // if (pair.toUpperCase() === "POR_USDT") {
+    //   // Retornar algo vazio ou tratar erro
+    //   return ...;
+    // }
+
+    // Monta a URL do Futuros da Gate.io
+    // "contract=${pair}&limit=100" → pair é o que veio de formatPair()
+    url = `https://fx-api.gateio.ws/api/v4/futures/usdt/order_book?contract=${pair}&limit=100`;
 
     const response = await fetchWithProxy(url, proxies);
-
     const json = (await response.json()) as GateIoFuturesOrderbook;
 
     this.orderbook[pair] = json;
