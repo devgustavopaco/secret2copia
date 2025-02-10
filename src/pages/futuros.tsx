@@ -541,46 +541,26 @@ const Futuros: NextPage<FuturosProps> = ({
         symbol: string;
         buyExchange: string;
         sellExchange: string;
-        formattedBuySymbol: string;
-        formattedSellSymbol: string;
       }>,
       operation
     ) => {
       if (operation.ticker) {
-        console.log("Processando operação:", {
-          ticker: operation.ticker,
-          highestBidExchange: operation.highestBid?.exchange,
-          lowestAskExchange: operation.lowestAsk?.exchange,
-        });
-
-        // Get correctly formatted symbols for each exchange
         const buySymbol = getCorrectSymbol(
           operation.highestBid?.exchange,
           operation.ticker,
-          true // highestBid é futures
+          true
         );
         const sellSymbol = getCorrectSymbol(
           operation.lowestAsk?.exchange,
           operation.ticker,
-          false // lowestAsk é spot
+          false
         );
 
-        console.log("Símbolos formatados:", {
-          ticker: operation.ticker,
-          buySymbol,
-          sellSymbol,
-          buyExchange: operation.highestBid?.exchange,
-          sellExchange: operation.lowestAsk?.exchange,
-        });
-
-        // Only add if we have valid symbols
         if (buySymbol && sellSymbol) {
           acc.push({
             symbol: operation.ticker,
             buyExchange: operation.highestBid?.exchange.toLowerCase(),
             sellExchange: operation.lowestAsk?.exchange.toLowerCase(),
-            formattedBuySymbol: buySymbol,
-            formattedSellSymbol: sellSymbol,
           });
         }
       }
@@ -589,51 +569,30 @@ const Futuros: NextPage<FuturosProps> = ({
     []
   );
 
-  console.log("Símbolos enviados para WebSocket:", symbolsWithExchanges);
-
   // Pass the symbols with exchanges to the hook
   const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
 
-  console.log("Preços recebidos do WebSocket:", prices);
-
   const updatedOperations = sortedOperations?.map((operation) => {
-    const buySymbol = getCorrectSymbol(
-      operation.highestBid?.exchange,
-      operation.ticker,
-      true // futures
-    );
-    const sellSymbol = getCorrectSymbol(
-      operation.lowestAsk?.exchange,
-      operation.ticker,
-      false // spot
-    );
+    const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
+      operation.ticker
+    }`;
+    const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
+      operation.ticker
+    }`;
 
-    const buyPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${buySymbol}`;
-    const sellPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${sellSymbol}`;
-
-    console.log("Buscando preços para:", {
-      ticker: operation.ticker,
-      buyPriceKey,
-      sellPriceKey,
-      preçoEncontrado: {
-        buy: prices[buyPriceKey],
-        sell: prices[sellPriceKey],
-      },
-    });
-
-    const askPrice = prices[buyPriceKey];
-    const bidPrice = prices[sellPriceKey];
+    const askPrice = prices[askPriceKey];
+    const bidPrice = prices[bidPriceKey];
 
     const validAskPrice =
       typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
         ? parseFloat(askPrice)
         : operation.lowestAsk?.price;
+
     const validBidPrice =
       typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
         ? parseFloat(bidPrice)
         : operation.highestBid?.price;
 
-    // Só atualiza se ambos os preços forem válidos
     if (
       validAskPrice &&
       validBidPrice &&
@@ -655,44 +614,8 @@ const Futuros: NextPage<FuturosProps> = ({
       };
     }
 
-    // Se algum preço for inválido, mantém os valores originais
     return operation;
   });
-
-  const operations = useMemo(() => {
-    return updatedOperations.map((operation) => {
-      const buySymbol = getCorrectSymbol(
-        operation.highestBid?.exchange,
-        operation.ticker,
-        false
-      );
-      const sellSymbol = getCorrectSymbol(
-        operation.lowestAsk?.exchange,
-        operation.ticker,
-        true
-      );
-
-      const buyPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${buySymbol}`;
-      const sellPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${sellSymbol}`;
-
-      console.log("Operation price keys:", {
-        symbol: operation.ticker,
-        buyPriceKey,
-        sellPriceKey,
-        buySymbol,
-        sellSymbol,
-      });
-
-      const askPrice = prices[buyPriceKey];
-      const bidPrice = prices[sellPriceKey];
-
-      return {
-        ...operation,
-        askPrice: askPrice ? parseFloat(askPrice) : null,
-        bidPrice: bidPrice ? parseFloat(bidPrice) : null,
-      };
-    });
-  }, [updatedOperations, prices]);
 
   return (
     <>
@@ -983,7 +906,7 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {(operations ?? []).map((operation) => (
+                  {(updatedOperations ?? []).map((operation) => (
                     <FuturosOperationCard
                       key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
                       coin={{

@@ -179,7 +179,6 @@ export function getCorrectSymbol(
 
   const mapping = exchangeSymbolMappings[exchangeLower]?.[symbolUpper];
   if (!mapping) {
-    console.warn(`No mapping found for ${symbol} on ${exchange}`);
     return `${symbolUpper}_USDT`; // Default format
   }
 

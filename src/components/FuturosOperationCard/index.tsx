@@ -140,68 +140,20 @@ export function FuturosOperationCard({
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
-  console.log("Raw values:", {
-    symbol: coin.symbol,
-    askExchange: coin.ask.exchange,
-    askPrice: coin.ask.price,
-    askIsUSD: coin.ask.isUSD,
-    bidExchange: coin.bid.exchange,
-    bidPrice: coin.bid.price,
-    bidIsUSD: coin.bid.isUSD,
-    dolarValue,
-  });
+  const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
+  const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
 
   // Get correct symbols for each exchange
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
 
   // Create price keys using correct symbols
-  const buyPriceKey = `${coin.bid.exchange.toLowerCase()}_${buySymbol}`;
-  const sellPriceKey = `${coin.ask.exchange.toLowerCase()}_${sellSymbol}`;
+  const buyPriceKey = `${coin.bid.exchange.toLowerCase()}_${coin.symbol}`;
+  const sellPriceKey = `${coin.ask.exchange.toLowerCase()}_${coin.symbol}`;
 
-  // Log the keys being used
-  console.log("Price keys:", {
-    buyPriceKey,
-    sellPriceKey,
-    buySymbol,
-    sellSymbol,
-  });
-
-  const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
-  const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
-
-  console.log("Calculated prices:", {
-    symbol: coin.symbol,
-    askPrice,
-    bidPrice,
-    spread: ((bidPrice - askPrice) / askPrice) * 100,
-  });
-
-  // Formata os pares para spot e futuros
-  const spotPair = formatPairForExchange(coin.ask.exchange, coin.symbol, false);
-  const futuresPair = formatPairForExchange(
-    coin.bid.exchange,
-    coin.symbol,
-    true
-  );
-
-  console.log("Comparando pares:", {
-    symbol: coin.symbol,
-    spot: {
-      exchange: coin.ask.exchange,
-      pair: spotPair,
-      price: askPrice,
-      rawPrice: coin.ask.price,
-      isUSD: coin.ask.isUSD,
-    },
-    futures: {
-      exchange: coin.bid.exchange,
-      pair: futuresPair,
-      price: bidPrice,
-      rawPrice: coin.bid.price,
-      isUSD: coin.bid.isUSD,
-    },
-  });
+  // Format pairs for spot and futures
+  const spotPair = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
+  const futuresPair = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
 
   const spread = ((bidPrice - askPrice) / askPrice) * 100;
 
@@ -371,9 +323,6 @@ export function FuturosOperationCard({
     }
 
     const url = urlBuilder(coin, pair);
-
-    console.log("Tentando abrir URL:", url);
-    console.log("Par formatado:", formattedPair);
 
     const newTab = window.open(url, "_blank");
 
