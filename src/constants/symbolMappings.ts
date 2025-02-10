@@ -125,6 +125,48 @@ export const exchangeSymbolMappings: Record<
       futures: "CATTON_USDT",
     },
   },
+  kucoin: {
+    CULT: {
+      spot: "MILADYCULT-USDT",
+      futures: "MILADYCULT-USDT",
+    },
+    HOLD: {
+      spot: "HOLDCOIN-USDT",
+      futures: "HOLDCOIN-USDT",
+    },
+    FIRE: {
+      spot: "FIRE-USDT",
+      futures: "FIRE-USDT",
+    },
+    VELO: {
+      spot: "VELO-USDT",
+      futures: "VELO-USDT",
+    },
+  },
+  binance: {
+    TKO: {
+      spot: "TKO_USDT",
+      futures: "TKO_USDT",
+    },
+    ZK: {
+      spot: "ZK_USDT",
+      futures: "ZK_USDT",
+    },
+  },
+  bybit: {
+    FIRE: {
+      spot: "FIRE/USDT",
+      futures: "FIRE/USDT",
+    },
+    ZK: {
+      spot: "ZKUSDT",
+      futures: "ZKUSDT",
+    },
+    VELO: {
+      spot: "VELO/USDT",
+      futures: "VELO/USDT",
+    },
+  },
 };
 
 export function getCorrectSymbol(

@@ -541,45 +541,84 @@ const Futuros: NextPage<FuturosProps> = ({
         symbol: string;
         buyExchange: string;
         sellExchange: string;
+        formattedBuySymbol: string;
+        formattedSellSymbol: string;
       }>,
       operation
     ) => {
       if (operation.ticker) {
-        acc.push({
-          symbol: operation.ticker,
-          buyExchange: operation.highestBid?.exchange.toLowerCase(),
-          sellExchange: operation.lowestAsk?.exchange.toLowerCase(),
+        console.log("Processando operação:", {
+          ticker: operation.ticker,
+          highestBidExchange: operation.highestBid?.exchange,
+          lowestAskExchange: operation.lowestAsk?.exchange,
         });
+
+        // Get correctly formatted symbols for each exchange
+        const buySymbol = getCorrectSymbol(
+          operation.highestBid?.exchange,
+          operation.ticker,
+          true // highestBid é futures
+        );
+        const sellSymbol = getCorrectSymbol(
+          operation.lowestAsk?.exchange,
+          operation.ticker,
+          false // lowestAsk é spot
+        );
+
+        console.log("Símbolos formatados:", {
+          ticker: operation.ticker,
+          buySymbol,
+          sellSymbol,
+          buyExchange: operation.highestBid?.exchange,
+          sellExchange: operation.lowestAsk?.exchange,
+        });
+
+        // Only add if we have valid symbols
+        if (buySymbol && sellSymbol) {
+          acc.push({
+            symbol: operation.ticker,
+            buyExchange: operation.highestBid?.exchange.toLowerCase(),
+            sellExchange: operation.lowestAsk?.exchange.toLowerCase(),
+            formattedBuySymbol: buySymbol,
+            formattedSellSymbol: sellSymbol,
+          });
+        }
       }
       return acc;
     },
     []
   );
 
+  console.log("Símbolos enviados para WebSocket:", symbolsWithExchanges);
+
   // Pass the symbols with exchanges to the hook
   const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
+
+  console.log("Preços recebidos do WebSocket:", prices);
 
   const updatedOperations = sortedOperations?.map((operation) => {
     const buySymbol = getCorrectSymbol(
       operation.highestBid?.exchange,
       operation.ticker,
-      false
+      true // futures
     );
     const sellSymbol = getCorrectSymbol(
       operation.lowestAsk?.exchange,
       operation.ticker,
-      true
+      false // spot
     );
 
     const buyPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${buySymbol}`;
     const sellPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${sellSymbol}`;
 
-    console.log("Operation price keys:", {
-      symbol: operation.ticker,
+    console.log("Buscando preços para:", {
+      ticker: operation.ticker,
       buyPriceKey,
       sellPriceKey,
-      buySymbol,
-      sellSymbol,
+      preçoEncontrado: {
+        buy: prices[buyPriceKey],
+        sell: prices[sellPriceKey],
+      },
     });
 
     const askPrice = prices[buyPriceKey];

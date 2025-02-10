@@ -1602,11 +1602,14 @@ export class MexcStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
+    if (pair.toUpperCase() === "FIRE_USDT") {
+      throw new Error("Moeda FIRE_USDT ignorada na MexcStrategy");
+    }
+
     const url = `https://api.mexc.com/api/v3/depth?symbol=${pair.replace(
       "_",
       ""
     )}&limit=50`;
-
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as MexcOrderbook;
@@ -1706,8 +1709,9 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
   }
 
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    // Exemplo: https://contract.mexc.com/api/v1/contract/depth/BTC_USDT?limit=20
-    // pair: "BTC_USDT"
+    if (pair.toUpperCase() === "FIRE_USDT") {
+      throw new Error("Moeda FIRE_USDT ignorada na MexcFuturesStrategy");
+    }
 
     const url = `https://contract.mexc.com/api/v1/contract/depth/${pair}?limit=20`;
     const response = await fetchWithProxy(url, proxies);
@@ -1995,6 +1999,13 @@ export class BidgetStrategy implements ExchangeStrategy {
       specialCases[pair] || `${pair.replace("USDT", "_USDT")}_SPBL`;
     url = `https://api.bitget.com/api/spot/v1/market/depth?symbol=${formattedPair}`;
 
+    if (
+      pair.toUpperCase() === "TKO_USDT" ||
+      pair.toUpperCase() === "TKOUSDT_UMCBL"
+    ) {
+      throw new Error("Moeda TKO ignorada na Bitget");
+    }
+
     const response = await fetchWithProxy(url, proxies);
 
     const json = (await response.json()) as BitgetFuturesOrderbook;
@@ -2128,6 +2139,13 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
       MILADYCULTUSDT_UMCBL: "MILADYCULT_USDT_UMCBL",
       GSTUSDT_UMCBL: "GST_USDT_UMCBL",
     };
+
+    if (
+      pair.toUpperCase() === "TKO_USDT" ||
+      pair.toUpperCase() === "TKOUSDT_UMCBL"
+    ) {
+      throw new Error("Moeda TKO ignorada na Bitget");
+    }
 
     // Se `pair` estiver nesse objeto, use a forma especial; senão, use `pair` mesmo
     const formattedPair = specialCases[pair] || pair;
@@ -2540,7 +2558,9 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       pair.toUpperCase() !== "GTC_USDT" &&
       pair.toUpperCase() !== "BFC_USDT" &&
       pair.toUpperCase() !== "MCUSDT" &&
-      pair.toUpperCase() !== "MIRUSDT"
+      pair.toUpperCase() !== "MIRUSDT" &&
+      pair.toUpperCase() !== "URO_USDT" &&
+      pair.toUpperCase() !== "FIRE_USDT"
     ) {
       url = `https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${pair}&limit=50`;
     }
@@ -2651,17 +2671,18 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
 
   // Faz a chamada HTTP para buscar o orderbook do Futuros
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    let url = "";
+    if (
+      pair.toUpperCase() === "URO_USDT" ||
+      pair.toUpperCase() === "FIRE_USDT"
+    ) {
+      // Você pode decidir retornar algo vazio,
+      // lançar erro, ou retornar um Exchange "nulo".
+      // Exemplo: lançar erro:
+      throw new Error("Moeda URO_USDT ignorada na GateIoFuturesStrategy");
+    }
 
-    // Exemplo de filtro para tokens que não devem ser chamados:
-    // if (pair.toUpperCase() === "POR_USDT") {
-    //   // Retornar algo vazio ou tratar erro
-    //   return ...;
-    // }
-
-    // Monta a URL do Futuros da Gate.io
-    // "contract=${pair}&limit=100" → pair é o que veio de formatPair()
-    url = `https://fx-api.gateio.ws/api/v4/futures/usdt/order_book?contract=${pair}&limit=100`;
+    // Monta a URL normalmente
+    const url = `https://fx-api.gateio.ws/api/v4/futures/usdt/order_book?contract=${pair}&limit=100`;
 
     const response = await fetchWithProxy(url, proxies);
     const json = (await response.json()) as GateIoFuturesOrderbook;

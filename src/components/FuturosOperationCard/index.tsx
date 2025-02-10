@@ -222,8 +222,21 @@ export function FuturosOperationCard({
       `https://www.bybit.com/trade/spot/${coin}/${pair}`,
     binance: (coin: string, pair: string) =>
       `https://www.binance.com/en/trade/${coin}_${pair}`,
-    gate: (coin: string, pair: string) =>
-      `https://www.gate.io/trade/${coin}_${pair}`,
+    gate: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        ELIZA: "ELIZA",
+        ART: "ARTELA",
+        CULT: "MILADYCULT",
+        HOLD: "HOLD",
+        TKO: "TKO",
+        ZK: "ZK",
+        GST: "GST",
+        VELO: "VELO",
+        CATTON: "CATTON",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.gate.io/trade/${specialCoin}_${pair}`;
+    },
     bitget: (coin: string, pair: string) =>
       `https://www.bitget.com/spot/${coin}${pair}`,
     mexc: (coin: string, pair: string) =>
