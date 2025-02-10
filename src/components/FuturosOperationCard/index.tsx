@@ -121,6 +121,22 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
+  const [dimension, setDimension] = useState({ width: 40, height: 40 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 600) {
+        setDimension({ width: 20, height: 20 });
+      } else {
+        setDimension({ width: 40, height: 40 });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
@@ -138,14 +154,6 @@ export function FuturosOperationCard({
   // Get correct symbols for each exchange
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
-
-  // Se algum dos símbolos for null, não renderizar o card
-  if (!buySymbol || !sellSymbol) {
-    console.warn(
-      `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
-    );
-    return null;
-  }
 
   // Create price keys using correct symbols
   const buyPriceKey = `${coin.bid.exchange.toLowerCase()}_${buySymbol}`;
@@ -201,121 +209,13 @@ export function FuturosOperationCard({
     ? require("/public/animations/checkPurple.json")
     : require("/public/animations/checkGreen.json");
 
-  const [dimension, setDimension] = useState({ width: 40, height: 40 });
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 600) {
-        setDimension({ width: 20, height: 20 });
-      } else {
-        setDimension({ width: 40, height: 40 });
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize();
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  const spotLinks = {
-    bybit: (coin: string, pair: string) =>
-      `https://www.bybit.com/trade/spot/${coin}/${pair}`,
-    binance: (coin: string, pair: string) =>
-      `https://www.binance.com/en/trade/${coin}_${pair}`,
-    gate: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "ELIZA",
-        ART: "ARTELA",
-        CULT: "MILADYCULT",
-        HOLD: "HOLD",
-        TKO: "TKO",
-        ZK: "ZK",
-        GST: "GST",
-        VELO: "VELO",
-        CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.gate.io/trade/${specialCoin}_${pair}`;
-    },
-    bitget: (coin: string, pair: string) =>
-      `https://www.bitget.com/spot/${coin}${pair}`,
-    mexc: (coin: string, pair: string) =>
-      `https://www.mexc.com/exchange/${coin}_${pair}`,
-  };
-
-  const futuresLinks = {
-    bybit: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        FIRE: "FIRE",
-        VELO: "VELO",
-        ZK: "ZK",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.bybit.com/trade/${specialCoin}${pair}`;
-    },
-    binance: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        TKO: "TKO",
-        ZK: "ZK",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.binance.com/en/futures/${specialCoin}${pair}_PERP`;
-    },
-    gate: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "ELIZA",
-        ART: "ARTELA",
-        CULT: "MILADYCULT",
-        HOLD: "HOLD",
-        TKO: "TKO",
-        ZK: "ZK",
-        GST: "GST",
-        VELO: "VELO",
-        CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.gate.io/futures/USDT/${specialCoin}_${pair}`;
-    },
-    bitget: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "ELIZA",
-        HOLD: "HOLDCOIN",
-        FIRE: "FIRE",
-        ZK: "ZK",
-        VELO: "VELO",
-        URO: "URO",
-        CLR: "CELR",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.bitget.com/futures/${specialCoin}${pair}`;
-    },
-    kucoin: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        CULT: "MILADYCULT",
-        HOLD: "HOLDCOIN",
-        FIRE: "FIRE",
-        VELO: "VELO",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.kucoin.com/trade/${specialCoin}-${pair}`;
-    },
-    mexc: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "AI16ZELIZA",
-        ART: "ART",
-        CULT: "CULT",
-        HOLD: "HOLD",
-        TKO: "TKO",
-        ZK: "ZKSYNC",
-        GST: "GST",
-        VELO: "VELO",
-        URO: "URO",
-        CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.mexc.com/exchange/${specialCoin}_${pair}`;
-    },
-  };
+  // Se algum dos símbolos for null, não renderizar o card
+  if (!buySymbol || !sellSymbol) {
+    console.warn(
+      `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
+    );
+    return null;
+  }
 
   function formatPairForExchange(
     exchange: string,
@@ -481,6 +381,106 @@ export function FuturosOperationCard({
       window.location.href = url;
     }
   }
+
+  const spotLinks = {
+    bybit: (coin: string, pair: string) =>
+      `https://www.bybit.com/trade/spot/${coin}/${pair}`,
+    binance: (coin: string, pair: string) =>
+      `https://www.binance.com/en/trade/${coin}_${pair}`,
+    gate: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        ELIZA: "ELIZA",
+        ART: "ARTELA",
+        CULT: "MILADYCULT",
+        HOLD: "HOLD",
+        TKO: "TKO",
+        ZK: "ZK",
+        GST: "GST",
+        VELO: "VELO",
+        CATTON: "CATTON",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.gate.io/trade/${specialCoin}_${pair}`;
+    },
+    bitget: (coin: string, pair: string) =>
+      `https://www.bitget.com/spot/${coin}${pair}`,
+    mexc: (coin: string, pair: string) =>
+      `https://www.mexc.com/exchange/${coin}_${pair}`,
+  };
+
+  const futuresLinks = {
+    bybit: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        FIRE: "FIRE",
+        VELO: "VELO",
+        ZK: "ZK",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.bybit.com/trade/${specialCoin}${pair}`;
+    },
+    binance: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        TKO: "TKO",
+        ZK: "ZK",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.binance.com/en/futures/${specialCoin}${pair}_PERP`;
+    },
+    gate: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        ELIZA: "ELIZA",
+        ART: "ARTELA",
+        CULT: "MILADYCULT",
+        HOLD: "HOLD",
+        TKO: "TKO",
+        ZK: "ZK",
+        GST: "GST",
+        VELO: "VELO",
+        CATTON: "CATTON",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.gate.io/futures/USDT/${specialCoin}_${pair}`;
+    },
+    bitget: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        ELIZA: "ELIZA",
+        HOLD: "HOLDCOIN",
+        FIRE: "FIRE",
+        ZK: "ZK",
+        VELO: "VELO",
+        URO: "URO",
+        CLR: "CELR",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://www.bitget.com/futures/${specialCoin}${pair}`;
+    },
+    kucoin: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        CULT: "MILADYCULT",
+        HOLD: "HOLDCOIN",
+        FIRE: "FIRE",
+        VELO: "VELO",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://futures.kucoin.com/trade/${specialCoin}-${pair}`;
+    },
+    mexc: (coin: string, pair: string) => {
+      const specialCases: Record<string, string> = {
+        ELIZA: "AI16ZELIZA",
+        ART: "ART",
+        CULT: "CULT",
+        HOLD: "HOLD",
+        TKO: "TKO",
+        ZK: "ZKSYNC",
+        GST: "GST",
+        VELO: "VELO",
+        URO: "URO",
+        CATTON: "CATTON",
+      };
+      const specialCoin = specialCases[coin.toUpperCase()] || coin;
+      return `https://futures.mexc.com/exchange/${specialCoin}_${pair}`;
+    },
+  };
 
   return (
     <section
