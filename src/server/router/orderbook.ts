@@ -574,7 +574,6 @@ export const orderbookRouter = createRouter()
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
 
       if (paginatedCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: cursor,
