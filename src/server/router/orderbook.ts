@@ -552,7 +552,7 @@ export const orderbookRouter = createRouter()
         buyFuturesExchanges = [],
         sellFuturesExchanges = [],
         cursor = 1,
-        limit = 50,
+        limit = 40,
         isFutures,
       } = input;
 
@@ -568,8 +568,8 @@ export const orderbookRouter = createRouter()
 
       activeCoins = CoinsSingleton.getInstance().coins;
 
-      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
-      const endIndex = startIndex + (limit ?? 50);
+      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 40);
+      const endIndex = startIndex + (limit ?? 40);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
 
       if (paginatedCoins.length === 0) {
