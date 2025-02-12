@@ -486,7 +486,6 @@ export const orderbookRouter = createRouter()
       activeCoins = CoinsSingleton.getInstance().coins;
 
       if (activeCoins.length === 0) {
-        // console.log('Sending empty orderbook: no active coins')
         return [];
       }
 
