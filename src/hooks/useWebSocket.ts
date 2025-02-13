@@ -31,6 +31,7 @@ export const useWebSocket = (
     bitget?: WebSocket;
     kucoin?: WebSocket;
     mexc?: WebSocket;
+    gateio?: WebSocket;
   }>({});
   //   const kucoinTokenRef = useRef<{
   //     token: string;
@@ -42,6 +43,7 @@ export const useWebSocket = (
     bitget: new Set(),
     kucoin: new Set(),
     mexc: new Set(),
+    gateio: new Set(),
   });
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export const useWebSocket = (
       bitget: new Set(),
       kucoin: new Set(),
       mexc: new Set(),
+      gateio: new Set(),
     };
 
     symbols.forEach((symbol) => {
@@ -466,6 +469,171 @@ export const useWebSocket = (
     };
 
     const mexcPingInterval = connectMexc() || setInterval(() => {}, 1000);
+
+    // Gate.io Futures WebSocket
+    if (currentSymbols.gateio && symbolsByExchange.gateio) {
+      const connectGateio = () => {
+        // Lista de endpoints alternativos
+        const endpoints = [
+          "wss://fx-ws.gateio.ws/v4/ws/usdt",
+          "wss://fx-ws.gateio.ws/v4/ws",
+          "wss://fx-ws-testnet.gateio.ws/v4/ws/usdt",
+        ];
+
+        let currentEndpoint = 0;
+        let connected = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        let pingInterval: NodeJS.Timeout;
+
+        const tryConnect = () => {
+          if (
+            connected ||
+            currentEndpoint >= endpoints.length ||
+            reconnectAttempts >= MAX_RECONNECT_ATTEMPTS
+          ) {
+            console.log(
+              "Máximo de tentativas de reconexão atingido ou já conectado"
+            );
+            return;
+          }
+
+          const endpoint = endpoints[currentEndpoint];
+          console.log(
+            `Tentando conectar ao Gate.io usando endpoint: ${endpoint}`
+          );
+
+          if (!endpoint) {
+            console.error("Endpoint inválido para Gate.io");
+            return;
+          }
+
+          const gateioWs = new WebSocket(endpoint);
+          wsRef.current.gateio = gateioWs;
+
+          gateioWs.onopen = () => {
+            console.log("Conexão estabelecida com Gate.io");
+            connected = true;
+            reconnectAttempts = 0;
+
+            try {
+              // Primeiro enviar um ping para verificar a conexão
+              const pingMsg = {
+                time: Math.floor(Date.now() / 1000),
+                channel: "futures.ping",
+                event: "ping",
+                payload: [],
+              };
+              gateioWs.send(JSON.stringify(pingMsg));
+
+              // Subscribe para os tickers de futuros
+              const subscribeMsg = {
+                time: Math.floor(Date.now() / 1000),
+                channel: "futures.tickers",
+                event: "subscribe",
+                payload: symbolsByExchange.gateio?.map(
+                  (symbol) => `${symbol}_USDT`
+                ),
+              };
+              gateioWs.send(JSON.stringify(subscribeMsg));
+
+              // Configurar ping interval após conexão bem sucedida
+              pingInterval = setInterval(() => {
+                if (gateioWs.readyState === WebSocket.OPEN) {
+                  const pingMsg = {
+                    time: Math.floor(Date.now() / 1000),
+                    channel: "futures.ping",
+                    event: "ping",
+                    payload: [],
+                  };
+                  gateioWs.send(JSON.stringify(pingMsg));
+                }
+              }, 5000);
+            } catch (error) {
+              console.error(
+                "Erro ao enviar mensagens iniciais Gate.io:",
+                error
+              );
+              gateioWs.close();
+            }
+          };
+
+          gateioWs.onclose = (event) => {
+            console.log(
+              `Conexão Gate.io fechada. Code: ${event.code}, Reason: ${event.reason}`
+            );
+            connected = false;
+            clearInterval(pingInterval);
+
+            if (!connected) {
+              reconnectAttempts++;
+              currentEndpoint++;
+              setTimeout(() => {
+                console.log(
+                  `Tentativa de reconexão ${reconnectAttempts} de ${MAX_RECONNECT_ATTEMPTS}`
+                );
+                tryConnect();
+              }, 5000 * reconnectAttempts); // Backoff exponencial
+            }
+          };
+
+          gateioWs.onerror = (error) => {
+            console.error("Erro no WebSocket Gate.io:", error);
+            // Não fechar aqui, deixar o onclose lidar com a reconexão
+          };
+
+          gateioWs.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+
+              // Log para debug
+              if (data.channel !== "futures.ping") {
+                console.log("Mensagem recebida Gate.io:", data);
+              }
+
+              // Verifica se é uma mensagem de ticker
+              if (
+                data.channel === "futures.tickers" &&
+                data.event === "update"
+              ) {
+                const tickers = Array.isArray(data.result)
+                  ? data.result
+                  : [data.result];
+
+                tickers.forEach((ticker: any) => {
+                  if (!ticker || !ticker.contract) return;
+
+                  const symbol = ticker.contract.split("_")[0];
+                  const price = ticker.last; // último preço negociado
+
+                  if (price) {
+                    setPrices((prev) => ({
+                      ...prev,
+                      [`gateio_futures_${symbol}`]: price.toString(),
+                    }));
+                  }
+                });
+              }
+            } catch (error) {
+              console.error("Erro ao processar mensagem Gate.io:", error);
+              console.error("Dados que causaram o erro:", event.data);
+            }
+          };
+        };
+
+        tryConnect();
+
+        return () => {
+          clearInterval(pingInterval);
+          if (wsRef.current.gateio) {
+            wsRef.current.gateio.close();
+          }
+        };
+      };
+
+      const cleanup = connectGateio();
+      return cleanup;
+    }
 
     // Cleanup
     return () => {

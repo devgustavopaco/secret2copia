@@ -285,7 +285,7 @@ const Futuros: NextPage<FuturosProps> = ({
       queryFn: fetchPaginatedOrderbook, // Mantendo a função de busca aqui
       initialPageParam: 1, // Página inicial
       getNextPageParam: (lastPage: PaginatedResponse) => lastPage.nextCursor, // Obtém o próximo cursor
-      refetchInterval: 20 * 1000,
+      refetchInterval: 2 * 1000,
       retry(failureCount) {
         return failureCount <= 3;
       },
@@ -601,17 +601,43 @@ const Futuros: NextPage<FuturosProps> = ({
           operation.ticker
         }`;
 
-        const askPrice = prices[askPriceKey];
-        const bidPrice = prices[bidPriceKey];
+        // Determinar se é uma operação de futuros
+        const isFuturesOperation =
+          operation.lowestAsk?.exchange.toLowerCase() === "gateio" ||
+          operation.highestBid?.exchange.toLowerCase() === "gateio";
+
+        let askPriceValue, bidPriceValue;
+
+        if (isFuturesOperation) {
+          // Se for Gate.io, usar o formato específico de futuros
+          const askPriceGateioKey = `gateio_futures_${operation.ticker}`;
+          const bidPriceGateioKey = `gateio_futures_${operation.ticker}`;
+          askPriceValue = prices[askPriceGateioKey];
+          bidPriceValue = prices[bidPriceGateioKey];
+        } else {
+          // Para outras exchanges, usar o formato padrão
+          const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
+            operation.ticker
+          }`;
+          const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
+            operation.ticker
+          }`;
+          askPriceValue = prices[askPriceKey];
+          bidPriceValue = prices[bidPriceKey];
+        }
+
+        // Se não encontrou preços, usar preços originais como fallback
+        if (!askPriceValue) askPriceValue = prices[askPriceKey];
+        if (!bidPriceValue) bidPriceValue = prices[bidPriceKey];
 
         const validAskPrice =
-          typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
-            ? parseFloat(askPrice)
+          typeof askPriceValue === "string" && !isNaN(parseFloat(askPriceValue))
+            ? parseFloat(askPriceValue)
             : operation.lowestAsk?.price;
 
         const validBidPrice =
-          typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
-            ? parseFloat(bidPrice)
+          typeof bidPriceValue === "string" && !isNaN(parseFloat(bidPriceValue))
+            ? parseFloat(bidPriceValue)
             : operation.highestBid?.price;
 
         if (
