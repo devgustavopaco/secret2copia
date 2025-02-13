@@ -160,9 +160,21 @@ export const useWebSocket = (
                 })) ?? [],
             };
             bitgetWs.send(JSON.stringify(subscribeMsg));
+
+            // Subscribe para futuros
+            const subscribeFuturesMsg = {
+              op: "subscribe",
+              args:
+                symbolsByExchange.bitget?.map((symbol) => ({
+                  instType: "UMCBL",
+                  channel: "ticker",
+                  instId: `${symbol}USDT_UMCBL`,
+                })) ?? [],
+            };
+            bitgetWs.send(JSON.stringify(subscribeFuturesMsg));
           } catch (error) {
             console.error("Erro ao enviar subscribe Bitget:", error);
-            setTimeout(connectBitget, 5000); // Retry after 5 seconds
+            setTimeout(connectBitget, 5000);
           }
         };
 
@@ -178,15 +190,23 @@ export const useWebSocket = (
         bitgetWs.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            // Processa mensagens spot
             if (data.arg?.channel === "ticker" && data.data?.[0]) {
               const symbol = data.arg.instId.replace("USDT", "");
               const price = data.data[0].lastPr;
 
-              if (price) {
-                // Só atualiza se tiver preço
+              if (price && data.arg.instType === "SPOT") {
                 setPrices((prev) => ({
                   ...prev,
                   [`bitget_${symbol}`]: price,
+                }));
+              }
+              // Processa mensagens futures
+              else if (price && data.arg.instType === "UMCBL") {
+                const futuresSymbol = symbol.replace("_UMCBL", "");
+                setPrices((prev) => ({
+                  ...prev,
+                  [`bitget_futures_${futuresSymbol}`]: price,
                 }));
               }
             }
@@ -373,7 +393,17 @@ export const useWebSocket = (
                 },
               };
 
+              // Subscribe para spot
               mexcWs.send(JSON.stringify(subscribeMsg));
+
+              // Subscribe para futuros
+              const futuresMsg = {
+                method: "sub.ticker",
+                param: {
+                  symbol: `${baseSymbol}_USDT`,
+                },
+              };
+              mexcWs.send(JSON.stringify(futuresMsg));
             });
           };
 
@@ -383,7 +413,6 @@ export const useWebSocket = (
 
               // Verifica se é uma mensagem de ticker
               if (data.channel === "push.tickers" && Array.isArray(data.data)) {
-                // Filtra apenas os tickers que nos interessam
                 const relevantTickers = data.data.filter((ticker: any) => {
                   const tickerSymbol = ticker.symbol.split("_")[0];
                   return (
@@ -398,19 +427,26 @@ export const useWebSocket = (
                   const price = ticker.lastPrice;
 
                   if (price) {
-                    setPrices((prev) => {
-                      const oldPrice = prev[`mexc_${symbol}`];
-                      const newPrice = price.toString();
-
-                      return {
-                        ...prev,
-                        [`mexc_${symbol}`]: newPrice,
-                      };
-                    });
+                    setPrices((prev) => ({
+                      ...prev,
+                      [`mexc_${symbol}`]: price.toString(),
+                    }));
                   }
                 });
               }
-              // Logs para outros tipos de mensagens
+
+              // Verifica se é uma mensagem de ticker futures
+              if (data.channel === "push.ticker") {
+                const symbol = data.symbol.replace("_USDT", "");
+                const price = data.data.last;
+
+                if (price) {
+                  setPrices((prev) => ({
+                    ...prev,
+                    [`mexc_futures_${symbol}`]: price.toString(),
+                  }));
+                }
+              }
             } catch (error) {
               console.error("Erro ao processar mensagem MEXC:", error);
               console.error("Dados que causaram o erro:", event.data);
