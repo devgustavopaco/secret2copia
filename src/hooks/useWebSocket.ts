@@ -31,7 +31,6 @@ export const useWebSocket = (
     bitget?: WebSocket;
     kucoin?: WebSocket;
     mexc?: WebSocket;
-    gateio?: WebSocket;
   }>({});
   //   const kucoinTokenRef = useRef<{
   //     token: string;
@@ -43,7 +42,6 @@ export const useWebSocket = (
     bitget: new Set(),
     kucoin: new Set(),
     mexc: new Set(),
-    gateio: new Set(),
   });
 
   useEffect(() => {
@@ -64,7 +62,6 @@ export const useWebSocket = (
       bitget: new Set(),
       kucoin: new Set(),
       mexc: new Set(),
-      gateio: new Set(),
     };
 
     symbols.forEach((symbol) => {
@@ -163,21 +160,9 @@ export const useWebSocket = (
                 })) ?? [],
             };
             bitgetWs.send(JSON.stringify(subscribeMsg));
-
-            // Subscribe para futuros
-            const subscribeFuturesMsg = {
-              op: "subscribe",
-              args:
-                symbolsByExchange.bitget?.map((symbol) => ({
-                  instType: "UMCBL",
-                  channel: "ticker",
-                  instId: `${symbol}USDT_UMCBL`,
-                })) ?? [],
-            };
-            bitgetWs.send(JSON.stringify(subscribeFuturesMsg));
           } catch (error) {
             console.error("Erro ao enviar subscribe Bitget:", error);
-            setTimeout(connectBitget, 5000);
+            setTimeout(connectBitget, 5000); // Retry after 5 seconds
           }
         };
 
@@ -193,23 +178,15 @@ export const useWebSocket = (
         bitgetWs.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            // Processa mensagens spot
             if (data.arg?.channel === "ticker" && data.data?.[0]) {
               const symbol = data.arg.instId.replace("USDT", "");
               const price = data.data[0].lastPr;
 
-              if (price && data.arg.instType === "SPOT") {
+              if (price) {
+                // Só atualiza se tiver preço
                 setPrices((prev) => ({
                   ...prev,
                   [`bitget_${symbol}`]: price,
-                }));
-              }
-              // Processa mensagens futures
-              else if (price && data.arg.instType === "UMCBL") {
-                const futuresSymbol = symbol.replace("_UMCBL", "");
-                setPrices((prev) => ({
-                  ...prev,
-                  [`bitget_futures_${futuresSymbol}`]: price,
                 }));
               }
             }
@@ -396,17 +373,7 @@ export const useWebSocket = (
                 },
               };
 
-              // Subscribe para spot
               mexcWs.send(JSON.stringify(subscribeMsg));
-
-              // Subscribe para futuros
-              const futuresMsg = {
-                method: "sub.ticker",
-                param: {
-                  symbol: `${baseSymbol}_USDT`,
-                },
-              };
-              mexcWs.send(JSON.stringify(futuresMsg));
             });
           };
 
@@ -416,6 +383,7 @@ export const useWebSocket = (
 
               // Verifica se é uma mensagem de ticker
               if (data.channel === "push.tickers" && Array.isArray(data.data)) {
+                // Filtra apenas os tickers que nos interessam
                 const relevantTickers = data.data.filter((ticker: any) => {
                   const tickerSymbol = ticker.symbol.split("_")[0];
                   return (
@@ -430,26 +398,19 @@ export const useWebSocket = (
                   const price = ticker.lastPrice;
 
                   if (price) {
-                    setPrices((prev) => ({
-                      ...prev,
-                      [`mexc_${symbol}`]: price.toString(),
-                    }));
+                    setPrices((prev) => {
+                      const oldPrice = prev[`mexc_${symbol}`];
+                      const newPrice = price.toString();
+
+                      return {
+                        ...prev,
+                        [`mexc_${symbol}`]: newPrice,
+                      };
+                    });
                   }
                 });
               }
-
-              // Verifica se é uma mensagem de ticker futures
-              if (data.channel === "push.ticker") {
-                const symbol = data.symbol.replace("_USDT", "");
-                const price = data.data.last;
-
-                if (price) {
-                  setPrices((prev) => ({
-                    ...prev,
-                    [`mexc_futures_${symbol}`]: price.toString(),
-                  }));
-                }
-              }
+              // Logs para outros tipos de mensagens
             } catch (error) {
               console.error("Erro ao processar mensagem MEXC:", error);
               console.error("Dados que causaram o erro:", event.data);
@@ -469,171 +430,6 @@ export const useWebSocket = (
     };
 
     const mexcPingInterval = connectMexc() || setInterval(() => {}, 1000);
-
-    // Gate.io Futures WebSocket
-    if (currentSymbols.gateio && symbolsByExchange.gateio) {
-      const connectGateio = () => {
-        // Lista de endpoints alternativos
-        const endpoints = [
-          "wss://fx-ws.gateio.ws/v4/ws/usdt",
-          "wss://fx-ws.gateio.ws/v4/ws",
-          "wss://fx-ws-testnet.gateio.ws/v4/ws/usdt",
-        ];
-
-        let currentEndpoint = 0;
-        let connected = false;
-        let reconnectAttempts = 0;
-        const MAX_RECONNECT_ATTEMPTS = 5;
-        let pingInterval: NodeJS.Timeout;
-
-        const tryConnect = () => {
-          if (
-            connected ||
-            currentEndpoint >= endpoints.length ||
-            reconnectAttempts >= MAX_RECONNECT_ATTEMPTS
-          ) {
-            console.log(
-              "Máximo de tentativas de reconexão atingido ou já conectado"
-            );
-            return;
-          }
-
-          const endpoint = endpoints[currentEndpoint];
-          console.log(
-            `Tentando conectar ao Gate.io usando endpoint: ${endpoint}`
-          );
-
-          if (!endpoint) {
-            console.error("Endpoint inválido para Gate.io");
-            return;
-          }
-
-          const gateioWs = new WebSocket(endpoint);
-          wsRef.current.gateio = gateioWs;
-
-          gateioWs.onopen = () => {
-            console.log("Conexão estabelecida com Gate.io");
-            connected = true;
-            reconnectAttempts = 0;
-
-            try {
-              // Primeiro enviar um ping para verificar a conexão
-              const pingMsg = {
-                time: Math.floor(Date.now() / 1000),
-                channel: "futures.ping",
-                event: "ping",
-                payload: [],
-              };
-              gateioWs.send(JSON.stringify(pingMsg));
-
-              // Subscribe para os tickers de futuros
-              const subscribeMsg = {
-                time: Math.floor(Date.now() / 1000),
-                channel: "futures.tickers",
-                event: "subscribe",
-                payload: symbolsByExchange.gateio?.map(
-                  (symbol) => `${symbol}_USDT`
-                ),
-              };
-              gateioWs.send(JSON.stringify(subscribeMsg));
-
-              // Configurar ping interval após conexão bem sucedida
-              pingInterval = setInterval(() => {
-                if (gateioWs.readyState === WebSocket.OPEN) {
-                  const pingMsg = {
-                    time: Math.floor(Date.now() / 1000),
-                    channel: "futures.ping",
-                    event: "ping",
-                    payload: [],
-                  };
-                  gateioWs.send(JSON.stringify(pingMsg));
-                }
-              }, 5000);
-            } catch (error) {
-              console.error(
-                "Erro ao enviar mensagens iniciais Gate.io:",
-                error
-              );
-              gateioWs.close();
-            }
-          };
-
-          gateioWs.onclose = (event) => {
-            console.log(
-              `Conexão Gate.io fechada. Code: ${event.code}, Reason: ${event.reason}`
-            );
-            connected = false;
-            clearInterval(pingInterval);
-
-            if (!connected) {
-              reconnectAttempts++;
-              currentEndpoint++;
-              setTimeout(() => {
-                console.log(
-                  `Tentativa de reconexão ${reconnectAttempts} de ${MAX_RECONNECT_ATTEMPTS}`
-                );
-                tryConnect();
-              }, 5000 * reconnectAttempts); // Backoff exponencial
-            }
-          };
-
-          gateioWs.onerror = (error) => {
-            console.error("Erro no WebSocket Gate.io:", error);
-            // Não fechar aqui, deixar o onclose lidar com a reconexão
-          };
-
-          gateioWs.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-
-              // Log para debug
-              if (data.channel !== "futures.ping") {
-                console.log("Mensagem recebida Gate.io:", data);
-              }
-
-              // Verifica se é uma mensagem de ticker
-              if (
-                data.channel === "futures.tickers" &&
-                data.event === "update"
-              ) {
-                const tickers = Array.isArray(data.result)
-                  ? data.result
-                  : [data.result];
-
-                tickers.forEach((ticker: any) => {
-                  if (!ticker || !ticker.contract) return;
-
-                  const symbol = ticker.contract.split("_")[0];
-                  const price = ticker.last; // último preço negociado
-
-                  if (price) {
-                    setPrices((prev) => ({
-                      ...prev,
-                      [`gateio_futures_${symbol}`]: price.toString(),
-                    }));
-                  }
-                });
-              }
-            } catch (error) {
-              console.error("Erro ao processar mensagem Gate.io:", error);
-              console.error("Dados que causaram o erro:", event.data);
-            }
-          };
-        };
-
-        tryConnect();
-
-        return () => {
-          clearInterval(pingInterval);
-          if (wsRef.current.gateio) {
-            wsRef.current.gateio.close();
-          }
-        };
-      };
-
-      const cleanup = connectGateio();
-      return cleanup;
-    }
 
     // Cleanup
     return () => {

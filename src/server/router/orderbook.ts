@@ -486,6 +486,7 @@ export const orderbookRouter = createRouter()
       activeCoins = CoinsSingleton.getInstance().coins;
 
       if (activeCoins.length === 0) {
+        // console.log('Sending empty orderbook: no active coins')
         return [];
       }
 
@@ -552,7 +553,7 @@ export const orderbookRouter = createRouter()
         buyFuturesExchanges = [],
         sellFuturesExchanges = [],
         cursor = 1,
-        limit = 40,
+        limit = 50,
         isFutures,
       } = input;
 
@@ -568,11 +569,12 @@ export const orderbookRouter = createRouter()
 
       activeCoins = CoinsSingleton.getInstance().coins;
 
-      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 40);
-      const endIndex = startIndex + (limit ?? 40);
+      const startIndex = ((cursor ?? 1) - 1) * (limit ?? 50);
+      const endIndex = startIndex + (limit ?? 50);
       const paginatedCoins = activeCoins.slice(startIndex, endIndex);
 
       if (paginatedCoins.length === 0) {
+        // console.log('Sending empty orderbook: no active coins')
         return {
           arbitrageOpportunities: new Array<ArbitrageOpportunity | undefined>(),
           nextCursor: cursor,
