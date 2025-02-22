@@ -228,7 +228,7 @@ const Futuros: NextPage<FuturosProps> = ({
           if (!morePagesExist) return undefined;
           return lastPage.nextCursor;
         },
-        refetchInterval: 20 * 1000,
+        refetchInterval: 2 * 1000,
         retry(failureCount) {
           return failureCount <= 3;
         },
@@ -253,7 +253,7 @@ const Futuros: NextPage<FuturosProps> = ({
       queryFn: fetchPaginatedOrderbook, // Mantendo a função de busca aqui
       initialPageParam: 1, // Página inicial
       getNextPageParam: (lastPage: PaginatedResponse) => lastPage.nextCursor, // Obtém o próximo cursor
-      refetchInterval: 20 * 1000,
+      refetchInterval: 2 * 1000,
       retry(failureCount) {
         return failureCount <= 3;
       },
@@ -394,37 +394,39 @@ const Futuros: NextPage<FuturosProps> = ({
   let allArbitrageOpportunities =
     data?.pages.flatMap((page: any) => page.arbitrageOpportunities) ?? [];
 
-  let operationsMap = new Map();
-  allArbitrageOpportunities.forEach((operation: any) => {
-    if (operation && operation.spread > 0) {
-      const existingOperation = operationsMap.get(operation.coin);
-      if (!existingOperation || operation.spread > existingOperation.spread) {
-        operationsMap.set(operation.coin, operation);
-      }
-    }
-  });
+  // Filtrar e ordenar todas as operações válidas
+  let validOperations = allArbitrageOpportunities
+    .filter((operation: ArbitrageOpportunity) => {
+      // Verificar se a operação é válida e tem spread positivo
+      if (!operation || operation.spread <= 0) return false;
 
-  let sortedOperations = Array.from(operationsMap.values())
-    .sort((a, b) => b.spread - a.spread)
-    .slice(0, 50);
+      // Verificar se não é a mesma exchange de compra e venda
+      return operation.highestBid?.exchange !== operation.lowestAsk?.exchange;
+    })
+    .sort(
+      (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
+    ) // Ordenar por spread (maior para menor)
+    .slice(0, 80); // Pegar as 80 melhores operações
 
+  // Remover moedas órfãs se necessário
   if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
-    for (let i = sortedOperations.length - 1; i >= 0; i--) {
-      const operation = sortedOperations[i];
-      const isOrphan = orphanCoins.some(
-        (coin: any) =>
-          coin.ticker.toUpperCase() === operation.ticker.toUpperCase()
-      );
-
-      if (isOrphan) {
-        console.log(`Removendo moeda órfã: ${operation.ticker}`);
-        sortedOperations.splice(i, 1);
+    validOperations = validOperations.filter(
+      (operation: ArbitrageOpportunity) => {
+        const isOrphan = orphanCoins.some(
+          (coin: any) =>
+            coin.ticker.toUpperCase() === operation.ticker.toUpperCase()
+        );
+        if (isOrphan) {
+          console.log(`Removendo moeda órfã: ${operation.ticker}`);
+          return false;
+        }
+        return true;
       }
-    }
-
-    sortedOperations = [...sortedOperations];
-    console.log(sortedOperations);
+    );
   }
+
+  let sortedOperations = validOperations;
+
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
@@ -489,7 +491,6 @@ const Futuros: NextPage<FuturosProps> = ({
     setLoadingDolarChange(true);
 
     // Limpar as operações existentes
-    operationsMap.clear();
     sortedOperations = [];
 
     // Remover queries existentes para garantir que o próximo fetch seja limpo
@@ -539,7 +540,7 @@ const Futuros: NextPage<FuturosProps> = ({
         buyExchange: string;
         sellExchange: string;
       }>,
-      operation
+      operation: ArbitrageOpportunity
     ) => {
       if (operation.ticker) {
         acc.push({
@@ -556,35 +557,51 @@ const Futuros: NextPage<FuturosProps> = ({
   // Pass the symbols with exchanges to the hook
   const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
 
-  const updatedOperations = sortedOperations?.map((operation) => {
-    const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
-      operation.ticker
-    }`;
-    const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
-      operation.ticker
-    }`;
+  const updatedOperations = sortedOperations
+    ?.map((operation: ArbitrageOpportunity) => {
+      const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
+        operation.ticker
+      }`;
+      const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
+        operation.ticker
+      }`;
 
-    const askPrice = prices[askPriceKey];
-    const bidPrice = prices[bidPriceKey];
+      const askPrice = prices[askPriceKey];
+      const bidPrice = prices[bidPriceKey];
 
-    return {
-      ...operation,
-      lowestAsk: {
-        ...operation.lowestAsk,
-        price:
-          typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
-            ? parseFloat(askPrice)
-            : operation.lowestAsk?.price,
-      },
-      highestBid: {
-        ...operation.highestBid,
-        price:
-          typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
-            ? parseFloat(bidPrice)
-            : operation.highestBid?.price,
-      },
-    };
-  });
+      const updatedOperation = {
+        ...operation,
+        lowestAsk: {
+          ...operation.lowestAsk,
+          price:
+            typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
+              ? parseFloat(askPrice)
+              : operation.lowestAsk?.price,
+        },
+        highestBid: {
+          ...operation.highestBid,
+          price:
+            typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
+              ? parseFloat(bidPrice)
+              : operation.highestBid?.price,
+        },
+      };
+
+      // Recalcular o spread com os novos preços
+      const askPriceValue = updatedOperation.lowestAsk?.price || 0;
+      const bidPriceValue = updatedOperation.highestBid?.price || 0;
+
+      if (askPriceValue && bidPriceValue) {
+        updatedOperation.spread =
+          ((bidPriceValue - askPriceValue) / askPriceValue) * 100;
+      }
+
+      return updatedOperation;
+    })
+    .sort(
+      (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
+    )
+    .slice(0, 50);
 
   return (
     <>
@@ -875,27 +892,29 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {(updatedOperations ?? []).map((operation) => (
-                    <FuturosOperationCard
-                      key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
-                      coin={{
-                        image: operation.coinImage,
-                        name: operation.coin,
-                        ask: operation.lowestAsk,
-                        bid: operation.highestBid,
-                        fee: operation.fee,
-                        tax: operation.tax,
-                        symbol: operation.ticker,
-                        spread: operation.spread,
-                      }}
-                      dollarPrice={dollarPrice}
-                      isAdmin={isAdmin}
-                      isChecked={isChecked}
-                      onClick={() => {
-                        setSelectedOperation(operation);
-                      }}
-                    />
-                  ))}
+                  {(updatedOperations ?? []).map(
+                    (operation: ArbitrageOpportunity) => (
+                      <FuturosOperationCard
+                        key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
+                        coin={{
+                          image: operation.coinImage,
+                          name: operation.coin,
+                          ask: operation.lowestAsk,
+                          bid: operation.highestBid,
+                          fee: operation.fee,
+                          tax: operation.tax,
+                          symbol: operation.ticker,
+                          spread: operation.spread,
+                        }}
+                        dollarPrice={dollarPrice}
+                        isAdmin={isAdmin}
+                        isChecked={isChecked}
+                        onClick={() => {
+                          setSelectedOperation(operation);
+                        }}
+                      />
+                    )
+                  )}
                 </div>
               )}
             </main>

@@ -12,7 +12,7 @@ interface ModalExchange {
 }
 
 const ALLOWED_BUY_EXCHANGES = ["Binance", "Bybit", "Gateio", "Bitget"];
-const ALLOWED_SELL_EXCHANGES = ["Bitget", "Mexc", "Gateio"];
+const ALLOWED_SELL_EXCHANGES = ["Bitget", "Mexc"];
 
 export function FullScreenModal({
   onClose,
