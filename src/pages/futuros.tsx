@@ -405,8 +405,7 @@ const Futuros: NextPage<FuturosProps> = ({
     })
     .sort(
       (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
-    ) // Ordenar por spread (maior para menor)
-    .slice(0, 80); // Pegar as 80 melhores operações
+    );
 
   // Remover moedas órfãs se necessário
   if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
@@ -600,8 +599,7 @@ const Futuros: NextPage<FuturosProps> = ({
     })
     .sort(
       (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
-    )
-    .slice(0, 50);
+    );
 
   return (
     <>
