@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { XCircle, Pause, Play } from "phosphor-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import loadingAnimation from "../animations/dollar.json";
@@ -41,6 +41,10 @@ interface FuturosProps {
 
 const FUTURES_EXCHANGES = ["mexc", "bitget", "kucoin"];
 
+interface WebSocketData {
+  [key: string]: string | undefined;
+}
+
 const Futuros: NextPage<FuturosProps> = ({
   ip,
   hasIPChanged,
@@ -48,12 +52,13 @@ const Futuros: NextPage<FuturosProps> = ({
   isNewUser,
   supportNumber,
   tickerData,
-}) => {
+}: FuturosProps): JSX.Element => {
   const [isChecked, setIsChecked] = useState(false);
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
+  const [webSocketError, setWebSocketError] = useState(false);
 
   const router = useRouter();
 
@@ -133,7 +138,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const userEmail = auth?.user?.email;
 
   const [selectedOperation, setSelectedOperation] =
-    useState<ArbitrageOpportunity>({} as ArbitrageOpportunity);
+    useState<ArbitrageOpportunity | null>(null);
 
   const [loadingDolarChange, setLoadingDolarChange] = useState(false);
 
@@ -399,9 +404,7 @@ const Futuros: NextPage<FuturosProps> = ({
     .filter((operation: ArbitrageOpportunity) => {
       // Verificar se a operação é válida e tem spread positivo
       if (!operation || operation.spread <= 0) return false;
-
-      // Verificar se não é a mesma exchange de compra e venda
-      return operation.highestBid?.exchange !== operation.lowestAsk?.exchange;
+      return true;
     })
     .sort(
       (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
@@ -553,53 +556,75 @@ const Futuros: NextPage<FuturosProps> = ({
     []
   );
 
-  // Pass the symbols with exchanges to the hook
+  // Fetch prices using WebSocket
   const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
 
-  const updatedOperations = sortedOperations
-    ?.map((operation: ArbitrageOpportunity) => {
-      const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
-        operation.ticker
-      }`;
-      const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
-        operation.ticker
-      }`;
+  // Simplificar o processamento dos preços
+  const updatedOperations = useMemo(() => {
+    if (!sortedOperations || !prices) return [];
 
-      const askPrice = prices[askPriceKey];
-      const bidPrice = prices[bidPriceKey];
+    return sortedOperations
+      .map((operation: ArbitrageOpportunity) => {
+        const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
+          operation.ticker
+        }`;
+        const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
+          operation.ticker
+        }`;
 
-      const updatedOperation = {
-        ...operation,
-        lowestAsk: {
-          ...operation.lowestAsk,
-          price:
-            typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
-              ? parseFloat(askPrice)
-              : operation.lowestAsk?.price,
-        },
-        highestBid: {
-          ...operation.highestBid,
-          price:
-            typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
-              ? parseFloat(bidPrice)
-              : operation.highestBid?.price,
-        },
+        const askPrice = prices[askPriceKey];
+        const bidPrice = prices[bidPriceKey];
+
+        const updatedOperation = {
+          ...operation,
+          lowestAsk: {
+            ...operation.lowestAsk,
+            price:
+              typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
+                ? parseFloat(askPrice)
+                : operation.lowestAsk?.price,
+          },
+          highestBid: {
+            ...operation.highestBid,
+            price:
+              typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
+                ? parseFloat(bidPrice)
+                : operation.highestBid?.price,
+          },
+        };
+
+        // Recalcular o spread
+        const askPriceValue = updatedOperation.lowestAsk?.price || 0;
+        const bidPriceValue = updatedOperation.highestBid?.price || 0;
+
+        if (askPriceValue && bidPriceValue) {
+          updatedOperation.spread =
+            ((bidPriceValue - askPriceValue) / askPriceValue) * 100;
+        }
+
+        return updatedOperation;
+      })
+      .sort(
+        (a: ArbitrageOpportunity, b: ArbitrageOpportunity) =>
+          b.spread - a.spread
+      )
+      .slice(0, 50);
+  }, [sortedOperations, prices]);
+
+  // Simplificar o monitoramento do WebSocket
+  useEffect(() => {
+    if (!isWebSocketPaused) {
+      const checkWebSocketStatus = () => {
+        const hasValidPrices = Object.keys(prices || {}).length > 0;
+        setWebSocketError(!hasValidPrices);
       };
 
-      // Recalcular o spread com os novos preços
-      const askPriceValue = updatedOperation.lowestAsk?.price || 0;
-      const bidPriceValue = updatedOperation.highestBid?.price || 0;
+      const interval = setInterval(checkWebSocketStatus, 10000);
+      checkWebSocketStatus();
 
-      if (askPriceValue && bidPriceValue) {
-        updatedOperation.spread =
-          ((bidPriceValue - askPriceValue) / askPriceValue) * 100;
-      }
-
-      return updatedOperation;
-    })
-    .sort(
-      (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
-    );
+      return () => clearInterval(interval);
+    }
+  }, [prices, isWebSocketPaused]);
 
   return (
     <>
@@ -629,19 +654,31 @@ const Futuros: NextPage<FuturosProps> = ({
         <>
           {modalOpenOrderBook && (
             <ModalOrderBook
-              symbol={selectedOperation.ticker}
-              orderbookBid={selectedOperation.highestBid}
-              orderbookAsk={selectedOperation.lowestAsk}
-              buyWhere={selectedOperation.highestBid?.image_url}
-              sellWhere={selectedOperation.lowestAsk?.image_url}
-              buyEchangeName={selectedOperation.highestBid?.exchange}
-              sellEchangeName={selectedOperation.lowestAsk?.exchange}
-              coin={selectedOperation.coin}
-              coinImage={selectedOperation.coinImage}
+              symbol={selectedOperation?.ticker ?? ""}
+              orderbookBid={{
+                isUSD: selectedOperation?.highestBid?.isUSD ?? false,
+                orderbook: selectedOperation?.highestBid?.orderbook ?? {
+                  bids: [],
+                  asks: [],
+                },
+              }}
+              orderbookAsk={{
+                isUSD: selectedOperation?.lowestAsk?.isUSD ?? false,
+                orderbook: selectedOperation?.lowestAsk?.orderbook ?? {
+                  bids: [],
+                  asks: [],
+                },
+              }}
+              buyWhere={selectedOperation?.highestBid?.image_url ?? ""}
+              sellWhere={selectedOperation?.lowestAsk?.image_url ?? ""}
+              buyEchangeName={selectedOperation?.highestBid?.exchange ?? ""}
+              sellEchangeName={selectedOperation?.lowestAsk?.exchange ?? ""}
+              coin={selectedOperation?.coin ?? ""}
+              coinImage={selectedOperation?.coinImage ?? ""}
               setOpenModal={setModalOpenOrderBook}
               dollarPrice={dollarPrice ?? 0}
-              fee={selectedOperation.fee}
-              tax={selectedOperation.tax}
+              fee={selectedOperation?.fee ?? 0}
+              tax={selectedOperation?.tax ?? 0}
             />
           )}
         </>

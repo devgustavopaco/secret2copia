@@ -43,6 +43,22 @@ export const useWebSocket = (
     kucoin: new Set(),
     mexc: new Set(),
   });
+  const lastUpdateRef = useRef<Record<string, number>>({});
+  const UPDATE_THROTTLE = 8000; // 8 segundos entre atualizações
+
+  const updatePrice = (key: string, newPrice: string) => {
+    const now = Date.now();
+    if (
+      !lastUpdateRef.current[key] ||
+      now - lastUpdateRef.current[key] >= UPDATE_THROTTLE
+    ) {
+      lastUpdateRef.current[key] = now;
+      setPrices((prev) => ({
+        ...prev,
+        [key]: newPrice,
+      }));
+    }
+  };
 
   useEffect(() => {
     // Se estiver pausado, não faça nada
@@ -125,12 +141,8 @@ export const useWebSocket = (
         try {
           const data = JSON.parse(event.data);
           if (data.e === "24hrTicker") {
-            const symbol = data.s.replace("USDT", ""); // Remove USDT para armazenar
-
-            setPrices((prev) => ({
-              ...prev,
-              [`binance_${symbol}`]: data.c,
-            }));
+            const symbol = data.s.replace("USDT", "");
+            updatePrice(`binance_${symbol}`, data.c);
           }
         } catch (error) {
           console.error("Erro ao processar mensagem Binance:", error);
@@ -183,11 +195,7 @@ export const useWebSocket = (
               const price = data.data[0].lastPr;
 
               if (price) {
-                // Só atualiza se tiver preço
-                setPrices((prev) => ({
-                  ...prev,
-                  [`bitget_${symbol}`]: price,
-                }));
+                updatePrice(`bitget_${symbol}`, price);
               }
             }
           } catch (error) {
@@ -398,15 +406,7 @@ export const useWebSocket = (
                   const price = ticker.lastPrice;
 
                   if (price) {
-                    setPrices((prev) => {
-                      const oldPrice = prev[`mexc_${symbol}`];
-                      const newPrice = price.toString();
-
-                      return {
-                        ...prev,
-                        [`mexc_${symbol}`]: newPrice,
-                      };
-                    });
+                    updatePrice(`mexc_${symbol}`, price.toString());
                   }
                 });
               }
