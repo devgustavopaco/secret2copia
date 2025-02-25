@@ -53,7 +53,7 @@ const Futuros: NextPage<FuturosProps> = ({
   isNewUser,
   supportNumber,
   tickerData,
-}: FuturosProps): JSX.Element => {
+}: FuturosProps): React.ReactElement => {
   const [isChecked, setIsChecked] = useState(false);
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
