@@ -48,6 +48,9 @@ export const useWebSocket = (
 
   const updatePrice = (key: string, newPrice: string) => {
     const now = Date.now();
+    if (!lastUpdateRef.current) {
+      lastUpdateRef.current = {};
+    }
     if (
       !lastUpdateRef.current[key] ||
       now - lastUpdateRef.current[key] >= UPDATE_THROTTLE
