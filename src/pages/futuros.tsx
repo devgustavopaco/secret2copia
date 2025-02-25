@@ -1,3 +1,4 @@
+import React from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import axios, { CancelTokenSource } from "axios";
 import type { GetServerSideProps, NextPage } from "next";
