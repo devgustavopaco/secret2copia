@@ -44,18 +44,18 @@ export const useWebSocket = (
     mexc: new Set(),
   });
   const lastUpdateRef = useRef<Record<string, number>>({});
-  const UPDATE_THROTTLE = 8000; // 8 segundos entre atualizações
+  const UPDATE_THROTTLE = 10000;
 
   const updatePrice = (key: string, newPrice: string) => {
     const now = Date.now();
-    if (!lastUpdateRef.current) {
-      lastUpdateRef.current = {};
-    }
-    if (
-      !lastUpdateRef.current[key] ||
-      now - lastUpdateRef.current[key] >= UPDATE_THROTTLE
-    ) {
-      lastUpdateRef.current[key] = now;
+    const lastUpdate = lastUpdateRef.current || {};
+    const lastUpdateTime = lastUpdate[key] || 0;
+
+    if (now - lastUpdateTime >= UPDATE_THROTTLE) {
+      lastUpdateRef.current = {
+        ...lastUpdate,
+        [key]: now,
+      };
       setPrices((prev) => ({
         ...prev,
         [key]: newPrice,
