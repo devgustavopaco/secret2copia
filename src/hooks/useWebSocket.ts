@@ -58,7 +58,6 @@ export const useWebSocket = (
   };
 
   useEffect(() => {
-    // Se estiver pausado, não faça nada
     if (isPaused) {
       // Feche todas as conexões WebSocket
       Object.values(wsRef.current).forEach((ws) => {
@@ -104,7 +103,7 @@ export const useWebSocket = (
         wsRef.current[exchange as keyof typeof wsRef.current] = undefined;
       }
     });
-
+    console.log(currentSymbols, "currentSymbols");
     // Update previous symbols reference
     previousSymbolsRef.current = currentSymbols;
 
