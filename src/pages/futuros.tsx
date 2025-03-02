@@ -398,7 +398,9 @@ const Futuros: NextPage<FuturosProps> = ({
   );
 
   let allArbitrageOpportunities =
-    data?.pages.flatMap((page: any) => page.arbitrageOpportunities) ?? [];
+    data?.pages
+      .flatMap((page: any) => page.arbitrageOpportunities)
+      .slice(0, 10) ?? [];
 
   // Filtrar e ordenar todas as operações válidas
   let validOperations = allArbitrageOpportunities
@@ -409,7 +411,8 @@ const Futuros: NextPage<FuturosProps> = ({
     })
     .sort(
       (a: ArbitrageOpportunity, b: ArbitrageOpportunity) => b.spread - a.spread
-    );
+    )
+    .slice(0, 10);
 
   // Remover moedas órfãs se necessário
   if (orphanCoins.length > 0 && (!isAdmin || !isNewUser)) {
@@ -609,7 +612,7 @@ const Futuros: NextPage<FuturosProps> = ({
         (a: ArbitrageOpportunity, b: ArbitrageOpportunity) =>
           b.spread - a.spread
       )
-      .slice(0, 50);
+      .slice(0, 10);
   }, [sortedOperations, prices]);
 
   // Simplificar o monitoramento do WebSocket
