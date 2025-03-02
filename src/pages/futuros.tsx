@@ -58,8 +58,9 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
-  const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
+  const [isWebSocketPaused, setIsWebSocketPaused] = useState(true);
   const [webSocketError, setWebSocketError] = useState(false);
+  const [prices, setPrices] = useState<Record<string, number>>({});
 
   const router = useRouter();
 
@@ -558,65 +559,42 @@ const Futuros: NextPage<FuturosProps> = ({
   );
 
   // Fetch prices using WebSocket
-  const prices = useWebSocket(symbolsWithExchanges, isWebSocketPaused);
+  const pricesFromWebSocket = useWebSocket(
+    symbolsWithExchanges,
+    isWebSocketPaused
+  );
 
   // Simplificar o processamento dos preços
   const updatedOperations = useMemo(() => {
-    if (!sortedOperations || !prices) return [];
-
+    const uniqueOperations = new Set<string>();
     return sortedOperations
-      .map((operation: ArbitrageOpportunity) => {
-        const askPriceKey = `${operation.lowestAsk?.exchange.toLowerCase()}_${
-          operation.ticker
-        }`;
-        const bidPriceKey = `${operation.highestBid?.exchange.toLowerCase()}_${
-          operation.ticker
-        }`;
+      .map((operation: any) => {
+        const ticker = `${operation.ticker}_USDT`;
+        const sellPrice = prices[ticker];
 
-        const askPrice = prices[askPriceKey];
-        const bidPrice = prices[bidPriceKey];
+        const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
+        if (uniqueOperations.has(uniqueKey)) {
+          return null; // Skip duplicate
+        }
+        uniqueOperations.add(uniqueKey);
 
-        const updatedOperation = {
+        return {
           ...operation,
-          lowestAsk: {
-            ...operation.lowestAsk,
-            price:
-              typeof askPrice === "string" && !isNaN(parseFloat(askPrice))
-                ? parseFloat(askPrice)
-                : operation.lowestAsk?.price,
-          },
           highestBid: {
             ...operation.highestBid,
-            price:
-              typeof bidPrice === "string" && !isNaN(parseFloat(bidPrice))
-                ? parseFloat(bidPrice)
-                : operation.highestBid?.price,
+            price: sellPrice || operation.highestBid.price, // Update price if available
           },
         };
-
-        // Recalcular o spread
-        const askPriceValue = updatedOperation.lowestAsk?.price || 0;
-        const bidPriceValue = updatedOperation.highestBid?.price || 0;
-
-        if (askPriceValue && bidPriceValue) {
-          updatedOperation.spread =
-            ((bidPriceValue - askPriceValue) / askPriceValue) * 100;
-        }
-
-        return updatedOperation;
       })
-      .sort(
-        (a: ArbitrageOpportunity, b: ArbitrageOpportunity) =>
-          b.spread - a.spread
-      )
-      .slice(0, 10);
-  }, [sortedOperations, prices]);
+      .filter((operation: any) => operation !== null); // Remove null entries
+  }, [prices, sortedOperations]);
 
   // Simplificar o monitoramento do WebSocket
   useEffect(() => {
     if (!isWebSocketPaused) {
       const checkWebSocketStatus = () => {
-        const hasValidPrices = Object.keys(prices || {}).length > 0;
+        const hasValidPrices =
+          Object.keys(pricesFromWebSocket || {}).length > 0;
         setWebSocketError(!hasValidPrices);
       };
 
@@ -625,7 +603,63 @@ const Futuros: NextPage<FuturosProps> = ({
 
       return () => clearInterval(interval);
     }
-  }, [prices, isWebSocketPaused]);
+  }, [pricesFromWebSocket, isWebSocketPaused]);
+
+  // Estado para armazenar tickers assinados
+  const [subscribedTickers, setSubscribedTickers] = useState<Set<string>>(
+    new Set()
+  );
+
+  // useEffect para monitorar sortedOperations
+  useEffect(() => {
+    // Filtra oportunidades onde a exchange "Mexc" está na venda
+    const opportunities = sortedOperations.filter(
+      (op: any) => op.lowestAsk.exchange === "Mexc"
+    );
+
+    // Processa apenas a primeira oportunidade
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        if (!subscribedTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
+
+          fetch("/api/mexcFutures", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
+
+          // Atualiza o estado local para incluir o novo ticker
+          setSubscribedTickers(new Set([...subscribedTickers, ticker]));
+        }
+      });
+    }
+  }, [sortedOperations, subscribedTickers]); // Dependências
+
+  useEffect(() => {
+    const fetchPrices = () => {
+      fetch("/api/mexcFutures")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Preços Futuros:", data.precosFuturos);
+          setPrices(data.precosFuturos);
+        })
+        .catch(console.error);
+    };
+
+    // Fetch prices every 3 seconds
+    const interval = setInterval(fetchPrices, 3000);
+    fetchPrices(); // Initial fetch
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
 
   return (
     <>

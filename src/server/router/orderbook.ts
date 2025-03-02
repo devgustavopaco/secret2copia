@@ -241,9 +241,6 @@ const fetchArbitrageOpportunity = async (
     const exchangeStrategy = exchangeStrategies[formattedExchange];
 
     if (exchangeStrategy) {
-      console.log(
-        `Using strategy for ${exchange}: ${exchangeStrategy.constructor.name}`
-      );
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
       orderBookPromises.push(
         exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
@@ -261,9 +258,6 @@ const fetchArbitrageOpportunity = async (
         : exchangeStrategies[formattedExchange];
 
     if (exchangeStrategy) {
-      console.log(
-        `Using strategy for ${exchange}: ${exchangeStrategy.constructor.name}`
-      );
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
       orderBookPromises.push(
         exchangeStrategy.fetchOrderbook(coinPair, isFanToken)
