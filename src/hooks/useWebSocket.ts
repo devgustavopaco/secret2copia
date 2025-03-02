@@ -50,7 +50,7 @@ export const useWebSocket = (
     const now = Date.now();
     const lastUpdate = lastUpdateRef.current || {};
     const lastUpdateTime = lastUpdate[key] || 0;
-
+    console.log(key, newPrice, "newPrice");
     setPrices((prev) => ({
       ...prev,
       [key]: newPrice,
