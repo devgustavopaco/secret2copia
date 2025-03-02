@@ -171,7 +171,7 @@ export const useWebSocket = (
             bitgetWs.send(JSON.stringify(subscribeMsg));
           } catch (error) {
             console.error("Erro ao enviar subscribe Bitget:", error);
-            setTimeout(connectBitget, 5000); // Retry after 5 seconds
+            setTimeout(connectBitget, 5000);
           }
         };
 
