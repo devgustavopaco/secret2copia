@@ -51,16 +51,10 @@ export const useWebSocket = (
     const lastUpdate = lastUpdateRef.current || {};
     const lastUpdateTime = lastUpdate[key] || 0;
 
-    if (now - lastUpdateTime >= UPDATE_THROTTLE) {
-      lastUpdateRef.current = {
-        ...lastUpdate,
-        [key]: now,
-      };
-      setPrices((prev) => ({
-        ...prev,
-        [key]: newPrice,
-      }));
-    }
+    setPrices((prev) => ({
+      ...prev,
+      [key]: newPrice,
+    }));
   };
 
   useEffect(() => {
