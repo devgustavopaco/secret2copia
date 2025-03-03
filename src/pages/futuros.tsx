@@ -62,6 +62,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [webSocketError, setWebSocketError] = useState(false);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [gateioPrices, setGateioPrices] = useState<Record<string, number>>({});
+  console.log(gateioPrices, "gateioPrices");
   const router = useRouter();
 
   useEffect(() => {
@@ -682,7 +683,6 @@ const Futuros: NextPage<FuturosProps> = ({
       fetch("/api/mexcFutures")
         .then((response) => response.json())
         .then((data) => {
-          console.log("Preços Futuros:", data.precosFuturos);
           setPrices(data.precosFuturos);
         })
         .catch(console.error);
