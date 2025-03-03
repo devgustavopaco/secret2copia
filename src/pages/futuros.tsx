@@ -629,8 +629,8 @@ const Futuros: NextPage<FuturosProps> = ({
       firstFiveOpportunities.forEach((opportunity: any) => {
         const ticker = opportunity.ticker.toUpperCase();
 
-        console.log(`Assinando ${ticker}`);
         if (!subscribedGateIoTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
           fetch("/api/gateioSpot", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
