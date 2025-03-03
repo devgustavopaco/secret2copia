@@ -61,7 +61,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(true);
   const [webSocketError, setWebSocketError] = useState(false);
   const [prices, setPrices] = useState<Record<string, number>>({});
-
+  const [gateioPrices, setGateioPrices] = useState<Record<string, number>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -564,13 +564,13 @@ const Futuros: NextPage<FuturosProps> = ({
     isWebSocketPaused
   );
 
-  // Simplificar o processamento dos preços
   const updatedOperations = useMemo(() => {
     const uniqueOperations = new Set<string>();
     return sortedOperations
       .map((operation: any) => {
         const ticker = `${operation.ticker}_USDT`;
         const sellPrice = prices[ticker];
+        const gateioPrice = gateioPrices[ticker];
 
         const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
         if (uniqueOperations.has(uniqueKey)) {
@@ -584,12 +584,18 @@ const Futuros: NextPage<FuturosProps> = ({
             ...operation.highestBid,
             price: sellPrice || operation.highestBid.price, // Update price if available
           },
+          lowestAsk: {
+            ...operation.lowestAsk,
+            price:
+              operation.lowestAsk.exchange === "Gateio"
+                ? gateioPrice || operation.lowestAsk.price
+                : operation.lowestAsk.price, // Update price if Gateio
+          },
         };
       })
       .filter((operation: any) => operation !== null); // Remove null entries
-  }, [prices, sortedOperations]);
+  }, [prices, gateioPrices, sortedOperations]);
 
-  // Simplificar o monitoramento do WebSocket
   useEffect(() => {
     if (!isWebSocketPaused) {
       const checkWebSocketStatus = () => {
@@ -609,12 +615,40 @@ const Futuros: NextPage<FuturosProps> = ({
   const [subscribedTickers, setSubscribedTickers] = useState<Set<string>>(
     new Set()
   );
-
-  // useEffect para monitorar sortedOperations
+  const [subscribedGateIoTickers, setSubscribedGateioTickers] = useState<
+    Set<string>
+  >(new Set());
   useEffect(() => {
-    // Filtra oportunidades onde a exchange "Mexc" está na venda
     const opportunities = sortedOperations.filter(
-      (op: any) => op.lowestAsk.exchange === "Mexc"
+      (op: any) => op.lowestAsk.exchange === "Gateio"
+    );
+
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        console.log(`Assinando ${ticker}`);
+
+        fetch("/api/gateioSpot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+        })
+          .then((r) => r.json())
+          .then((resp) => console.log("Subscribe:", ticker, resp))
+          .catch(console.error);
+
+        setSubscribedGateioTickers(
+          new Set([...subscribedGateIoTickers, ticker])
+        );
+      });
+    }
+  }, [sortedOperations, subscribedGateIoTickers]);
+  useEffect(() => {
+    const opportunities = sortedOperations.filter(
+      (op: any) => op.highestBid.exchange === "Mexc"
     );
 
     // Processa apenas a primeira oportunidade
@@ -636,12 +670,11 @@ const Futuros: NextPage<FuturosProps> = ({
             .then((resp) => console.log("Subscribe:", ticker, resp))
             .catch(console.error);
 
-          // Atualiza o estado local para incluir o novo ticker
           setSubscribedTickers(new Set([...subscribedTickers, ticker]));
         }
       });
     }
-  }, [sortedOperations, subscribedTickers]); // Dependências
+  }, [sortedOperations, subscribedTickers]);
 
   useEffect(() => {
     const fetchPrices = () => {
@@ -657,6 +690,23 @@ const Futuros: NextPage<FuturosProps> = ({
     // Fetch prices every 3 seconds
     const interval = setInterval(fetchPrices, 3000);
     fetchPrices(); // Initial fetch
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+  useEffect(() => {
+    const fetchGateioPrices = () => {
+      fetch("/api/gateioSpot")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Preços Futuros:", data.precosSpot);
+          setGateioPrices(data.precosSpot);
+        })
+        .catch(console.error);
+    };
+
+    // Fetch prices every 3 seconds
+    const interval = setInterval(fetchGateioPrices, 3000);
+    fetchGateioPrices(); // Initial fetch
 
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);

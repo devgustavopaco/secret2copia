@@ -1,78 +1,81 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import WebSocket from "ws";
 
-let mexcWs: WebSocket | null = null;
+let gateioWs: WebSocket | null = null;
 let subscribedSymbols: Set<string> = new Set();
 
-// Store prices of symbols (e.g., { "BTC_USDT": 28200.5, ... })
-const precosFuturos: Record<string, number> = {};
+const precosSpot: Record<string, number> = {};
 
-function connectMexcWs() {
-  if (mexcWs && mexcWs.readyState === WebSocket.OPEN) {
-    console.log("Já conectado ao WebSocket da MEXC.");
+function connectGateioWs() {
+  if (gateioWs && gateioWs.readyState === WebSocket.OPEN) {
+    console.log("Já conectado ao WebSocket da Gate.io.");
     return;
   }
 
-  const endpoint = "wss://contract.mexc.com/edge";
-  console.log("Conectando ao WebSocket MEXC...");
-  mexcWs = new WebSocket(endpoint);
+  const endpoint = "wss://api.gateio.ws/ws/v4/";
+  console.log("Conectando ao WebSocket Gate.io...");
+  gateioWs = new WebSocket(endpoint);
 
-  mexcWs.on("open", () => {
+  gateioWs.on("open", () => {
+    console.log("Conexão WebSocket da Gate.io estabelecida.");
     subscribedSymbols.forEach((symbol) => {
       subscribeSymbol(symbol);
     });
   });
 
-  mexcWs.on("message", (data) => {
+  gateioWs.on("message", (data) => {
+    console.log("Mensagem recebida da Gate.io:", data.toString());
     try {
       const parsedData = JSON.parse(data.toString());
-      const symbol = parsedData.symbol;
-      const lastPrice = parsedData?.data?.lastPrice;
-      if (symbol && lastPrice != null) {
-        // Store the lastPrice in the precosFuturos object
-        precosFuturos[symbol] = parseFloat(lastPrice);
+      const symbol = parsedData?.result?.currency_pair;
+      const price = parsedData?.result?.price;
+      if (symbol && price != null) {
+        // Store the price in the precosSpot object
+        precosSpot[symbol] = parseFloat(price);
       }
     } catch (err) {
-      console.error("Erro WS Futuros MEXC:", err);
+      console.error("Erro WS Spot Gate.io:", err);
     }
   });
 
-  mexcWs.on("error", (error) => {
-    console.error("Erro no WebSocket da MEXC:", error);
-    reconnectMexcWs();
+  gateioWs.on("error", (error) => {
+    console.error("Erro no WebSocket da Gate.io:", error);
+    reconnectGateioWs();
   });
 
-  mexcWs.on("close", (code, reason) => {
-    console.warn(`WebSocket da MEXC fechado: ${code} - ${reason.toString()}`);
-    reconnectMexcWs();
+  gateioWs.on("close", (code, reason) => {
+    console.warn(
+      `WebSocket da Gate.io fechado: ${code} - ${reason.toString()}`
+    );
+    reconnectGateioWs();
   });
 }
 
 function subscribeSymbol(symbol: string) {
-  if (mexcWs && mexcWs.readyState === WebSocket.OPEN) {
+  if (gateioWs && gateioWs.readyState === WebSocket.OPEN) {
     const message = JSON.stringify({
-      method: "sub.ticker",
-      param: {
-        symbol: `${symbol}_USDT`,
-      },
+      time: Math.floor(Date.now() / 1000),
+      channel: "spot.trades",
+      event: "subscribe",
+      payload: [`${symbol}_USDT`],
     });
 
-    mexcWs.send(message);
+    gateioWs.send(message);
   }
 }
 
-function reconnectMexcWs() {
-  if (mexcWs) {
-    mexcWs.close();
+function reconnectGateioWs() {
+  if (gateioWs) {
+    gateioWs.close();
   }
-  connectMexcWs();
+  connectGateioWs();
 }
 
 // Desinscrição de um símbolo
 function unsubscribeSymbol(symbol: string) {
-  if (!mexcWs || mexcWs.readyState !== WebSocket.OPEN) {
+  if (!gateioWs || gateioWs.readyState !== WebSocket.OPEN) {
     console.log("Tentando se desinscrever antes de conectar: reconectando...");
-    connectMexcWs();
+    connectGateioWs();
     return;
   }
 
@@ -81,23 +84,23 @@ function unsubscribeSymbol(symbol: string) {
     : `${symbol.toUpperCase()}_USDT`;
 
   const unsubscribeMsg = {
-    method: "unsub.ticker",
-    param: {
-      symbol: baseSymbol,
-    },
+    time: Math.floor(Date.now() / 1000),
+    channel: "spot.trades",
+    event: "unsubscribe",
+    payload: [baseSymbol],
   };
-  mexcWs.send(JSON.stringify(unsubscribeMsg));
+  gateioWs.send(JSON.stringify(unsubscribeMsg));
   console.log(`Desinscrito do par: ${baseSymbol}`);
 }
 
 // Inicializa a conexão quando o servidor carrega
-connectMexcWs();
+connectGateioWs();
 
 // Handler da rota
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   // Garante que a conexão existe
-  if (!mexcWs) {
-    connectMexcWs();
+  if (!gateioWs) {
+    connectGateioWs();
   }
 
   const { method } = req;
@@ -105,7 +108,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (method) {
     case "GET": {
       // Return all stored prices in memory
-      return res.status(200).json({ precosFuturos });
+      return res.status(200).json({ precosSpot });
     }
 
     case "POST": {
