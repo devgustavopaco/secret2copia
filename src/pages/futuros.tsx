@@ -630,19 +630,20 @@ const Futuros: NextPage<FuturosProps> = ({
         const ticker = opportunity.ticker.toUpperCase();
 
         console.log(`Assinando ${ticker}`);
+        if (!subscribedGateIoTickers.has(ticker)) {
+          fetch("/api/gateioSpot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
 
-        fetch("/api/gateioSpot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-        })
-          .then((r) => r.json())
-          .then((resp) => console.log("Subscribe:", ticker, resp))
-          .catch(console.error);
-
-        setSubscribedGateioTickers(
-          new Set([...subscribedGateIoTickers, ticker])
-        );
+          setSubscribedGateioTickers(
+            new Set([...subscribedGateIoTickers, ticker])
+          );
+        }
       });
     }
   }, [sortedOperations, subscribedGateIoTickers]);
