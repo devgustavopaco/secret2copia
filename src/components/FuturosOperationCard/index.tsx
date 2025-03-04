@@ -82,7 +82,8 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
     REEF: 6,
   };
 
-  let fractionDigits = currencyDecimalMapping[ticker] || 4;
+  // Definir o número mínimo de casas decimais como 7
+  let fractionDigits = Math.max(currencyDecimalMapping[ticker] || 7, 7);
 
   if (value !== 0 && value < Math.pow(10, -fractionDigits)) {
     fractionDigits = Math.max(Math.ceil(-Math.log10(value)), fractionDigits);
