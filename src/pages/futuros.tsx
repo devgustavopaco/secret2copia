@@ -62,7 +62,14 @@ const Futuros: NextPage<FuturosProps> = ({
   const [webSocketError, setWebSocketError] = useState(false);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [gateioPrices, setGateioPrices] = useState<Record<string, number>>({});
-  console.log(gateioPrices, "gateioPrices");
+  const [binancePrices, setBinancePrices] = useState<Record<string, number>>(
+    {}
+  );
+  const [bybitPrices, setBybitPrices] = useState<Record<string, number>>({});
+  const [bitgetPrices, setBitgetPrices] = useState<Record<string, number>>({});
+  const [bitgetSpotPrices, setBitgetSpotPrices] = useState<
+    Record<string, number>
+  >({});
   const router = useRouter();
 
   useEffect(() => {
@@ -572,7 +579,10 @@ const Futuros: NextPage<FuturosProps> = ({
         const ticker = `${operation.ticker}_USDT`;
         const sellPrice = prices[ticker];
         const gateioPrice = gateioPrices[ticker];
-
+        const bitgetPrice = bitgetPrices[ticker];
+        const bitgetSpotPrice = bitgetSpotPrices[ticker];
+        const binancePrice = binancePrices[ticker];
+        const bybitPrice = bybitPrices[ticker];
         const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
         if (uniqueOperations.has(uniqueKey)) {
           return null; // Skip duplicate
@@ -583,19 +593,30 @@ const Futuros: NextPage<FuturosProps> = ({
           ...operation,
           highestBid: {
             ...operation.highestBid,
-            price: sellPrice || operation.highestBid.price, // Update price if available
+            price:
+              operation.highestBid.exchange === "Mexc"
+                ? sellPrice || operation.highestBid.price // Use sellPrice for Mexc
+                : operation.highestBid.exchange === "Bitget"
+                ? bitgetPrice || operation.highestBid.price // Use bitgetPrice for Bitget
+                : operation.highestBid.price, // Default to existing price
           },
           lowestAsk: {
             ...operation.lowestAsk,
             price:
               operation.lowestAsk.exchange === "Gateio"
                 ? gateioPrice || operation.lowestAsk.price
-                : operation.lowestAsk.price, // Update price if Gateio
+                : operation.lowestAsk.exchange === "Binance"
+                ? binancePrice || operation.lowestAsk.price
+                : operation.lowestAsk.exchange === "Bitget"
+                ? bitgetSpotPrice || operation.lowestAsk.price
+                : operation.lowestAsk.exchange === "Bybit"
+                ? bybitPrice || operation.lowestAsk.price
+                : operation.lowestAsk.price,
           },
         };
       })
       .filter((operation: any) => operation !== null); // Remove null entries
-  }, [prices, gateioPrices, sortedOperations]);
+  }, [prices, gateioPrices, bitgetPrices, binancePrices, sortedOperations]);
 
   useEffect(() => {
     if (!isWebSocketPaused) {
@@ -616,7 +637,18 @@ const Futuros: NextPage<FuturosProps> = ({
   const [subscribedTickers, setSubscribedTickers] = useState<Set<string>>(
     new Set()
   );
+  const [subscribedBitgetTickers, setSubscribedBitgetTickers] = useState<
+    Set<string>
+  >(new Set());
+  const [subscribedBitgetSpotTickers, setSubscribedBitgetSpotTickers] =
+    useState<Set<string>>(new Set());
+  const [subscribedBybitSpotTickers, setSubscribedBybitSpotTickers] = useState<
+    Set<string>
+  >(new Set());
   const [subscribedGateIoTickers, setSubscribedGateioTickers] = useState<
+    Set<string>
+  >(new Set());
+  const [subscribedBinanceTickers, setSubscribedBinanceTickers] = useState<
     Set<string>
   >(new Set());
   useEffect(() => {
@@ -650,6 +682,35 @@ const Futuros: NextPage<FuturosProps> = ({
   }, [sortedOperations, subscribedGateIoTickers]);
   useEffect(() => {
     const opportunities = sortedOperations.filter(
+      (op: any) => op.lowestAsk.exchange === "Binance"
+    );
+
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        if (!subscribedBinanceTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
+          fetch("/api/binanceSpot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
+
+          setSubscribedBinanceTickers(
+            new Set([...subscribedBinanceTickers, ticker])
+          );
+        }
+      });
+    }
+  }, [sortedOperations, subscribedBinanceTickers]);
+  useEffect(() => {
+    const opportunities = sortedOperations.filter(
       (op: any) => op.highestBid.exchange === "Mexc"
     );
 
@@ -677,6 +738,99 @@ const Futuros: NextPage<FuturosProps> = ({
       });
     }
   }, [sortedOperations, subscribedTickers]);
+  useEffect(() => {
+    const opportunities = sortedOperations.filter(
+      (op: any) => op.highestBid.exchange === "Bitget"
+    );
+
+    // Processa apenas a primeira oportunidade
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        if (!subscribedBitgetTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
+
+          fetch("/api/bitgetFutures", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
+
+          setSubscribedBitgetTickers(
+            new Set([...subscribedBitgetTickers, ticker])
+          );
+        }
+      });
+    }
+  }, [sortedOperations, subscribedBitgetTickers]);
+  useEffect(() => {
+    const opportunities = sortedOperations.filter(
+      (op: any) => op.lowestAsk.exchange === "Bitget"
+    );
+
+    // Processa apenas a primeira oportunidade
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        if (!subscribedBitgetSpotTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
+
+          fetch("/api/bitgetSpot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
+
+          setSubscribedBitgetSpotTickers(
+            new Set([...subscribedBitgetSpotTickers, ticker])
+          );
+        }
+      });
+    }
+  }, [sortedOperations, subscribedBitgetSpotTickers]);
+  useEffect(() => {
+    const opportunities = sortedOperations.filter(
+      (op: any) => op.lowestAsk.exchange === "Bybit"
+    );
+
+    // Processa apenas a primeira oportunidade
+    if (opportunities.length > 0) {
+      const firstFiveOpportunities = opportunities;
+
+      firstFiveOpportunities.forEach((opportunity: any) => {
+        const ticker = opportunity.ticker.toUpperCase();
+
+        if (!subscribedBybitSpotTickers.has(ticker)) {
+          console.log(`Assinando ${ticker}`);
+
+          fetch("/api/bybitSpot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
+          })
+            .then((r) => r.json())
+            .then((resp) => console.log("Subscribe:", ticker, resp))
+            .catch(console.error);
+
+          setSubscribedBybitSpotTickers(
+            new Set([...subscribedBybitSpotTickers, ticker])
+          );
+        }
+      });
+    }
+  }, [sortedOperations, subscribedBybitSpotTickers]);
 
   useEffect(() => {
     const fetchPrices = () => {
@@ -688,26 +842,98 @@ const Futuros: NextPage<FuturosProps> = ({
         .catch(console.error);
     };
 
-    // Fetch prices every 3 seconds
-    const interval = setInterval(fetchPrices, 3000);
-    fetchPrices(); // Initial fetch
+    const timeoutId = setTimeout(() => {
+      fetchPrices();
+    }, 10000); // Fetch prices every 10 seconds
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearTimeout(timeoutId); // Cleanup on unmount or dependency change
   }, []);
+  useEffect(() => {
+    const fetchPrices = () => {
+      fetch("/api/bybitSpot")
+        .then((response) => response.json())
+        .then((data) => {
+          setBybitPrices(data.precosSpot);
+        })
+        .catch(console.error);
+    };
+
+    const timeoutId = setTimeout(() => {
+      fetchPrices();
+    }, 10000); // Fetch prices every 10 seconds
+
+    return () => clearTimeout(timeoutId); // Cleanup on unmount or dependency change
+  }, []);
+  useEffect(() => {
+    const fetchBitgetPrices = async () => {
+      try {
+        const response = await fetch("/api/bitgetFutures");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Fetched Bitget Prices:", data.precosFuturos);
+        setBitgetPrices(data.precosFuturos);
+      } catch (error) {
+        console.error("Failed to fetch Bitget prices:", error);
+      }
+    };
+
+    const intervalId = setInterval(fetchBitgetPrices, 3000); // Fetch prices every 3 seconds
+    fetchBitgetPrices(); // Initial fetch
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
+  useEffect(() => {
+    const fetchBitgetSpotPrices = async () => {
+      try {
+        const response = await fetch("/api/bitgetSpot");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Fetched Bitget Prices:", data.precosSpot);
+        setBitgetSpotPrices(data.precosSpot);
+      } catch (error) {
+        console.error("Failed to fetch Bitget prices:", error);
+      }
+    };
+
+    const intervalId = setInterval(fetchBitgetSpotPrices, 3000); // Fetch prices every 3 seconds
+    fetchBitgetSpotPrices(); // Initial fetch
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
+
   useEffect(() => {
     const fetchGateioPrices = () => {
       fetch("/api/gateioSpot")
         .then((response) => response.json())
         .then((data) => {
-          console.log("Preços Futuros:", data.precosSpot);
           setGateioPrices(data.precosSpot);
         })
         .catch(console.error);
     };
 
     // Fetch prices every 3 seconds
-    const interval = setInterval(fetchGateioPrices, 3000);
+    const interval = setInterval(fetchGateioPrices, 10000);
     fetchGateioPrices(); // Initial fetch
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+  useEffect(() => {
+    const fetchBinancePrices = () => {
+      fetch("/api/binanceSpot")
+        .then((response) => response.json())
+        .then((data) => {
+          setBinancePrices(data.precosSpot);
+        })
+        .catch(console.error);
+    };
+
+    // Fetch prices every 3 seconds
+    const interval = setInterval(fetchBinancePrices, 10000);
+    fetchBinancePrices(); // Initial fetch
 
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);

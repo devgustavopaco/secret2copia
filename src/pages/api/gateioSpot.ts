@@ -24,7 +24,7 @@ function connectGateioWs() {
   });
 
   gateioWs.on("message", (data) => {
-    console.log("Mensagem recebida da Gate.io:", data.toString());
+    // console.log("Mensagem recebida da Gate.io:", data.toString());
     try {
       const parsedData = JSON.parse(data.toString());
       const symbol = parsedData?.result?.currency_pair;
