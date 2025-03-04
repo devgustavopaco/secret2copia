@@ -625,11 +625,6 @@ const Futuros: NextPage<FuturosProps> = ({
 
   // Atualizar o useMemo para reordenar por spread após atualizar os preços
   const updatedOperations = useMemo(() => {
-    // Se o WebSocket estiver pausado, retornar as operações originais sem atualizar preços
-    if (isWebSocketPaused) {
-      return sortedOperations;
-    }
-
     const uniqueOperations = new Set<string>();
 
     // Primeiro, atualize os preços
@@ -645,7 +640,10 @@ const Futuros: NextPage<FuturosProps> = ({
         const bybitPrice = bybitData?.precosSpot?.[ticker];
         const mexcSpotPrice = mexcSpotData?.precosSpot?.[ticker];
 
+        // Criar uma chave única para cada operação
         const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
+
+        // Verificar se a operação já foi processada
         if (uniqueOperations.has(uniqueKey)) {
           return null; // Skip duplicate
         }
