@@ -579,7 +579,7 @@ const Futuros: NextPage<FuturosProps> = ({
     dedupingInterval: 0, // Não deduplicar requisições
     revalidateOnFocus: false, // Não revalidar ao focar na janela
   });
-  console.log(mexcData, "mexcData");
+  // console.log(mexcData, "mexcData");
 
   // Usar SWR para buscar preços da Bybit
   const { data: bybitData } = useSWR("/api/bybitSpot", fetcher, {
@@ -614,6 +614,7 @@ const Futuros: NextPage<FuturosProps> = ({
     dedupingInterval: 0,
     revalidateOnFocus: false,
   });
+  console.log(gateioData, "gateioData");
 
   // Usar SWR para buscar preços da Binance
   const { data: binanceData } = useSWR("/api/binanceSpot", fetcher, {

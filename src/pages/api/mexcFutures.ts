@@ -1,109 +1,72 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import WebSocket from "ws";
+import axios from "axios";
 
-let mexcWs: WebSocket | null = null;
-let subscribedSymbols: Set<string> = new Set();
-
-// Store prices of symbols (e.g., { "BTC_USDT": 28200.5, ... })
+// Store prices of symbols (e.g., { "BTC_USDT": 93220.5, ... })
 const precosFuturos: Record<string, number> = {};
+let lastFetchTime = 0;
+const FETCH_INTERVAL = 1000; // 1 segundo
 
-function connectMexcWs() {
-  if (mexcWs && mexcWs.readyState === WebSocket.OPEN) {
-    console.log("Já conectado ao WebSocket da MEXC.");
-    return;
+// Função para buscar preços da API REST
+async function fetchPricesFutures() {
+  const now = Date.now();
+  if (now - lastFetchTime < FETCH_INTERVAL) {
+    return; // Evitar chamadas muito frequentes
   }
 
-  const endpoint = "wss://contract.mexc.com/edge";
-  console.log("Conectando ao WebSocket MEXC...");
-  mexcWs = new WebSocket(endpoint);
+  lastFetchTime = now;
 
-  mexcWs.on("open", () => {
-    subscribedSymbols.forEach((symbol) => {
-      subscribeSymbol(symbol);
-    });
-  });
+  try {
+    // Esta chamada obtém TODOS os preços de futuros de uma vez
+    const response = await axios.get(
+      "https://contract.mexc.com/api/v1/contract/ticker"
+    );
 
-  mexcWs.on("message", (data) => {
-    try {
-      const parsedData = JSON.parse(data.toString());
-      const symbol = parsedData.symbol;
-      const lastPrice = parsedData?.data?.lastPrice;
-      if (symbol && lastPrice != null) {
-        // Store the lastPrice in the precosFuturos object
-        precosFuturos[symbol] = parseFloat(lastPrice);
-      }
-    } catch (err) {
-      console.error("Erro WS Futuros MEXC:", err);
+    if (
+      response.status === 200 &&
+      response.data.success &&
+      Array.isArray(response.data.data)
+    ) {
+      response.data.data.forEach((item: any) => {
+        // Verificar se o item tem os campos necessários
+        if (item.symbol && item.lastPrice) {
+          // O símbolo já está no formato correto (ERN_USDT)
+          const symbol = item.symbol;
+
+          // Usar o último preço (lastPrice)
+          const price = parseFloat(item.lastPrice);
+
+          // Verificar se o preço é um número válido
+          if (!isNaN(price)) {
+            precosFuturos[symbol] = price;
+          }
+        }
+      });
+    } else {
+      console.error("Formato de resposta inesperado:", response.data);
     }
-  });
-
-  mexcWs.on("error", (error) => {
-    console.error("Erro no WebSocket da MEXC:", error);
-    reconnectMexcWs();
-  });
-
-  mexcWs.on("close", (code, reason) => {
-    console.warn(`WebSocket da MEXC fechado: ${code} - ${reason.toString()}`);
-    reconnectMexcWs();
-  });
-}
-
-function subscribeSymbol(symbol: string) {
-  if (mexcWs && mexcWs.readyState === WebSocket.OPEN) {
-    const message = JSON.stringify({
-      method: "sub.ticker",
-      param: {
-        symbol: `${symbol}_USDT`,
-      },
-    });
-
-    mexcWs.send(message);
+  } catch (error) {
+    console.error("Erro ao buscar preços futuros da MEXC:", error);
   }
 }
 
-function reconnectMexcWs() {
-  if (mexcWs) {
-    mexcWs.close();
-  }
-  connectMexcWs();
-}
+// Buscar preços iniciais
+fetchPricesFutures();
 
-// Desinscrição de um símbolo
-function unsubscribeSymbol(symbol: string) {
-  if (!mexcWs || mexcWs.readyState !== WebSocket.OPEN) {
-    console.log("Tentando se desinscrever antes de conectar: reconectando...");
-    connectMexcWs();
-    return;
-  }
-
-  const baseSymbol = symbol.toUpperCase().includes("_USDT")
-    ? symbol.toUpperCase()
-    : `${symbol.toUpperCase()}_USDT`;
-
-  const unsubscribeMsg = {
-    method: "unsub.ticker",
-    param: {
-      symbol: baseSymbol,
-    },
-  };
-  mexcWs.send(JSON.stringify(unsubscribeMsg));
-  console.log(`Desinscrito do par: ${baseSymbol}`);
-}
-
-// Inicializa a conexão quando o servidor carrega
-connectMexcWs();
+// Configurar intervalo para buscar preços regularmente
+setInterval(fetchPricesFutures, FETCH_INTERVAL);
 
 // Handler da rota
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Garante que a conexão existe
-  if (!mexcWs) {
-    connectMexcWs();
-  }
-
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { method } = req;
 
   switch (method) {
     case "GET": {
+      // Buscar preços atualizados antes de responder
+      await fetchPricesFutures();
+
       // Return all stored prices in memory
       return res.status(200).json({ precosFuturos });
     }
@@ -116,25 +79,59 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
           .json({ error: "É necessário um 'symbol' string" });
       }
 
-      if (action === "subscribe") {
-        subscribedSymbols.add(symbol.toUpperCase());
-        subscribeSymbol(symbol);
-        return res.status(200).json({
-          message: `Inscrito no par: ${symbol.toUpperCase()}`,
-          subscribedSymbols: Array.from(subscribedSymbols),
-        });
-      } else if (action === "unsubscribe") {
-        subscribedSymbols.delete(symbol.toUpperCase());
-        unsubscribeSymbol(symbol);
-        return res.status(200).json({
-          message: `Desinscrito do par: ${symbol.toUpperCase()}`,
-          subscribedSymbols: Array.from(subscribedSymbols),
-        });
+      if (action === "getPrice") {
+        try {
+          // Formatar o símbolo para o formato correto (BTC_USDT)
+          const formattedSymbol = symbol.includes("_")
+            ? symbol.toUpperCase()
+            : `${symbol.toUpperCase()}_USDT`;
+
+          // Verificar se já temos o preço em cache
+          if (
+            precosFuturos[formattedSymbol] &&
+            !isNaN(precosFuturos[formattedSymbol])
+          ) {
+            return res.status(200).json({
+              message: `Preço para ${formattedSymbol}: ${precosFuturos[formattedSymbol]}`,
+              price: precosFuturos[formattedSymbol],
+            });
+          }
+
+          // Se não temos o preço, buscar especificamente
+          const response = await axios.get(
+            `https://contract.mexc.com/api/v1/contract/detail?symbol=${formattedSymbol}`
+          );
+
+          if (
+            response.status === 200 &&
+            response.data.success &&
+            response.data.data
+          ) {
+            const price = parseFloat(response.data.data.lastPrice);
+            if (!isNaN(price)) {
+              precosFuturos[formattedSymbol] = price;
+
+              return res.status(200).json({
+                message: `Preço atualizado para ${formattedSymbol}: ${price}`,
+                price: price,
+              });
+            } else {
+              return res
+                .status(404)
+                .json({ error: `Preço inválido para ${formattedSymbol}` });
+            }
+          } else {
+            return res
+              .status(404)
+              .json({ error: `Símbolo ${formattedSymbol} não encontrado` });
+          }
+        } catch (error) {
+          console.error("Erro ao buscar preço específico:", error);
+          return res.status(500).json({ error: "Erro ao buscar preço" });
+        }
       }
 
-      return res
-        .status(400)
-        .json({ error: "Ação deve ser subscribe ou unsubscribe" });
+      return res.status(400).json({ error: "Ação deve ser getPrice" });
     }
 
     default: {
