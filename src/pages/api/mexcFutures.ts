@@ -89,7 +89,7 @@ export default async function handler(
           // Verificar se já temos o preço em cache
           if (
             precosFuturos[formattedSymbol] &&
-            !isNaN(precosFuturos[formattedSymbol])
+            !isNaN(+precosFuturos[formattedSymbol])
           ) {
             return res.status(200).json({
               message: `Preço para ${formattedSymbol}: ${precosFuturos[formattedSymbol]}`,
