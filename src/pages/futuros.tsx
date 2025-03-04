@@ -625,6 +625,11 @@ const Futuros: NextPage<FuturosProps> = ({
 
   // Atualizar o useMemo para reordenar por spread após atualizar os preços
   const updatedOperations = useMemo(() => {
+    // Se o WebSocket estiver pausado, retornar as operações originais sem atualizar preços
+    if (isWebSocketPaused) {
+      return sortedOperations;
+    }
+
     const uniqueOperations = new Set<string>();
 
     // Primeiro, atualize os preços
