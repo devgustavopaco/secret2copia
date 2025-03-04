@@ -87,43 +87,48 @@ export default async function handler(
             : `${symbol.toUpperCase()}_USDT`;
 
           // Verificar se já temos o preço em cache
-          if (
-            precosFuturos[formattedSymbol] &&
-            !isNaN(+precosFuturos[formattedSymbol])
-          ) {
+          if (formattedSymbol in precosFuturos) {
+            const price = precosFuturos[formattedSymbol];
             return res.status(200).json({
-              message: `Preço para ${formattedSymbol}: ${precosFuturos[formattedSymbol]}`,
-              price: precosFuturos[formattedSymbol],
+              message: `Preço para ${formattedSymbol}: ${price}`,
+              price: price,
             });
           }
 
           // Se não temos o preço, buscar especificamente
-          const response = await axios.get(
-            `https://contract.mexc.com/api/v1/contract/detail?symbol=${formattedSymbol}`
-          );
+          try {
+            const response = await axios.get(
+              `https://contract.mexc.com/api/v1/contract/detail?symbol=${formattedSymbol}`
+            );
 
-          if (
-            response.status === 200 &&
-            response.data.success &&
-            response.data.data
-          ) {
-            const price = parseFloat(response.data.data.lastPrice);
-            if (!isNaN(price)) {
-              precosFuturos[formattedSymbol] = price;
+            if (
+              response.status === 200 &&
+              response.data.success &&
+              response.data.data
+            ) {
+              const price = parseFloat(response.data.data.lastPrice);
+              if (!isNaN(price)) {
+                precosFuturos[formattedSymbol] = price;
 
-              return res.status(200).json({
-                message: `Preço atualizado para ${formattedSymbol}: ${price}`,
-                price: price,
-              });
-            } else {
-              return res
-                .status(404)
-                .json({ error: `Preço inválido para ${formattedSymbol}` });
+                return res.status(200).json({
+                  message: `Preço atualizado para ${formattedSymbol}: ${price}`,
+                  price: price,
+                });
+              }
             }
-          } else {
-            return res
-              .status(404)
-              .json({ error: `Símbolo ${formattedSymbol} não encontrado` });
+
+            // Se chegou aqui, não encontrou preço válido
+            return res.status(200).json({
+              message: `Nenhum preço disponível para ${formattedSymbol}`,
+              price: null,
+            });
+          } catch (error) {
+            console.error("Erro ao buscar preço específico:", error);
+            // Retornar vazio em caso de erro, em vez de erro 500
+            return res.status(200).json({
+              message: `Erro ao buscar preço para ${formattedSymbol}`,
+              price: null,
+            });
           }
         } catch (error) {
           console.error("Erro ao buscar preço específico:", error);
