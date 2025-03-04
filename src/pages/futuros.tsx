@@ -29,6 +29,7 @@ import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { useWebSocket } from "../hooks/useWebSocket";
+import useSWR from "swr";
 const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface FuturosProps {
@@ -58,9 +59,10 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
-  const [isWebSocketPaused, setIsWebSocketPaused] = useState(true);
+  const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
   const [webSocketError, setWebSocketError] = useState(false);
   const [prices, setPrices] = useState<Record<string, number>>({});
+
   const [gateioPrices, setGateioPrices] = useState<Record<string, number>>({});
   const [binancePrices, setBinancePrices] = useState<Record<string, number>>(
     {}
@@ -567,29 +569,89 @@ const Futuros: NextPage<FuturosProps> = ({
   );
 
   // Fetch prices using WebSocket
-  const pricesFromWebSocket = useWebSocket(
-    symbolsWithExchanges,
-    isWebSocketPaused
-  );
 
+  // Definir o fetcher para SWR
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  // Usar SWR para buscar preços da MEXC
+  const { data: mexcData } = useSWR("/api/mexcFutures", fetcher, {
+    refreshInterval: 500, // Atualiza a cada 500ms
+    dedupingInterval: 0, // Não deduplicar requisições
+    revalidateOnFocus: false, // Não revalidar ao focar na janela
+  });
+  console.log(mexcData, "mexcData");
+
+  // Usar SWR para buscar preços da Bybit
+  const { data: bybitData } = useSWR("/api/bybitSpot", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  // Usar SWR para buscar preços da Bitget Futures
+  const { data: bitgetFuturesData } = useSWR("/api/bitgetFutures", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  // Usar SWR para buscar preços da Bitget Spot
+  const { data: bitgetSpotData } = useSWR("/api/bitgetSpot", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  const { data: mexcSpotData } = useSWR("/api/mexcSpot", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  // Usar SWR para buscar preços da Gateio
+  const { data: gateioData } = useSWR("/api/gateioSpot", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  // Usar SWR para buscar preços da Binance
+  const { data: binanceData } = useSWR("/api/binanceSpot", fetcher, {
+    refreshInterval: 500,
+    dedupingInterval: 0,
+    revalidateOnFocus: false,
+  });
+
+  // Atualizar o useMemo para reordenar por spread após atualizar os preços
   const updatedOperations = useMemo(() => {
+    // Se o WebSocket estiver pausado, retornar as operações originais sem atualizar preços
+    if (isWebSocketPaused) {
+      return sortedOperations;
+    }
+
     const uniqueOperations = new Set<string>();
-    return sortedOperations
+
+    // Primeiro, atualize os preços
+    const operationsWithUpdatedPrices = sortedOperations
       .map((operation: any) => {
         const ticker = `${operation.ticker}_USDT`;
-        const sellPrice = prices[ticker];
-        const gateioPrice = gateioPrices[ticker];
-        const bitgetPrice = bitgetPrices[ticker];
-        const bitgetSpotPrice = bitgetSpotPrices[ticker];
-        const binancePrice = binancePrices[ticker];
-        const bybitPrice = bybitPrices[ticker];
+        // Usar os dados do SWR diretamente
+        const sellPrice = mexcData?.precosFuturos?.[ticker];
+        const gateioPrice = gateioData?.precosSpot?.[ticker];
+        const bitgetPrice = bitgetFuturesData?.precosFuturos?.[ticker];
+        const bitgetSpotPrice = bitgetSpotData?.precosSpot?.[ticker];
+        const binancePrice = binanceData?.precosSpot?.[ticker];
+        const bybitPrice = bybitData?.precosSpot?.[ticker];
+        const mexcSpotPrice = mexcSpotData?.precosSpot?.[ticker];
+
         const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
         if (uniqueOperations.has(uniqueKey)) {
           return null; // Skip duplicate
         }
         uniqueOperations.add(uniqueKey);
 
-        return {
+        // Atualizar os preços
+        const updatedOperation = {
           ...operation,
           highestBid: {
             ...operation.highestBid,
@@ -611,27 +673,42 @@ const Futuros: NextPage<FuturosProps> = ({
                 ? bitgetSpotPrice || operation.lowestAsk.price
                 : operation.lowestAsk.exchange === "Bybit"
                 ? bybitPrice || operation.lowestAsk.price
+                : operation.lowestAsk.exchange === "Mexc"
+                ? mexcSpotPrice || operation.lowestAsk.price
                 : operation.lowestAsk.price,
           },
         };
+
+        // Recalcular o spread com os preços atualizados
+        const highestBidPrice = updatedOperation.highestBid.price;
+        const lowestAskPrice = updatedOperation.lowestAsk.price;
+
+        // Calcular o novo spread
+        const newSpread = (highestBidPrice / lowestAskPrice - 1) * 100;
+
+        // Retornar a operação com o spread atualizado
+        return {
+          ...updatedOperation,
+          spread: newSpread,
+        };
       })
       .filter((operation: any) => operation !== null); // Remove null entries
-  }, [prices, gateioPrices, bitgetPrices, binancePrices, sortedOperations]);
 
-  useEffect(() => {
-    if (!isWebSocketPaused) {
-      const checkWebSocketStatus = () => {
-        const hasValidPrices =
-          Object.keys(pricesFromWebSocket || {}).length > 0;
-        setWebSocketError(!hasValidPrices);
-      };
-
-      const interval = setInterval(checkWebSocketStatus, 10000);
-      checkWebSocketStatus();
-
-      return () => clearInterval(interval);
-    }
-  }, [pricesFromWebSocket, isWebSocketPaused]);
+    // Agora, reordenar por spread (do maior para o menor)
+    return operationsWithUpdatedPrices.sort(
+      (a: any, b: any) => b.spread - a.spread
+    );
+  }, [
+    sortedOperations,
+    mexcData?.precosFuturos,
+    gateioData?.precosSpot,
+    bitgetFuturesData?.precosFuturos,
+    bitgetSpotData?.precosSpot,
+    binanceData?.precosSpot,
+    bybitData?.precosSpot,
+    mexcSpotData?.precosSpot,
+    isWebSocketPaused, // Adicionar isWebSocketPaused como dependência
+  ]);
 
   // Estado para armazenar tickers assinados
   const [subscribedTickers, setSubscribedTickers] = useState<Set<string>>(
@@ -831,112 +908,6 @@ const Futuros: NextPage<FuturosProps> = ({
       });
     }
   }, [sortedOperations, subscribedBybitSpotTickers]);
-
-  useEffect(() => {
-    const fetchPrices = () => {
-      fetch("/api/mexcFutures")
-        .then((response) => response.json())
-        .then((data) => {
-          setPrices(data.precosFuturos);
-        })
-        .catch(console.error);
-    };
-
-    const timeoutId = setTimeout(() => {
-      fetchPrices();
-    }, 10000); // Fetch prices every 10 seconds
-
-    return () => clearTimeout(timeoutId); // Cleanup on unmount or dependency change
-  }, []);
-  useEffect(() => {
-    const fetchPrices = () => {
-      fetch("/api/bybitSpot")
-        .then((response) => response.json())
-        .then((data) => {
-          setBybitPrices(data.precosSpot);
-        })
-        .catch(console.error);
-    };
-
-    const timeoutId = setTimeout(() => {
-      fetchPrices();
-    }, 10000); // Fetch prices every 10 seconds
-
-    return () => clearTimeout(timeoutId); // Cleanup on unmount or dependency change
-  }, []);
-  useEffect(() => {
-    const fetchBitgetPrices = async () => {
-      try {
-        const response = await fetch("/api/bitgetFutures");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Fetched Bitget Prices:", data.precosFuturos);
-        setBitgetPrices(data.precosFuturos);
-      } catch (error) {
-        console.error("Failed to fetch Bitget prices:", error);
-      }
-    };
-
-    const intervalId = setInterval(fetchBitgetPrices, 3000); // Fetch prices every 3 seconds
-    fetchBitgetPrices(); // Initial fetch
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
-  useEffect(() => {
-    const fetchBitgetSpotPrices = async () => {
-      try {
-        const response = await fetch("/api/bitgetSpot");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Fetched Bitget Prices:", data.precosSpot);
-        setBitgetSpotPrices(data.precosSpot);
-      } catch (error) {
-        console.error("Failed to fetch Bitget prices:", error);
-      }
-    };
-
-    const intervalId = setInterval(fetchBitgetSpotPrices, 3000); // Fetch prices every 3 seconds
-    fetchBitgetSpotPrices(); // Initial fetch
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
-
-  useEffect(() => {
-    const fetchGateioPrices = () => {
-      fetch("/api/gateioSpot")
-        .then((response) => response.json())
-        .then((data) => {
-          setGateioPrices(data.precosSpot);
-        })
-        .catch(console.error);
-    };
-
-    // Fetch prices every 3 seconds
-    const interval = setInterval(fetchGateioPrices, 10000);
-    fetchGateioPrices(); // Initial fetch
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
-  useEffect(() => {
-    const fetchBinancePrices = () => {
-      fetch("/api/binanceSpot")
-        .then((response) => response.json())
-        .then((data) => {
-          setBinancePrices(data.precosSpot);
-        })
-        .catch(console.error);
-    };
-
-    // Fetch prices every 3 seconds
-    const interval = setInterval(fetchBinancePrices, 10000);
-    fetchBinancePrices(); // Initial fetch
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
 
   return (
     <>
