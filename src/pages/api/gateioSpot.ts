@@ -83,9 +83,12 @@ function unsubscribeSymbol(symbol: string) {
     return;
   }
 
-  const baseSymbol = symbol.toUpperCase().includes("_USDT")
-    ? symbol.toUpperCase()
-    : `${symbol.toUpperCase()}_USDT`;
+  const baseSymbol =
+    symbol.toUpperCase() === "CULT"
+      ? "MILADYCULT_USDT"
+      : symbol.toUpperCase().includes("_USDT")
+      ? symbol.toUpperCase()
+      : `${symbol.toUpperCase()}_USDT`;
 
   const unsubscribeMsg = {
     time: Math.floor(Date.now() / 1000),

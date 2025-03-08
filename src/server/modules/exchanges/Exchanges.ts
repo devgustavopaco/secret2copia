@@ -1744,7 +1744,7 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
       ALT: "ALT_USDT",
       MAGA: "MAGA_USDT",
       QI: "QI_USDT",
-      CREAM: "",
+      CREAM: "0000000000",
     };
 
     const base = baseToken.toUpperCase();
