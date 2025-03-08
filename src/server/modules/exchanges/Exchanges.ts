@@ -89,6 +89,23 @@ export class BinanceStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     const normalizedBase = this.normalizeSymbol(baseToken);
     const normalizedDest = this.normalizeSymbol(destinationToken);
+
+    if (baseToken === "TKO") {
+      return "TKO_USDT";
+    } else if (baseToken === "ZK") {
+      return "ZK_USDT";
+    } else if (baseToken === "AST") {
+      return "AST_USDT";
+    } else if (baseToken === "ALT") {
+      return "ALT_USDT";
+    } else if (baseToken === "GAS") {
+      return "GAS_USDT";
+    } else if (baseToken === "QI") {
+      return "QI_USDT";
+    } else if (baseToken === "CREAM") {
+      return "CREAM_USDT";
+    }
+
     return `${normalizedBase}${normalizedDest}`;
   }
 
@@ -924,7 +941,7 @@ interface KuCoinOrderbook {
   };
 }
 
-export class KuCoinStratefy implements ExchangeStrategy {
+export class KuCoinStrategy implements ExchangeStrategy {
   orderbook: {
     [key: string]: KuCoinOrderbook;
   } = {};
@@ -976,6 +993,18 @@ export class KuCoinStratefy implements ExchangeStrategy {
       baseToken.toUpperCase() === "NAVI"
     ) {
       return "";
+    } else if (baseToken.toUpperCase() === "CULT") {
+      return "MILADYCULT-USDT";
+    } else if (baseToken.toUpperCase() === "HOLD") {
+      return "HOLDCOIN-USDT";
+    } else if (baseToken.toUpperCase() === "VELO") {
+      return "VELO-USDT";
+    } else if (baseToken.toUpperCase() === "GAS") {
+      return "GAS-USDT";
+    } else if (baseToken.toUpperCase() === "QI") {
+      return "QI-USDT";
+    } else if (baseToken.toUpperCase() === "CREAM") {
+      return "CREAM-USDT";
     }
     return `${baseToken.toUpperCase()}-${destinationToken.toUpperCase()}`;
   }
@@ -1496,6 +1525,7 @@ export class ByBitStrategy implements ExchangeStrategy {
       TKO: "TKO/USDT",
       ZK: "ZKSYNC/USDT",
       GST: "GST/USDT",
+      ALT: "ALT/USDT",
     };
 
     const base = baseToken.toUpperCase();
@@ -1543,6 +1573,7 @@ export class MexcStrategy implements ExchangeStrategy {
 
   formatPair(baseToken: string, destinationToken: string): string {
     const specialCases: Record<string, string> = {
+      ELIZACTO: "ELIZA_USDT",
       ELIZA: "ELIZA_USDT",
       ELIZAWAKESUP: "ELIZA_USDT",
       ART: "ART_USDT",
@@ -1555,6 +1586,12 @@ export class MexcStrategy implements ExchangeStrategy {
       URO: "URO_USDT",
       CLR: "CELR_USDT",
       CATTON: "CATTON_USDT",
+      CLV: "CLV_USDT",
+      BAC: "BAC_USDT",
+      ALT: "ALTLAYER_USDT",
+      MAGA: "MAGAETH-USDT",
+      QI: "BENQUI_USDT",
+      CREAM: "CREAM_USDT",
     };
 
     const base = baseToken.toUpperCase();
@@ -1692,6 +1729,7 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     const specialCases: Record<string, string> = {
       ELIZA: "AI16ZELIZA_USDT",
+      ELIZACTO: "AI16ZELIZA_USDT",
       ELIZAWAKESUP: "ELIZA_USDT",
       ART: "ART_USDT",
       CULT: "CULT_USDT",
@@ -1702,6 +1740,11 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
       VELO: "VELO_USDT",
       CLR: "CELR_USDT",
       CATTON: "CATTON_USDT",
+      BAC: "",
+      ALT: "ALT_USDT",
+      MAGA: "MAGA_USDT",
+      QI: "QI_USDT",
+      CREAM: "",
     };
 
     const base = baseToken.toUpperCase();
@@ -1959,9 +2002,10 @@ export class BidgetStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     // Casos especiais do Excel
     const specialCases: Record<string, string> = {
+      ELIZACTO: "ELIZAUSDT",
+      ELIZA: "ELIZAUSDT",
       URO: "UROUSDT",
       CLR: "CELRUSDT",
-      ELIZA: "ELIZAUSDT",
       HOLD: "HOLDCOINUSDT",
       FIRE: "FIREUSDT",
       ZK: "ZKUSDT",
@@ -1970,6 +2014,8 @@ export class BidgetStrategy implements ExchangeStrategy {
       ART: "ARTELAUSDT",
       CULT: "MILADYCULTUSDT",
       GST: "GSTUSDT",
+      ALT: "ALTUSDT",
+      GAS: "GASUSDT",
     };
 
     const token = baseToken.toUpperCase();
@@ -2082,14 +2128,7 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
     return { bids, asks };
   }
 
-  /**
-   * 1) Mapeia tokens "internos" (ou do Excel) para o token que você
-   *    de fato quer montar no par de futuros.
-   * 2) Caso não seja um token especial, apenas concatena BASE + DEST + "_UMCBL".
-   */
   formatPair(baseToken: string, destinationToken: string): string {
-    // Casos especiais (exemplo iguais aos do Spot, mas agora para Futuros)
-    // Se "CLR" internamente significa "CELR" na Bitget, etc.
     const specialCases: Record<string, string> = {
       URO: "UROUSDT",
       CLR: "CELRUSDT",
@@ -2102,30 +2141,21 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
       ART: "ARTELAUSDT",
       CULT: "MILADYCULTUSDT",
       GST: "GSTUSDT",
+      ALT: "ALTUSDT",
+      GAS: "GASUSDT",
     };
 
-    // Se estiver no objeto acima, pega o valor correspondente;
-    // senão, concatena normalmente.
     const token = baseToken.toUpperCase();
     const mappedToken = specialCases[token];
 
     if (mappedToken) {
-      // Se for um caso especial, adicione o sufixo de Futuros "_UMCBL"
       return `${mappedToken}_UMCBL`;
     } else {
-      // Caso geral
       return `${token}${destinationToken.toUpperCase()}_UMCBL`;
     }
   }
 
-  /**
-   * Faz a chamada HTTP para buscar o orderbook de Futuros na Bitget,
-   * tratando também os pares especiais (mapeando para "symbol=XYZ_UMCBL" correto).
-   */
   async fetchOrderbook(pair: string): Promise<Exchange> {
-    // Casos especiais para a chamada final da API:
-    // se "CLR" virou "CELRUSDT_UMCBL" no formatPair, e a API quiser "CLR_USDT_UMCBL",
-    // você arruma aqui. A ideia é idêntica ao Spot, só que agora com sufixo "_UMCBL".
     const specialCases: Record<string, string> = {
       UROUSDT_UMCBL: "URO_USDT_UMCBL",
       CELRUSDT_UMCBL: "CLR_USDT_UMCBL",
@@ -2138,6 +2168,8 @@ export class BitgetFuturesStrategy implements ExchangeStrategy {
       ARTELAUSDT_UMCBL: "ARTELA_USDT_UMCBL",
       MILADYCULTUSDT_UMCBL: "MILADYCULT_USDT_UMCBL",
       GSTUSDT_UMCBL: "GST_USDT_UMCBL",
+      ALTUSDT_UMCBL: "ALT_USDT_UMCBL",
+      GASUSDT_UMCBL: "GAS_USDT_UMCBL",
     };
 
     if (
@@ -2532,8 +2564,8 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
   formatPair(baseToken: string, destinationToken: string): string {
     // Casos especiais do Excel
     const specialCases: Record<string, string> = {
-      ELIZA: "ELIZA_USDT",
-      ELIZAWAKESUP: "ELIZASOL_USDT",
+      ELIZACTO: "ELIZASOL_USDT",
+      ELIZA: "ELIZASOL_USDT",
       ART: "ARTELA_USDT",
       CULT: "MILADYCULT_USDT",
       HOLD: "HOLD_USDT",
@@ -2542,6 +2574,14 @@ export class GateIoTradeStrategy implements ExchangeStrategy {
       GST: "GST_USDT",
       VELO: "VELO_USDT",
       CATTON: "CATTON_USDT",
+      CLV: "CLV_USDT",
+      BAC: "BAC_USDT",
+      AST: "AST_USDT",
+      ALT: "ALT_USDT",
+      GAS: "GAS_USDT",
+      MAGA: "MAGA_USDT",
+      QI: "BENQUI_USDT",
+      CREAM: "CREAM_USDT",
     };
 
     const base = baseToken.toUpperCase();
@@ -2645,13 +2685,6 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
     // Exemplo: se na planilha consta CATTON mas a Gate.io usa CATTON_USDT
     const specialCases: Record<string, string> = {
       ELIZA: "ELIZA_USDT",
-      ART: "ARTELA_USDT",
-      CULT: "MILADYCULT_USDT",
-      HOLD: "HOLD_USDT",
-      TKO: "TKO_USDT",
-      ZK: "ZK_USDT",
-      GST: "GST_USDT",
-      VELO: "VELO_USDT",
       CATTON: "CATTON_USDT",
     };
 
@@ -2662,7 +2695,37 @@ export class GateIoFuturesStrategy implements ExchangeStrategy {
       specialCases[token] ?? `${token}_${destinationToken.toUpperCase()}`;
 
     // Se quiser bloquear algum token específico (ex. "POR"), devolva string vazia
-    if (token === "POR") {
+    if (token === "ART") {
+      return "";
+    } else if (token === "CULT") {
+      return "";
+    } else if (token === "HOLD") {
+      return "";
+    } else if (token === "TKO") {
+      return "";
+    } else if (token === "ZK") {
+      return "";
+    } else if (token === "GST") {
+      return "";
+    } else if (token === "VELO") {
+      return "";
+    } else if (token === "CATTON") {
+      return "";
+    } else if (token === "CLV") {
+      return "";
+    } else if (token === "BAC") {
+      return "";
+    } else if (token === "AST") {
+      return "";
+    } else if (token === "ALT") {
+      return "";
+    } else if (token === "GAS") {
+      return "";
+    } else if (token === "MAGA") {
+      return "";
+    } else if (token === "QI") {
+      return "";
+    } else if (token === "CREAM") {
       return "";
     }
 
