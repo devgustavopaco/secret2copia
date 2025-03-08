@@ -58,6 +58,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isChecked, setIsChecked] = useState(false);
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
   const [webSocketError, setWebSocketError] = useState(false);
@@ -687,8 +688,13 @@ const Futuros: NextPage<FuturosProps> = ({
         const highestBidPrice = updatedOperation.highestBid.price;
         const lowestAskPrice = updatedOperation.lowestAsk.price;
 
+        if (!isOpen && highestBidPrice > lowestAskPrice) {
+          return null;
+        }
         // Calcular o novo spread
-        const newSpread = (highestBidPrice / lowestAskPrice - 1) * 100;
+        const newSpread = isOpen
+          ? (highestBidPrice / lowestAskPrice - 1) * 100
+          : (lowestAskPrice / highestBidPrice - 1) * 100;
 
         // Retornar a operação com o spread atualizado
         return {
@@ -712,6 +718,7 @@ const Futuros: NextPage<FuturosProps> = ({
     bybitData?.precosSpot,
     mexcSpotData?.precosSpot,
     isWebSocketPaused, // Adicionar isWebSocketPaused como dependência
+    isOpen,
   ]);
 
   // Estado para armazenar tickers assinados
@@ -1234,6 +1241,7 @@ const Futuros: NextPage<FuturosProps> = ({
                         onClick={() => {
                           setSelectedOperation(operation);
                         }}
+                        isOpen={isOpen}
                       />
                     )
                   )}

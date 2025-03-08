@@ -54,6 +54,7 @@ interface FuturosOperationCardProps {
   isChecked?: boolean;
   meetsCriteria?: boolean;
   isAdmin?: boolean;
+  isOpen?: boolean;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -116,6 +117,7 @@ export function FuturosOperationCard({
   onClick,
   isChecked,
   isAdmin,
+  isOpen,
 }: FuturosOperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -156,7 +158,9 @@ export function FuturosOperationCard({
   const spotPair = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
   const futuresPair = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
 
-  const spread = ((bidPrice - askPrice) / askPrice) * 100;
+  const spread = isOpen
+    ? ((bidPrice - askPrice) / askPrice) * 100
+    : ((askPrice - bidPrice) / bidPrice) * 100;
 
   const animationData = isChecked
     ? require("/public/animations/checkPurple.json")
