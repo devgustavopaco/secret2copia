@@ -644,7 +644,12 @@ const Futuros: NextPage<FuturosProps> = ({
         const bitgetSpotPrice = bitgetSpotData?.precosSpot?.[ticker];
         const binancePrice = binanceData?.precosSpot?.[ticker];
         const bybitPrice = bybitData?.precosSpot?.[ticker];
-        const mexcSpotPrice = mexcSpotData?.precosSpot?.[ticker];
+
+        // Caso especial para ALT_USDT
+        const mexcSpotPrice =
+          ticker === "ALT_USDT"
+            ? mexcSpotData?.precosSpot?.["ALTLAYER_USDT"]
+            : mexcSpotData?.precosSpot?.[ticker];
 
         // Criar uma chave única para cada operação
         const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;

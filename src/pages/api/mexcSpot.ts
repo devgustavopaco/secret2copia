@@ -86,8 +86,24 @@ export default async function handler(
         );
 
         if (response.status === 200 && response.data.price) {
-          const apiSymbol = formattedSymbol.replace(/USDT$/, "_USDT");
+          // Tratar caso especial do ALTLAYER
+          const apiSymbol =
+            formattedSymbol === "ALTLAYERUSDT"
+              ? "ALT_USDT"
+              : formattedSymbol.replace(/USDT$/, "_USDT");
+
           precosSpot[apiSymbol] = parseFloat(response.data.price);
+
+          // Se for ALTLAYER, retornar o mesmo valor para ALT_USDT
+          if (formattedSymbol === "ALTLAYERUSDT") {
+            precosSpot["ALTLAYER_USDT"] = parseFloat(response.data.price);
+            precosSpot["ALT_USDT"] = parseFloat(response.data.price);
+
+            return res.status(200).json({
+              message: `Preço atualizado para ALT_USDT: ${response.data.price}`,
+              price: response.data.price,
+            });
+          }
 
           return res.status(200).json({
             message: `Preço atualizado para ${apiSymbol}: ${response.data.price}`,
