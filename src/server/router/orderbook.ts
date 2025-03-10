@@ -279,17 +279,11 @@ const fetchArbitrageOpportunity = async (
 
   const lowestAsk = orderBooks.reduce(
     (acc, exchange) => {
-      const isContained = isOpen
-        ? buyExchanges.some(
-            (element) =>
-              formatExchangeName(element) ===
-              formatExchangeName(exchange.name.replace(" Futures", ""))
-          )
-        : sellExchanges.some(
-            (element) =>
-              formatExchangeName(element) ===
-              formatExchangeName(exchange.name.replace(" Futures", ""))
-          );
+      const isContained = buyExchanges.some(
+        (element) =>
+          formatExchangeName(element) ===
+          formatExchangeName(exchange.name.replace(" Futures", ""))
+      );
 
       if (isContained) {
         const priceInUSD = exchange.isUSD
@@ -324,17 +318,11 @@ const fetchArbitrageOpportunity = async (
 
   const highestBid = orderBooks.reduce(
     (acc, exchange) => {
-      const isContained = isOpen
-        ? sellExchanges.some(
-            (element) =>
-              formatExchangeName(element) ===
-              formatExchangeName(exchange.name.toLowerCase())
-          )
-        : buyExchanges.some(
-            (element) =>
-              formatExchangeName(element) ===
-              formatExchangeName(exchange.name.toLowerCase())
-          );
+      const isContained = sellExchanges.some(
+        (element) =>
+          formatExchangeName(element) ===
+          formatExchangeName(exchange.name.toLowerCase())
+      );
 
       if (isContained) {
         const priceInUSD = exchange.isUSD
