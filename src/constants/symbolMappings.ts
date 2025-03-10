@@ -12,6 +12,42 @@ export const exchangeSymbolMappings: Record<
       spot: "ELIZA_USDT",
       futures: "AI16ZELIZA_USDT",
     },
+    AST: {
+      spot: "",
+      futures: "AST_USDT",
+    },
+    GAS: {
+      spot: "GASUSDT",
+      futures: "GAS_USDT",
+    },
+    BAC: {
+      spot: "BAC_USDT",
+      futures: "",
+    },
+    ALT: {
+      spot: "ALTLAYER_USDT",
+      futures: "ALT_USDT",
+    },
+    MAGAETH: {
+      spot: "MAGAETH-USDT",
+      futures: "MAGA_USDT",
+    },
+    MAGA: {
+      spot: "MAGAETH-USDT",
+      futures: "MAGA_USDT",
+    },
+    QI: {
+      spot: "BENQI_USDT",
+      futures: "QI_USDT",
+    },
+    BENQI: {
+      spot: "BENQI_USDT",
+      futures: "QI_USDT",
+    },
+    CREAM: {
+      spot: "CREAM_USDT",
+      futures: "",
+    },
     ELIZAWAKESUP: {
       spot: "ELIZA_USDT",
       futures: "ELIZA_USDT",

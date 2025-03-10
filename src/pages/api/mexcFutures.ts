@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { exchangeSymbolMappings } from "../../constants/symbolMappings";
 
 // Store prices of symbols (e.g., { "BTC_USDT": 93220.5, ... })
 const precosFuturos: Record<string, number> = {};
@@ -81,10 +82,19 @@ export default async function handler(
 
       if (action === "getPrice") {
         try {
-          // Formatar o símbolo para o formato correto (BTC_USDT)
-          const formattedSymbol = symbol.includes("_")
-            ? symbol.toUpperCase()
-            : `${symbol.toUpperCase()}_USDT`;
+          // Verificar se o símbolo tem mapeamento e se não está vazio
+          const mapping =
+            exchangeSymbolMappings["mexc"]?.[symbol.toUpperCase()];
+          if (mapping?.futures === "") {
+            return res.status(200).json({
+              message: `Moeda ${symbol.toUpperCase()} não é processada`,
+              price: null,
+            });
+          }
+
+          // Formatar o símbolo para o formato correto usando o mapping
+          const formattedSymbol =
+            mapping?.futures || `${symbol.toUpperCase()}_USDT`;
 
           // Verificar se já temos o preço em cache
           if (formattedSymbol in precosFuturos) {

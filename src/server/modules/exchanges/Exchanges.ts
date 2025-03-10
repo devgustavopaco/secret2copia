@@ -1740,7 +1740,7 @@ export class MexcFuturesStrategy implements ExchangeStrategy {
       VELO: "VELO_USDT",
       CLR: "CELR_USDT",
       CATTON: "CATTON_USDT",
-      BAC: "000000000",
+      BAC: "",
       ALT: "ALT_USDT",
       MAGA: "MAGA_USDT",
       QI: "QI_USDT",

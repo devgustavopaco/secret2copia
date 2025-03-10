@@ -608,7 +608,7 @@ const Futuros: NextPage<FuturosProps> = ({
     dedupingInterval: 0,
     revalidateOnFocus: false,
   });
-
+  console.log(mexcSpotData, "mexcSpotData");
   // Usar SWR para buscar preços da Gateio
   const { data: gateioData } = useSWR("/api/gateioSpot", fetcher, {
     refreshInterval: 500,

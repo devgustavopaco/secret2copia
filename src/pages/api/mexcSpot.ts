@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { exchangeSymbolMappings } from "../../constants/symbolMappings";
 
 // Store prices of symbols (e.g., { "BTC_USDT": 93220.5, ... })
 const precosSpot: Record<string, number> = {};
@@ -64,8 +65,22 @@ export default async function handler(
       }
 
       try {
-        // Buscar preço específico
-        const formattedSymbol = symbol.replace(/_/g, "").toUpperCase();
+        // Verificar se o símbolo tem mapeamento e se não está vazio
+        const mapping = exchangeSymbolMappings["mexc"]?.[symbol.toUpperCase()];
+        if (mapping?.spot === "") {
+          return res.status(200).json({
+            message: `Moeda ${symbol.toUpperCase()} não é processada`,
+            price: null,
+          });
+        }
+
+        console.log(mapping?.spot, "mapping?.spot");
+
+        // Usar o mapeamento se existir, caso contrário usar o formato padrão
+        const formattedSymbol = mapping?.spot
+          ? mapping.spot.replace(/_/g, "")
+          : symbol.replace(/_/g, "").toUpperCase();
+
         const response = await axios.get(
           `https://api.mexc.com/api/v3/ticker/price?symbol=${formattedSymbol}`
         );
