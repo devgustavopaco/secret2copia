@@ -226,57 +226,42 @@ const Futuros: NextPage<FuturosProps> = ({
   ]);
   let queryResult: any;
 
-  if (isAdmin || isNewUser) {
-    queryResult = trpc.useInfiniteQuery(
-      [
-        "orderBook.getPaginated",
+  queryResult = trpc.useInfiniteQuery(
+    [
+      "orderBook.getPaginated",
 
-        {
-          buyExchanges: buyExchangesName ?? undefined,
-          sellExchanges: sellExchangesName ?? undefined,
-          email: userEmail ?? undefined,
-          isChecked: isChecked,
-          isFutures: true,
-          isOpen: isOpen,
-        },
-      ],
       {
-        getNextPageParam: (lastPage) => {
-          const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
-          if (!morePagesExist) return undefined;
-          return lastPage.nextCursor;
-        },
-        refetchInterval: 2 * 1000,
-        retry(failureCount) {
-          return failureCount <= 3;
-        },
-        keepPreviousData: false,
-        onSuccess(data) {
-          if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
-            queryResult.refetch();
-          }
-        },
-        onError() {
-          if (!queryResult.isFetching) {
-            queryResult.refetch();
-          }
-        },
-      }
-    );
-  } else {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    queryResult = useInfiniteQuery({
-      queryKey: ["orderBook.getPaginated"],
-      enabled: !!dollarValue,
-      queryFn: fetchPaginatedOrderbook, // Mantendo a função de busca aqui
-      initialPageParam: 1, // Página inicial
-      getNextPageParam: (lastPage: PaginatedResponse) => lastPage.nextCursor, // Obtém o próximo cursor
+        buyExchanges: buyExchangesName ?? undefined,
+        sellExchanges: sellExchangesName ?? undefined,
+        email: userEmail ?? undefined,
+        isChecked: isChecked,
+        isFutures: true,
+        isOpen: isOpen,
+      },
+    ],
+    {
+      getNextPageParam: (lastPage) => {
+        const morePagesExist = lastPage.arbitrageOpportunities.length === 50;
+        if (!morePagesExist) return undefined;
+        return lastPage.nextCursor;
+      },
       refetchInterval: 2 * 1000,
       retry(failureCount) {
         return failureCount <= 3;
       },
-    });
-  }
+      keepPreviousData: false,
+      onSuccess(data) {
+        if (data?.pages.flat().length === 0 && !queryResult.isFetching) {
+          queryResult.refetch();
+        }
+      },
+      onError() {
+        if (!queryResult.isFetching) {
+          queryResult.refetch();
+        }
+      },
+    }
+  );
 
   const {
     refetch,
