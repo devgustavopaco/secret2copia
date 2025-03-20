@@ -7,8 +7,8 @@ export const modules = [
     videos: [
       {
         id: 1,
-        title: "Boas vindas à comunidade",
-        url: "/videos/cl9ellbn4000209l1gnc9wslt",
+        title: "Boas vindas à futuros",
+        url: "/videos/a063e061-a1e1-49ff-8834-687c065cf1fc",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },

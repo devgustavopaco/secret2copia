@@ -1,4 +1,4 @@
-import { Videos } from "@prisma/client";
+import type { Videos } from "@prisma/client";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import Head from "next/head";
@@ -24,7 +24,7 @@ const Videos: NextPage<VideosProps> = ({ supportNumber }: VideosProps) => {
   });
 
   const firstClass = videos ? videos[0] : ({} as Videos);
-
+  console.log(videos, "Videos");
   return (
     <>
       <Head>
