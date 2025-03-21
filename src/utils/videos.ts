@@ -162,7 +162,7 @@ export const modules = [
     id: 6,
     moduleTitle: "Módulo 6 - Dicas e Bônus",
     thumbnail: "images/bannersModulos/criacaoDeConta.png",
-    link: "/videos/cl9em0t6n018509l14gmsjjib",
+    link: "/videos/e96d4ce7-1f29-4659-935a-cc4983774c1f",
     videos: [
       {
         id: 1,
