@@ -43,6 +43,7 @@ model User {
   name          String?
   email         String?     @unique
   emailVerified DateTime?
+  isSpot        Boolean?     @default(false)
   isFutures     Boolean?     @default(false)
   image         String? @db.Text
   password      String?
