@@ -130,7 +130,7 @@ export const modules = [
   },
   {
     id: 4,
-    moduleTitle: "Software",
+    moduleTitle: "Módulo 4 - Software",
     thumbnail: "images/bannersModulos/criacaoDeConta.png",
     link: "/videos/cl9em0t6n018509l14gmsjjib",
     videos: [
@@ -138,6 +138,36 @@ export const modules = [
         id: 1,
         title: "Software ",
         url: "/videos/fddf4cbe-f987-4a41-9ff6-323b6b6b6a1f",
+        thumbnail:
+          "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+    ],
+  },
+  {
+    id: 5,
+    moduleTitle: "Módulo 5 - Operando",
+    thumbnail: "images/bannersModulos/criacaoDeConta.png",
+    link: "/videos/cl9em0t6n018509l14gmsjjib",
+    videos: [
+      {
+        id: 1,
+        title: "Operando na Prática",
+        url: "/videos/0b83a4c6-490b-4846-ac0b-332e10e6b262",
+        thumbnail:
+          "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+    ],
+  },
+  {
+    id: 6,
+    moduleTitle: "Módulo6 - Dicas e Bônus",
+    thumbnail: "images/bannersModulos/criacaoDeConta.png",
+    link: "/videos/cl9em0t6n018509l14gmsjjib",
+    videos: [
+      {
+        id: 1,
+        title: "Dicas ",
+        url: "/videos/e96d4ce7-1f29-4659-935a-cc4983774c1f",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
