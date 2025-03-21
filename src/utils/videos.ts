@@ -115,7 +115,7 @@ export const modules = [
       {
         id: 5,
         title: "Como evitar liquidações",
-        url: "/videos/",
+        url: "/videos/c0729e40-3604-4394-8b5b-ae86d6e304cc",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
@@ -123,6 +123,21 @@ export const modules = [
         id: 6,
         title: "Taxas de financiamento",
         url: "/videos/",
+        thumbnail:
+          "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
+      },
+    ],
+  },
+  {
+    id: 4,
+    moduleTitle: "Software",
+    thumbnail: "images/bannersModulos/criacaoDeConta.png",
+    link: "/videos/cl9em0t6n018509l14gmsjjib",
+    videos: [
+      {
+        id: 1,
+        title: "Software ",
+        url: "/videos/fddf4cbe-f987-4a41-9ff6-323b6b6b6a1f",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
