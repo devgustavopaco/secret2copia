@@ -522,7 +522,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
             </SwiperSlide>
             <SwiperSlide>
               {" "}
-              <Link href="https://docs.google.com/spreadsheets/d/1F2GnfblewJ5nNQeCumPk5tAEsGZCp40ZzyJ7PTUwKgM/edit?gid=1671346053#gid=1671346053">
+              <Link href="https://docs.google.com/spreadsheets/d/1CNr2m9WHAiKePLTRszlUexfH_c5kx-ONDiixw6YSNHg/edit?usp=sharing">
                 <img
                   src="images/bannersModulos/planilhadeGanhos.png"
                   alt="Plahnilha de ganhos"
