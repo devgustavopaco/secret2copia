@@ -122,7 +122,7 @@ export const modules = [
       {
         id: 6,
         title: "Taxas de financiamento",
-        url: "/videos/",
+        url: "/videos/7b97ee29-e6ef-4569-8839-463a99ea8096",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
@@ -132,7 +132,7 @@ export const modules = [
     id: 4,
     moduleTitle: "Módulo 4 - Software",
     thumbnail: "images/bannersModulos/criacaoDeConta.png",
-    link: "/videos/cl9em0t6n018509l14gmsjjib",
+    link: "/videos/fddf4cbe-f987-4a41-9ff6-323b6b6b6a1f",
     videos: [
       {
         id: 1,
@@ -160,7 +160,7 @@ export const modules = [
   },
   {
     id: 6,
-    moduleTitle: "Módulo6 - Dicas e Bônus",
+    moduleTitle: "Módulo 6 - Dicas e Bônus",
     thumbnail: "images/bannersModulos/criacaoDeConta.png",
     link: "/videos/cl9em0t6n018509l14gmsjjib",
     videos: [
