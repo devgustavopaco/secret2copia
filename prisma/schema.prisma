@@ -68,7 +68,7 @@ model User {
 model Videos {
   id                 String   @id @default(cuid())
   title              String
-  description        String   @db.VarChar(1000)
+  description        String   @db.Text
   additionalMaterial String?
   idYoutube          String
   createdAt          DateTime @default(now())
