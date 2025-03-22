@@ -15,7 +15,7 @@ export const modules = [
       {
         id: 2,
         title: "O que é Arbitragem?",
-        url: "/videos/cl9elp8r7006709l1jdsyo8jg",
+        url: "/videos/8606a0ae-a7fe-4805-a69a-75dd9c9354c8",
         thumbnail:
           "https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/thumbniGRE.webp?alt=media&token=cc29b5a8-8e15-485a-a479-c2a301a0c342",
       },
