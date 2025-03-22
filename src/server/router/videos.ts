@@ -12,7 +12,7 @@ export const videosRouter = createRouter()
   })
   .query("getVideoById", {
     input: z.object({
-      id: z.string().cuid(),
+      id: z.string(),
     }),
     async resolve({ ctx, input }) {
       const video = ctx.prisma.videos.findUnique({
