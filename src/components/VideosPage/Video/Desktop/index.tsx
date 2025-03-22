@@ -29,15 +29,11 @@ export function DesktopVideoComponent({ aula, data }: videoProps) {
           <h2>{aula ? aula.title : ""}</h2>
           <p>
             {aula?.description
-              ? aula.description.split("/n").map((line, index) => (
+              ? aula.description.split("\\n").map((line, index) => (
                   <div key={index}>
                     {line}
-                    {index !== aula.description.split("/n").length - 1 && (
-                      <>
-                        {" "}
-                        <br />
-                        <br />
-                      </>
+                    {index !== aula.description.split("\\n").length - 1 && (
+                      <br />
                     )}
                   </div>
                 ))
