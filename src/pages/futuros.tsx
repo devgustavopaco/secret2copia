@@ -981,7 +981,7 @@ const Futuros: NextPage<FuturosProps> = ({
             ) : (
               <div className={styles.dolarBlock}>
                 <span>Operações</span>
-                <div className={styles.dolarBlockContent}>
+                {/* <div className={styles.dolarBlockContent}>
                   <span>cotação do dólar</span>
                   <div className={styles.dolarContainer}>
                     <p>
@@ -1030,7 +1030,7 @@ const Futuros: NextPage<FuturosProps> = ({
                       <BeatLoader color="#969696" size="0.5rem" />
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
             <div

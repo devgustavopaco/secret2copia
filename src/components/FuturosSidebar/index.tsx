@@ -91,7 +91,7 @@ export function FuturosSidebar({
           <span>{isOpen ? "Abertura" : "Fechamento"}</span>
           <img src={isOpen ? "/lockOpen.svg" : "/lockClosed.svg"} alt="" />
         </div>
-        <section className={styles["text-section"]}>
+        {/* <section className={styles["text-section"]}>
           <legend>Cotação do Dólar</legend>
           <div className={styles.dolarContainer}>
             <p>
@@ -138,7 +138,7 @@ export function FuturosSidebar({
               <BeatLoader color="#969696" size="0.5rem" />
             )}
           </div>
-        </section>
+        </section> */}
 
         <section className={styles.ExchangesSection}>
           <div className={styles.labelExchangeSection}>

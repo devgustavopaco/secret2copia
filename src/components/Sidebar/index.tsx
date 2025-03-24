@@ -85,7 +85,7 @@ export function Sidebar({
       <aside className={styles.sidebar}>
         <h2 className={styles.title}>Operações</h2>
 
-        <section className={styles["text-section"]}>
+        {/* <section className={styles["text-section"]}>
           <legend>Cotação do Dólar</legend>
           <div className={styles.dolarContainer}>
             <p>
@@ -132,7 +132,7 @@ export function Sidebar({
               <BeatLoader color="#969696" size="0.5rem" />
             )}
           </div>
-        </section>
+        </section> */}
 
         <section className={styles.ExchangesSection}>
           <div className={styles.labelExchangeSection}>
