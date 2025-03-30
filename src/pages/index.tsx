@@ -110,7 +110,7 @@ const Login: NextPage = () => {
         <section className={styles.halfRight}>
           <div className={styles.contentBox}>
             <div className={styles.formBox}>
-              <h1>Bem-vindo à Next Gain</h1>
+              <h1>Bem-vindo à Next Gain Futures</h1>
               <form action="" onSubmit={handleSubmit}>
                 <div className={styles.inputBox}>
                   <span>Email</span>

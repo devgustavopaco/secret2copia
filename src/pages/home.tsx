@@ -8,10 +8,10 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Header } from "../components/Header";
+import { logUserAccess } from "../server/db/access/logUserAccess";
 import { getSupportNumber } from "../server/db/getSuportNumber";
 import styles from "../styles/Home.module.scss";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { logUserAccess } from "../server/db/access/logUserAccess";
 
 interface HomeProps {
   supportNumber: string;
@@ -361,7 +361,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
           <img src="images/play.svg" alt="icon de play" />
           <span className={styles.title}>Mentoria</span>
         </div>
-        <div className={styles.sliders}>
+        <div className={styles.sliders} style={{ cursor: "pointer" }}>
           <Swiper
             slidesPerView={slidesPerView}
             spaceBetween={20}
@@ -372,128 +372,38 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
           >
             <SwiperSlide>
               <Link href="/videos/cl9ellbn4000209l1gnc9wslt">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202975.png?alt=media&token=c939ff47-9b51-46bb-afed-461a83ced423"
-                  alt="Boas vindas"
-                />
+                <img src="/capa-aula1.png" alt="Boas vindas" />
               </Link>
             </SwiperSlide>
             <SwiperSlide>
               {" "}
               <Link href="/videos/cl9ely3ir013609l1e4bew8qi">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202980.png?alt=media&token=8ae7f2ef-d126-41e6-afd2-0058d6b5a6d4"
-                  alt="Mundo das cryptos"
-                />
+                <img src="/capa-aula2.png" alt="Mundo das cryptos" />
               </Link>
             </SwiperSlide>
             <SwiperSlide>
               {" "}
               <Link href="/videos/cl9em0t6n018509l14gmsjjib">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202983.png?alt=media&token=4c7f4824-765b-4644-b2e0-0d431c98c90f"
-                  alt="O que eh arbitragem"
-                />
+                <img src="/capa-aula3.png" alt="O que eh arbitragem" />
               </Link>
             </SwiperSlide>
 
             <SwiperSlide>
               {" "}
               <Link href="/videos/cl9em1ux1022809l18972cfrx">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202981.png?alt=media&token=68f497b3-a698-4ff3-b2bd-923cd3b4cfba"
-                  alt="Email seguro"
-                />
+                <img src="/capa-aula4.png" alt="Email seguro" />
               </Link>
             </SwiperSlide>
             <SwiperSlide>
               {" "}
               <Link href="/videos/cl9em32qy025409l133i46mil">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202984.png?alt=media&token=c43815d5-38f2-4037-ac39-e7f5ce7e0d7a"
-                  alt="Abrindo conta"
-                />
+                <img src="/capa-aula5.png" alt="Abrindo conta" />
               </Link>
             </SwiperSlide>
             <SwiperSlide>
               {" "}
               <Link href="videos/cl9em4tlp012409l23qnhwai5">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/navegando.webp?alt=media&token=69826d5d-95ca-4b47-a744-d1785e6e7689"
-                  alt="Navegando nas corretoras"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/clmt7f1ao0004p6a8miwnsccs">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202986.png?alt=media&token=e6eff4a6-7077-48cb-9ee2-059b1670fff6"
-                  alt="Operando nas corretoras"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/clmt7hbpm0007p6a824vsmqu4">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Group%202985.png?alt=media&token=3456b0ec-7188-487e-ae40-de9f6d780558"
-                  alt="Transferencias e depositos"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/exercicios.webp?alt=media&token=6eba82a6-7430-4092-94cd-9843a4fca959"
-                  alt="Exercicios praticos"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/clmt7jl02000cp6a8yrazj36y">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/modulo10.png?alt=media&token=a694cae3-9f66-4146-902b-f66e8fb63b69&_gl=1*1n76p48*_ga*MTI4MjkzNjc3Ni4xNjg2NjAyODU3*_ga_CW55HF8NVT*MTY5NTk1ODUzNS4yOC4xLjE2OTU5NTg1NjcuMjguMC4w"
-                  alt="Plataforma de arbitragem"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/operandonocelular.webp?alt=media&token=c1657de0-b46f-495c-bc57-2b1c51fd6355"
-                  alt="Operando no celular"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://nextgain.com.br/videos/clmt7n2ue000ip6a8wpcb2n53">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/minimizandoriscos.webp?alt=media&token=b5d82bc7-d5d9-4496-8e05-b1e8637d8976"
-                  alt="Minimizando os riscos"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/clmt7sbni000lp6a8rqx8ubq4">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/dicas%20e%20bonus.webp?alt=media&token=8939a09a-427d-425e-aeef-4e3bfa903704"
-                  alt="Dicas e Bonus"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="/videos/cl9elr6r3000909l2ktyyup5v">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/conclusao.webp?alt=media&token=3f858906-cd17-4df5-895a-0adc2fdd875f"
-                  alt="Dicas e Bonus"
-                />
+                <img src="/capa-aula6.png" alt="Navegando nas corretoras" />
               </Link>
             </SwiperSlide>
           </Swiper>
@@ -503,7 +413,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
           <img src="images/Tools.svg" alt="icon de ferramentas" />
           <span className={styles.title}>Ferramentas</span>
         </div>
-        <div className={styles.sliders}>
+        <div className={styles.sliders} style={{ cursor: "pointer" }}>
           <Swiper
             slidesPerView={slidesPerView}
             spaceBetween={36}
