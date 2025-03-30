@@ -74,7 +74,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
           <img src="images/crypto.svg" alt="icon de play" />
           <span className={styles.title}>Cadastre-se nas corretoras</span>
         </div>
-        <div className={styles.sliders}>
+        <div className={styles.sliders} style={{ cursor: "pointer" }}>
           <Swiper
             slidesPerView={slidesPerView}
             spaceBetween={20}
