@@ -85,51 +85,11 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
             className="mySwiper"
           >
             <SwiperSlide>
-              {" "}
-              <Link href="https://ascendex.com/en/register">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%203175.png?alt=media&token=49df2a47-67c6-495c-b03d-f2c9fa39daaa"
-                  alt="Ascendex"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
               <Link href="https://accounts.binance.com/pt-BR/register?ref=WLQITS2S">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%2031754.png?alt=media&token=0d1596ca-ff43-45ed-8eaf-5f9b9f44d5f5"
-                  alt="Binance"
-                />
+                <img src="/binance-capa.png" alt="Binance" />
               </Link>
             </SwiperSlide>
 
-            <SwiperSlide>
-              {" "}
-              <Link href="https://bige.one/en/user/new?code=ONE4MLTQ">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%203177.png?alt=media&token=a44943e9-90de-4ded-8e15-1b7a15c74a6c"
-                  alt="BIGONE"
-                />
-              </Link>
-            </SwiperSlide>
-
-            <SwiperSlide>
-              {" "}
-              <Link href="https://bingx.com/pt-br/invite/YXCIPQ/">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%203178.png?alt=media&token=0b750d44-2332-4457-b71c-8d3cc004ee63"
-                  alt="BINGX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.bitfinex.com/sign-up/">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/Frame%203179.png?alt=media&token=301f1ce7-061f-44ea-b11a-c3f7f0c364f5"
-                  alt="BITFINEX"
-                />
-              </Link>
-            </SwiperSlide>
             <SwiperSlide>
               {" "}
               <Link href="https://www.bitget.com/pt/">
@@ -139,24 +99,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
                 />
               </Link>
             </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.bitrue.com/activity/kol/landing?cn=600000&inviteCode=WWWVWZW&hl=pt_PT">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FBITRUE.png?alt=media&token=7f367e11-ce6b-403c-8cf3-c34a7193a5b3"
-                  alt="BITRUE"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://brasilbitcoin.com.br/registro/Nextcoin">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FBRASIL%20BITCOIN.png?alt=media&token=0da78533-d466-45db-bfd1-235b4b168cde"
-                  alt="BRASIL BITCOIN"
-                />
-              </Link>
-            </SwiperSlide>
+
             <SwiperSlide>
               {" "}
               <Link href="https://www.bybit.com/pt-BR/sign-up?affiliate_id=91335&group_id=533471&group_type=1&ref_code=91335">
@@ -166,51 +109,7 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
                 />
               </Link>
             </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.coinbase.com/pt-br/join/np6htb">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FCOINBASE.png?alt=media&token=11678f9a-7aa2-4c57-8bf6-51c7ff651da5"
-                  alt="COIBASE"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://coinsbit.io/register">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FCOINSBIT.png?alt=media&token=93690983-a078-4f0f-add9-c0158515139d"
-                  alt="COINSBIT"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.coinw.com/invitePublicity?r=2272479">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FCOINW.png?alt=media&token=54b98ede-f7d5-4d63-a76b-643680e87c6e"
-                  alt="COINW"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://auth-x.crypto.com/users/sign_up?ref=8n2hpvr3re">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FCRYPTOCOM.png?alt=media&token=434e42b9-cc9f-4eee-918d-a295dc557322"
-                  alt="CRYPTOCOM"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://dex-trade.com/sign-up">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FDEXTRADE.png?alt=media&token=a9f2625f-ef3c-49b0-a609-d8fbedb78d64"
-                  alt="DEXTRADE"
-                />
-              </Link>
-            </SwiperSlide>
+
             <SwiperSlide>
               {" "}
               <Link href="https://www.gate.io/pt/signup?ref=11959860">
@@ -220,138 +119,13 @@ const Home: NextPage<HomeProps> = ({ supportNumber }: HomeProps) => {
                 />
               </Link>
             </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.htx.com/en-us/v/register/double-invite/web?inviter_id=11343840&invite_code=p3u26223&id=10029&lang=en-us">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FHUOBI.png?alt=media&token=95059fb9-3c4b-4f51-a26c-ae3f9e3c6fac"
-                  alt="HUOBI"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.kucoin.com/pt/ucenter/signup?rcode=QBS541EN&utm_source=rf">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FKUCOIN.png?alt=media&token=bb42c8b9-1215-4f36-b0b7-97863794d896"
-                  alt="KUCOIN"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://latoken.com/exchange/ALL?do=login">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FLATOKEN.png?alt=media&token=5778f969-e79c-4500-9c21-8df83eee57f2"
-                  alt="LATOKEN"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.lbank.com/login?icode=31J0O">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FLBANK.png?alt=media&token=52d4437c-1a4f-4f95-b9a7-210621cd3499"
-                  alt="LBANK"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://conta.mercadobitcoin.com.br/cadastro/?utm_campaign=aquisicao%7Caffiliate-influencer%7Clink%7Cgustavo-nigre%7Cempty%7C20240814&utm_medium=affiliate&utm_source=gustavo-nigre">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMERCADO%20BITCOIN.png?alt=media&token=048c5862-8bbf-49c9-806b-e0b0daff3f63"
-                  alt="MERCADOBITCOIN"
-                />
-              </Link>
-            </SwiperSlide>
+
             <SwiperSlide>
               {" "}
               <Link href="https://www.mexc.com/login?inviteCode=1SUJa">
                 <img
                   src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMEXC.png?alt=media&token=03e060cf-bcfa-41dd-8136-f10991ea34bb"
                   alt="MEXC"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://novadax.info/oRVbT9ZE8GrPWdcm9">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FNOVADAX.png?alt=media&token=737ec383-826e-4b39-91a3-2615b2cebbc7"
-                  alt="NOVADAX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.okx.com/pt-br/join/62792047">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FOKX.png?alt=media&token=d5b9dd0d-375d-44aa-8b70-3842a8c7e0cc"
-                  alt="OKX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://p2pb2b.com/?referral=fcb94754">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FP2PB2B.png?alt=media&token=2a1f5dfa-55ee-4c15-9ec2-c57300f153ae"
-                  alt="2FP2PB2B"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://phemex.com/pt/account/referral/invite-friends-entry?referralCode=J7M6K5">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FPHEMEX.png?alt=media&token=5e8a5b8e-c5f7-4d96-a7ec-05f90530b0de"
-                  alt="PHEMEX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.pionex.com/en/signUp?r=J7OW8MdZ">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FPIONEX%203195.png?alt=media&token=8852ee4f-4eb9-4555-b019-eb6a19664496"
-                  alt="PIONEX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://poloniex.com/signup?c=HQD4CQYU">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FPOLONIEX.png?alt=media&token=f5fc13dc-34b5-4c8f-a448-e95a9dee4b1b"
-                  alt="POLONIEX"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://whitebit.com/auth/register?referral=60e0f5c3-2913-4e5c-9f07-15cbc3851220">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FWHITEBIT.png?alt=media&token=c8cfce5e-c8c1-4fef-8fb5-7d94fd6b42b9"
-                  alt="WHITEBIT"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://woox.io/en/register?ref=YG3NAIN3">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FWOO.png?alt=media&token=be4760de-6908-4e19-846f-79a5e6d9a3f6"
-                  alt="WOO"
-                />
-              </Link>
-            </SwiperSlide>
-            <SwiperSlide>
-              {" "}
-              <Link href="https://www.xt.com/en/accounts/register/start?ref=Y584VF">
-                <img
-                  src="https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FXT.png?alt=media&token=4f70d89d-8812-4e87-9247-dd1c289d36db"
-                  alt="XT"
                 />
               </Link>
             </SwiperSlide>
