@@ -436,6 +436,67 @@ export function FuturosOperationCard({
     },
   };
 
+  // Função para gerar URLs do TradingView
+  function generateTradingViewURL() {
+    // Mapear exchanges para códigos do TradingView (simplificado)
+    const exchangeMapping: Record<string, string> = {
+      Mexc: "MEXC",
+      Bitget: "BITGET",
+      Bybit: "BYBIT",
+      Binance: "BINANCE",
+      Gateio: "GATEIO",
+      Gate: "GATEIO",
+      Kucoin: "KUCOIN",
+    };
+
+    // Usar o símbolo básico sem modificações especiais
+    const baseSymbol = coin.symbol.toUpperCase();
+
+    // Obter códigos das exchanges
+    const spotExchangeCode =
+      exchangeMapping[coin.ask.exchange] || coin.ask.exchange.toUpperCase();
+    const futuresExchangeCode =
+      exchangeMapping[coin.bid.exchange] || coin.bid.exchange.toUpperCase();
+
+    // Formar símbolos seguindo o padrão do exemplo que funcionou
+    const spotSymbol = `${spotExchangeCode}:${baseSymbol}USDT`;
+    const futuresSymbol = `${futuresExchangeCode}:${baseSymbol}USDT.P`;
+
+    // Configuração do TradingView seguindo exatamente o padrão que funcionou
+    const config = {
+      height: 700,
+      symbol: spotSymbol,
+      interval: "5",
+      timezone: "America/Sao_Paulo",
+      theme: "dark",
+      style: "2",
+      hide_volume: true,
+      allow_symbol_change: true,
+      compareSymbols: [
+        {
+          symbol: futuresSymbol,
+          position: "SameScale",
+        },
+      ],
+      support_host: "https://www.tradingview.com",
+      width: "100%",
+    };
+
+    // Codificar a configuração
+    const encodedConfig = encodeURIComponent(JSON.stringify(config));
+
+    return `https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=br#${encodedConfig}`;
+  }
+
+  function handleChartRedirect() {
+    const url = generateTradingViewURL();
+    const newTab = window.open(url, "_blank");
+
+    if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
+      window.location.href = url;
+    }
+  }
+
   return (
     <section
       className={`${styles.card} ${isChecked ? styles.cardChecked : ""} ${
@@ -501,6 +562,37 @@ export function FuturosOperationCard({
             )
           )}
         </p>
+        <button
+          className={styles.chartButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleChartRedirect();
+          }}
+          title="Ver Gráfico no TradingView"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 3V21H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M9 9L12 6L16 10L20 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </section>
   );

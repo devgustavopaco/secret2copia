@@ -329,3 +329,42 @@
     transform: scaleX(-1);
   }
 }
+
+.chartButton {
+  margin-top: 0.5rem;
+  background: linear-gradient(45deg, #1285ab, #0ea5e9);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+
+  &:hover {
+    background: linear-gradient(45deg, #0ea5e9, #1285ab);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(18, 133, 171, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    padding: 0.25rem;
+    margin-top: 0.25rem;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
