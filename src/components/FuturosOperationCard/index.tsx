@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
+import { Calculator } from "phosphor-react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 import Image from "next/image";
@@ -51,6 +52,7 @@ interface FuturosOperationCardProps {
   };
   dollarPrice?: number;
   onClick: () => void;
+  onCalculatorClick?: () => void;
   isChecked?: boolean;
   meetsCriteria?: boolean;
   isAdmin?: boolean;
@@ -115,6 +117,7 @@ export function FuturosOperationCard({
   coin,
   dollarPrice = 1,
   onClick,
+  onCalculatorClick,
   isChecked,
   isAdmin,
   isOpen,
@@ -562,37 +565,49 @@ export function FuturosOperationCard({
             )
           )}
         </p>
-        <button
-          className={styles.chartButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleChartRedirect();
-          }}
-          title="Ver Gráfico no TradingView"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className={styles.buttonContainer}>
+          <button
+            className={styles.calculatorButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCalculatorClick?.();
+            }}
+            title="Calculadora da Oportunidade"
           >
-            <path
-              d="M3 3V21H21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 9L12 6L16 10L20 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            <Calculator size={16} />
+          </button>
+          <button
+            className={styles.chartButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleChartRedirect();
+            }}
+            title="Ver Gráfico no TradingView"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 3V21H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 9L12 6L16 10L20 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   );

@@ -94,6 +94,8 @@ const Futuros: NextPage<FuturosProps> = ({
     setIsCleaned(!isCleaned);
   };
   const [modalOpenOrderBook, setModalOpenOrderBook] = useState(false);
+  const [selectedOperationForCalculator, setSelectedOperationForCalculator] =
+    useState<ArbitrageOpportunity | null>(null);
 
   const [modalState, setModalState] = useState(false);
 
@@ -910,6 +912,23 @@ const Futuros: NextPage<FuturosProps> = ({
     }
   }, [sortedOperations, subscribedBybitSpotTickers]);
 
+  // Função para redirecionar para página de oportunidade individual
+  const handleCalculatorClick = (operation: ArbitrageOpportunity) => {
+    const params = new URLSearchParams({
+      ticker: operation.ticker,
+      coin: operation.coin,
+      buyExchange: operation.highestBid?.exchange ?? "",
+      buyPrice: operation.highestBid?.price?.toString() ?? "0",
+      buyIsUSD: operation.highestBid?.isUSD ? "true" : "false",
+      sellExchange: operation.lowestAsk?.exchange ?? "",
+      sellPrice: operation.lowestAsk?.price?.toString() ?? "0",
+      sellIsUSD: operation.lowestAsk?.isUSD ? "true" : "false",
+      spread: operation.spread?.toString() ?? "0",
+    });
+
+    router.push(`/oportunidade?${params.toString()}`);
+  };
+
   return (
     <>
       <Head>
@@ -1230,6 +1249,9 @@ const Futuros: NextPage<FuturosProps> = ({
                         isChecked={isChecked}
                         onClick={() => {
                           setSelectedOperation(operation);
+                        }}
+                        onCalculatorClick={() => {
+                          handleCalculatorClick(operation);
                         }}
                         isOpen={isOpen}
                       />
