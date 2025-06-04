@@ -926,7 +926,7 @@ const Futuros: NextPage<FuturosProps> = ({
       spread: operation.spread?.toString() ?? "0",
     });
 
-    router.push(`/oportunidade?${params.toString()}`);
+    window.open(`/oportunidade?${params.toString()}`, "_blank");
   };
 
   return (
