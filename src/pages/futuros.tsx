@@ -914,6 +914,8 @@ const Futuros: NextPage<FuturosProps> = ({
 
   // Função para redirecionar para página de oportunidade individual
   const handleCalculatorClick = (operation: ArbitrageOpportunity) => {
+    console.log("handleCalculatorClick chamada"); // Debug
+
     const params = new URLSearchParams({
       ticker: operation.ticker,
       coin: operation.coin,
@@ -926,7 +928,45 @@ const Futuros: NextPage<FuturosProps> = ({
       spread: operation.spread?.toString() ?? "0",
     });
 
-    window.open(`/oportunidade?${params.toString()}`, "_blank");
+    const url = `/oportunidade?${params.toString()}`;
+    console.log("URL:", url); // Debug
+
+    // Abrir janela maior e mais visível
+    const windowFeatures = [
+      "width=800",
+      "height=700",
+      "left=100", // Mais longe da borda
+      "top=100", // Mais longe do topo
+      "toolbar=no",
+      "menubar=no",
+      "location=no",
+      "status=no",
+      "scrollbars=yes",
+      "resizable=yes",
+    ].join(",");
+
+    const newWindow = window.open(url, "_blank", windowFeatures);
+    console.log("Window opened:", newWindow); // Debug
+
+    if (!newWindow) {
+      console.error("Popup foi bloqueado!");
+      alert("Popup foi bloqueado! Verifique as configurações do navegador.");
+    } else {
+      // Focar na nova janela
+      newWindow.focus();
+
+      // Aguardar um momento e reposicionar para garantir visibilidade
+      setTimeout(() => {
+        try {
+          // Posicionar no canto inferior esquerdo com mais espaço
+          newWindow.moveTo(50, Math.max(50, screen.height - 800));
+          newWindow.focus(); // Focar novamente
+          console.log("Janela reposicionada e focada");
+        } catch (error) {
+          console.error("Erro ao reposicionar janela:", error);
+        }
+      }, 100);
+    }
   };
 
   return (
