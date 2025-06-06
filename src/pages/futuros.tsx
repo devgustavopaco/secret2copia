@@ -933,8 +933,8 @@ const Futuros: NextPage<FuturosProps> = ({
 
     // Abrir janela maior e mais visível
     const windowFeatures = [
-      "width=800",
-      "height=700",
+      "width=500",
+      "height=400",
       "left=100", // Mais longe da borda
       "top=100", // Mais longe do topo
       "toolbar=no",
@@ -959,7 +959,7 @@ const Futuros: NextPage<FuturosProps> = ({
       setTimeout(() => {
         try {
           // Posicionar no canto inferior esquerdo com mais espaço
-          newWindow.moveTo(50, Math.max(50, screen.height - 800));
+          newWindow.moveTo(50, Math.max(50, screen.height - 500));
           newWindow.focus(); // Focar novamente
           console.log("Janela reposicionada e focada");
         } catch (error) {

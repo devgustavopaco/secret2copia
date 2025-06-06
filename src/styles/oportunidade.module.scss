@@ -1,7 +1,7 @@
 .container {
   min-height: 100vh;
   background: #0d0f12;
-  padding: 20px;
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,7 +9,7 @@
 
 .content {
   width: 100%;
-  max-width: 600px;
+  max-width: 480px;
   position: relative;
 }
 
@@ -17,15 +17,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 15px;
 }
 
 .backButton,
 .toggleButton {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 8px;
+  padding: 8px;
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -38,41 +38,41 @@
 
 .opportunityCard {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  padding: 40px 30px;
+  border-radius: 16px;
+  padding: 20px 15px;
   text-align: center;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .coinName {
-  font-size: 3.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: white;
   margin: 0;
-  margin-bottom: 10px;
-  letter-spacing: 2px;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
 }
 
 .operationType {
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   color: #a0a0a0;
   margin: 0;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .pricesContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 30px;
+    gap: 15px;
   }
 }
 
@@ -80,20 +80,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   flex: 1;
-  min-width: 120px;
+  min-width: 80px;
 }
 
 .exchangeName {
-  font-size: 1rem;
+  font-size: 0.7rem;
   color: #a0a0a0;
   font-weight: 500;
   text-align: center;
 }
 
 .price {
-  font-size: 2rem;
+  font-size: 1.1rem;
   color: white;
   font-weight: 700;
   font-family: "Inter", monospace;
@@ -103,22 +103,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px;
+  gap: 5px;
+  padding: 12px 8px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 120px;
+  min-width: 80px;
 }
 
 .profitLabel {
-  font-size: 1rem;
+  font-size: 0.7rem;
   color: #a0a0a0;
   font-weight: 500;
 }
 
 .profit {
-  font-size: 2.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   font-family: "Inter", monospace;
 
@@ -142,26 +142,26 @@
 // Responsive adjustments
 @media (max-width: 480px) {
   .container {
-    padding: 10px;
+    padding: 5px;
   }
 
   .opportunityCard {
-    padding: 30px 20px;
+    padding: 15px 10px;
   }
 
   .coinName {
-    font-size: 2.5rem;
-  }
-
-  .price {
     font-size: 1.5rem;
   }
 
+  .price {
+    font-size: 1rem;
+  }
+
   .profit {
-    font-size: 1.8rem;
+    font-size: 1.1rem;
   }
 
   .header {
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
 }
