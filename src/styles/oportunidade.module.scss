@@ -9,7 +9,7 @@
 
 .content {
   width: 100%;
-  max-width: 480px;
+  max-width: 280px;
   position: relative;
 }
 
@@ -66,14 +66,10 @@
 .pricesContainer {
   display: flex;
   justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 15px;
-  }
 }
 
 .priceItem {
@@ -82,7 +78,7 @@
   align-items: center;
   gap: 5px;
   flex: 1;
-  min-width: 80px;
+  max-width: 80px;
 }
 
 .exchangeName {
