@@ -127,7 +127,6 @@ export default async function handler(
               }
             }
 
-            // Se chegou aqui, não encontrou preço válido
             return res.status(200).json({
               message: `Nenhum preço disponível para ${formattedSymbol}`,
               price: null,
