@@ -46,12 +46,12 @@ async function fetchWithProxy(
 
   if (gateio) {
     fetchOptions = {
-      ...defaultOptions,
+      //...defaultOptions,
       headers: { "Content-Type": "application/json" },
     };
   } else {
     fetchOptions = {
-      ...defaultOptions,
+     // ...defaultOptions,
       headers,
     };
   }
