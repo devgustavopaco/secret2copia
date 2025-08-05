@@ -51,11 +51,11 @@ async function fetchWithProxy(
     };
   } else {
     fetchOptions = {
-     // ...defaultOptions,
+      // ...defaultOptions,
       headers,
     };
   }
-
+  //
   const fetchPromise = fetch(url, fetchOptions);
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timed out")), timeout)
