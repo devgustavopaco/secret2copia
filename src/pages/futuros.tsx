@@ -1,6 +1,4 @@
 import React from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import axios, { CancelTokenSource } from "axios";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -28,8 +26,9 @@ import styles from "../styles/futuros.module.scss";
 import { Currency } from "../types/dto";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { useWebSocket } from "../hooks/useWebSocket";
-import useSWR from "swr";
+
+import { useArbitrageSocket } from "../hooks/useArbitrageSocket";
+import { useQueryClient } from "react-query";
 const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface FuturosProps {
@@ -61,18 +60,10 @@ const Futuros: NextPage<FuturosProps> = ({
 
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
-  const [webSocketError, setWebSocketError] = useState(false);
-  const [prices, setPrices] = useState<Record<string, number>>({});
 
-  const [gateioPrices, setGateioPrices] = useState<Record<string, number>>({});
-  const [binancePrices, setBinancePrices] = useState<Record<string, number>>(
-    {}
-  );
-  const [bybitPrices, setBybitPrices] = useState<Record<string, number>>({});
-  const [bitgetPrices, setBitgetPrices] = useState<Record<string, number>>({});
-  const [bitgetSpotPrices, setBitgetSpotPrices] = useState<
-    Record<string, number>
-  >({});
+  const [tickerInput, setTickerInput] = useState("");
+  const [symbols, setSymbols] = useState<string[]>([]);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -181,46 +172,6 @@ const Futuros: NextPage<FuturosProps> = ({
     : [];
 
   const queryClient = useQueryClient();
-  const [cancelToken, setCancelToken] = useState<CancelTokenSource | null>(
-    null
-  ); // Novo estado para o cancel token
-
-  const fetchPaginatedOrderbook = async ({
-    pageParam = 1,
-  }: {
-    pageParam?: number;
-  }) => {
-    // Cancelar a requisição anterior se existir
-    if (cancelToken) {
-      cancelToken.cancel("Canceling previous request.");
-    }
-
-    // Criar novo token para a requisição atual
-    const newCancelToken = axios.CancelToken.source();
-    setCancelToken(newCancelToken);
-    const baseURL =
-      "https://nestjs-nigre-production.up.railway.app/orderbook/getPaginated";
-    const res = await axios.get(baseURL, {
-      params: {
-        buyExchanges: buyExchangesName?.join(","),
-        sellExchanges: sellExchangesName?.join(","),
-        email: userEmail,
-        isChecked: isChecked,
-        dollarValue: dollarValue,
-        cursor: pageParam,
-        limit: 25,
-      },
-      cancelToken: newCancelToken.token, // Passar o novo cancel token aqui
-    });
-    const {
-      arbitrageOpportunities: newOpportunities,
-      moedasBuscadas,
-      orphanCoins,
-    } = res.data;
-    setOrphanCoins(orphanCoins);
-
-    return res.data;
-  };
 
   const { data: dollarValue, isLoading: isLoadingDollarValue } = trpc.useQuery([
     "user.getUserDollarValueByEmail",
@@ -303,6 +254,7 @@ const Futuros: NextPage<FuturosProps> = ({
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [refreshRate, setRefreshRate] = useState(1000);
   const progressPercentage = (currentPage / totalPages) * 100;
 
   useEffect(() => {
@@ -395,6 +347,23 @@ const Futuros: NextPage<FuturosProps> = ({
     },
     [user, dollarPrice]
   );
+  // const symbols = useMemo(() => [], []);
+  const { opportunities: socketOpportunities, setOpportunities } =
+    useArbitrageSocket(symbols, refreshRate);
+
+  const handleAddTicker = () => {
+    if (!tickerInput.trim()) return;
+
+    let formatted = tickerInput.toUpperCase().trim();
+    if (!formatted.endsWith("USDT")) {
+      formatted = `${formatted}USDT`;
+    }
+
+    if (!symbols.includes(formatted)) {
+      setSymbols((prev) => [...prev, formatted]);
+    }
+    setTickerInput("");
+  };
 
   let allArbitrageOpportunities =
     data?.pages.flatMap((page: any) => page.arbitrageOpportunities) ?? [];
@@ -427,7 +396,9 @@ const Futuros: NextPage<FuturosProps> = ({
     );
   }
 
-  let sortedOperations = validOperations;
+  let sortedOperations = socketOpportunities
+    .filter((op) => op.spread > 0.5)
+    .sort((a, b) => b.spread - a.spread);
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
@@ -453,33 +424,6 @@ const Futuros: NextPage<FuturosProps> = ({
     refetch();
   }, [isChecked, queryClient, refetch]);
 
-  //   if (!opportunity || !opportunity.lowestAsk || !opportunity.highestBid) {
-  //     console.error("Dados de oportunidade faltando");
-  //     return false;
-  //   }
-
-  //   const lowestAsk = opportunity.lowestAsk.orderbook.asks[0];
-  //   const highestBid = opportunity.highestBid.orderbook.bids[0];
-
-  //   if (!lowestAsk || !highestBid) {
-  //     console.error("Dados de ask ou bid estão incompletos");
-  //     return false;
-  //   }
-
-  //   const lowestAskTotalValue =
-  //     lowestAsk.price *
-  //     lowestAsk.amount *
-  //     (opportunity.lowestAsk.isUSD ? dollarValue ?? 1 : 1);
-  //   const highestBidTotalValue =
-  //     highestBid.price *
-  //     highestBid.amount *
-  //     (opportunity.highestBid.isUSD ? dollarValue ?? 1 : 1);
-
-  //   const isPriceCriteriaMet =
-  //     lowestAskTotalValue >= 400 && highestBidTotalValue >= 400;
-
-  //   return isPriceCriteriaMet;
-  // };
   const [isUpdatingDollar, setIsUpdatingDollar] = useState(false);
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
@@ -492,16 +436,13 @@ const Futuros: NextPage<FuturosProps> = ({
 
     setLoadingDolarChange(true);
 
-    // Limpar as operações existentes
     sortedOperations = [];
 
-    // Remover queries existentes para garantir que o próximo fetch seja limpo
     queryClient.removeQueries({
       queryKey: ["orderBook.getPaginated"],
       exact: true,
     });
 
-    // Atualizar o valor do dólar no backend
     if (user) {
       const newDolar = dolarValue === 0 ? dollarPrice : dolarValue;
       updateMutation.mutate(
@@ -513,7 +454,6 @@ const Futuros: NextPage<FuturosProps> = ({
           onSettled: () => {
             setLoadingDolarChange(false);
 
-            // Refazer a busca de oportunidades com o novo valor do dólar
             queryClient.invalidateQueries({
               queryKey: ["orderBook.getPaginated"],
             });
@@ -533,384 +473,6 @@ const Futuros: NextPage<FuturosProps> = ({
       preserveAspectRatio: "xMidYMid slice",
     },
   };
-
-  // Modify how we collect symbols and their exchanges
-  const symbolsWithExchanges = (sortedOperations ?? []).reduce(
-    (
-      acc: Array<{
-        symbol: string;
-        buyExchange: string;
-        sellExchange: string;
-      }>,
-      operation: ArbitrageOpportunity
-    ) => {
-      if (operation.ticker) {
-        acc.push({
-          symbol: operation.ticker,
-          buyExchange: operation.highestBid?.exchange.toLowerCase(),
-          sellExchange: operation.lowestAsk?.exchange.toLowerCase(),
-        });
-      }
-      return acc;
-    },
-    []
-  );
-
-  // Fetch prices using WebSocket
-
-  // Definir o fetcher para SWR
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-  // Usar SWR para buscar preços da MEXC
-  const { data: mexcData } = useSWR("/api/mexcFutures", fetcher, {
-    refreshInterval: 500, // Atualiza a cada 500ms
-    dedupingInterval: 0, // Não deduplicar requisições
-    revalidateOnFocus: false, // Não revalidar ao focar na janela
-  });
-  // console.log(mexcData, "mexcData");
-
-  // Usar SWR para buscar preços da Bybit
-  const { data: bybitData } = useSWR("/api/bybitSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  // Usar SWR para buscar preços da Bitget Futures
-  const { data: bitgetFuturesData } = useSWR("/api/bitgetFutures", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  // Usar SWR para buscar preços da Bitget Spot
-  const { data: bitgetSpotData } = useSWR("/api/bitgetSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: mexcSpotData } = useSWR("/api/mexcSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-  console.log(mexcSpotData, "mexcSpotData");
-  // Usar SWR para buscar preços da Gateio
-  const { data: gateioData } = useSWR("/api/gateioSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-  console.log(gateioData, "gateioData");
-
-  // Usar SWR para buscar preços da Binance
-  const { data: binanceData } = useSWR("/api/binanceSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  // Atualizar o useMemo para reordenar por spread após atualizar os preços
-  const updatedOperations = useMemo(() => {
-    // Se o WebSocket estiver pausado, retornar as operações originais sem atualizar preços
-    if (isWebSocketPaused) {
-      return sortedOperations;
-    }
-
-    const uniqueOperations = new Set<string>();
-
-    // Primeiro, atualize os preços
-    const operationsWithUpdatedPrices = sortedOperations
-      .map((operation: any) => {
-        const ticker = `${operation.ticker}_USDT`;
-        // Usar os dados do SWR diretamente
-        const sellPrice = mexcData?.precosFuturos?.[ticker];
-        const gateioPrice = gateioData?.precosSpot?.[ticker];
-        const bitgetPrice = bitgetFuturesData?.precosFuturos?.[ticker];
-        const bitgetSpotPrice = bitgetSpotData?.precosSpot?.[ticker];
-        const binancePrice = binanceData?.precosSpot?.[ticker];
-        const bybitPrice = bybitData?.precosSpot?.[ticker];
-
-        // Caso especial para ALT_USDT
-        const mexcSpotPrice =
-          ticker === "ALT_USDT"
-            ? mexcSpotData?.precosSpot?.["ALTLAYER_USDT"]
-            : mexcSpotData?.precosSpot?.[ticker];
-
-        // Criar uma chave única para cada operação
-        const uniqueKey = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
-
-        // Verificar se a operação já foi processada
-        if (uniqueOperations.has(uniqueKey)) {
-          return null; // Skip duplicate
-        }
-        uniqueOperations.add(uniqueKey);
-
-        // Atualizar os preços
-        const updatedOperation = {
-          ...operation,
-          highestBid: {
-            ...operation.highestBid,
-            price:
-              operation.highestBid.exchange === "Mexc"
-                ? sellPrice || operation.highestBid.price // Use sellPrice for Mexc
-                : operation.highestBid.exchange === "Bitget"
-                ? bitgetPrice || operation.highestBid.price // Use bitgetPrice for Bitget
-                : operation.highestBid.price, // Default to existing price
-          },
-          lowestAsk: {
-            ...operation.lowestAsk,
-            price:
-              operation.lowestAsk.exchange === "Gateio"
-                ? gateioPrice || operation.lowestAsk.price
-                : operation.lowestAsk.exchange === "Binance"
-                ? binancePrice || operation.lowestAsk.price
-                : operation.lowestAsk.exchange === "Bitget"
-                ? bitgetSpotPrice || operation.lowestAsk.price
-                : operation.lowestAsk.exchange === "Bybit"
-                ? bybitPrice || operation.lowestAsk.price
-                : operation.lowestAsk.exchange === "Mexc"
-                ? mexcSpotPrice || operation.lowestAsk.price
-                : operation.lowestAsk.price,
-          },
-        };
-
-        // Recalcular o spread com os preços atualizados
-        const highestBidPrice = updatedOperation.highestBid.price;
-        const lowestAskPrice = updatedOperation.lowestAsk.price;
-
-        if (!isOpen && highestBidPrice > lowestAskPrice) {
-          return null;
-        }
-        // Calcular o novo spread
-        const newSpread = isOpen
-          ? (highestBidPrice / lowestAskPrice - 1) * 100
-          : (lowestAskPrice / highestBidPrice - 1) * 100;
-
-        // Retornar a operação com o spread atualizado
-        return {
-          ...updatedOperation,
-          spread: newSpread,
-        };
-      })
-      .filter((operation: any) => operation !== null); // Remove null entries
-
-    // Agora, reordenar por spread (do maior para o menor)
-    return operationsWithUpdatedPrices.sort(
-      (a: any, b: any) => b.spread - a.spread
-    );
-  }, [
-    sortedOperations,
-    mexcData?.precosFuturos,
-    gateioData?.precosSpot,
-    bitgetFuturesData?.precosFuturos,
-    bitgetSpotData?.precosSpot,
-    binanceData?.precosSpot,
-    bybitData?.precosSpot,
-    mexcSpotData?.precosSpot,
-    isWebSocketPaused, // Adicionar isWebSocketPaused como dependência
-    isOpen,
-  ]);
-
-  // Estado para armazenar tickers assinados
-  const [subscribedTickers, setSubscribedTickers] = useState<Set<string>>(
-    new Set()
-  );
-  const [subscribedBitgetTickers, setSubscribedBitgetTickers] = useState<
-    Set<string>
-  >(new Set());
-  const [subscribedBitgetSpotTickers, setSubscribedBitgetSpotTickers] =
-    useState<Set<string>>(new Set());
-  const [subscribedBybitSpotTickers, setSubscribedBybitSpotTickers] = useState<
-    Set<string>
-  >(new Set());
-  const [subscribedGateIoTickers, setSubscribedGateioTickers] = useState<
-    Set<string>
-  >(new Set());
-  const [subscribedBinanceTickers, setSubscribedBinanceTickers] = useState<
-    Set<string>
-  >(new Set());
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.lowestAsk.exchange === "Gateio"
-    );
-
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedGateIoTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-          fetch("/api/gateioSpot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedGateioTickers(
-            new Set([...subscribedGateIoTickers, ticker])
-          );
-        }
-      });
-    }
-  }, [sortedOperations, subscribedGateIoTickers]);
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.lowestAsk.exchange === "Binance"
-    );
-
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedBinanceTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-          fetch("/api/binanceSpot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedBinanceTickers(
-            new Set([...subscribedBinanceTickers, ticker])
-          );
-        }
-      });
-    }
-  }, [sortedOperations, subscribedBinanceTickers]);
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.highestBid.exchange === "Mexc"
-    );
-
-    // Processa apenas a primeira oportunidade
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-
-          fetch("/api/mexcFutures", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedTickers(new Set([...subscribedTickers, ticker]));
-        }
-      });
-    }
-  }, [sortedOperations, subscribedTickers]);
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.highestBid.exchange === "Bitget"
-    );
-
-    // Processa apenas a primeira oportunidade
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedBitgetTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-
-          fetch("/api/bitgetFutures", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedBitgetTickers(
-            new Set([...subscribedBitgetTickers, ticker])
-          );
-        }
-      });
-    }
-  }, [sortedOperations, subscribedBitgetTickers]);
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.lowestAsk.exchange === "Bitget"
-    );
-
-    // Processa apenas a primeira oportunidade
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedBitgetSpotTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-
-          fetch("/api/bitgetSpot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedBitgetSpotTickers(
-            new Set([...subscribedBitgetSpotTickers, ticker])
-          );
-        }
-      });
-    }
-  }, [sortedOperations, subscribedBitgetSpotTickers]);
-  useEffect(() => {
-    const opportunities = sortedOperations.filter(
-      (op: any) => op.lowestAsk.exchange === "Bybit"
-    );
-
-    // Processa apenas a primeira oportunidade
-    if (opportunities.length > 0) {
-      const firstFiveOpportunities = opportunities;
-
-      firstFiveOpportunities.forEach((opportunity: any) => {
-        const ticker = opportunity.ticker.toUpperCase();
-
-        if (!subscribedBybitSpotTickers.has(ticker)) {
-          console.log(`Assinando ${ticker}`);
-
-          fetch("/api/bybitSpot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "subscribe", symbol: ticker }),
-          })
-            .then((r) => r.json())
-            .then((resp) => console.log("Subscribe:", ticker, resp))
-            .catch(console.error);
-
-          setSubscribedBybitSpotTickers(
-            new Set([...subscribedBybitSpotTickers, ticker])
-          );
-        }
-      });
-    }
-  }, [sortedOperations, subscribedBybitSpotTickers]);
 
   // Função para redirecionar para página de oportunidade individual
   const handleCalculatorClick = (operation: ArbitrageOpportunity) => {
@@ -1159,6 +721,55 @@ const Futuros: NextPage<FuturosProps> = ({
                     </div>
                   </div>
                 )}
+                <div className={styles.tickerInputBlock}>
+                  <div className={styles.refreshRateBlock}>
+                    <label htmlFor="refreshRate">
+                      Velocidade de atualização:
+                    </label>
+                    <select
+                      id="refreshRate"
+                      value={refreshRate}
+                      onChange={(e) => setRefreshRate(Number(e.target.value))}
+                      className={styles.refreshRateSelect}
+                    >
+                      <option value={500}>0.5 segundo</option>
+                      <option value={1000}>1 segundo</option>
+                      <option value={2000}>2 segundos</option>
+                    </select>
+                  </div>
+                  <input
+                    type="text"
+                    value={tickerInput}
+                    onChange={(e) => setTickerInput(e.target.value)}
+                    placeholder="Digite o ticker (ex: BTCUSDT)"
+                    className={styles.tickerInput}
+                  />
+                  <button
+                    onClick={handleAddTicker}
+                    className={styles.tickerAddButton}
+                  >
+                    Adicionar
+                  </button>
+                  <div style={{ display: "flex" }}>
+                    {symbols.map((s) => (
+                      <span key={s} className={styles.tickerTag}>
+                        {s}
+                        <button
+                          onClick={() => {
+                            setSymbols((prev) =>
+                              prev.filter((sym) => sym !== s)
+                            );
+                            setOpportunities((prev) =>
+                              prev.filter((opp) => opp.ticker !== s)
+                            );
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
                 <>
                   <div className={styles.checkbox}>
                     <div className={styles.websocketControl}>
@@ -1270,10 +881,10 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {(updatedOperations ?? []).map(
+                  {(sortedOperations ?? []).map(
                     (operation: ArbitrageOpportunity) => (
                       <FuturosOperationCard
-                        key={`${operation.coin}-${operation.lowestAsk?.price}-${operation.highestBid?.price}-${operation.spread}`}
+                        key={`${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`}
                         coin={{
                           image: operation.coinImage,
                           name: operation.coin,

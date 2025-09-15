@@ -438,3 +438,121 @@ input:checked.is-cleaned + .slider {
     transform: rotate(360deg);
   }
 }
+.tickerInputBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  width: 100%;
+
+  input {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    &:focus {
+      border-color: #7158e2;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 8px rgba(113, 88, 226, 0.6);
+    }
+  }
+
+  .tickerAddButton {
+    margin-top: 0.25rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7158e2, #957dff);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(113, 88, 226, 0.5);
+    }
+  }
+
+  .tickerList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+.refreshRateBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  label {
+    color: #fff;
+    font-family: "Raleway", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.refreshRateSelect {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #7158e2;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  option {
+    background: #1e1e2f;
+    color: #fff;
+  }
+}
+.tickerTag {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  backdrop-filter: blur(6px);
+
+  button {
+    margin-left: 0.5rem;
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+}
