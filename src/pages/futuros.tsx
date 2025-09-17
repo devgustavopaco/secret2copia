@@ -735,6 +735,9 @@ const Futuros: NextPage<FuturosProps> = ({
                       <option value={500}>0.5 segundo</option>
                       <option value={1000}>1 segundo</option>
                       <option value={2000}>2 segundos</option>
+                      <option value={3000}>3 segundos</option>
+                      <option value={4000}>4 segundos</option>
+                      <option value={5000}>5 segundos</option>
                     </select>
                   </div>
                   <input

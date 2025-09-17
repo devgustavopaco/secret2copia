@@ -7,18 +7,12 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
-  console.log(opportunities.length, opportunities);
-  opportunities.map((opp) => {
-    if (opp.spread > 0.5) {
-      console.log(opp.coin);
-    }
-  });
 
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://de8cf27a80e2.ngrok-free.app", {
+      socketRef.current = io("https://c53a3d2deda8.ngrok-free.app", {
         transports: ["websocket"],
       });
 

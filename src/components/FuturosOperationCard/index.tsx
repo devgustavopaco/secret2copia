@@ -552,7 +552,7 @@ export function FuturosOperationCard({
 
       <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>
         <h3>Spread</h3>
-        <p>{spread > 0 ? formatterSpread.format(spread / 100) : "-"}</p>
+        <p>{spread ? formatterSpread.format(spread / 100) : "-"}</p>
       </div>
 
       <div className={styles.cardColumn}>
