@@ -40,12 +40,6 @@ interface FuturosProps {
   tickerData: Currency[];
 }
 
-const FUTURES_EXCHANGES = ["mexc", "bitget", "kucoin"];
-
-interface WebSocketData {
-  [key: string]: string | undefined;
-}
-
 const Futuros: NextPage<FuturosProps> = ({
   ip,
   hasIPChanged,
@@ -372,7 +366,7 @@ const Futuros: NextPage<FuturosProps> = ({
   let validOperations = allArbitrageOpportunities
     .filter((operation: ArbitrageOpportunity) => {
       // Verificar se a operação é válida e tem spread positivo
-      if (!operation || operation.spread <= 0) return false;
+      if (!operation) return false;
       return true;
     })
     .sort(
@@ -397,7 +391,7 @@ const Futuros: NextPage<FuturosProps> = ({
   }
 
   let sortedOperations = socketOpportunities
-    .filter((op) => op.spread > 0.5)
+    .filter((op) => op.spread < 500)
     .sort((a, b) => b.spread - a.spread);
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
