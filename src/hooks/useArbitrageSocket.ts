@@ -12,9 +12,12 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://api.futures-socket.nextgain.com.br/", {
-        transports: ["websocket"],
-      });
+      socketRef.current = io(
+        "https://futures-socket-production.up.railway.app/",
+        {
+          transports: ["websocket"],
+        }
+      );
 
       socketRef.current.on("connect", () => {
         if (symbols.length > 0) {
