@@ -52,6 +52,7 @@ const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     },
   });
+  console.log(user, user?.password);
 
   if (
     user &&

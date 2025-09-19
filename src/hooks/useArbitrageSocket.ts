@@ -12,7 +12,7 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://c9662bb5dfa7.ngrok-free.app/", {
+      socketRef.current = io("https://api.futures-socket.nextgain.com.br/", {
         transports: ["websocket"],
       });
 

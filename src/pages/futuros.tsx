@@ -391,7 +391,7 @@ const Futuros: NextPage<FuturosProps> = ({
   }
 
   let sortedOperations = socketOpportunities
-    .filter((op) => op.spread < 500)
+    .filter((op) => op.spread < 300 && op.spread > 0.5)
     .sort((a, b) => b.spread - a.spread);
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
