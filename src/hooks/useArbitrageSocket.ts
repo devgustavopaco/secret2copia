@@ -20,40 +20,36 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
       );
 
       socketRef.current.on("connect", () => {
-        if (symbols.length > 0) {
-          socketRef.current?.emit("subscribe", { symbols, refreshRate });
-        }
+        console.log("✅ conectado ao socket");
       });
 
       socketRef.current.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
         setOpportunities((prev) => {
-          // chave única: ticker + lowestAsk.exchange + highestBid.exchange
           const key = `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
-
           const exists = prev.find(
             (p) =>
               `${p.ticker}-${p.lowestAsk.exchange}-${p.highestBid.exchange}` ===
               key
           );
-
-          if (exists) {
-            // atualiza oportunidade existente
-            return prev.map((p) =>
-              `${p.ticker}-${p.lowestAsk.exchange}-${p.highestBid.exchange}` ===
-              key
-                ? opp
-                : p
-            );
-          }
-
-          // adiciona novo
-          return [...prev, opp];
+          return exists
+            ? prev.map((p) => (p.ticker === opp.ticker ? opp : p))
+            : [...prev, opp];
         });
       });
-    } else {
-      socketRef.current?.emit("subscribe", { symbols, refreshRate });
     }
-  }, [symbols, refreshRate]); // 🔥 agora dispara quando trocar symbols OU refreshRate
+
+    return () => {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
+  }, []); // ⬅️ monta só uma vez
+
+  // efeito separado só para subscrever quando mudar symbols/refreshRate
+  useEffect(() => {
+    if (socketRef.current && symbols.length > 0) {
+      socketRef.current.emit("subscribe", { symbols, refreshRate });
+    }
+  }, [symbols, refreshRate]);
 
   return { opportunities, setOpportunities };
 }
