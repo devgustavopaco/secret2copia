@@ -50,7 +50,9 @@ export function useArbitrageSocket(
         setOpportunities(Array.from(indexRef.current.values()));
       });
     };
-
+    s.on("disconnect", () => {
+      setIsConnected(false);
+    });
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");
       setIsConnected(true);

@@ -353,9 +353,9 @@ const Futuros: NextPage<FuturosProps> = ({
     sellExchangesName
   );
   useEffect(() => {
-    // if (!isConnected) {
-    //   toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
-    // }
+    if (!isConnected) {
+      toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
+    }
     if (isConnected) {
       toast.success("CONEXAO ABERTA");
     }
@@ -404,11 +404,16 @@ const Futuros: NextPage<FuturosProps> = ({
       }
     );
   }
-
-  let sortedOperations = socketOpportunities
-    .filter((op) => op.spread < 300 && op.spread > 0.5)
-    .sort((a, b) => b.spread - a.spread);
-
+  let sortedOperations;
+  if (isOpen) {
+    sortedOperations = socketOpportunities
+      .filter((op) => op.spread < 300 && op.spread > 0.5)
+      .sort((a, b) => b.spread - a.spread);
+  } else {
+    sortedOperations = socketOpportunities
+      .filter((op) => op.spreadS > 0.5)
+      .sort((a, b) => b.spreadS - a.spreadS);
+  }
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
@@ -496,8 +501,6 @@ const Futuros: NextPage<FuturosProps> = ({
   }, [setOpportunities]);
   // Função para redirecionar para página de oportunidade individual
   const handleCalculatorClick = (operation: ArbitrageOpportunity) => {
-    console.log("handleCalculatorClick chamada"); // Debug
-
     const params = new URLSearchParams({
       ticker: operation.ticker,
       coin: operation.coin,
@@ -511,43 +514,29 @@ const Futuros: NextPage<FuturosProps> = ({
     });
 
     const url = `/oportunidade?${params.toString()}`;
-    console.log("URL:", url); // Debug
 
-    // Abrir janela maior e mais visível
-    const windowFeatures = [
-      "width=350",
-      "height=300",
-      "left=100", // Mais longe da borda
-      "top=100", // Mais longe do topo
-      "toolbar=no",
-      "menubar=no",
-      "location=no",
-      "status=no",
-      "scrollbars=yes",
-      "resizable=yes",
-    ].join(",");
+    const width = 400;
+    const height = 500;
 
-    const newWindow = window.open(url, "_blank", windowFeatures);
-    console.log("Window opened:", newWindow); // Debug
+    // Centralizar na tela
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
 
-    if (!newWindow) {
-      console.error("Popup foi bloqueado!");
-      alert("Popup foi bloqueado! Verifique as configurações do navegador.");
-    } else {
-      // Focar na nova janela
+    const features =
+      `width=${width},height=${height},left=${left},top=${top},` +
+      `toolbar=no,menubar=no,location=no,status=no,` +
+      `scrollbars=yes,resizable=yes`;
+
+    const newWindow = window.open(
+      url,
+      "calculatorWindow", // nome fixo → sempre reusa a mesma janela
+      features
+    );
+
+    if (newWindow) {
       newWindow.focus();
-
-      // Aguardar um momento e reposicionar para garantir visibilidade
-      setTimeout(() => {
-        try {
-          // Posicionar no canto inferior esquerdo com mais espaço
-          newWindow.moveTo(50, Math.max(50, screen.height - 400));
-          newWindow.focus(); // Focar novamente
-          console.log("Janela reposicionada e focada");
-        } catch (error) {
-          console.error("Erro ao reposicionar janela:", error);
-        }
-      }, 100);
+    } else {
+      alert("Popup bloqueado! Verifique as configurações do navegador.");
     }
   };
 
@@ -917,6 +906,7 @@ const Futuros: NextPage<FuturosProps> = ({
                           tax: operation.tax,
                           symbol: operation.ticker,
                           spread: operation.spread,
+                          spreadS: operation.spreadS,
                         }}
                         dollarPrice={dollarPrice}
                         isAdmin={isAdmin}

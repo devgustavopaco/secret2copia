@@ -48,6 +48,7 @@ interface FuturosOperationCardProps {
     fee: number;
     tax: number;
     spread: number;
+    spreadS: number;
     volume?: number;
   };
   dollarPrice?: number;
@@ -148,7 +149,8 @@ export function FuturosOperationCard({
 
   const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
   const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
-
+  const spotVolume = coin.ask.orderbook?.asks[0]?.sumVolume || 0;
+  const futuresVolume = coin.bid.orderbook?.bids[0]?.sumVolume || 0;
   // Get correct symbols for each exchange
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
@@ -551,20 +553,47 @@ export function FuturosOperationCard({
       </div>
 
       <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>
-        <h3>Spread</h3>
-        <p>{spread ? formatterSpread.format(spread / 100) : "-"}</p>
+        <h3>Spreads</h3>
+        <div className={styles.spreadsRow}>
+          <div
+            className={`${styles.spreadItem} ${
+              coin.spread > 0 ? styles.positive : styles.negative
+            }`}
+          >
+            <span className={styles.spreadLabel}>Lucro E </span>
+            <span className={styles.spreadValue}>
+              {formatterSpread.format(coin.spread / 100)}
+            </span>
+          </div>
+          <div
+            className={`${styles.spreadItem} ${
+              coin.spreadS > 0 ? styles.positive : styles.negative
+            }`}
+          >
+            <span className={styles.spreadLabel}>Lucro S </span>
+            <span className={styles.spreadValue}>
+              {formatterSpread.format(coin.spreadS / 100)}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className={styles.cardColumn}>
-        <h3>Volume</h3>
-        <p>
-          {numberFormatter.format(
-            Math.min(
-              coin.ask.orderbook?.asks[0]?.sumVolume || 0,
-              coin.bid.orderbook?.bids[0]?.sumVolume || 0
-            )
-          )}
-        </p>
+      <div className={`${styles.cardColumn} ${styles.volumeSection}`}>
+        <h3>Volumes</h3>
+        <div className={styles.volumesRow}>
+          <div className={`${styles.volumeItem} ${styles.spotVolume}`}>
+            <span className={styles.volumeLabel}>Spot</span>
+            <span className={styles.volumeValue}>
+              {numberFormatter.format(spotVolume)}
+            </span>
+          </div>
+          <div className={`${styles.volumeItem} ${styles.futuresVolume}`}>
+            <span className={styles.volumeLabel}>Futuros</span>
+            <span className={styles.volumeValue}>
+              {numberFormatter.format(futuresVolume)}
+            </span>
+          </div>
+        </div>
         <div className={styles.buttonContainer}>
           <button
             className={styles.calculatorButton}

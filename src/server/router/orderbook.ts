@@ -182,6 +182,7 @@ export interface ArbitrageOpportunity {
   tax: number;
   fee: number;
   spread: number;
+  spreadS: number;
   isFutures?: boolean;
   isOpen?: boolean;
 }

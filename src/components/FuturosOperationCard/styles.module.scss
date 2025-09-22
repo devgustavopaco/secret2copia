@@ -411,3 +411,65 @@
     }
   }
 }
+.volumeSection {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+
+  h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--gray-300);
+    margin-bottom: 0.5rem;
+  }
+}
+
+.volumesRow {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.volumeItem {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+
+  .volumeLabel {
+    display: block;
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 2px;
+  }
+
+  .volumeValue {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+  }
+}
+
+.spotVolume {
+  border-left: 4px solid #10b981; // verde
+}
+
+.futuresVolume {
+  border-left: 4px solid #1285ab; // azul
+}
+.positive {
+  color: #10b981; // verde (tailwind emerald-500)
+}
+
+.negative {
+  color: #ef4444; // vermelho (tailwind red-500)
+}
