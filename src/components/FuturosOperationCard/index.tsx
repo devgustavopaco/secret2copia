@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
-import { Calculator } from "phosphor-react";
+import { Calculator, Star, Trash } from "phosphor-react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 import Image from "next/image";
@@ -58,6 +58,9 @@ interface FuturosOperationCardProps {
   meetsCriteria?: boolean;
   isAdmin?: boolean;
   isOpen?: boolean;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onDeleteClick: () => void;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -122,6 +125,9 @@ export function FuturosOperationCard({
   isChecked,
   isAdmin,
   isOpen,
+  isFavorite,
+  onToggleFavorite,
+  onDeleteClick,
 }: FuturosOperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -510,6 +516,35 @@ export function FuturosOperationCard({
       onClick={onClick}
     >
       <div className={`${styles.cardColumn} ${styles.symbolColumn}`}>
+        <div className={styles.actionButtons}>
+          <button
+            className={styles.favoriteButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            title={
+              isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
+            }
+          >
+            <Star
+              size={20}
+              weight={isFavorite ? "fill" : "regular"}
+              color={isFavorite ? "#facc15" : "#aaa"}
+            />
+          </button>
+          <button
+            className={styles.deleteButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick();
+            }}
+            title="Excluir esta oportunidade"
+          >
+            <Trash size={20} color="#ef4444" />
+          </button>
+        </div>
+
         <img
           src={
             coin.image ??

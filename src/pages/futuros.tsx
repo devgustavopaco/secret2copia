@@ -143,6 +143,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [loadingDolarChange, setLoadingDolarChange] = useState(false);
 
   const [dolarValue, setDolarValue] = useState<number | undefined>(undefined);
+  const [isExcludedModalOpen, setIsExcludedModalOpen] = useState(false);
 
   const queryInfo = trpc.useQuery([
     "user.getUserByEmail",
@@ -156,6 +157,54 @@ const Futuros: NextPage<FuturosProps> = ({
   }, [queryInfo]);
 
   const user = queryInfo.data;
+
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [operationToDelete, setOperationToDelete] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const saved = localStorage.getItem("favoriteOperations");
+    if (saved) {
+      setFavorites(JSON.parse(saved));
+    }
+  }, []);
+  const [excluded, setExcluded] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("excludedOperations");
+    if (saved) {
+      setExcluded(JSON.parse(saved));
+    }
+  }, []);
+
+  const excludeOperation = (key: string) => {
+    setExcluded((prev) => {
+      const updated = [...prev, key];
+      localStorage.setItem("excludedOperations", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const restoreOperation = (key: string) => {
+    setExcluded((prev) => {
+      const updated = prev.filter((f) => f !== key);
+      localStorage.setItem("excludedOperations", JSON.stringify(updated));
+      return updated;
+    });
+  };
+  const toggleFavorite = (key: string) => {
+    setFavorites((prev) => {
+      let updated;
+      if (prev.includes(key)) {
+        updated = prev.filter((f) => f !== key);
+      } else {
+        updated = [...prev, key];
+      }
+      localStorage.setItem("favoriteOperations", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const buyExchangesName = Array.isArray(buyExchanges)
     ? buyExchanges.map((e) => e.name)
@@ -439,6 +488,21 @@ const Futuros: NextPage<FuturosProps> = ({
   }, [isChecked, queryClient, refetch]);
 
   const [isUpdatingDollar, setIsUpdatingDollar] = useState(false);
+  const operationsWithFavoriteFirst = [...sortedOperations]
+    .filter((op) => {
+      const key = `${op.ticker}-${op.lowestAsk.exchange}-${op.highestBid.exchange}`;
+      return !excluded.includes(key); // 🔥 exclui
+    })
+    .sort((a, b) => {
+      const keyA = `${a.ticker}-${a.lowestAsk.exchange}-${a.highestBid.exchange}`;
+      const keyB = `${b.ticker}-${b.lowestAsk.exchange}-${b.highestBid.exchange}`;
+      const favA = favorites.includes(keyA);
+      const favB = favorites.includes(keyB);
+      if (favA && !favB) return -1;
+      if (!favA && favB) return 1;
+      return 0;
+    });
+
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
       toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
@@ -547,6 +611,64 @@ const Futuros: NextPage<FuturosProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
+        {isExcludedModalOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3>Oportunidades Excluídas</h3>
+              {excluded.length === 0 ? (
+                <p>Nenhuma oportunidade excluída.</p>
+              ) : (
+                <ul className={styles.excludedList}>
+                  {excluded.map((key) => (
+                    <li key={key} className={styles.excludedItem}>
+                      <span>{key}</span>
+                      <button
+                        className={styles.restoreButton}
+                        onClick={() => restoreOperation(key)}
+                      >
+                        Restaurar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className={styles.modalButtons}>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setIsExcludedModalOpen(false)}
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {operationToDelete && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3>Excluir Oportunidade</h3>
+              <p>Tem certeza que deseja excluir esta oportunidade?</p>
+              <div className={styles.modalButtons}>
+                <button
+                  className={styles.confirmButton}
+                  onClick={() => {
+                    excludeOperation(operationToDelete);
+                    setOperationToDelete(null);
+                  }}
+                >
+                  Sim, excluir
+                </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setOperationToDelete(null)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isUpdatingDollar && loadingAnimation && (
           <div className={styles.loadingOverlay}>
             <Lottie options={defaultOptions} height={200} width={200} />
@@ -749,6 +871,15 @@ const Futuros: NextPage<FuturosProps> = ({
                       <option value={5000}>5 segundos</option>
                     </select>
                   </div>
+                  {excluded.length > 0 && (
+                    <button
+                      onClick={() => setIsExcludedModalOpen(true)}
+                      className={styles.excludedButton}
+                    >
+                      Ver Excluídas ({excluded.length})
+                    </button>
+                  )}
+
                   {/* <input
                     type="text"
                     value={tickerInput}
@@ -893,10 +1024,11 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {(sortedOperations ?? []).map(
-                    (operation: ArbitrageOpportunity) => (
+                  {operationsWithFavoriteFirst.map((operation) => {
+                    const key = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
+                    return (
                       <FuturosOperationCard
-                        key={`${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`}
+                        key={key}
                         coin={{
                           image: operation.coinImage,
                           name: operation.coin,
@@ -911,16 +1043,17 @@ const Futuros: NextPage<FuturosProps> = ({
                         dollarPrice={dollarPrice}
                         isAdmin={isAdmin}
                         isChecked={isChecked}
-                        onClick={() => {
-                          setSelectedOperation(operation);
-                        }}
-                        onCalculatorClick={() => {
-                          handleCalculatorClick(operation);
-                        }}
                         isOpen={isOpen}
+                        onClick={() => setSelectedOperation(operation)}
+                        onCalculatorClick={() =>
+                          handleCalculatorClick(operation)
+                        }
+                        isFavorite={favorites.includes(key)}
+                        onToggleFavorite={() => toggleFavorite(key)}
+                        onDeleteClick={() => setOperationToDelete(key)}
                       />
-                    )
-                  )}
+                    );
+                  })}
                 </div>
               )}
             </main>

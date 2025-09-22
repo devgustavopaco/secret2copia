@@ -473,3 +473,35 @@
 .negative {
   color: #ef4444; // vermelho (tailwind red-500)
 }
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.favoriteButton,
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.favoriteButton svg {
+  transition: transform 0.2s ease;
+}
+
+.favoriteButton:hover svg {
+  transform: scale(1.2);
+}
+
+.deleteButton:hover svg {
+  transform: scale(1.2);
+}
