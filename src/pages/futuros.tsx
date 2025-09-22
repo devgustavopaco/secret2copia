@@ -750,7 +750,7 @@ const Futuros: NextPage<FuturosProps> = ({
                       <option value={5000}>5 segundos</option>
                     </select>
                   </div>
-                  <input
+                  {/* <input
                     type="text"
                     value={tickerInput}
                     onChange={(e) => setTickerInput(e.target.value)}
@@ -762,7 +762,7 @@ const Futuros: NextPage<FuturosProps> = ({
                     className={styles.tickerAddButton}
                   >
                     Adicionar
-                  </button>
+                  </button> */}
                   <div style={{ display: "flex" }}>
                     {symbols.map((s) => (
                       <span key={s} className={styles.tickerTag}>
