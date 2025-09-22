@@ -57,6 +57,7 @@ const Futuros: NextPage<FuturosProps> = ({
 
   const [tickerInput, setTickerInput] = useState("");
   const [symbols, setSymbols] = useState<string[]>([]);
+  const [symbolFilter, setSymbolFilter] = useState("");
 
   const router = useRouter();
 
@@ -502,7 +503,10 @@ const Futuros: NextPage<FuturosProps> = ({
       if (!favA && favB) return 1;
       return 0;
     });
-
+  const filteredOperations = operationsWithFavoriteFirst.filter((operation) => {
+    if (!symbolFilter) return true;
+    return operation.ticker.toUpperCase().includes(symbolFilter);
+  });
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
       toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
@@ -879,20 +883,18 @@ const Futuros: NextPage<FuturosProps> = ({
                       Ver Excluídas ({excluded.length})
                     </button>
                   )}
+                  <div className={styles.filterBlock}>
+                    <input
+                      type="text"
+                      value={symbolFilter}
+                      onChange={(e) =>
+                        setSymbolFilter(e.target.value.toUpperCase())
+                      }
+                      placeholder="Filtrar por símbolo (ex: BTC)"
+                      className={styles.filterInput}
+                    />
+                  </div>
 
-                  {/* <input
-                    type="text"
-                    value={tickerInput}
-                    onChange={(e) => setTickerInput(e.target.value)}
-                    placeholder="Digite o ticker (ex: BTCUSDT)"
-                    className={styles.tickerInput}
-                  />
-                  <button
-                    onClick={handleAddTicker}
-                    className={styles.tickerAddButton}
-                  >
-                    Adicionar
-                  </button> */}
                   <div style={{ display: "flex" }}>
                     {symbols.map((s) => (
                       <span key={s} className={styles.tickerTag}>
@@ -1024,7 +1026,7 @@ const Futuros: NextPage<FuturosProps> = ({
                 )
               ) : (
                 <div className={styles.operations}>
-                  {operationsWithFavoriteFirst.map((operation) => {
+                  {filteredOperations.map((operation) => {
                     const key = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
                     return (
                       <FuturosOperationCard
