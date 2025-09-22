@@ -155,8 +155,11 @@ export function FuturosOperationCard({
 
   const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
   const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
+
   const spotVolume = coin.ask.orderbook?.asks[0]?.sumVolume || 0;
   const futuresVolume = coin.bid.orderbook?.bids[0]?.sumVolume || 0;
+  const spotLiquidity = askPrice * spotVolume;
+  const futuresLiquidity = bidPrice * futuresVolume;
   // Get correct symbols for each exchange
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
@@ -568,6 +571,9 @@ export function FuturosOperationCard({
           {coin.ask.exchange}
         </p>
         <p>$ {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}</p>
+        <small className={styles.liquidityTag}>
+          ${String(Math.floor(spotLiquidity)).slice(0, 2)}
+        </small>
       </div>
 
       <div className={styles.cardColumn}>
@@ -585,6 +591,9 @@ export function FuturosOperationCard({
           {coin.bid.exchange}
         </p>
         <p>$ {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}</p>
+        <small className={styles.liquidityTag}>
+          ${String(Math.floor(futuresLiquidity)).slice(0, 2)}
+        </small>
       </div>
 
       <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>

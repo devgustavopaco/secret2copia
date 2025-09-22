@@ -26,6 +26,24 @@ export function useArbitrageSocket(
   buyExchanges: string[],
   sellExchanges: string[]
 ) {
+  const coinImageCache = useRef<Map<string, string>>(new Map()).current;
+  useEffect(() => {
+    async function loadCache() {
+      try {
+        const res = await fetch("/api/getCoinImage");
+        const coins: { ticker: string; image_url: string | null }[] =
+          await res.json();
+        coins.forEach((c) => {
+          coinImageCache.set(c.ticker, c.image_url || "");
+        });
+        console.log("✅ Cache de imagens carregado:", coinImageCache.size);
+      } catch (err) {
+        console.error("Erro ao carregar cache de imagens:", err);
+      }
+    }
+    loadCache();
+  }, [coinImageCache]);
+
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
@@ -88,15 +106,23 @@ export function useArbitrageSocket(
     });
 
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
+      opp.coinImage = coinImageCache.get(opp.ticker) || "";
       indexRef.current.set(keyOf(opp), opp);
       scheduleFlush();
     });
 
     s.on("arbitrageDelta", (payload) => {
       const { symbol, upserts, deletes } = payload;
-      for (const opp of upserts) indexRef.current.set(keyOf(opp), opp);
-      for (const pair of deletes)
+
+      for (const opp of upserts) {
+        opp.coinImage = coinImageCache.get(opp.ticker) || "";
+        indexRef.current.set(keyOf(opp), opp);
+      }
+
+      for (const pair of deletes) {
         indexRef.current.delete(keyFromPair(symbol, pair));
+      }
+
       scheduleFlush();
     });
 

@@ -505,3 +505,20 @@
 .deleteButton:hover svg {
   transform: scale(1.2);
 }
+.liquidityTag {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #aaa;
+  margin-top: 2px;
+  display: block;
+  text-align: right;
+  opacity: 0.8;
+
+  .longPosition & {
+    color: #10b981; // verde discreto
+  }
+
+  .shortPosition & {
+    color: #ef4444; // vermelho discreto
+  }
+}

@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { XCircle, Pause, Play } from "phosphor-react";
+import { XCircle, Pause, Play, Funnel } from "phosphor-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -29,6 +29,7 @@ import { authOptions } from "./api/auth/[...nextauth]";
 
 import { useArbitrageSocket } from "../hooks/useArbitrageSocket";
 import { useQueryClient } from "react-query";
+import { Filter, Filter1 } from "@material-ui/icons";
 const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 interface FuturosProps {
@@ -51,6 +52,10 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isChecked, setIsChecked] = useState(false);
   const [isCleaned, setIsCleaned] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [minProfit, setMinProfit] = useState<number>(0.5);
+  const [maxProfit, setMaxProfit] = useState<number>(300);
+  const [minLiquidity, setMinLiquidity] = useState<number>(0);
 
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
@@ -455,15 +460,37 @@ const Futuros: NextPage<FuturosProps> = ({
     );
   }
   let sortedOperations;
+
   if (isOpen) {
     sortedOperations = socketOpportunities
-      .filter((op) => op.spread < 300 && op.spread > 0.5)
+      .filter((op) => {
+        const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
+        const bidLiquidity = op.highestBid.price * op.highestBid.amount;
+
+        return (
+          op.spread < maxProfit &&
+          op.spread > minProfit &&
+          askLiquidity >= minLiquidity &&
+          bidLiquidity >= minLiquidity
+        );
+      })
       .sort((a, b) => b.spread - a.spread);
   } else {
     sortedOperations = socketOpportunities
-      .filter((op) => op.spreadS > 0.5)
+      .filter((op) => {
+        const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
+        const bidLiquidity = op.highestBid.price * op.highestBid.amount;
+
+        return (
+          op.spreadS < maxProfit &&
+          op.spreadS > minProfit &&
+          askLiquidity >= minLiquidity &&
+          bidLiquidity >= minLiquidity
+        );
+      })
       .sort((a, b) => b.spreadS - a.spreadS);
   }
+
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
     maximumFractionDigits: 3,
@@ -615,6 +642,56 @@ const Futuros: NextPage<FuturosProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
+        {isFilterModalOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3>Filtro de Lucro</h3>
+
+              <div className={styles.modalContent}>
+                <label>
+                  Lucro Mínimo (%):
+                  <input
+                    type="number"
+                    value={minProfit}
+                    onChange={(e) => setMinProfit(Number(e.target.value))}
+                  />
+                </label>
+
+                <label>
+                  Lucro Máximo (%):
+                  <input
+                    type="number"
+                    value={maxProfit}
+                    onChange={(e) => setMaxProfit(Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Liquidez Mínima (USDT):
+                  <input
+                    type="number"
+                    value={minLiquidity}
+                    onChange={(e) => setMinLiquidity(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+
+              <div className={styles.modalButtons}>
+                <button
+                  className={styles.confirmButton}
+                  onClick={() => setIsFilterModalOpen(false)}
+                >
+                  Aplicar
+                </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setIsFilterModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isExcludedModalOpen && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
@@ -883,7 +960,10 @@ const Futuros: NextPage<FuturosProps> = ({
                       Ver Excluídas ({excluded.length})
                     </button>
                   )}
-                  <div className={styles.filterBlock}>
+                  <div
+                    className={styles.filterBlock}
+                    style={{ gap: "20px", display: "flex" }}
+                  >
                     <input
                       type="text"
                       value={symbolFilter}
@@ -893,6 +973,12 @@ const Futuros: NextPage<FuturosProps> = ({
                       placeholder="Filtrar por símbolo (ex: BTC)"
                       className={styles.filterInput}
                     />
+                    <button
+                      className={styles.filterButton}
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <Funnel size={20} weight="bold" />
+                    </button>
                   </div>
 
                   <div style={{ display: "flex" }}>
