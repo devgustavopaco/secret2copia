@@ -4,40 +4,34 @@ import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { ArrowLeft, ArrowsCounterClockwise } from "phosphor-react";
 import { BeatLoader } from "react-spinners";
-import useSWR from "swr";
-import { Header } from "../components/Header";
-import CurrencyCarousel from "../components/MarketCarousel";
 import { trpc } from "../utils/trpc";
 import styles from "../styles/oportunidade.module.scss";
+import { io, Socket } from "socket.io-client";
 
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 8,
 });
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+interface ArbitrageOpportunity {
+  coin: string;
+  ticker: string;
+  lowestAsk: { exchange: string; price: number; isUSD: boolean };
+  highestBid: { exchange: string; price: number; isUSD: boolean };
+  spread: number;
+  spreadS: number;
+}
 
 export default function OportunidadePage() {
   const router = useRouter();
   const { data: auth } = useSession();
   const [isOpen, setIsOpen] = useState(true);
-  const [currentPrices, setCurrentPrices] = useState<{
-    buyPrice?: number;
-    sellPrice?: number;
-  }>({});
+  const [opportunity, setOpportunity] = useState<ArbitrageOpportunity | null>(
+    null
+  );
 
-  // Extrair dados da query
-  const {
-    ticker,
-    coin,
-    buyExchange,
-    buyPrice,
-    buyIsUSD,
-    sellExchange,
-    sellPrice,
-    sellIsUSD,
-    spread,
-  } = router.query;
+  // Query params
+  const { ticker, coin, buyExchange, sellExchange, spread } = router.query;
 
   const { data: user } = trpc.useQuery([
     "user.getUserByEmail",
@@ -48,152 +42,87 @@ export default function OportunidadePage() {
     refetchInterval: 20 * 1000,
   });
 
-  // Buscar preços em tempo real baseado nas exchanges
-  const { data: mexcData } = useSWR("/api/mexcFutures", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: mexcSpotData } = useSWR("/api/mexcSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: bybitData } = useSWR("/api/bybitSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: bitgetFuturesData } = useSWR("/api/bitgetFutures", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: bitgetSpotData } = useSWR("/api/bitgetSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: gateioData } = useSWR("/api/gateioSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  const { data: binanceData } = useSWR("/api/binanceSpot", fetcher, {
-    refreshInterval: 500,
-    dedupingInterval: 0,
-    revalidateOnFocus: false,
-  });
-
-  // Atualizar preços em tempo real
+  // === SOCKET SETUP ===
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
-    const tickerSymbol = `${ticker}_USDT`;
-    let newBuyPrice = parseFloat(buyPrice as string);
-    let newSellPrice = parseFloat(sellPrice as string);
-
-    // Atualizar preço de compra baseado na exchange
-    if (buyExchange === "Mexc" && mexcData?.precosFuturos?.[tickerSymbol]) {
-      newBuyPrice = mexcData.precosFuturos[tickerSymbol];
-    } else if (
-      buyExchange === "Bitget" &&
-      bitgetFuturesData?.precosFuturos?.[tickerSymbol]
-    ) {
-      newBuyPrice = bitgetFuturesData.precosFuturos[tickerSymbol];
-    }
-
-    // Atualizar preço de venda baseado na exchange
-    if (sellExchange === "Gateio" && gateioData?.precosSpot?.[tickerSymbol]) {
-      newSellPrice = gateioData.precosSpot[tickerSymbol];
-    } else if (
-      sellExchange === "Binance" &&
-      binanceData?.precosSpot?.[tickerSymbol]
-    ) {
-      newSellPrice = binanceData.precosSpot[tickerSymbol];
-    } else if (
-      sellExchange === "Bitget" &&
-      bitgetSpotData?.precosSpot?.[tickerSymbol]
-    ) {
-      newSellPrice = bitgetSpotData.precosSpot[tickerSymbol];
-    } else if (
-      sellExchange === "Bybit" &&
-      bybitData?.precosSpot?.[tickerSymbol]
-    ) {
-      newSellPrice = bybitData.precosSpot[tickerSymbol];
-    } else if (sellExchange === "Mexc") {
-      const mexcSpotPrice =
-        tickerSymbol === "ALT_USDT"
-          ? mexcSpotData?.precosSpot?.["ALTLAYER_USDT"]
-          : mexcSpotData?.precosSpot?.[tickerSymbol];
-      if (mexcSpotPrice) {
-        newSellPrice = mexcSpotPrice;
+    const socket: Socket = io(
+      "https://futures-socket-production.up.railway.app",
+      {
+        transports: ["websocket"],
       }
-    }
+    );
 
-    setCurrentPrices({
-      buyPrice: newBuyPrice,
-      sellPrice: newSellPrice,
+    socket.on("connect", () => {
+      console.log(
+        "✅ Conectado ao socket",
+        socket.id,
+        buyExchange,
+        sellExchange
+      );
+
+      socket.emit("subscribe", {
+        symbols: [`${ticker}USDT`],
+        buyExchanges: [sellExchange],
+        sellExchanges: [buyExchange],
+        refreshRate: 1000,
+      });
     });
-  }, [
-    ticker,
-    buyExchange,
-    sellExchange,
-    buyPrice,
-    sellPrice,
-    mexcData,
-    mexcSpotData,
-    bybitData,
-    bitgetFuturesData,
-    bitgetSpotData,
-    gateioData,
-    binanceData,
-  ]);
 
-  // Calcular spread atual
+    socket.on("arbitrageDelta", (data) => {
+      console.log(data, "DT");
+      if (data.upserts?.length > 0) {
+        setOpportunity(data.upserts[0]);
+      }
+    });
+
+    socket.on("arbitrageUpdate", (opp) => {
+      setOpportunity(opp);
+    });
+
+    return () => {
+      socket.emit("unsubscribe", { symbols: [`${ticker}USDT`] });
+      socket.disconnect();
+    };
+  }, [ticker, buyExchange, sellExchange]);
+
+  // === HELPERS ===
+  const calcPrice = (price: number, isUSD: boolean, dolarValue: number) =>
+    isUSD ? price : price / dolarValue;
+
+  const isSpot = (exchange: string) => exchange.toLowerCase().includes("spot");
+
+  const isFutures = (exchange: string) =>
+    exchange.toLowerCase().includes("futures");
+
+  // === SPREAD CALC ===
   const currentSpread = useMemo(() => {
-    const buyP = currentPrices.buyPrice || parseFloat(buyPrice as string);
-    const sellP = currentPrices.sellPrice || parseFloat(sellPrice as string);
-
-    if (!buyP || !sellP) return parseFloat(spread as string);
+    if (!opportunity) return parseFloat(spread as string);
 
     const dolarValue = user?.dolarValue ?? dollarPrice ?? 1;
 
-    const calculatePrice = (price: number, isUSD: boolean) => {
-      return isUSD ? price : price / dolarValue;
-    };
+    const spotSide = isSpot(opportunity.lowestAsk.exchange)
+      ? opportunity.lowestAsk
+      : opportunity.highestBid;
 
-    const buyPriceCalculated = calculatePrice(buyP, buyIsUSD === "true");
-    const sellPriceCalculated = calculatePrice(sellP, sellIsUSD === "true");
+    const futuresSide = isFutures(opportunity.highestBid.exchange)
+      ? opportunity.highestBid
+      : opportunity.lowestAsk;
+
+    const spotPrice = calcPrice(spotSide.price, spotSide.isUSD, dolarValue);
+    const futuresPrice = calcPrice(
+      futuresSide.price,
+      futuresSide.isUSD,
+      dolarValue
+    );
 
     return isOpen
-      ? ((buyPriceCalculated - sellPriceCalculated) / sellPriceCalculated) * 100
-      : ((sellPriceCalculated - buyPriceCalculated) / buyPriceCalculated) * 100;
-  }, [
-    currentPrices,
-    buyPrice,
-    sellPrice,
-    buyIsUSD,
-    sellIsUSD,
-    user?.dolarValue,
-    dollarPrice,
-    isOpen,
-    spread,
-  ]);
+      ? ((futuresPrice - spotPrice) / spotPrice) * 100
+      : ((spotPrice - futuresPrice) / futuresPrice) * 100;
+  }, [opportunity, user?.dolarValue, dollarPrice, isOpen, spread]);
 
-  const handleBack = () => {
-    router.back();
-  };
-
-  const toggleOperation = () => {
-    setIsOpen(!isOpen);
-  };
+  const handleBack = () => router.back();
+  const toggleOperation = () => setIsOpen(!isOpen);
 
   if (!ticker || !coin) {
     return (
@@ -203,32 +132,40 @@ export default function OportunidadePage() {
     );
   }
 
+  if (!opportunity) {
+    return (
+      <div className={styles.loading}>
+        <BeatLoader color="#957dff" size="1rem" />
+        <p>Aguardando dados do socket...</p>
+      </div>
+    );
+  }
+
+  // === PREÇOS E EXCHANGES FILTRADOS ===
   const dolarValue = user?.dolarValue ?? dollarPrice ?? 1;
-  const buyPriceDisplay =
-    currentPrices.buyPrice || parseFloat(buyPrice as string);
-  const sellPriceDisplay =
-    currentPrices.sellPrice || parseFloat(sellPrice as string);
 
-  const calculatePrice = (price: number, isUSD: boolean) => {
-    return isUSD ? price : price / dolarValue;
-  };
+  const spotSide = isSpot(opportunity.lowestAsk.exchange)
+    ? opportunity.lowestAsk
+    : opportunity.highestBid;
 
-  const buyPriceCalculated = calculatePrice(
-    buyPriceDisplay,
-    buyIsUSD === "true"
-  );
-  const sellPriceCalculated = calculatePrice(
-    sellPriceDisplay,
-    sellIsUSD === "true"
+  const futuresSide = isFutures(opportunity.highestBid.exchange)
+    ? opportunity.highestBid
+    : opportunity.lowestAsk;
+
+  const spotPrice = calcPrice(spotSide.price, spotSide.isUSD, dolarValue);
+  const futuresPrice = calcPrice(
+    futuresSide.price,
+    futuresSide.isUSD,
+    dolarValue
   );
 
-  // Determinar qual exchange compra/vende baseado na operação
-  const firstExchange = isOpen ? buyExchange : sellExchange;
-  const firstPrice = isOpen ? buyPriceCalculated : sellPriceCalculated;
-  const firstType = isOpen ? "(S)" : "(F)"; // S para spot, F para futures
+  // Decide a ordem baseado em isOpen
+  const firstExchange = isOpen ? spotSide.exchange : futuresSide.exchange;
+  const firstPrice = isOpen ? spotPrice : futuresPrice;
+  const firstType = isOpen ? "(S)" : "(F)";
 
-  const secondExchange = isOpen ? sellExchange : buyExchange;
-  const secondPrice = isOpen ? sellPriceCalculated : buyPriceCalculated;
+  const secondExchange = isOpen ? futuresSide.exchange : spotSide.exchange;
+  const secondPrice = isOpen ? futuresPrice : spotPrice;
   const secondType = isOpen ? "(F)" : "(S)";
 
   return (
@@ -247,7 +184,6 @@ export default function OportunidadePage() {
             <button onClick={handleBack} className={styles.backButton}>
               <ArrowLeft size={24} />
             </button>
-
             <button onClick={toggleOperation} className={styles.toggleButton}>
               <ArrowsCounterClockwise size={24} />
             </button>
@@ -277,7 +213,7 @@ export default function OportunidadePage() {
                   }`}
                 >
                   {currentSpread >= 0 ? "+" : ""}
-                  {currentSpread.toFixed(2)}
+                  {currentSpread.toFixed(2)}%
                 </span>
               </div>
 

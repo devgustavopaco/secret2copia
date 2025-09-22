@@ -572,7 +572,7 @@ export function FuturosOperationCard({
         </p>
         <p>$ {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}</p>
         <small className={styles.liquidityTag}>
-          ${String(Math.floor(spotLiquidity)).slice(0, 2)}
+          ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
         </small>
       </div>
 
@@ -592,7 +592,7 @@ export function FuturosOperationCard({
         </p>
         <p>$ {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}</p>
         <small className={styles.liquidityTag}>
-          ${String(Math.floor(futuresLiquidity)).slice(0, 2)}
+          ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
         </small>
       </div>
 
