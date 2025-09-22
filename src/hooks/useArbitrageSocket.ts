@@ -36,6 +36,7 @@ export function useArbitrageSocket(
   const prevRefreshRef = useRef<number>(refreshRate);
   const prevBuyRef = useRef<string[]>(normList(buyExchanges));
   const prevSellRef = useRef<string[]>(normList(sellExchanges));
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const s = io(URL, { transports: ["websocket"] });
@@ -52,38 +53,36 @@ export function useArbitrageSocket(
 
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");
-      if (symbols.length) {
-        console.log("➡️ subscribe@connect", {
-          symbols,
-          refreshRate,
-          buyExchanges,
-          sellExchanges,
-        });
-        s.emit("subscribe", {
-          symbols,
-          refreshRate,
-          buyExchanges,
-          sellExchanges,
-        });
-      }
+      setIsConnected(true);
+      console.log("➡️ subscribe@connect", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
+      s.emit("subscribe", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
     });
 
     s.on("reconnect", () => {
       console.log("♻️ Reconectado ao socket");
-      if (symbols.length) {
-        console.log("➡️ subscribe@reconnect", {
-          symbols,
-          refreshRate,
-          buyExchanges,
-          sellExchanges,
-        });
-        s.emit("subscribe", {
-          symbols,
-          refreshRate,
-          buyExchanges,
-          sellExchanges,
-        });
-      }
+
+      console.log("➡️ subscribe@reconnect", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
+      s.emit("subscribe", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
     });
 
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
@@ -164,5 +163,5 @@ export function useArbitrageSocket(
     if (sellChanged) prevSellRef.current = normList(sellExchanges);
   }, [symbols, refreshRate, buyExchanges, sellExchanges]);
 
-  return { opportunities, setOpportunities };
+  return { opportunities, setOpportunities, isConnected };
 }

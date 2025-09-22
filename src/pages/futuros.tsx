@@ -342,14 +342,24 @@ const Futuros: NextPage<FuturosProps> = ({
     [user, dollarPrice]
   );
   // const symbols = useMemo(() => [], []);
-  const { opportunities: socketOpportunities, setOpportunities } =
-    useArbitrageSocket(
-      symbols,
-      refreshRate,
-      buyExchangesName,
-      sellExchangesName
-    );
-
+  const {
+    opportunities: socketOpportunities,
+    setOpportunities,
+    isConnected,
+  } = useArbitrageSocket(
+    symbols,
+    refreshRate,
+    buyExchangesName,
+    sellExchangesName
+  );
+  useEffect(() => {
+    // if (!isConnected) {
+    //   toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
+    // }
+    if (isConnected) {
+      toast.success("CONEXAO ABERTA");
+    }
+  }, [isConnected]);
   const handleAddTicker = () => {
     if (!tickerInput.trim()) return;
 
