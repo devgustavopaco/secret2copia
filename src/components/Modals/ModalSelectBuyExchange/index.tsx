@@ -11,8 +11,24 @@ interface ModalExchange {
   isCleaned?: boolean;
 }
 
-const ALLOWED_BUY_EXCHANGES = ["Binance", "Bybit", "Gateio", "Bitget", "Mexc"];
-const ALLOWED_SELL_EXCHANGES = ["Bitget", "Mexc"];
+const ALLOWED_BUY_EXCHANGES = [
+  // "Binance",
+  // "Bybit",
+  "Gateio",
+  "Bitget",
+  "Mexc",
+  "Bingx",
+  "Kucoin",
+  "Huobi",
+];
+const ALLOWED_SELL_EXCHANGES = [
+  "Gateio",
+  "Bitget",
+  "Mexc",
+  // "Bingx",
+  "Kucoin",
+  "Huobi",
+];
 
 export function FullScreenModal({
   onClose,
@@ -27,6 +43,8 @@ export function FullScreenModal({
       ssr: true,
     }
   );
+
+  console.log(activeExchanges, "AE");
 
   const [selectedExchanges, setSelectedExchanges] = useState<any[]>(() => {
     const storedData = localStorage.getItem(
@@ -60,6 +78,7 @@ export function FullScreenModal({
         operation === "compra" ? "buyExchanges" : "sellExchanges",
         JSON.stringify(newSelection)
       );
+      window.dispatchEvent(new Event("exchangeUpdated"));
       return newSelection;
     });
   };
@@ -71,6 +90,7 @@ export function FullScreenModal({
         operation === "compra" ? "buyExchanges" : "sellExchanges",
         JSON.stringify(newSelection)
       );
+      window.dispatchEvent(new Event("exchangeUpdated")); // 👈 dispare também no remove
       return newSelection;
     });
   };

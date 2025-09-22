@@ -26,21 +26,18 @@ export function BuyExchangeMobile({
 
   const handleDeleteExchange = (type: string, index: string) => {
     if (type === "compra") {
-      const updatedBuyExchanges = buyExchanges.filter(
-        (_, idx) => _.name !== index
-      );
-
+      const updatedBuyExchanges = buyExchanges.filter((_) => _.name !== index);
       localStorage.setItem("buyExchanges", JSON.stringify(updatedBuyExchanges));
     } else if (type === "venda") {
       const updatedSellExchanges = sellExchanges.filter(
-        (_, idx) => _.name !== index
+        (_) => _.name !== index
       );
-
       localStorage.setItem(
         "sellExchanges",
         JSON.stringify(updatedSellExchanges)
       );
     }
+    window.dispatchEvent(new Event("exchangeUpdated")); // 👈 dispara
   };
 
   return (

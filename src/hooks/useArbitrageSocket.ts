@@ -9,23 +9,33 @@ const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
 const keyFromPair = (symbol: string, pairKey: string) => {
-  // pairKey do backend = "SpotEx|FutEx"
   const [spotEx, futEx] = pairKey.split("|");
   const lowEx = `${spotEx} Spot`;
   const highEx = `${futEx} Futures`;
   return `${symbol}-${lowEx}-${highEx}`;
 };
 
-export function useArbitrageSocket(symbols: string[], refreshRate: number) {
+// helpers p/ comparar listas
+const normList = (xs: string[]) => xs.map((s) => s.toLowerCase()).sort();
+const arraysEqual = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((v, i) => v === b[i]);
+
+export function useArbitrageSocket(
+  symbols: string[],
+  refreshRate: number,
+  buyExchanges: string[],
+  sellExchanges: string[]
+) {
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
   const socketRef = useRef<Socket | null>(null);
 
-  // índice em memória para updates rápidos
   const indexRef = useRef<Map<string, ArbitrageOpportunity>>(new Map());
   const prevSymbolsRef = useRef<string[]>([]);
   const prevRefreshRef = useRef<number>(refreshRate);
+  const prevBuyRef = useRef<string[]>(normList(buyExchanges));
+  const prevSellRef = useRef<string[]>(normList(sellExchanges));
 
   useEffect(() => {
     const s = io(URL, { transports: ["websocket"] });
@@ -42,44 +52,52 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
 
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");
-      if (symbols.length) s.emit("subscribe", { symbols, refreshRate });
+      if (symbols.length) {
+        console.log("➡️ subscribe@connect", {
+          symbols,
+          refreshRate,
+          buyExchanges,
+          sellExchanges,
+        });
+        s.emit("subscribe", {
+          symbols,
+          refreshRate,
+          buyExchanges,
+          sellExchanges,
+        });
+      }
     });
 
     s.on("reconnect", () => {
       console.log("♻️ Reconectado ao socket");
-      if (symbols.length) s.emit("subscribe", { symbols, refreshRate });
+      if (symbols.length) {
+        console.log("➡️ subscribe@reconnect", {
+          symbols,
+          refreshRate,
+          buyExchanges,
+          sellExchanges,
+        });
+        s.emit("subscribe", {
+          symbols,
+          refreshRate,
+          buyExchanges,
+          sellExchanges,
+        });
+      }
     });
 
-    // BACK-COMPAT: ainda funciona se o backend emitir arbitrageUpdate
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
-      console.log("📩 [arbitrageUpdate recebido]", opp.ticker, opp);
       indexRef.current.set(keyOf(opp), opp);
       scheduleFlush();
     });
 
-    // NOVO: deltas em lote (muito mais eficiente)
-    s.on(
-      "arbitrageDelta",
-      (payload: {
-        symbol: string;
-        upserts: ArbitrageOpportunity[];
-        deletes: string[];
-      }) => {
-        const { symbol, upserts, deletes } = payload;
-        console.log("📩 [arbitrageDelta recebido]", symbol, {
-          upserts: upserts.length,
-          deletes: deletes.length,
-        });
-
-        for (const opp of upserts) {
-          indexRef.current.set(keyOf(opp), opp);
-        }
-        for (const pair of deletes) {
-          indexRef.current.delete(keyFromPair(symbol, pair));
-        }
-        scheduleFlush();
-      }
-    );
+    s.on("arbitrageDelta", (payload) => {
+      const { symbol, upserts, deletes } = payload;
+      for (const opp of upserts) indexRef.current.set(keyOf(opp), opp);
+      for (const pair of deletes)
+        indexRef.current.delete(keyFromPair(symbol, pair));
+      scheduleFlush();
+    });
 
     return () => {
       if (prevSymbolsRef.current.length) {
@@ -89,13 +107,13 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
       s.disconnect();
       socketRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // monta apenas uma vez
+  }, []); // monta uma vez
 
   useEffect(() => {
     const s = socketRef.current;
     if (!s) return;
 
+    // 1) dif de symbols p/ unsubscribe/subscribe
     const added = symbols.filter(
       (sym) => !prevSymbolsRef.current.includes(sym)
     );
@@ -104,17 +122,47 @@ export function useArbitrageSocket(symbols: string[], refreshRate: number) {
     );
 
     if (removed.length) {
-      console.log("🚪 Unsubscribing de", removed);
+      console.log("⬅️ unsubscribe", { symbols: removed });
       s.emit("unsubscribe", { symbols: removed });
     }
-    if (added.length || refreshRate !== prevRefreshRef.current) {
-      console.log("📡 Subscribing em", symbols, "com refreshRate", refreshRate);
-      if (symbols.length) s.emit("subscribe", { symbols, refreshRate });
+
+    // 2) detecta mudanças de whitelist (compra/venda) e limpa UI
+    const buyChanged = !arraysEqual(normList(buyExchanges), prevBuyRef.current);
+    const sellChanged = !arraysEqual(
+      normList(sellExchanges),
+      prevSellRef.current
+    );
+    const refreshChanged = refreshRate !== prevRefreshRef.current;
+
+    if (buyChanged || sellChanged) {
+      console.log("🧹 whitelist changed → limpar UI e resubscrever", {
+        buyExchanges,
+        sellExchanges,
+      });
+      indexRef.current.clear();
+      setOpportunities([]); // limpa tela imediatamente
+    }
+
+    if (added.length || refreshChanged || buyChanged || sellChanged) {
+      console.log("➡️ subscribe", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
+      s.emit("subscribe", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
     }
 
     prevSymbolsRef.current = symbols;
     prevRefreshRef.current = refreshRate;
-  }, [symbols, refreshRate]);
+    if (buyChanged) prevBuyRef.current = normList(buyExchanges);
+    if (sellChanged) prevSellRef.current = normList(sellExchanges);
+  }, [symbols, refreshRate, buyExchanges, sellExchanges]);
 
   return { opportunities, setOpportunities };
 }

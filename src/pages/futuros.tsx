@@ -343,7 +343,12 @@ const Futuros: NextPage<FuturosProps> = ({
   );
   // const symbols = useMemo(() => [], []);
   const { opportunities: socketOpportunities, setOpportunities } =
-    useArbitrageSocket(symbols, refreshRate);
+    useArbitrageSocket(
+      symbols,
+      refreshRate,
+      buyExchangesName,
+      sellExchangesName
+    );
 
   const handleAddTicker = () => {
     if (!tickerInput.trim()) return;
@@ -467,7 +472,18 @@ const Futuros: NextPage<FuturosProps> = ({
       preserveAspectRatio: "xMidYMid slice",
     },
   };
-
+  useEffect(() => {
+    const handler = () => {
+      const savedBuy = localStorage.getItem("buyExchanges");
+      const savedSell = localStorage.getItem("sellExchanges");
+      if (savedBuy) setBuyExchanges(JSON.parse(savedBuy));
+      if (savedSell) setSellExchanges(JSON.parse(savedSell));
+      // limpa as oportunidades atuais na tela
+      setOpportunities([]);
+    };
+    window.addEventListener("exchangeUpdated", handler);
+    return () => window.removeEventListener("exchangeUpdated", handler);
+  }, [setOpportunities]);
   // Função para redirecionar para página de oportunidade individual
   const handleCalculatorClick = (operation: ArbitrageOpportunity) => {
     console.log("handleCalculatorClick chamada"); // Debug
