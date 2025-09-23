@@ -13,13 +13,32 @@ const numberFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 8,
 });
 
+interface OrderbookOperation {
+  price: number;
+  amount: number;
+  sumVolume: number;
+}
+
+interface SideInfo {
+  exchange: string;
+  price: number;
+  amount: number;
+  isUSD: boolean;
+  orderbook: {
+    asks: OrderbookOperation[];
+    bids: OrderbookOperation[];
+  };
+}
+
 interface ArbitrageOpportunity {
   coin: string;
   ticker: string;
-  lowestAsk: { exchange: string; price: number; isUSD: boolean };
-  highestBid: { exchange: string; price: number; isUSD: boolean };
+  lowestAsk: SideInfo;
+  highestBid: SideInfo;
   spread: number;
   spreadS: number;
+  tax?: number;
+  fee?: number;
 }
 
 export default function OportunidadePage() {
@@ -101,24 +120,36 @@ export default function OportunidadePage() {
 
     const dolarValue = user?.dolarValue ?? dollarPrice ?? 1;
 
-    const spotSide = isSpot(opportunity.lowestAsk.exchange)
-      ? opportunity.lowestAsk
-      : opportunity.highestBid;
+    // preços corretos do book
+    const spotAsk = calcPrice(
+      opportunity.lowestAsk.orderbook.asks[0]?.price ??
+        opportunity.lowestAsk.price,
+      opportunity.lowestAsk.isUSD,
+      dolarValue
+    );
+    const spotBid = calcPrice(
+      opportunity.lowestAsk.orderbook.bids[0]?.price ??
+        opportunity.lowestAsk.price,
+      opportunity.lowestAsk.isUSD,
+      dolarValue
+    );
 
-    const futuresSide = isFutures(opportunity.highestBid.exchange)
-      ? opportunity.highestBid
-      : opportunity.lowestAsk;
-
-    const spotPrice = calcPrice(spotSide.price, spotSide.isUSD, dolarValue);
-    const futuresPrice = calcPrice(
-      futuresSide.price,
-      futuresSide.isUSD,
+    const futBid = calcPrice(
+      opportunity.highestBid.orderbook.bids[0]?.price ??
+        opportunity.highestBid.price,
+      opportunity.highestBid.isUSD,
+      dolarValue
+    );
+    const futAsk = calcPrice(
+      opportunity.highestBid.orderbook.asks[0]?.price ??
+        opportunity.highestBid.price,
+      opportunity.highestBid.isUSD,
       dolarValue
     );
 
     return isOpen
-      ? ((futuresPrice - spotPrice) / spotPrice) * 100
-      : ((spotPrice - futuresPrice) / futuresPrice) * 100;
+      ? (futBid / spotAsk - 1) * 100 // Entrada
+      : (spotBid / futAsk - 1) * 100; // Saída
   }, [opportunity, user?.dolarValue, dollarPrice, isOpen, spread]);
 
   const handleBack = () => router.back();
@@ -152,20 +183,44 @@ export default function OportunidadePage() {
     ? opportunity.highestBid
     : opportunity.lowestAsk;
 
-  const spotPrice = calcPrice(spotSide.price, spotSide.isUSD, dolarValue);
-  const futuresPrice = calcPrice(
-    futuresSide.price,
-    futuresSide.isUSD,
+  // preços corretos
+  const spotAsk = calcPrice(
+    opportunity.lowestAsk.orderbook.asks[0]?.price ??
+      opportunity.lowestAsk.price,
+    opportunity.lowestAsk.isUSD,
+    dolarValue
+  );
+  const spotBid = calcPrice(
+    opportunity.lowestAsk.orderbook.bids[0]?.price ??
+      opportunity.lowestAsk.price,
+    opportunity.lowestAsk.isUSD,
     dolarValue
   );
 
-  // Decide a ordem baseado em isOpen
-  const firstExchange = isOpen ? spotSide.exchange : futuresSide.exchange;
-  const firstPrice = isOpen ? spotPrice : futuresPrice;
+  const futBid = calcPrice(
+    opportunity.highestBid.orderbook.bids[0]?.price ??
+      opportunity.highestBid.price,
+    opportunity.highestBid.isUSD,
+    dolarValue
+  );
+  const futAsk = calcPrice(
+    opportunity.highestBid.orderbook.asks[0]?.price ??
+      opportunity.highestBid.price,
+    opportunity.highestBid.isUSD,
+    dolarValue
+  );
+
+  // Decide preços mostrados na tela de acordo com a direção
+  const firstExchange = isOpen
+    ? opportunity.lowestAsk.exchange
+    : opportunity.highestBid.exchange;
+  const firstPrice = isOpen ? spotAsk : futAsk;
   const firstType = isOpen ? "(S)" : "(F)";
 
-  const secondExchange = isOpen ? futuresSide.exchange : spotSide.exchange;
-  const secondPrice = isOpen ? futuresPrice : spotPrice;
+  const secondExchange = isOpen
+    ? opportunity.highestBid.exchange
+    : opportunity.lowestAsk.exchange;
+  const secondPrice = isOpen ? futBid : spotBid;
   const secondType = isOpen ? "(F)" : "(S)";
 
   return (
