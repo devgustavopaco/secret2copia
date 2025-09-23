@@ -56,6 +56,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [minProfit, setMinProfit] = useState<number>(0.5);
   const [maxProfit, setMaxProfit] = useState<number>(300);
   const [minLiquidity, setMinLiquidity] = useState<number>(0);
+  const [minVolume24h, setMinVolume24h] = useState<number>(0);
 
   const [orphanCoins, setOrphanCoins] = useState<any[]>([]);
   const [isWebSocketPaused, setIsWebSocketPaused] = useState(false);
@@ -409,6 +410,7 @@ const Futuros: NextPage<FuturosProps> = ({
     buyExchangesName,
     sellExchangesName
   );
+
   useEffect(() => {
     if (!isConnected) {
       toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
@@ -469,11 +471,15 @@ const Futuros: NextPage<FuturosProps> = ({
         const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
         const bidLiquidity = op.highestBid.price * op.highestBid.amount;
 
+        const spotVolume = op.spotVolume24h ?? 0;
+        const futVolume = op.futVolume24h ?? 0;
+
         return (
           op.spread < maxProfit &&
           op.spread > minProfit &&
           askLiquidity >= minLiquidity &&
-          bidLiquidity >= minLiquidity
+          bidLiquidity >= minLiquidity &&
+          (spotVolume >= minVolume24h || futVolume >= minVolume24h) // 🔥 filtro único
         );
       })
       .sort((a, b) => b.spread - a.spread);
@@ -483,11 +489,15 @@ const Futuros: NextPage<FuturosProps> = ({
         const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
         const bidLiquidity = op.highestBid.price * op.highestBid.amount;
 
+        const spotVolume = op.spotVolume24h ?? 0;
+        const futVolume = op.futVolume24h ?? 0;
+
         return (
           op.spreadS < maxProfit &&
           op.spreadS > minProfit &&
           askLiquidity >= minLiquidity &&
-          bidLiquidity >= minLiquidity
+          bidLiquidity >= minLiquidity &&
+          (spotVolume >= minVolume24h || futVolume >= minVolume24h)
         );
       })
       .sort((a, b) => b.spreadS - a.spreadS);
@@ -669,7 +679,7 @@ const Futuros: NextPage<FuturosProps> = ({
 
         {isFilterModalOpen && (
           <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
+            <div className={styles.modal} style={{ marginBottom: "10px" }}>
               <h3>Filtro de Lucro</h3>
 
               <div className={styles.modalContent}>
@@ -696,6 +706,14 @@ const Futuros: NextPage<FuturosProps> = ({
                     type="number"
                     value={minLiquidity}
                     onChange={(e) => setMinLiquidity(Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Volume Mínimo (24h USDT):
+                  <input
+                    type="number"
+                    value={minVolume24h}
+                    onChange={(e) => setMinVolume24h(Number(e.target.value))}
                   />
                 </label>
               </div>
@@ -1152,6 +1170,9 @@ const Futuros: NextPage<FuturosProps> = ({
                           symbol: operation.ticker,
                           spread: operation.spread,
                           spreadS: operation.spreadS,
+                          fundingRate: operation.fundingRate,
+                          spotVolume24H: operation.spotVolume24h,
+                          futVolume24H: operation.futVolume24h,
                         }}
                         dollarPrice={dollarPrice}
                         isAdmin={isAdmin}

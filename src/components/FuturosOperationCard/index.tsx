@@ -1,14 +1,11 @@
+// FuturosOperationCard.tsx
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { MdArrowForwardIos } from "react-icons/md";
 import { Calculator, Star, Trash } from "phosphor-react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
-import Image from "next/image";
 import { getCorrectSymbol } from "../../constants/symbolMappings";
 
-//
 type Ticker =
   | "SHIB"
   | "ELON"
@@ -27,18 +24,13 @@ interface OrderbookOperation {
   amount: number;
   sumVolume: number;
 }
-
 interface SideInfo {
   exchange: string;
   price: number;
   image_url?: string;
   isUSD: boolean;
-  orderbook?: {
-    asks: OrderbookOperation[];
-    bids: OrderbookOperation[];
-  };
+  orderbook?: { asks: OrderbookOperation[]; bids: OrderbookOperation[] };
 }
-
 interface FuturosOperationCardProps {
   coin: {
     image?: string;
@@ -51,6 +43,9 @@ interface FuturosOperationCardProps {
     spread: number;
     spreadS: number;
     volume?: number;
+    fundingRate?: number;
+    spotVolume24H?: number;
+    futVolume24H?: number;
   };
   dollarPrice?: number;
   onClick: () => void;
@@ -62,7 +57,6 @@ interface FuturosOperationCardProps {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onDeleteClick: () => void;
-
   onChartClick?: (url: string) => void;
 }
 
@@ -70,11 +64,28 @@ const percentageFormatter = new Intl.NumberFormat("pt-BR", {
   style: "percent",
   minimumFractionDigits: 2,
 });
-
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 4,
 });
+const formatterSpread = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const fundingFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+});
+
+function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 const dynamicDecimalFormatter = (value: number, ticker: string): string => {
   const currencyDecimalMapping: { [key: string]: number } = {
     SHIB: 8,
@@ -91,34 +102,18 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
     BTT: 9,
     REEF: 6,
   };
-
-  // Definir o número mínimo de casas decimais como 7
   let fractionDigits = Math.max(currencyDecimalMapping[ticker] || 7, 7);
-
   if (value !== 0 && value < Math.pow(10, -fractionDigits)) {
     fractionDigits = Math.max(Math.ceil(-Math.log10(value)), fractionDigits);
   }
-
-  const formatter = new Intl.NumberFormat("pt-BR", {
+  return new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
-  });
-
-  return formatter.format(value);
+  }).format(value);
 };
 
-const formatterSpread = new Intl.NumberFormat("pt-BR", {
-  style: "percent",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-const calculatePrice = (price: number, isUSD: boolean, dolarValue: number) => {
-  // Inverte a lógica: se isUSD é true, o preço já está em dólar.
-  // Se isUSD for false, então o preço está em BRL e dividimos por dolarValue.
-  const calculatedPrice = isUSD ? price : price / dolarValue;
-  return calculatedPrice;
-};
+const calculatePrice = (price: number, isUSD: boolean, dolarValue: number) =>
+  isUSD ? price : price / dolarValue;
 
 export function FuturosOperationCard({
   coin,
@@ -126,7 +121,6 @@ export function FuturosOperationCard({
   onClick,
   onCalculatorClick,
   isChecked,
-  isAdmin,
   isOpen,
   isFavorite,
   onToggleFavorite,
@@ -138,26 +132,25 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
-  const [dimension, setDimension] = useState({ width: 40, height: 40 });
 
+  // img responsiva (mantido)
+  const [dimension, setDimension] = useState({ width: 40, height: 40 });
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 600) {
-        setDimension({ width: 20, height: 20 });
-      } else {
-        setDimension({ width: 40, height: 40 });
-      }
+      setDimension(
+        window.innerWidth < 600
+          ? { width: 20, height: 20 }
+          : { width: 40, height: 40 }
+      );
     };
-
     window.addEventListener("resize", handleResize);
     handleResize();
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
-  // calcula preços corretos conforme isOpen
+  // preços de topo
   const spotAsk = calculatePrice(
     coin.ask.orderbook?.asks[0]?.price ?? coin.ask.price,
     coin.ask.isUSD,
@@ -168,7 +161,6 @@ export function FuturosOperationCard({
     coin.ask.isUSD,
     dolarValue
   );
-
   const futBid = calculatePrice(
     coin.bid.orderbook?.bids[0]?.price ?? coin.bid.price,
     coin.bid.isUSD,
@@ -180,44 +172,28 @@ export function FuturosOperationCard({
     dolarValue
   );
 
-  // define o que mostrar baseado em isOpen
   const spotDisplayPrice = isOpen ? spotAsk : spotBid;
   const futuresDisplayPrice = isOpen ? futBid : futAsk;
 
-  // volumes também precisam respeitar isOpen
-  const spotVolume = isOpen
-    ? coin.ask.orderbook?.asks[0]?.sumVolume || 0
-    : coin.ask.orderbook?.bids[0]?.sumVolume || 0;
-
-  const futuresVolume = isOpen
-    ? coin.bid.orderbook?.bids[0]?.sumVolume || 0
-    : coin.bid.orderbook?.asks[0]?.sumVolume || 0;
+  const spotVolume =
+    (isOpen
+      ? coin.ask.orderbook?.asks[0]?.sumVolume
+      : coin.ask.orderbook?.bids[0]?.sumVolume) ?? 0;
+  const futuresVolume =
+    (isOpen
+      ? coin.bid.orderbook?.bids[0]?.sumVolume
+      : coin.bid.orderbook?.asks[0]?.sumVolume) ?? 0;
 
   const spotLiquidity = spotDisplayPrice * spotVolume;
   const futuresLiquidity = futuresDisplayPrice * futuresVolume;
 
-  // spread segue a mesma lógica da calculadora
   const spread = isOpen
     ? (futBid / spotAsk - 1) * 100
     : (spotBid / futAsk - 1) * 100;
 
-  // Get correct symbols for each exchange
+  // validação de símbolos (mantido)
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
-
-  // Create price keys using correct symbols
-  const buyPriceKey = `${coin.bid.exchange.toLowerCase()}_${coin.symbol}`;
-  const sellPriceKey = `${coin.ask.exchange.toLowerCase()}_${coin.symbol}`;
-
-  // Format pairs for spot and futures
-  const spotPair = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
-  const futuresPair = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
-
-  const animationData = isChecked
-    ? require("/public/animations/checkPurple.json")
-    : require("/public/animations/checkGreen.json");
-
-  // Se algum dos símbolos for null, não renderizar o card
   if (!buySymbol || !sellSymbol) {
     console.warn(
       `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
@@ -225,17 +201,17 @@ export function FuturosOperationCard({
     return null;
   }
 
+  // ---------- Links ----------
   function formatPairForExchange(
     exchange: string,
-    coin: string,
-    isFutures: boolean = false
+    c: string,
+    isFutures = false
   ): string {
     const normalizedExchange = exchange.toLowerCase();
-
     const formatters = {
       bitget: {
-        spot: (c: string) => {
-          const specialCases: Record<string, string> = {
+        spot: (x: string) =>
+          ({
             URO: "UROUSDT",
             CLR: "CELRUSDT",
             ELIZA: "ELIZAUSDT",
@@ -243,11 +219,9 @@ export function FuturosOperationCard({
             FIRE: "FIREUSDT",
             ZK: "ZKUSDT",
             VELO: "VELOUSDT",
-          };
-          return specialCases[c] || `${c}USDT`;
-        },
-        futures: (c: string) => {
-          const specialCases: Record<string, string> = {
+          }[x] || `${x}USDT`),
+        futures: (x: string) =>
+          ({
             URO: "UROUSDT",
             CLR: "CELRUSDT",
             ELIZA: "ELIZAUSDT",
@@ -255,13 +229,11 @@ export function FuturosOperationCard({
             FIRE: "FIREUSDT",
             ZK: "ZKUSDT",
             VELO: "VELOUSDT",
-          };
-          return specialCases[c] || `${c}USDT`;
-        },
+          }[x] || `${x}USDT`),
       },
       gate: {
-        spot: (c: string) => {
-          const specialCases: Record<string, string> = {
+        spot: (x: string) =>
+          ({
             URO: "URO_USDT",
             CATTON: "CATTON_USDT",
             ELIZA: "ELIZA_USDT",
@@ -272,11 +244,9 @@ export function FuturosOperationCard({
             ZK: "ZK_USDT",
             GST: "GST_USDT",
             VELO: "VELO_USDT",
-          };
-          return specialCases[c] || `${c}_USDT`;
-        },
-        futures: (c: string) => {
-          const specialCases: Record<string, string> = {
+          }[x] || `${x}_USDT`),
+        futures: (x: string) =>
+          ({
             URO: "URO_USDT",
             CATTON: "CATTON_USDT",
             ELIZA: "ELIZA_USDT",
@@ -287,13 +257,11 @@ export function FuturosOperationCard({
             ZK: "ZK_USDT",
             GST: "GST_USDT",
             VELO: "VELO_USDT",
-          };
-          return specialCases[c] || `${c}_USDT`;
-        },
+          }[x] || `${x}_USDT`),
       },
       mexc: {
-        spot: (c: string) => {
-          const specialCases: Record<string, string> = {
+        spot: (x: string) =>
+          ({
             URO: "URO_USDT",
             CATTON: "CATTON_USDT",
             ELIZA: "ELIZA_USDT",
@@ -304,11 +272,9 @@ export function FuturosOperationCard({
             ZK: "ZKSYNC_USDT",
             GST: "GST_USDT",
             VELO: "VELO_USDT",
-          };
-          return specialCases[c] || `${c}_USDT`;
-        },
-        futures: (c: string) => {
-          const specialCases: Record<string, string> = {
+          }[x] || `${x}_USDT`),
+        futures: (x: string) =>
+          ({
             URO: "URO_USDT",
             CATTON: "CATTON_USDT",
             ELIZA: "AI16ZELIZA_USDT",
@@ -319,124 +285,29 @@ export function FuturosOperationCard({
             ZK: "ZKSYNC_USDT",
             GST: "GST_USDT",
             VELO: "VELO_USDT",
-          };
-          return specialCases[c] || `${c}_USDT`;
-        },
+          }[x] || `${x}_USDT`),
       },
       kucoin: {
-        spot: (c: string) => {
-          const specialCases: Record<string, string> = {
+        spot: (x: string) =>
+          ({
             CULT: "MILADYCULT-USDT",
             HOLD: "HOLDCOIN-USDT",
             FIRE: "FIRE-USDT",
             VELO: "VELO-USDT",
-          };
-          return specialCases[c] || `${c}-USDT`;
-        },
-        futures: (c: string) => {
-          const specialCases: Record<string, string> = {
+          }[x] || `${x}-USDT`),
+        futures: (x: string) =>
+          ({
             CULT: "MILADYCULT-USDT",
             HOLD: "HOLDCOIN-USDT",
             FIRE: "FIRE-USDT",
             VELO: "VELO-USDT",
-          };
-          return specialCases[c] || `${c}-USDT`;
-        },
+          }[x] || `${x}-USDT`),
       },
-    };
-
-    const formatter = formatters[normalizedExchange as keyof typeof formatters];
-    if (!formatter) return isFutures ? `${coin}USDT` : `${coin}_USDT`;
-
-    return isFutures
-      ? formatter.futures(coin.toUpperCase())
-      : formatter.spot(coin.toUpperCase());
-  }
-  function handleBothExchangesRedirect() {
-    // 🔹 Spot
-    const normalizedSpotExchange = coin.ask.exchange
-      .toLowerCase()
-      .replace(/ spot| futures/g, "");
-    const spotPair = formatPairForExchange(
-      normalizedSpotExchange,
-      coin.symbol,
-      false
-    );
-    const spotUrl = spotLinks[
-      normalizedSpotExchange as keyof typeof spotLinks
-    ]?.(coin.symbol, spotPair);
-
-    // 🔹 Futures
-    const normalizedFuturesExchange = coin.bid.exchange
-      .toLowerCase()
-      .replace(/ spot| futures/g, "");
-    const futuresPair = formatPairForExchange(
-      normalizedFuturesExchange,
-      coin.symbol,
-      true
-    );
-    const futuresUrl = futuresLinks[
-      normalizedFuturesExchange as keyof typeof futuresLinks
-    ]?.(coin.symbol, futuresPair);
-
-    // 🔹 Abre cada um em janelas flutuantes
-    if (spotUrl) {
-      window.open(
-        spotUrl,
-        "SpotWindow",
-        "width=1200,height=800,scrollbars=yes,resizable=yes"
-      );
-    }
-    if (futuresUrl) {
-      window.open(
-        futuresUrl,
-        "FuturesWindow",
-        "width=1200,height=800,scrollbars=yes,resizable=yes"
-      );
-    }
-  }
-
-  function handleRedirect(
-    exchange: string,
-    coin: string,
-    pair: string,
-    isFutures = false
-  ) {
-    // 🔥 Normaliza: deixa tudo minúsculo e remove " spot" ou " futures"
-    let normalizedExchange = exchange
-      .toLowerCase()
-      .replace(/ spot| futures/g, "");
-
-    // Gate tem que forçar como "gate"
-    if (normalizedExchange.includes("gate")) {
-      normalizedExchange = "gate";
-    }
-
-    const links = isFutures ? futuresLinks : spotLinks;
-    const formattedPair = formatPairForExchange(
-      normalizedExchange,
-      coin,
-      isFutures
-    );
-
-    const urlBuilder = links[normalizedExchange as keyof typeof links];
-    if (!urlBuilder) {
-      console.error(
-        "Exchange não suportada:",
-        exchange,
-        "→",
-        normalizedExchange
-      );
-      return;
-    }
-
-    const url = urlBuilder(coin, formattedPair);
-
-    const newTab = window.open(url, "_blank");
-
-    if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
-      window.location.href = url;
-    }
+    } as const;
+    const f = (formatters as any)[normalizedExchange];
+    if (!f) return isFutures ? `${c}USDT` : `${c}_USDT`;
+    const up = c.toUpperCase();
+    return isFutures ? f.futures(up) : f.spot(up);
   }
 
   const spotLinks = {
@@ -445,7 +316,7 @@ export function FuturosOperationCard({
     binance: (coin: string, pair: string) =>
       `https://www.binance.com/en/trade/${coin}_${pair}`,
     gate: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
+      const special = {
         ELIZA: "ELIZA",
         ART: "ARTELA",
         CULT: "MILADYCULT",
@@ -455,102 +326,83 @@ export function FuturosOperationCard({
         GST: "GST",
         VELO: "VELO",
         CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.gate.io/trade/${specialCoin}_${pair}`;
+      } as Record<string, string>;
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.gate.io/trade/${sc}_${pair}`;
     },
-    bitget: (coin: string, pair: string) =>
-      `https://www.bitget.com/spot/${pair}`,
-    mexc: (coin: string, pair: string) =>
-      `https://www.mexc.com/exchange/${pair}`,
-    kucoin: (coin: string, pair: string) =>
-      `https://www.kucoin.com/trade/${pair}`,
-    bingx: (coin: string, pair: string) => {
-      const normalizedPair = pair.replace("_", "");
-      return `https://bingx.com/spot/${normalizedPair}`;
-    },
+    bitget: (_: string, pair: string) => `https://www.bitget.com/spot/${pair}`,
+    mexc: (_: string, pair: string) => `https://www.mexc.com/exchange/${pair}`,
+    kucoin: (_: string, pair: string) => `https://www.kucoin.com/trade/${pair}`,
+    bingx: (_: string, pair: string) =>
+      `https://bingx.com/spot/${pair.replace("_", "")}`,
   };
-
   const futuresLinks = {
     bybit: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        FIRE: "FIRE",
-        VELO: "VELO",
-        ZK: "ZK",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.bybit.com/trade/${specialCoin}${pair}`;
+      const special = { FIRE: "FIRE", VELO: "VELO", ZK: "ZK" } as Record<
+        string,
+        string
+      >;
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.bybit.com/trade/${sc}${pair}`;
     },
     binance: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        TKO: "TKO",
-        ZK: "ZK",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.binance.com/en/futures/${specialCoin}${pair}_PERP`;
+      const special = { TKO: "TKO", ZK: "ZK" } as Record<string, string>;
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.binance.com/en/futures/${sc}${pair}_PERP`;
     },
-    gate: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "ELIZA",
-        ART: "ARTELA",
-        CULT: "MILADYCULT",
-        HOLD: "HOLD",
-        TKO: "TKO",
-        ZK: "ZK",
-        GST: "GST",
-        VELO: "VELO",
-        CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.gate.io/futures/USDT/${pair}`;
-    },
-    bitget: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "ELIZA",
-        HOLD: "HOLDCOIN",
-        FIRE: "FIRE",
-        ZK: "ZK",
-        VELO: "VELO",
-        URO: "URO",
-        CLR: "CELR",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.bitget.com/futures/usdt/${pair}`;
-    },
-    kucoin: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        CULT: "MILADYCULT",
-        HOLD: "HOLDCOIN",
-        FIRE: "FIRE",
-        VELO: "VELO",
-      };
-      const normalizedPair = pair.replace("-", "");
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.kucoin.com/trade/${normalizedPair}M`;
-    },
-    mexc: (coin: string, pair: string) => {
-      const specialCases: Record<string, string> = {
-        ELIZA: "AI16ZELIZA",
-        ART: "ART",
-        CULT: "CULT",
-        HOLD: "HOLD",
-        TKO: "TKO",
-        ZK: "ZKSYNC",
-        GST: "GST",
-        VELO: "VELO",
-        URO: "URO",
-        CATTON: "CATTON",
-      };
-      const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.mexc.com/exchange/${pair}`;
-    },
+    gate: (_: string, pair: string) =>
+      `https://www.gate.io/futures/USDT/${pair}`,
+    bitget: (_: string, pair: string) =>
+      `https://www.bitget.com/futures/usdt/${pair}`,
+    kucoin: (_: string, pair: string) =>
+      `https://futures.kucoin.com/trade/${pair.replace("-", "")}M`,
+    mexc: (_: string, pair: string) =>
+      `https://futures.mexc.com/exchange/${pair}`,
     bingx: (coin: string, pair: string) =>
       `https://bingx.com/en-us/futures/${coin.toUpperCase()}_${pair}`,
   };
 
+  function handleRedirect(
+    exchange: string,
+    c: string,
+    _pair: string,
+    isFutures = false
+  ) {
+    let normalized = exchange.toLowerCase().replace(/ spot| futures/g, "");
+    if (normalized.includes("gate")) normalized = "gate";
+    const links = isFutures ? futuresLinks : spotLinks;
+    const formattedPair = formatPairForExchange(normalized, c, isFutures);
+    const builder = (links as any)[normalized];
+    if (!builder) return;
+    const url = builder(c, formattedPair);
+    const newTab = window.open(url, "_blank");
+    if (!newTab || newTab.closed || typeof newTab.closed === "undefined")
+      window.location.href = url;
+  }
+
+  function handleBothExchangesRedirect() {
+    const sEx = coin.ask.exchange.toLowerCase().replace(/ spot| futures/g, "");
+    const fEx = coin.bid.exchange.toLowerCase().replace(/ spot| futures/g, "");
+    const sPair = formatPairForExchange(sEx, coin.symbol, false);
+    const fPair = formatPairForExchange(fEx, coin.symbol, true);
+    const sUrl = (spotLinks as any)[sEx]?.(coin.symbol, sPair);
+    const fUrl = (futuresLinks as any)[fEx]?.(coin.symbol, fPair);
+    if (sUrl)
+      window.open(
+        sUrl,
+        "SpotWindow",
+        "width=1200,height=800,scrollbars=yes,resizable=yes"
+      );
+    if (fUrl)
+      window.open(
+        fUrl,
+        "FuturesWindow",
+        "width=1200,height=800,scrollbars=yes,resizable=yes"
+      );
+  }
+
   function generateTradingViewURL() {
-    // Mapear exchanges para códigos do TradingView
-    const exchangeMapping: Record<string, string> = {
+    const map: Record<string, string> = {
       MEXC: "MEXC",
       BITGET: "BITGET",
       BYBIT: "BYBIT",
@@ -559,25 +411,16 @@ export function FuturosOperationCard({
       GATEIO: "GATEIO",
       KUCOIN: "KUCOIN",
     };
-
-    const baseSymbol = coin.symbol.toUpperCase();
-
-    // 🔥 Normalizar os nomes removendo " Spot" ou " Futures"
+    const base = coin.symbol.toUpperCase();
     const cleanSpot = coin.ask.exchange.replace(/ spot| futures/i, "").trim();
-    const cleanFutures = coin.bid.exchange
-      .replace(/ spot| futures/i, "")
-      .trim();
-
-    // Pegar os códigos mapeados
-    const spotExchangeCode =
-      exchangeMapping[cleanSpot.toUpperCase()] || cleanSpot.toUpperCase();
-    const futuresExchangeCode =
-      exchangeMapping[cleanFutures.toUpperCase()] || cleanFutures.toUpperCase();
-
-    const spotSymbol = `${spotExchangeCode}:${baseSymbol}USDT`;
-    const futuresSymbol = `${futuresExchangeCode}:${baseSymbol}USDT.P`;
-
-    const config = {
+    const cleanFut = coin.bid.exchange.replace(/ spot| futures/i, "").trim();
+    const spotSymbol = `${
+      map[cleanSpot.toUpperCase()] || cleanSpot.toUpperCase()
+    }:${base}USDT`;
+    const futSymbol = `${
+      map[cleanFut.toUpperCase()] || cleanFut.toUpperCase()
+    }:${base}USDT.P`;
+    const cfg = {
       height: 700,
       symbol: spotSymbol,
       interval: "5",
@@ -586,38 +429,45 @@ export function FuturosOperationCard({
       style: "2",
       hide_volume: true,
       allow_symbol_change: true,
-      compareSymbols: [
-        {
-          symbol: futuresSymbol,
-          position: "SameScale",
-        },
-      ],
+      compareSymbols: [{ symbol: futSymbol, position: "SameScale" }],
       support_host: "https://www.tradingview.com",
       width: "100%",
     };
-
-    const encodedConfig = encodeURIComponent(JSON.stringify(config));
-    return `https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=br#${encodedConfig}`;
+    return `https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=br#${encodeURIComponent(
+      JSON.stringify(cfg)
+    )}`;
   }
-
   function handleChartRedirect() {
     const url = generateTradingViewURL();
-    if (onChartClick) {
-      onChartClick(url); // 👉 dispara no pai
-    }
+    onChartClick?.(url);
   }
+
+  const isLong = spread > 0;
 
   return (
     <section
-      className={`${styles.card} ${isChecked ? styles.cardChecked : ""} ${
-        spread > 0 ? styles.longPosition : styles.shortPosition
-      }`}
+      className={`${styles.card} ${isLong ? styles.long : styles.short}`}
       onClick={onClick}
     >
-      <div className={`${styles.cardColumn} ${styles.symbolColumn}`}>
-        <div className={styles.actionButtons}>
+      {/* HEADER */}
+      <header className={styles.header}>
+        <div className={styles.asset}>
+          <img
+            src={
+              coin.image ??
+              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+            }
+            alt={coin.name}
+          />
+          <div>
+            <strong>{coin.symbol}</strong>
+            <span className={styles.assetName}>{coin.name}</span>
+          </div>
+        </div>
+
+        <div className={styles.actionsTop}>
           <button
-            className={styles.favoriteButton}
+            className={styles.iconBtn}
             onClick={(e) => {
               e.stopPropagation();
               onToggleFavorite();
@@ -626,173 +476,172 @@ export function FuturosOperationCard({
               isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
             }
           >
-            <Star
-              size={20}
-              weight={isFavorite ? "fill" : "regular"}
-              color={isFavorite ? "#facc15" : "#aaa"}
-            />
+            <Star size={18} weight={isFavorite ? "fill" : "regular"} />
           </button>
+
           <button
-            className={styles.deleteButton}
+            className={`${styles.iconBtn} ${styles.danger}`}
             onClick={(e) => {
               e.stopPropagation();
               onDeleteClick();
             }}
             title="Excluir esta oportunidade"
           >
-            <Trash size={20} color="#ef4444" />
+            <Trash size={18} />
           </button>
         </div>
+      </header>
 
-        <img
-          src={
-            coin.image ??
-            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-          }
-          alt={coin.name}
-        />
-        <p>{coin.symbol}</p>
-      </div>
+      {/* BODY GRID */}
+      <div className={styles.grid}>
+        {/* SPOT */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Spot</span>
 
-      <div className={styles.cardColumn}>
-        <h3>Spot</h3>
-        <p
-          onClick={() => handleRedirect(coin.ask.exchange, coin.symbol, "USDT")}
-          style={{
-            cursor: "pointer",
-            textDecoration: "underline",
-            color: "inherit",
-          }}
-        >
-          {coin.ask.exchange}
-        </p>
-        <p>
-          $ {dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}
-        </p>
-        <small className={styles.liquidityTag}>
-          ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
-        </small>
-      </div>
+          <button
+            className={styles.exchangeLink}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRedirect(coin.ask.exchange, coin.symbol, "USDT", false);
+            }}
+          >
+            {coin.ask.exchange}
+          </button>
 
-      <div className={styles.cardColumn}>
-        <h3>Futuros</h3>
-        <p
-          onClick={() =>
-            handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true)
-          }
-          style={{
-            cursor: "pointer",
-            textDecoration: "underline",
-            color: "inherit",
-          }}
-        >
-          {coin.bid.exchange}
-        </p>
-        <p>
-          ${" "}
-          {dynamicDecimalFormatter(futuresDisplayPrice, coin.symbol as Ticker)}
-        </p>
-        <small className={styles.liquidityTag}>
-          ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
-        </small>
-      </div>
+          <div className={styles.price}>
+            $ {dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}
+          </div>
+          <div className={styles.subKpi}>
+            Liq.: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
+          </div>
+        </div>
 
-      <div className={`${styles.cardColumn} ${styles.spreadColumn}`}>
-        <h3>Spreads</h3>
-        <div className={styles.spreadsRow}>
+        {/* FUTURES */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Futuros</span>
+
+          <button
+            className={styles.exchangeLink}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true);
+            }}
+          >
+            {coin.bid.exchange}
+          </button>
+
+          <div className={styles.price}>
+            ${" "}
+            {dynamicDecimalFormatter(
+              futuresDisplayPrice,
+              coin.symbol as Ticker
+            )}
+          </div>
+          <div className={styles.subKpi}>
+            Liq.: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
+          </div>
+        </div>
+
+        {/* SPREADS */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Spreads</span>
           <div
-            className={`${styles.spreadItem} ${
-              coin.spread > 0 ? styles.positive : styles.negative
+            className={`${styles.tag} ${
+              isLong ? styles.tagGreen : styles.tagRed
             }`}
           >
-            <span className={styles.spreadLabel}>Lucro E </span>
-            <span className={styles.spreadValue}>
-              {formatterSpread.format(coin.spread / 100)}
-            </span>
+            Lucro E {formatterSpread.format(coin.spread / 100)}
           </div>
           <div
-            className={`${styles.spreadItem} ${
-              coin.spreadS > 0 ? styles.positive : styles.negative
+            className={`${styles.tag} ${
+              coin.spreadS > 0 ? styles.tagGreen : styles.tagRed
             }`}
           >
-            <span className={styles.spreadLabel}>Lucro S </span>
-            <span className={styles.spreadValue}>
-              {formatterSpread.format(coin.spreadS / 100)}
-            </span>
+            Lucro S {formatterSpread.format(coin.spreadS / 100)}
+          </div>
+        </div>
+
+        {/* FUNDING */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Taxa de financiamento</span>
+          <div
+            className={`${styles.fundingPill} ${
+              coin.fundingRate && coin.fundingRate > 0
+                ? styles.pillGreen
+                : styles.pillRed
+            }`}
+            title="Taxa de financiamento (8h)"
+          >
+            {coin.fundingRate !== undefined
+              ? fundingFormatter.format(coin.fundingRate)
+              : "—"}
+          </div>
+          <span className={styles.fundingNote}>por 8h</span>
+        </div>
+
+        {/* VOLUMES */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Volumes</span>
+          <div className={styles.volumeRow}>
+            <div className={`${styles.volumeBox} ${styles.spotBorder}`}>
+              <span className={styles.volumeLabel}>Spot (book)</span>
+              <strong className={styles.volumeValue}>
+                {numberFormatter.format(spotVolume)}
+              </strong>
+              {coin.spotVolume24H !== undefined && (
+                <div className={styles.volume24hBadge}>
+                  24h: {formatCompactNumber(coin.spotVolume24H)}
+                </div>
+              )}
+            </div>
+            <div className={`${styles.volumeBox} ${styles.futBorder}`}>
+              <span className={styles.volumeLabel}>Futuros (book)</span>
+              <strong className={styles.volumeValue}>
+                {numberFormatter.format(futuresVolume)}
+              </strong>
+              {coin.futVolume24H !== undefined && (
+                <div className={styles.volume24hBadge}>
+                  24h: {formatCompactNumber(coin.futVolume24H)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className={`${styles.cardColumn} ${styles.volumeSection}`}>
-        <h3>Volumes</h3>
-        <div className={styles.volumesRow}>
-          <div className={`${styles.volumeItem} ${styles.spotVolume}`}>
-            <span className={styles.volumeLabel}>Spot</span>
-            <span className={styles.volumeValue}>
-              {numberFormatter.format(spotVolume)}
-            </span>
-          </div>
-          <div className={`${styles.volumeItem} ${styles.futuresVolume}`}>
-            <span className={styles.volumeLabel}>Futuros</span>
-            <span className={styles.volumeValue}>
-              {numberFormatter.format(futuresVolume)}
-            </span>
-          </div>
-        </div>
-        <div className={styles.buttonContainer}>
-          <button
-            className={styles.calculatorButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              onCalculatorClick?.();
-            }}
-            title="Calculadora da Oportunidade"
-          >
-            <Calculator size={16} />
-          </button>
-          <button
-            className={styles.chartButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleChartRedirect();
-            }}
-            title="Ver Gráfico no TradingView"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 3V21H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 9L12 6L16 10L20 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            className={styles.chartButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleBothExchangesRedirect();
-            }}
-            title="Abrir Spot e Futuros nas Corretoras"
-          >
-            🌐
-          </button>
-        </div>
-      </div>
+      {/* FOOTER ACTIONS */}
+      <footer className={styles.footer}>
+        <button
+          className={`${styles.cta} ${styles.calc}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCalculatorClick?.();
+          }}
+          title="Calculadora da Oportunidade"
+        >
+          <Calculator size={16} /> Calculadora
+        </button>
+        <button
+          className={`${styles.cta} ${styles.chart}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleChartRedirect();
+          }}
+          title="Ver Gráfico no TradingView"
+        >
+          📈 Gráfico
+        </button>
+        <button
+          className={`${styles.cta} ${styles.linkBoth}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleBothExchangesRedirect();
+          }}
+          title="Abrir Spot e Futuros nas Corretoras"
+        >
+          🌐 Abrir Corretoras
+        </button>
+      </footer>
     </section>
   );
 }

@@ -185,6 +185,9 @@ export interface ArbitrageOpportunity {
   spreadS: number;
   isFutures?: boolean;
   isOpen?: boolean;
+  fundingRate?: number;
+  spotVolume24h?: number;
+  futVolume24h?: number;
 }
 
 interface FilteredOrderbook {

@@ -19,14 +19,16 @@ const ALLOWED_BUY_EXCHANGES = [
   "Mexc",
   "Bingx",
   "Kucoin",
+  "Bybit",
   "Huobi",
 ];
 const ALLOWED_SELL_EXCHANGES = [
   "Gateio",
   "Bitget",
   "Mexc",
-  // "Bingx",
+  "Bingx",
   "Kucoin",
+  "Bybit",
   "Huobi",
 ];
 
