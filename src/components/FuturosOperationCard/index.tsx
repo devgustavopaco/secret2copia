@@ -138,7 +138,6 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
-  console.log(coin.ask, "ASK");
   const [dimension, setDimension] = useState({ width: 40, height: 40 });
 
   useEffect(() => {
@@ -353,6 +352,49 @@ export function FuturosOperationCard({
       ? formatter.futures(coin.toUpperCase())
       : formatter.spot(coin.toUpperCase());
   }
+  function handleBothExchangesRedirect() {
+    // 🔹 Spot
+    const normalizedSpotExchange = coin.ask.exchange
+      .toLowerCase()
+      .replace(/ spot| futures/g, "");
+    const spotPair = formatPairForExchange(
+      normalizedSpotExchange,
+      coin.symbol,
+      false
+    );
+    const spotUrl = spotLinks[
+      normalizedSpotExchange as keyof typeof spotLinks
+    ]?.(coin.symbol, spotPair);
+
+    // 🔹 Futures
+    const normalizedFuturesExchange = coin.bid.exchange
+      .toLowerCase()
+      .replace(/ spot| futures/g, "");
+    const futuresPair = formatPairForExchange(
+      normalizedFuturesExchange,
+      coin.symbol,
+      true
+    );
+    const futuresUrl = futuresLinks[
+      normalizedFuturesExchange as keyof typeof futuresLinks
+    ]?.(coin.symbol, futuresPair);
+
+    // 🔹 Abre cada um em janelas flutuantes
+    if (spotUrl) {
+      window.open(
+        spotUrl,
+        "SpotWindow",
+        "width=1200,height=800,scrollbars=yes,resizable=yes"
+      );
+    }
+    if (futuresUrl) {
+      window.open(
+        futuresUrl,
+        "FuturesWindow",
+        "width=1200,height=800,scrollbars=yes,resizable=yes"
+      );
+    }
+  }
 
   function handleRedirect(
     exchange: string,
@@ -360,8 +402,12 @@ export function FuturosOperationCard({
     pair: string,
     isFutures = false
   ) {
-    let normalizedExchange = exchange.toLowerCase();
+    // 🔥 Normaliza: deixa tudo minúsculo e remove " spot" ou " futures"
+    let normalizedExchange = exchange
+      .toLowerCase()
+      .replace(/ spot| futures/g, "");
 
+    // Gate tem que forçar como "gate"
     if (normalizedExchange.includes("gate")) {
       normalizedExchange = "gate";
     }
@@ -375,11 +421,16 @@ export function FuturosOperationCard({
 
     const urlBuilder = links[normalizedExchange as keyof typeof links];
     if (!urlBuilder) {
-      console.error("Exchange não suportada:", exchange);
+      console.error(
+        "Exchange não suportada:",
+        exchange,
+        "→",
+        normalizedExchange
+      );
       return;
     }
 
-    const url = urlBuilder(coin, pair);
+    const url = urlBuilder(coin, formattedPair);
 
     const newTab = window.open(url, "_blank");
 
@@ -409,9 +460,15 @@ export function FuturosOperationCard({
       return `https://www.gate.io/trade/${specialCoin}_${pair}`;
     },
     bitget: (coin: string, pair: string) =>
-      `https://www.bitget.com/spot/${coin}${pair}`,
+      `https://www.bitget.com/spot/${pair}`,
     mexc: (coin: string, pair: string) =>
-      `https://www.mexc.com/exchange/${coin}_${pair}`,
+      `https://www.mexc.com/exchange/${pair}`,
+    kucoin: (coin: string, pair: string) =>
+      `https://www.kucoin.com/trade/${pair}`,
+    bingx: (coin: string, pair: string) => {
+      const normalizedPair = pair.replace("_", "");
+      return `https://bingx.com/spot/${normalizedPair}`;
+    },
   };
 
   const futuresLinks = {
@@ -445,7 +502,7 @@ export function FuturosOperationCard({
         CATTON: "CATTON",
       };
       const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.gate.io/futures/USDT/${specialCoin}_${pair}`;
+      return `https://www.gate.io/futures/USDT/${pair}`;
     },
     bitget: (coin: string, pair: string) => {
       const specialCases: Record<string, string> = {
@@ -458,7 +515,7 @@ export function FuturosOperationCard({
         CLR: "CELR",
       };
       const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://www.bitget.com/futures/${specialCoin}${pair}`;
+      return `https://www.bitget.com/futures/usdt/${pair}`;
     },
     kucoin: (coin: string, pair: string) => {
       const specialCases: Record<string, string> = {
@@ -467,8 +524,9 @@ export function FuturosOperationCard({
         FIRE: "FIRE",
         VELO: "VELO",
       };
+      const normalizedPair = pair.replace("-", "");
       const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.kucoin.com/trade/${specialCoin}-${pair}`;
+      return `https://futures.kucoin.com/trade/${normalizedPair}M`;
     },
     mexc: (coin: string, pair: string) => {
       const specialCases: Record<string, string> = {
@@ -484,8 +542,10 @@ export function FuturosOperationCard({
         CATTON: "CATTON",
       };
       const specialCoin = specialCases[coin.toUpperCase()] || coin;
-      return `https://futures.mexc.com/exchange/${specialCoin}_${pair}`;
+      return `https://futures.mexc.com/exchange/${pair}`;
     },
+    bingx: (coin: string, pair: string) =>
+      `https://bingx.com/en-us/futures/${coin.toUpperCase()}_${pair}`,
   };
 
   function generateTradingViewURL() {
@@ -720,6 +780,16 @@ export function FuturosOperationCard({
                 strokeLinejoin="round"
               />
             </svg>
+          </button>
+          <button
+            className={styles.chartButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleBothExchangesRedirect();
+            }}
+            title="Abrir Spot e Futuros nas Corretoras"
+          >
+            🌐
           </button>
         </div>
       </div>
