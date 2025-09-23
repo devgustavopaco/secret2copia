@@ -62,6 +62,8 @@ interface FuturosOperationCardProps {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onDeleteClick: () => void;
+
+  onChartClick?: (url: string) => void;
 }
 
 const percentageFormatter = new Intl.NumberFormat("pt-BR", {
@@ -129,6 +131,7 @@ export function FuturosOperationCard({
   isFavorite,
   onToggleFavorite,
   onDeleteClick,
+  onChartClick,
 }: FuturosOperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -485,33 +488,35 @@ export function FuturosOperationCard({
     },
   };
 
-  // Função para gerar URLs do TradingView
   function generateTradingViewURL() {
-    // Mapear exchanges para códigos do TradingView (simplificado)
+    // Mapear exchanges para códigos do TradingView
     const exchangeMapping: Record<string, string> = {
-      Mexc: "MEXC",
-      Bitget: "BITGET",
-      Bybit: "BYBIT",
-      Binance: "BINANCE",
-      Gateio: "GATEIO",
-      Gate: "GATEIO",
-      Kucoin: "KUCOIN",
+      MEXC: "MEXC",
+      BITGET: "BITGET",
+      BYBIT: "BYBIT",
+      BINANCE: "BINANCE",
+      GATE: "GATEIO",
+      GATEIO: "GATEIO",
+      KUCOIN: "KUCOIN",
     };
 
-    // Usar o símbolo básico sem modificações especiais
     const baseSymbol = coin.symbol.toUpperCase();
 
-    // Obter códigos das exchanges
-    const spotExchangeCode =
-      exchangeMapping[coin.ask.exchange] || coin.ask.exchange.toUpperCase();
-    const futuresExchangeCode =
-      exchangeMapping[coin.bid.exchange] || coin.bid.exchange.toUpperCase();
+    // 🔥 Normalizar os nomes removendo " Spot" ou " Futures"
+    const cleanSpot = coin.ask.exchange.replace(/ spot| futures/i, "").trim();
+    const cleanFutures = coin.bid.exchange
+      .replace(/ spot| futures/i, "")
+      .trim();
 
-    // Formar símbolos seguindo o padrão do exemplo que funcionou
+    // Pegar os códigos mapeados
+    const spotExchangeCode =
+      exchangeMapping[cleanSpot.toUpperCase()] || cleanSpot.toUpperCase();
+    const futuresExchangeCode =
+      exchangeMapping[cleanFutures.toUpperCase()] || cleanFutures.toUpperCase();
+
     const spotSymbol = `${spotExchangeCode}:${baseSymbol}USDT`;
     const futuresSymbol = `${futuresExchangeCode}:${baseSymbol}USDT.P`;
 
-    // Configuração do TradingView seguindo exatamente o padrão que funcionou
     const config = {
       height: 700,
       symbol: spotSymbol,
@@ -531,18 +536,14 @@ export function FuturosOperationCard({
       width: "100%",
     };
 
-    // Codificar a configuração
     const encodedConfig = encodeURIComponent(JSON.stringify(config));
-
     return `https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=br#${encodedConfig}`;
   }
 
   function handleChartRedirect() {
     const url = generateTradingViewURL();
-    const newTab = window.open(url, "_blank");
-
-    if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
-      window.location.href = url;
+    if (onChartClick) {
+      onChartClick(url); // 👉 dispara no pai
     }
   }
 

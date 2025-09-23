@@ -63,6 +63,8 @@ const Futuros: NextPage<FuturosProps> = ({
   const [tickerInput, setTickerInput] = useState("");
   const [symbols, setSymbols] = useState<string[]>([]);
   const [symbolFilter, setSymbolFilter] = useState("");
+  const [isTradingViewOpen, setIsTradingViewOpen] = useState(false);
+  const [tradingViewUrl, setTradingViewUrl] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -642,6 +644,29 @@ const Futuros: NextPage<FuturosProps> = ({
         <meta name="description" content="Monitor - NEXTGAIN" />
       </Head>
       <div>
+        {isTradingViewOpen && tradingViewUrl && (
+          <div
+            className={`${styles.modalOverlay} ${
+              isTradingViewOpen ? styles.active : ""
+            }`}
+          >
+            <div className={styles.modalLarge}>
+              <button
+                onClick={() => setIsTradingViewOpen(false)}
+                className={styles.closeButton}
+              >
+                ✕
+              </button>
+              <iframe
+                src={tradingViewUrl}
+                width="100%"
+                height="700"
+                style={{ border: "none" }}
+              />
+            </div>
+          </div>
+        )}
+
         {isFilterModalOpen && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
@@ -1139,6 +1164,10 @@ const Futuros: NextPage<FuturosProps> = ({
                         isFavorite={favorites.includes(key)}
                         onToggleFavorite={() => toggleFavorite(key)}
                         onDeleteClick={() => setOperationToDelete(key)}
+                        onChartClick={(url) => {
+                          setTradingViewUrl(url);
+                          setIsTradingViewOpen(true);
+                        }}
                       />
                     );
                   })}
