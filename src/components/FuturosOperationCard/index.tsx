@@ -22,28 +22,29 @@ type Ticker =
   | "CAPO"
   | "SATS";
 
+interface OrderbookOperation {
+  price: number;
+  amount: number;
+  sumVolume: number;
+}
+
+interface SideInfo {
+  exchange: string;
+  price: number;
+  image_url?: string;
+  isUSD: boolean;
+  orderbook?: {
+    asks: OrderbookOperation[];
+    bids: OrderbookOperation[];
+  };
+}
+
 interface FuturosOperationCardProps {
   coin: {
     image?: string;
     name: string;
-    ask: {
-      exchange: string;
-      price: number;
-      image_url?: string;
-      isUSD: boolean;
-      orderbook?: {
-        asks: { sumVolume: number }[];
-      };
-    };
-    bid: {
-      exchange: string;
-      price: number;
-      image_url?: string;
-      isUSD: boolean;
-      orderbook?: {
-        bids: { sumVolume: number }[];
-      };
-    };
+    ask: SideInfo;
+    bid: SideInfo;
     symbol: string;
     fee: number;
     tax: number;
@@ -134,6 +135,7 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
+  console.log(coin.ask, "ASK");
   const [dimension, setDimension] = useState({ width: 40, height: 40 });
 
   useEffect(() => {
@@ -153,13 +155,50 @@ export function FuturosOperationCard({
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
-  const bidPrice = calculatePrice(coin.bid.price, coin.bid.isUSD, dolarValue);
-  const askPrice = calculatePrice(coin.ask.price, coin.ask.isUSD, dolarValue);
+  // calcula preços corretos conforme isOpen
+  const spotAsk = calculatePrice(
+    coin.ask.orderbook?.asks[0]?.price ?? coin.ask.price,
+    coin.ask.isUSD,
+    dolarValue
+  );
+  const spotBid = calculatePrice(
+    coin.ask.orderbook?.bids[0]?.price ?? coin.ask.price,
+    coin.ask.isUSD,
+    dolarValue
+  );
 
-  const spotVolume = coin.ask.orderbook?.asks[0]?.sumVolume || 0;
-  const futuresVolume = coin.bid.orderbook?.bids[0]?.sumVolume || 0;
-  const spotLiquidity = askPrice * spotVolume;
-  const futuresLiquidity = bidPrice * futuresVolume;
+  const futBid = calculatePrice(
+    coin.bid.orderbook?.bids[0]?.price ?? coin.bid.price,
+    coin.bid.isUSD,
+    dolarValue
+  );
+  const futAsk = calculatePrice(
+    coin.bid.orderbook?.asks[0]?.price ?? coin.bid.price,
+    coin.bid.isUSD,
+    dolarValue
+  );
+
+  // define o que mostrar baseado em isOpen
+  const spotDisplayPrice = isOpen ? spotAsk : spotBid;
+  const futuresDisplayPrice = isOpen ? futBid : futAsk;
+
+  // volumes também precisam respeitar isOpen
+  const spotVolume = isOpen
+    ? coin.ask.orderbook?.asks[0]?.sumVolume || 0
+    : coin.ask.orderbook?.bids[0]?.sumVolume || 0;
+
+  const futuresVolume = isOpen
+    ? coin.bid.orderbook?.bids[0]?.sumVolume || 0
+    : coin.bid.orderbook?.asks[0]?.sumVolume || 0;
+
+  const spotLiquidity = spotDisplayPrice * spotVolume;
+  const futuresLiquidity = futuresDisplayPrice * futuresVolume;
+
+  // spread segue a mesma lógica da calculadora
+  const spread = isOpen
+    ? (futBid / spotAsk - 1) * 100
+    : (spotBid / futAsk - 1) * 100;
+
   // Get correct symbols for each exchange
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
@@ -171,10 +210,6 @@ export function FuturosOperationCard({
   // Format pairs for spot and futures
   const spotPair = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
   const futuresPair = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
-
-  const spread = isOpen
-    ? ((bidPrice - askPrice) / askPrice) * 100
-    : ((askPrice - bidPrice) / bidPrice) * 100;
 
   const animationData = isChecked
     ? require("/public/animations/checkPurple.json")
@@ -570,7 +605,9 @@ export function FuturosOperationCard({
         >
           {coin.ask.exchange}
         </p>
-        <p>$ {dynamicDecimalFormatter(askPrice, coin.symbol as Ticker)}</p>
+        <p>
+          $ {dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}
+        </p>
         <small className={styles.liquidityTag}>
           ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
         </small>
@@ -590,7 +627,10 @@ export function FuturosOperationCard({
         >
           {coin.bid.exchange}
         </p>
-        <p>$ {dynamicDecimalFormatter(bidPrice, coin.symbol as Ticker)}</p>
+        <p>
+          ${" "}
+          {dynamicDecimalFormatter(futuresDisplayPrice, coin.symbol as Ticker)}
+        </p>
         <small className={styles.liquidityTag}>
           ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
         </small>
