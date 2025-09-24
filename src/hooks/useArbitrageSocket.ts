@@ -69,7 +69,7 @@ export function useArbitrageSocket(
       });
     };
     s.on("disconnect", () => {
-      setIsConnected(false);
+      // setIsConnected(false);
     });
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");

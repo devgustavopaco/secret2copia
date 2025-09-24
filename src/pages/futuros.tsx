@@ -412,9 +412,9 @@ const Futuros: NextPage<FuturosProps> = ({
   );
 
   useEffect(() => {
-    if (!isConnected) {
-      toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
-    }
+    // if (!isConnected) {
+    //   toast.error("⚠️ Conexão com servidor perdida. Aguardando reconexão...");
+    // }
     if (isConnected) {
       toast.success("CONEXAO ABERTA");
     }
