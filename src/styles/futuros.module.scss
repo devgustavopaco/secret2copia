@@ -706,6 +706,21 @@ input:checked.is-cleaned + .slider {
     background: #009f07;
   }
 }
+.filterButton2 {
+  background: #004173;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-left: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+
+  &:hover {
+    background: #006a9f;
+  }
+}
 
 .modalContent {
   display: flex;

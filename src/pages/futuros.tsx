@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { XCircle, Pause, Play, Funnel } from "phosphor-react";
+import { XCircle, Pause, Play, Funnel, Calculator } from "phosphor-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { BeatLoader, PacmanLoader } from "react-spinners";
 import { toast } from "react-toastify";
@@ -1021,6 +1021,20 @@ const Futuros: NextPage<FuturosProps> = ({
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <Funnel size={20} weight="bold" />
+                    </button>
+
+                    {/* 🔥 Novo botão para abrir calculadora */}
+                    <button
+                      className={styles.filterButton2}
+                      onClick={() =>
+                        window.open(
+                          "/calculator",
+                          "calculatorWindow",
+                          "width=400,height=700,toolbar=no,menubar=no,location=no,status=no,scrollbars=yes,resizable=yes"
+                        )
+                      }
+                    >
+                      <Calculator size={20} weight="bold" />
                     </button>
                   </div>
 
