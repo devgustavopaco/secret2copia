@@ -1,4 +1,3 @@
-// FuturosOperationCard.tsx
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Calculator, Star, Trash } from "phosphor-react";
@@ -62,10 +61,6 @@ interface FuturosOperationCardProps {
   onChartClick?: (url: string) => void;
 }
 
-const percentageFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "percent",
-  minimumFractionDigits: 2,
-});
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   maximumFractionDigits: 4,
@@ -122,7 +117,6 @@ export function FuturosOperationCard({
   dollarPrice = 1,
   onClick,
   onCalculatorClick,
-  isChecked,
   isOpen,
   isFavorite,
   onToggleFavorite,
@@ -134,11 +128,13 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
+
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
   const formatElapsed = (ms: number) => {
     const total = Math.max(0, Math.floor(ms / 1000));
     const h = Math.floor(total / 3600);
@@ -148,38 +144,10 @@ export function FuturosOperationCard({
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
   };
-  const isValidNow = (coin.spread ?? 0) > 0 || (coin.spreadS ?? 0) > 0;
-  const validSinceTs = coin.validSince ?? null;
-
-  const elapsedMs = validSinceTs ? now - validSinceTs : 0;
-
-  const ageStr = validSinceTs ? formatElapsed(elapsedMs) : "—";
-
-  const sinceClock = validSinceTs
-    ? new Date(validSinceTs).toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    : "";
-  // img responsiva (mantido)
-  const [dimension, setDimension] = useState({ width: 40, height: 40 });
-  useEffect(() => {
-    const handleResize = () => {
-      setDimension(
-        window.innerWidth < 600
-          ? { width: 20, height: 20 }
-          : { width: 40, height: 40 }
-      );
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const dolarValue = user?.dolarValue ?? dollarPrice;
 
-  // preços de topo
+  // preços topo
   const spotAsk = calculatePrice(
     coin.ask.orderbook?.asks[0]?.price ?? coin.ask.price,
     coin.ask.isUSD,
@@ -204,56 +172,37 @@ export function FuturosOperationCard({
   const spotDisplayPrice = isOpen ? spotAsk : spotBid;
   const futuresDisplayPrice = isOpen ? futBid : futAsk;
 
-  const spotVolume =
-    (isOpen
-      ? coin.ask.orderbook?.asks[0]?.sumVolume
-      : coin.ask.orderbook?.bids[0]?.sumVolume) ?? 0;
-  const futuresVolume =
-    (isOpen
-      ? coin.bid.orderbook?.bids[0]?.sumVolume
-      : coin.bid.orderbook?.asks[0]?.sumVolume) ?? 0;
-
-  const spotLiquidity = spotDisplayPrice * spotVolume;
-  const futuresLiquidity = futuresDisplayPrice * futuresVolume;
-
   const spread = isOpen
     ? (futBid / spotAsk - 1) * 100
     : (spotBid / futAsk - 1) * 100;
+  const isLong = spread > 0;
 
-  // validação de símbolos (mantido)
+  // validação símbolos
   const buySymbol = getCorrectSymbol(coin.bid.exchange, coin.symbol, true);
   const sellSymbol = getCorrectSymbol(coin.ask.exchange, coin.symbol, false);
-  if (!buySymbol || !sellSymbol) {
-    console.warn(
-      `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
-    );
-    return null;
-  }
+  if (!buySymbol || !sellSymbol) return null;
+
+  // funding expiration
   const expMs =
     coin.fundingRateExpTs &&
     (coin.fundingRateExpTs < 1e12
       ? coin.fundingRateExpTs * 1000
       : coin.fundingRateExpTs);
+  const expirationLabel = (() => {
+    if (!expMs) return "—";
+    if (expMs > now) return `expira em: ${formatElapsed(expMs - now)}`;
+    const expDate = new Date(expMs).toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    return `expirou em: ${expDate}`;
+  })();
 
-  let expirationLabel = "—";
-
-  if (expMs) {
-    if (expMs > now) {
-      expirationLabel = `expira em: ${formatElapsed(expMs - now)}`;
-    } else {
-      const expDate = new Date(expMs).toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      expirationLabel = `expirou em: ${expDate}`;
-    }
-  }
-
-  // ---------- Links ----------
+  // links/helpers
   function formatPairForExchange(
     exchange: string,
     c: string,
@@ -368,7 +317,7 @@ export function FuturosOperationCard({
     binance: (coin: string, pair: string) =>
       `https://www.binance.com/en/trade/${coin}_${pair}`,
     gate: (coin: string, pair: string) => {
-      const special = {
+      const special: Record<string, string> = {
         ELIZA: "ELIZA",
         ART: "ARTELA",
         CULT: "MILADYCULT",
@@ -378,7 +327,7 @@ export function FuturosOperationCard({
         GST: "GST",
         VELO: "VELO",
         CATTON: "CATTON",
-      } as Record<string, string>;
+      };
       const sc = special[coin.toUpperCase()] || coin;
       return `https://www.gate.io/trade/${sc}_${pair}`;
     },
@@ -390,15 +339,16 @@ export function FuturosOperationCard({
   };
   const futuresLinks = {
     bybit: (coin: string, pair: string) => {
-      const special = { FIRE: "FIRE", VELO: "VELO", ZK: "ZK" } as Record<
-        string,
-        string
-      >;
+      const special: Record<string, string> = {
+        FIRE: "FIRE",
+        VELO: "VELO",
+        ZK: "ZK",
+      };
       const sc = special[coin.toUpperCase()] || coin;
       return `https://www.bybit.com/trade/${sc}${pair}`;
     },
     binance: (coin: string, pair: string) => {
-      const special = { TKO: "TKO", ZK: "ZK" } as Record<string, string>;
+      const special: Record<string, string> = { TKO: "TKO", ZK: "ZK" };
       const sc = special[coin.toUpperCase()] || coin;
       return `https://www.binance.com/en/futures/${sc}${pair}_PERP`;
     },
@@ -490,253 +440,184 @@ export function FuturosOperationCard({
     )}`;
   }
   function handleChartRedirect() {
-    const url = generateTradingViewURL();
-    onChartClick?.(url);
+    onChartClick?.(generateTradingViewURL());
   }
 
-  const isLong = spread > 0;
-
+  const spotVolume =
+    (isOpen
+      ? coin.ask.orderbook?.asks[0]?.sumVolume
+      : coin.ask.orderbook?.bids[0]?.sumVolume) ?? 0;
+  const futuresVolume =
+    (isOpen
+      ? coin.bid.orderbook?.bids[0]?.sumVolume
+      : coin.bid.orderbook?.asks[0]?.sumVolume) ?? 0;
+  const spotLiquidity = spotDisplayPrice * spotVolume;
+  const futuresLiquidity = futuresDisplayPrice * futuresVolume;
   return (
     <section
-      className={`${styles.card} ${isLong ? styles.long : styles.short}`}
+      className={`${styles.row} ${isLong ? styles.long : styles.short}`}
       onClick={onClick}
+      title={`${coin.name} (${coin.symbol})`}
     >
-      {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.asset}>
-          <img
-            src={
-              coin.image ??
-              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-            }
-            alt={coin.name}
-          />
-          <div>
-            <strong>{coin.symbol}</strong>
-            <span className={styles.assetName}>{coin.name}</span>
-          </div>
+      {/* Asset */}
+      <div className={styles.cellAsset}>
+        <img
+          src={
+            coin.image ??
+            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+          }
+          alt={coin.name}
+        />
+        <div className={styles.assetText}>
+          <strong className={styles.sym}>{coin.symbol}</strong>
+          <span className={styles.assetName}>{coin.name}</span>
         </div>
+      </div>
 
-        <div className={styles.actionsTop}>
-          <button
-            className={styles.iconBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
-            title={
-              isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
-            }
-          >
-            <Star size={18} weight={isFavorite ? "fill" : "regular"} />
-          </button>
-
-          <button
-            className={`${styles.iconBtn} ${styles.danger}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClick();
-            }}
-            title="Excluir esta oportunidade"
-          >
-            <Trash size={18} />
-          </button>
-        </div>
-      </header>
-
-      {/* BODY GRID */}
-      <div className={styles.grid}>
-        {/* SPOT */}
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Spot</span>
-
-          <button
-            className={styles.exchangeLink}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRedirect(coin.ask.exchange, coin.symbol, "USDT", false);
-            }}
-          >
-            {coin.ask.exchange}
-          </button>
-
-          <div className={styles.price}>
-            $ {dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}
-          </div>
+      {/* Spot */}
+      <div className={styles.cell}>
+        <button
+          className={styles.exLink}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRedirect(coin.ask.exchange, coin.symbol, "USDT", false);
+          }}
+          title="Abrir Spot"
+        >
+          {coin.ask.exchange}
+        </button>
+        <div className={styles.priceMono}>
+          ${dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}{" "}
           <div className={styles.subKpi}>
             Liq.: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
           </div>
         </div>
+      </div>
 
-        {/* FUTURES */}
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Futuros</span>
-
-          <button
-            className={styles.exchangeLink}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true);
-            }}
-          >
-            {coin.bid.exchange}
-          </button>
-
-          <div className={styles.price}>
-            ${" "}
-            {dynamicDecimalFormatter(
-              futuresDisplayPrice,
-              coin.symbol as Ticker
-            )}
-          </div>
+      {/* Futures */}
+      <div className={styles.cell}>
+        <button
+          className={styles.exLink}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true);
+          }}
+          title="Abrir Futuros"
+        >
+          {coin.bid.exchange}
+        </button>
+        <div className={styles.priceMono}>
+          ${dynamicDecimalFormatter(futuresDisplayPrice, coin.symbol as Ticker)}
           <div className={styles.subKpi}>
             Liq.: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
           </div>
         </div>
-
-        {/* SPREADS */}
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Spreads</span>
-          <div
-            className={`${styles.tag} ${
-              isLong ? styles.tagGreen : styles.tagRed
-            }`}
-          >
-            Lucro E {formatterSpread.format(coin.spread / 100)}
-          </div>
-          <div
-            className={`${styles.tag} ${
-              coin.spreadS > 0 ? styles.tagGreen : styles.tagRed
-            }`}
-          >
-            Lucro S {formatterSpread.format(coin.spreadS / 100)}
-          </div>
-        </div>
-
-        {/* AGE / TEMPO DE VALIDADE
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Tempo de validade</span>
-
-          <div
-            className={`${styles.agePill} ${
-              isValidNow ? styles.ageGood : styles.ageStale
-            }`}
-            title={
-              validSinceTs
-                ? `${
-                    isValidNow ? "Válida" : "Última vez válida"
-                  } desde ${sinceClock}`
-                : "Ainda não ficou válida"
-            }
-          >
-            <span className={styles.ageDot} />
-            {isValidNow ? (
-              <>
-                <span>Válida há </span>
-                <strong>{ageStr}</strong>
-              </>
-            ) : (
-              <>
-                <span>Última vez válida há </span>
-                <strong>{ageStr}</strong>
-              </>
-            )}
-          </div>
-
-          {validSinceTs && (
-            <span className={styles.ageNote}>desde {sinceClock}</span>
-          )}
-        </div> */}
-
-        {/* FUNDING */}
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Taxa de financiamento</span>
-          <div
-            className={`${styles.fundingPill} ${
-              coin.fundingRate && coin.fundingRate > 0
-                ? styles.pillGreen
-                : styles.pillRed
-            }`}
-            title="Taxa de financiamento (8h)"
-          >
-            {coin.fundingRate !== undefined
-              ? fundingFormatter.format(coin.fundingRate)
-              : "—"}
-          </div>
-          <span className={styles.fundingNote}>por 8h</span>
-
-          {expMs && (
-            <div className={styles.fundingExpiration}>
-              <div className={styles.fundingCountdown}>
-                <strong>{expirationLabel}</strong>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* VOLUMES */}
-        <div className={styles.kpi}>
-          <span className={styles.kpiTitle}>Volumes</span>
-          <div className={styles.volumeRow}>
-            <div className={`${styles.volumeBox} ${styles.spotBorder}`}>
-              <span className={styles.volumeLabel}>Spot (book)</span>
-              <strong className={styles.volumeValue}>
-                {numberFormatter.format(spotVolume)}
-              </strong>
-              {coin.spotVolume24H !== undefined && (
-                <div className={styles.volume24hBadge}>
-                  24h: {formatCompactNumber(coin.spotVolume24H)}
-                </div>
-              )}
-            </div>
-            <div className={`${styles.volumeBox} ${styles.futBorder}`}>
-              <span className={styles.volumeLabel}>Futuros (book)</span>
-              <strong className={styles.volumeValue}>
-                {numberFormatter.format(futuresVolume)}
-              </strong>
-              {coin.futVolume24H !== undefined && (
-                <div className={styles.volume24hBadge}>
-                  24h: {formatCompactNumber(coin.futVolume24H)}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* FOOTER ACTIONS */}
-      <footer className={styles.footer}>
+      {/* Spreads */}
+      <div className={styles.cellSpreads}>
+        <span
+          className={`${styles.chip} ${isLong ? styles.green : styles.red}`}
+          title="Lucro E"
+        >
+          E {formatterSpread.format(coin.spread / 100)}
+        </span>
+        <span
+          className={`${styles.chip} ${
+            coin.spreadS > 0 ? styles.green : styles.red
+          }`}
+          title="Lucro S"
+        >
+          S {formatterSpread.format(coin.spreadS / 100)}
+        </span>
+      </div>
+
+      {/* Funding + Expiração */}
+      <div className={styles.cellFunding}>
+        <span
+          className={`${styles.funding} ${
+            coin.fundingRate && coin.fundingRate > 0 ? styles.green : styles.red
+          }`}
+          title="Taxa de financiamento (8h)"
+        >
+          {coin.fundingRate !== undefined
+            ? fundingFormatter.format(coin.fundingRate)
+            : "—"}
+        </span>
+        <small
+          className={styles.expire}
+          title={expMs ? new Date(expMs).toLocaleString("pt-BR") : "—"}
+        >
+          {expirationLabel}
+        </small>
+      </div>
+
+      {/* Volumes (compacto) */}
+      <div className={styles.cellVol}>
+        <span className={styles.volItem} title="Volume Spot (book)">
+          S: {numberFormatter.format(spotVolume)}
+        </span>
+        <span className={styles.volItem} title="Volume Futuros (book)">
+          F: {numberFormatter.format(futuresVolume)}
+        </span>
+        {coin.spotVolume24H !== undefined && (
+          <span className={styles.volBadge} title="Spot 24h">
+            S24h {formatCompactNumber(coin.spotVolume24H)}
+          </span>
+        )}
+        {coin.futVolume24H !== undefined && (
+          <span className={styles.volBadge} title="Futuros 24h">
+            F24h {formatCompactNumber(coin.futVolume24H)}
+          </span>
+        )}
+      </div>
+
+      {/* Ações */}
+      <div className={styles.cellActions}>
         <button
-          className={`${styles.cta} ${styles.calc}`}
+          className={styles.iconBtn}
+          title="Favorito"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+        >
+          <Star size={16} weight={isFavorite ? "fill" : "regular"} />
+        </button>
+
+        <button
+          className={styles.iconBtn}
+          title="Calculadora"
           onClick={(e) => {
             e.stopPropagation();
             onCalculatorClick?.();
           }}
-          title="Calculadora da Oportunidade"
         >
-          <Calculator size={16} /> Calculadora
+          <Calculator size={16} />
         </button>
+
         <button
-          className={`${styles.cta} ${styles.chart}`}
+          className={styles.iconBtn}
+          title="Gráfico"
           onClick={(e) => {
             e.stopPropagation();
             handleChartRedirect();
           }}
-          title="Ver Gráfico no TradingView"
         >
-          📈 Gráfico
+          📈
         </button>
+
         <button
-          className={`${styles.cta} ${styles.linkBoth}`}
+          className={`${styles.iconBtn} ${styles.danger}`}
+          title="Excluir"
           onClick={(e) => {
             e.stopPropagation();
-            handleBothExchangesRedirect();
+            onDeleteClick();
           }}
-          title="Abrir Spot e Futuros nas Corretoras"
         >
-          🌐 Abrir Corretoras
+          <Trash size={16} />
         </button>
-      </footer>
+      </div>
     </section>
   );
 }
