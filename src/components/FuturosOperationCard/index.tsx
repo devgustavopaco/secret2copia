@@ -47,6 +47,7 @@ interface FuturosOperationCardProps {
     spotVolume24H?: number;
     futVolume24H?: number;
     validSince: number;
+    fundingRateExpTs?: number | null;
   };
   dollarPrice?: number;
   onClick: () => void;
@@ -227,6 +228,29 @@ export function FuturosOperationCard({
       `Skipping invalid pair: ${coin.symbol} for exchanges ${coin.bid.exchange}/${coin.ask.exchange}`
     );
     return null;
+  }
+  const expMs =
+    coin.fundingRateExpTs &&
+    (coin.fundingRateExpTs < 1e12
+      ? coin.fundingRateExpTs * 1000
+      : coin.fundingRateExpTs);
+
+  let expirationLabel = "—";
+
+  if (expMs) {
+    if (expMs > now) {
+      expirationLabel = `expira em: ${formatElapsed(expMs - now)}`;
+    } else {
+      const expDate = new Date(expMs).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      expirationLabel = `expirou em: ${expDate}`;
+    }
   }
 
   // ---------- Links ----------
@@ -640,6 +664,14 @@ export function FuturosOperationCard({
               : "—"}
           </div>
           <span className={styles.fundingNote}>por 8h</span>
+
+          {expMs && (
+            <div className={styles.fundingExpiration}>
+              <div className={styles.fundingCountdown}>
+                <strong>{expirationLabel}</strong>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* VOLUMES */}
