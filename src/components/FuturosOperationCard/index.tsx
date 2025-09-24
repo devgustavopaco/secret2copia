@@ -533,6 +533,7 @@ export function FuturosOperationCard({
       </div>
 
       {/* Funding + Expiração */}
+      {/* Funding + Expiração */}
       <div className={styles.cellFunding}>
         <span
           className={`${styles.funding} ${
@@ -550,6 +551,16 @@ export function FuturosOperationCard({
         >
           {expirationLabel}
         </small>
+
+        {/* 👇 Novo bloco: tempo de vida */}
+        {coin.validSince && (
+          <small
+            className={styles.expire2}
+            title="Tempo de vida da oportunidade"
+          >
+            time: {formatElapsed(now - coin.validSince)}
+          </small>
+        )}
       </div>
 
       {/* Volumes (compacto) */}
