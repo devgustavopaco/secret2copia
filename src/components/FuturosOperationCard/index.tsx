@@ -46,6 +46,7 @@ interface FuturosOperationCardProps {
     fundingRate?: number;
     spotVolume24H?: number;
     futVolume24H?: number;
+    validSince: number;
   };
   dollarPrice?: number;
   onClick: () => void;
@@ -132,7 +133,34 @@ export function FuturosOperationCard({
     "user.getUserByEmail",
     { email: auth?.user?.email as string },
   ]);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const formatElapsed = (ms: number) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
+  const isValidNow = (coin.spread ?? 0) > 0 || (coin.spreadS ?? 0) > 0;
+  const validSinceTs = coin.validSince ?? null;
 
+  const elapsedMs = validSinceTs ? now - validSinceTs : 0;
+
+  const ageStr = validSinceTs ? formatElapsed(elapsedMs) : "—";
+
+  const sinceClock = validSinceTs
+    ? new Date(validSinceTs).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : "";
   // img responsiva (mantido)
   const [dimension, setDimension] = useState({ width: 40, height: 40 });
   useEffect(() => {
@@ -559,6 +587,41 @@ export function FuturosOperationCard({
           >
             Lucro S {formatterSpread.format(coin.spreadS / 100)}
           </div>
+        </div>
+
+        {/* AGE / TEMPO DE VALIDADE */}
+        <div className={styles.kpi}>
+          <span className={styles.kpiTitle}>Tempo de validade</span>
+
+          <div
+            className={`${styles.agePill} ${
+              isValidNow ? styles.ageGood : styles.ageStale
+            }`}
+            title={
+              validSinceTs
+                ? `${
+                    isValidNow ? "Válida" : "Última vez válida"
+                  } desde ${sinceClock}`
+                : "Ainda não ficou válida"
+            }
+          >
+            <span className={styles.ageDot} />
+            {isValidNow ? (
+              <>
+                <span>Válida há </span>
+                <strong>{ageStr}</strong>
+              </>
+            ) : (
+              <>
+                <span>Última vez válida há </span>
+                <strong>{ageStr}</strong>
+              </>
+            )}
+          </div>
+
+          {validSinceTs && (
+            <span className={styles.ageNote}>desde {sinceClock}</span>
+          )}
         </div>
 
         {/* FUNDING */}

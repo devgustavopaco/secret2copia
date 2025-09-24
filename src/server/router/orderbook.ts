@@ -188,6 +188,7 @@ export interface ArbitrageOpportunity {
   fundingRate?: number;
   spotVolume24h?: number;
   futVolume24h?: number;
+  validSince?: number | null;
 }
 
 interface FilteredOrderbook {

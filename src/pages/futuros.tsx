@@ -546,6 +546,7 @@ const Futuros: NextPage<FuturosProps> = ({
     if (!symbolFilter) return true;
     return operation.ticker.toUpperCase().includes(symbolFilter);
   });
+
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
       toast.dark(`Dólar Editável Não Pode Ser Nulo!`, {
@@ -1187,6 +1188,7 @@ const Futuros: NextPage<FuturosProps> = ({
                           fundingRate: operation.fundingRate,
                           spotVolume24H: operation.spotVolume24h,
                           futVolume24H: operation.futVolume24h,
+                          validSince: operation.validSince ?? 0,
                         }}
                         dollarPrice={dollarPrice}
                         isAdmin={isAdmin}
