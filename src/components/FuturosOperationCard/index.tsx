@@ -589,7 +589,7 @@ export function FuturosOperationCard({
           </div>
         </div>
 
-        {/* AGE / TEMPO DE VALIDADE */}
+        {/* AGE / TEMPO DE VALIDADE
         <div className={styles.kpi}>
           <span className={styles.kpiTitle}>Tempo de validade</span>
 
@@ -622,7 +622,7 @@ export function FuturosOperationCard({
           {validSinceTs && (
             <span className={styles.ageNote}>desde {sinceClock}</span>
           )}
-        </div>
+        </div> */}
 
         {/* FUNDING */}
         <div className={styles.kpi}>
