@@ -30,6 +30,19 @@ interface SideInfo {
   isUSD: boolean;
   orderbook?: { asks: OrderbookOperation[]; bids: OrderbookOperation[] };
 }
+interface ViewConfig {
+  showCoinImage: boolean;
+  showSpreadE: boolean;
+  showSpreadS: boolean;
+  showFunding: boolean;
+  showExpiration: boolean;
+  showValidTime: boolean;
+  showSpotVolume: boolean;
+  showFuturesVolume: boolean;
+  showVolume24h: boolean;
+  showLiquidity: boolean;
+}
+
 interface FuturosOperationCardProps {
   coin: {
     image?: string;
@@ -59,6 +72,7 @@ interface FuturosOperationCardProps {
   onToggleFavorite: () => void;
   onDeleteClick: () => void;
   onChartClick?: (url: string) => void;
+  viewConfig?: ViewConfig;
 }
 
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
@@ -122,6 +136,18 @@ export function FuturosOperationCard({
   onToggleFavorite,
   onDeleteClick,
   onChartClick,
+  viewConfig = {
+    showCoinImage: true,
+    showSpreadE: true,
+    showSpreadS: true,
+    showFunding: true,
+    showExpiration: true,
+    showValidTime: true,
+    showSpotVolume: true,
+    showFuturesVolume: true,
+    showVolume24h: true,
+    showLiquidity: true,
+  },
 }: FuturosOperationCardProps) {
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
@@ -461,13 +487,15 @@ export function FuturosOperationCard({
     >
       {/* Asset */}
       <div className={styles.cellAsset}>
-        <img
-          src={
-            coin.image ??
-            `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-          }
-          alt={coin.name}
-        />
+        {viewConfig.showCoinImage && (
+          <img
+            src={
+              coin.image ??
+              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
+            }
+            alt={coin.name}
+          />
+        )}
         <div className={styles.assetText}>
           <strong className={styles.sym}>{coin.symbol}</strong>
           <span className={styles.assetName}>{coin.name}</span>
@@ -488,9 +516,11 @@ export function FuturosOperationCard({
         </button>
         <div className={styles.priceMono}>
           ${dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}{" "}
-          <div className={styles.subKpi}>
-            Liq.: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
-          </div>
+          {viewConfig.showLiquidity && (
+            <div className={styles.subKpi}>
+              Liq.: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
+            </div>
+          )}
         </div>
       </div>
 
@@ -508,75 +538,90 @@ export function FuturosOperationCard({
         </button>
         <div className={styles.priceMono}>
           ${dynamicDecimalFormatter(futuresDisplayPrice, coin.symbol as Ticker)}
-          <div className={styles.subKpi}>
-            Liq.: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
-          </div>
+          {viewConfig.showLiquidity && (
+            <div className={styles.subKpi}>
+              Liq.: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Spreads */}
       <div className={styles.cellSpreads}>
-        <span
-          className={`${styles.chip} ${isLong ? styles.green : styles.red}`}
-          title="Lucro E"
-        >
-          E {formatterSpread.format(coin.spread / 100)}
-        </span>
-        <span
-          className={`${styles.chip} ${
-            coin.spreadS > 0 ? styles.green : styles.red
-          }`}
-          title="Lucro S"
-        >
-          S {formatterSpread.format(coin.spreadS / 100)}
-        </span>
+        {viewConfig.showSpreadE && (
+          <span
+            className={`${styles.chip} ${isLong ? styles.green : styles.red}`}
+            title="Lucro E"
+          >
+            E {formatterSpread.format(coin.spread / 100)}
+          </span>
+        )}
+        {viewConfig.showSpreadS && (
+          <span
+            className={`${styles.chip} ${
+              coin.spreadS > 0 ? styles.green : styles.red
+            }`}
+            title="Lucro S"
+          >
+            S {formatterSpread.format(coin.spreadS / 100)}
+          </span>
+        )}
       </div>
 
       {/* Funding + Expiração */}
-      {/* Funding + Expiração */}
       <div className={styles.cellFunding}>
-        <span
-          className={`${styles.funding} ${
-            coin.fundingRate && coin.fundingRate > 0 ? styles.green : styles.red
-          }`}
-          title="Taxa de financiamento (8h)"
-        >
-          {coin.fundingRate !== undefined
-            ? fundingFormatter.format(coin.fundingRate)
-            : "—"}
-        </span>
-        <small
-          className={styles.expire}
-          title={expMs ? new Date(expMs).toLocaleString("pt-BR") : "—"}
-        >
-          {expirationLabel}
-        </small>
+        {viewConfig.showFunding && (
+          <span
+            className={`${styles.funding} ${
+              coin.fundingRate && coin.fundingRate > 0
+                ? styles.green
+                : styles.red
+            }`}
+            title="Taxa de financiamento (8h)"
+          >
+            {coin.fundingRate !== undefined
+              ? fundingFormatter.format(coin.fundingRate)
+              : "—"}
+          </span>
+        )}
+        {viewConfig.showExpiration && (
+          <small
+            className={styles.expire}
+            title={expMs ? new Date(expMs).toLocaleString("pt-BR") : "—"}
+          >
+            {expirationLabel}
+          </small>
+        )}
 
-        {/* 👇 Novo bloco: tempo de vida */}
-        {/* {coin.validSince && (
+        {/* Tempo de vida da oportunidade */}
+        {viewConfig.showValidTime && coin.validSince && (
           <small
             className={styles.expire2}
             title="Tempo de vida da oportunidade"
           >
             time: {formatElapsed(now - coin.validSince)}
           </small>
-        )} */}
+        )}
       </div>
 
       {/* Volumes (compacto) */}
       <div className={styles.cellVol}>
-        <span className={styles.volItem} title="Volume Spot (book)">
-          S: {numberFormatter.format(spotVolume)}
-        </span>
-        <span className={styles.volItem} title="Volume Futuros (book)">
-          F: {numberFormatter.format(futuresVolume)}
-        </span>
-        {coin.spotVolume24H !== undefined && (
+        {viewConfig.showSpotVolume && (
+          <span className={styles.volItem} title="Volume Spot (book)">
+            S: {numberFormatter.format(spotVolume)}
+          </span>
+        )}
+        {viewConfig.showFuturesVolume && (
+          <span className={styles.volItem} title="Volume Futuros (book)">
+            F: {numberFormatter.format(futuresVolume)}
+          </span>
+        )}
+        {viewConfig.showVolume24h && coin.spotVolume24H !== undefined && (
           <span className={styles.volBadge} title="Spot 24h">
             S24h {formatCompactNumber(coin.spotVolume24H)}
           </span>
         )}
-        {coin.futVolume24H !== undefined && (
+        {viewConfig.showVolume24h && coin.futVolume24H !== undefined && (
           <span className={styles.volBadge} title="Futuros 24h">
             F24h {formatCompactNumber(coin.futVolume24H)}
           </span>

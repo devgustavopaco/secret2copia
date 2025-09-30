@@ -1,44 +1,58 @@
-/* ======== Compact Table-like Row ======== */
+/* ======== Harmonic Blue Theme Row ======== */
 .row {
-  --glass: rgba(33, 32, 45, 0.45);
-  --stroke: rgba(255, 255, 255, 0.08);
-  --fs: 12.5px;
+  --glass: rgba(15, 35, 65, 0.75);
+  --stroke: rgba(64, 156, 255, 0.2);
+  --fs: 13px;
   --fs-sm: 11.5px;
-  --fs-lg: 13.5px;
-  --row-px: 8px;
-  --row-py: 6px;
+  --fs-lg: 14px;
+  --row-px: 16px;
+  --row-py: 14px;
 
   display: grid;
   grid-template-columns:
-    minmax(160px, 1.2fr) /* asset */
-    minmax(140px, 1fr) /* spot  */
-    minmax(140px, 1fr) /* fut   */
-    minmax(160px, 1fr) /* spreads */
-    minmax(210px, 1.2fr) /* funding+exp */
-    minmax(180px, 1fr) /* vols */
+    minmax(180px, 1.3fr) /* asset */
+    minmax(150px, 1.1fr) /* spot  */
+    minmax(150px, 1.1fr) /* fut   */
+    minmax(170px, 1fr) /* spreads */
+    minmax(220px, 1.2fr) /* funding+exp */
+    minmax(190px, 1fr) /* vols */
     auto; /* actions */
 
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: var(--row-py) var(--row-px);
-  border-radius: 10px;
-  background: var(--glass);
-  border: 1px solid var(--stroke);
-  color: #e8eef6;
-  transition: background 0.15s ease, border-color 0.15s ease,
-    transform 0.12s ease;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 35, 65, 0.85) 0%,
+    rgba(20, 45, 80, 0.75) 100%
+  );
+  border: 1.5px solid var(--stroke);
+  color: #e8f4ff;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 
   &:hover {
-    background: rgba(33, 32, 45, 0.6);
-    border-color: rgba(18, 133, 171, 0.35);
-    transform: translateY(-1px);
+    background: linear-gradient(
+      135deg,
+      rgba(20, 45, 80, 0.9) 0%,
+      rgba(25, 55, 95, 0.85) 100%
+    );
+    border-color: rgba(64, 156, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(64, 156, 255, 0.15);
   }
 
   &.long {
-    box-shadow: inset 0 0 0 1px rgba(18, 133, 171, 0.18);
+    border-color: rgba(34, 197, 94, 0.35);
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1),
+      inset 0 0 0 1px rgba(34, 197, 94, 0.15);
   }
   &.short {
-    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.35);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1),
+      inset 0 0 0 1px rgba(239, 68, 68, 0.15);
   }
 
   @media (max-width: 1100px) {
@@ -75,7 +89,7 @@
 
 .cell {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   align-items: center;
 }
 .priceMono {
@@ -83,47 +97,63 @@
     "Liberation Mono", monospace;
   font-weight: 700;
   font-size: var(--fs-lg);
+  color: #e0f2ff;
 }
 .exLink {
   text-align: left;
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: var(--fs);
-  color: #cfe9ff;
-  text-decoration: underline;
+  background: rgba(64, 156, 255, 0.1);
+  border: 1px solid rgba(64, 156, 255, 0.25);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: var(--fs-sm);
+  color: #60a5fa;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
   &:hover {
-    color: #ffffff;
+    background: rgba(64, 156, 255, 0.2);
+    color: #93c5fd;
+    border-color: rgba(64, 156, 255, 0.4);
   }
+}
+.subKpi {
+  font-size: var(--fs-sm);
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 /* Asset */
 .cellAsset {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
   img {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid rgba(64, 156, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(64, 156, 255, 0.15);
   }
 }
 .assetText {
   display: grid;
-  line-height: 1.05;
+  gap: 2px;
+  line-height: 1.1;
   min-width: 0;
 }
 .sym {
-  font-size: var(--fs-lg);
-  letter-spacing: 0.2px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   white-space: nowrap;
+  color: #e0f2ff;
 }
 .assetName {
   font-size: var(--fs-sm);
-  color: #aab;
+  color: #94a3b8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -132,34 +162,43 @@
 /* Spreads */
 .cellSpreads {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
 .chip {
-  padding: 2px 6px;
-  border-radius: 999px;
-  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-weight: 700;
   font-size: var(--fs);
-  border: 1px solid transparent;
-  line-height: 1.2;
+  border: 1.5px solid transparent;
+  line-height: 1.3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 .green {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.25);
+  color: #22c55e;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15) 0%,
+    rgba(34, 197, 94, 0.08) 100%
+  );
+  border-color: rgba(34, 197, 94, 0.35);
 }
 .red {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(239, 68, 68, 0.08) 100%
+  );
+  border-color: rgba(239, 68, 68, 0.35);
 }
 
 /* Funding + Expiração */
 .cellFunding {
   display: grid;
-  gap: 2px;
-  align-items: center;
+  gap: 4px;
+  align-items: flex-start;
 }
 .funding {
   font-weight: 800;
@@ -167,11 +206,15 @@
 }
 .expire {
   font-size: var(--fs-sm);
-  color: #9aa4b2;
+  color: #94a3b8;
+  background: rgba(64, 156, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  width: fit-content;
 }
 .expire2 {
   font-size: var(--fs-sm);
-  color: #49dc21;
+  color: #22c55e;
 }
 
 /* Volumes compactos */
@@ -183,16 +226,21 @@
 }
 .volItem {
   font-size: var(--fs);
-  color: #d6e1ee;
+  color: #cbd5e1;
+  font-weight: 600;
 }
 .volBadge {
   font-size: var(--fs-sm);
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(14, 165, 233, 0.12);
-  color: #0ea5e9;
-  border: 1px solid rgba(14, 165, 233, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2) 0%,
+    rgba(37, 99, 235, 0.15) 100%
+  );
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 /* Ações compactas */
@@ -202,22 +250,31 @@
   justify-content: flex-end;
 }
 .iconBtn {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: transparent;
-  border: 1px solid var(--stroke);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(64, 156, 255, 0.1);
+  border: 1.5px solid rgba(64, 156, 255, 0.25);
   display: grid;
   place-items: center;
-  color: #ddd;
-  font-size: 12px;
-  transition: all 0.12s ease;
+  color: #60a5fa;
+  font-size: 13px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-1px);
+    background: rgba(64, 156, 255, 0.2);
+    border-color: rgba(64, 156, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 156, 255, 0.2);
   }
   &.danger {
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
     border-color: rgba(239, 68, 68, 0.25);
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
   }
 }

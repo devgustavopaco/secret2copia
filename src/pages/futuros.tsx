@@ -54,7 +54,7 @@ const Futuros: NextPage<FuturosProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [minProfit, setMinProfit] = useState<number>(0.5);
-  const [maxProfit, setMaxProfit] = useState<number>(300);
+  const [maxProfit, setMaxProfit] = useState<number>(200);
   const [minLiquidity, setMinLiquidity] = useState<number>(0);
   const [minVolume24h, setMinVolume24h] = useState<number>(0);
 
@@ -66,6 +66,27 @@ const Futuros: NextPage<FuturosProps> = ({
   const [symbolFilter, setSymbolFilter] = useState("");
   const [isTradingViewOpen, setIsTradingViewOpen] = useState(false);
   const [tradingViewUrl, setTradingViewUrl] = useState<string | null>(null);
+
+  // Paginação
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isGrouped, setIsGrouped] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Filtros de visualização
+  const [isViewConfigOpen, setIsViewConfigOpen] = useState(false);
+  const [viewConfig, setViewConfig] = useState({
+    showCoinImage: true,
+    showSpreadE: true,
+    showSpreadS: true,
+    showFunding: true,
+    showExpiration: true,
+    showValidTime: true,
+    showSpotVolume: true,
+    showFuturesVolume: true,
+    showVolume24h: true,
+    showLiquidity: true,
+  });
 
   const router = useRouter();
 
@@ -184,6 +205,11 @@ const Futuros: NextPage<FuturosProps> = ({
     const saved = localStorage.getItem("excludedOperations");
     if (saved) {
       setExcluded(JSON.parse(saved));
+    }
+
+    const savedViewConfig = localStorage.getItem("viewConfig");
+    if (savedViewConfig) {
+      setViewConfig(JSON.parse(savedViewConfig));
     }
   }, []);
 
@@ -305,14 +331,14 @@ const Futuros: NextPage<FuturosProps> = ({
   ]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPagesFromServer, setTotalPagesFromServer] = useState(1);
   const [refreshRate, setRefreshRate] = useState(1000);
-  const progressPercentage = (currentPage / totalPages) * 100;
+  const progressPercentage = (currentPage / totalPagesFromServer) * 100;
 
   useEffect(() => {
     if (data && data.pages.length > 0) {
       const totalPagesFromData = data.pages[0]?.totalPages ?? 1;
-      setTotalPages(totalPagesFromData);
+      setTotalPagesFromServer(totalPagesFromData);
 
       // Extract nextCursor from the last page
       const lastPage = data.pages[data.pages.length - 1];
@@ -390,7 +416,6 @@ const Futuros: NextPage<FuturosProps> = ({
           },
           {
             onSettled: () => {
-              sortedOperations = [];
               setLoadingDolarChange(false);
             },
           }
@@ -463,45 +488,53 @@ const Futuros: NextPage<FuturosProps> = ({
       }
     );
   }
-  let sortedOperations;
 
-  if (isOpen) {
-    sortedOperations = socketOpportunities
-      .filter((op) => {
-        const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
-        const bidLiquidity = op.highestBid.price * op.highestBid.amount;
+  const sortedOperations = useMemo(() => {
+    if (isOpen) {
+      return socketOpportunities
+        .filter((op) => {
+          const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
+          const bidLiquidity = op.highestBid.price * op.highestBid.amount;
 
-        const spotVolume = op.spotVolume24h ?? 0;
-        const futVolume = op.futVolume24h ?? 0;
+          const spotVolume = op.spotVolume24h ?? 0;
+          const futVolume = op.futVolume24h ?? 0;
 
-        return (
-          op.spread < maxProfit &&
-          op.spread > minProfit &&
-          askLiquidity >= minLiquidity &&
-          bidLiquidity >= minLiquidity &&
-          (spotVolume >= minVolume24h || futVolume >= minVolume24h) // 🔥 filtro único
-        );
-      })
-      .sort((a, b) => b.spread - a.spread);
-  } else {
-    sortedOperations = socketOpportunities
-      .filter((op) => {
-        const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
-        const bidLiquidity = op.highestBid.price * op.highestBid.amount;
+          return (
+            op.spread < maxProfit &&
+            op.spread > minProfit &&
+            askLiquidity >= minLiquidity &&
+            bidLiquidity >= minLiquidity &&
+            (spotVolume >= minVolume24h || futVolume >= minVolume24h) // 🔥 filtro único
+          );
+        })
+        .sort((a, b) => b.spread - a.spread);
+    } else {
+      return socketOpportunities
+        .filter((op) => {
+          const askLiquidity = op.lowestAsk.price * op.lowestAsk.amount;
+          const bidLiquidity = op.highestBid.price * op.highestBid.amount;
 
-        const spotVolume = op.spotVolume24h ?? 0;
-        const futVolume = op.futVolume24h ?? 0;
+          const spotVolume = op.spotVolume24h ?? 0;
+          const futVolume = op.futVolume24h ?? 0;
 
-        return (
-          op.spreadS < maxProfit &&
-          op.spreadS > minProfit &&
-          askLiquidity >= minLiquidity &&
-          bidLiquidity >= minLiquidity &&
-          (spotVolume >= minVolume24h || futVolume >= minVolume24h)
-        );
-      })
-      .sort((a, b) => b.spreadS - a.spreadS);
-  }
+          return (
+            op.spreadS < maxProfit &&
+            op.spreadS > minProfit &&
+            askLiquidity >= minLiquidity &&
+            bidLiquidity >= minLiquidity &&
+            (spotVolume >= minVolume24h || futVolume >= minVolume24h)
+          );
+        })
+        .sort((a, b) => b.spreadS - a.spreadS);
+    }
+  }, [
+    socketOpportunities,
+    isOpen,
+    maxProfit,
+    minProfit,
+    minLiquidity,
+    minVolume24h,
+  ]);
 
   const numberFormatter = new Intl.NumberFormat("pt-BR", {
     style: "decimal",
@@ -528,24 +561,90 @@ const Futuros: NextPage<FuturosProps> = ({
   }, [isChecked, queryClient, refetch]);
 
   const [isUpdatingDollar, setIsUpdatingDollar] = useState(false);
-  const operationsWithFavoriteFirst = [...sortedOperations]
-    .filter((op) => {
-      const key = `${op.ticker}-${op.lowestAsk.exchange}-${op.highestBid.exchange}`;
-      return !excluded.includes(key); // 🔥 exclui
-    })
-    .sort((a, b) => {
-      const keyA = `${a.ticker}-${a.lowestAsk.exchange}-${a.highestBid.exchange}`;
-      const keyB = `${b.ticker}-${b.lowestAsk.exchange}-${b.highestBid.exchange}`;
-      const favA = favorites.includes(keyA);
-      const favB = favorites.includes(keyB);
-      if (favA && !favB) return -1;
-      if (!favA && favB) return 1;
-      return 0;
+  const operationsWithFavoriteFirst = useMemo(() => {
+    return [...sortedOperations]
+      .filter((op) => {
+        const key = `${op.ticker}-${op.lowestAsk.exchange}-${op.highestBid.exchange}`;
+        return !excluded.includes(key); // 🔥 exclui
+      })
+      .sort((a, b) => {
+        const keyA = `${a.ticker}-${a.lowestAsk.exchange}-${a.highestBid.exchange}`;
+        const keyB = `${b.ticker}-${b.lowestAsk.exchange}-${b.highestBid.exchange}`;
+        const favA = favorites.includes(keyA);
+        const favB = favorites.includes(keyB);
+        if (favA && !favB) return -1;
+        if (!favA && favB) return 1;
+        return 0;
+      });
+  }, [sortedOperations, excluded, favorites]);
+
+  const filteredOperations = useMemo(() => {
+    return operationsWithFavoriteFirst.filter((operation) => {
+      if (!symbolFilter) return true;
+      return operation.ticker
+        .toUpperCase()
+        .includes(symbolFilter.toUpperCase());
     });
-  const filteredOperations = operationsWithFavoriteFirst.filter((operation) => {
-    if (!symbolFilter) return true;
-    return operation.ticker.toUpperCase().includes(symbolFilter);
-  });
+  }, [operationsWithFavoriteFirst, symbolFilter]);
+
+  // Função para agrupar operações por símbolo
+  const groupedOperations = React.useMemo(() => {
+    if (!isGrouped) return filteredOperations;
+
+    const groups: { [key: string]: typeof filteredOperations } = {};
+    filteredOperations.forEach((op) => {
+      if (!groups[op.ticker]) {
+        groups[op.ticker] = [];
+      }
+      const group = groups[op.ticker];
+      if (group) {
+        group.push(op);
+      }
+    });
+
+    // Retorna um array onde cada grupo é representado pela oportunidade com MAIOR SPREAD
+    return Object.entries(groups)
+      .map(([ticker, ops]) => {
+        // Ordena as operações por spread (maior primeiro)
+        const sortedOps = [...ops].sort((a, b) => {
+          const spreadA = isOpen ? a.spread : a.spreadS;
+          const spreadB = isOpen ? b.spread : b.spreadS;
+          return spreadB - spreadA;
+        });
+
+        const bestOp = sortedOps[0];
+        if (!bestOp) return null;
+
+        return {
+          ...bestOp,
+          _isGroup: ops.length > 1,
+          _groupedOps: sortedOps, // Já ordenado
+          _groupCount: ops.length,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [filteredOperations, isGrouped, isOpen]);
+
+  const operationsToShow = isGrouped ? groupedOperations : filteredOperations;
+
+  // Paginação
+  const totalPages = Math.ceil(operationsToShow.length / itemsPerPage);
+  const startIndex = currentPageIndex * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOperations = operationsToShow.slice(startIndex, endIndex);
+
+  // Reset pagination quando filtros mudam
+  useEffect(() => {
+    setCurrentPageIndex(0);
+  }, [
+    symbolFilter,
+    minProfit,
+    maxProfit,
+    minLiquidity,
+    minVolume24h,
+    itemsPerPage,
+    isGrouped,
+  ]);
 
   const handleDollarChange = useCallback(() => {
     if (dolarValue === undefined || dolarValue === 0) {
@@ -557,8 +656,6 @@ const Futuros: NextPage<FuturosProps> = ({
     setIsUpdatingDollar(true);
 
     setLoadingDolarChange(true);
-
-    sortedOperations = [];
 
     queryClient.removeQueries({
       queryKey: ["orderBook.getPaginated"],
@@ -729,6 +826,180 @@ const Futuros: NextPage<FuturosProps> = ({
                 <button
                   className={styles.cancelButton}
                   onClick={() => setIsFilterModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isViewConfigOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3>⚙️ Configurar Visualização</h3>
+              <p style={{ fontSize: "13px", marginBottom: "1rem" }}>
+                Selecione quais informações deseja ver nos cards
+              </p>
+
+              <div className={styles.viewConfigGrid}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showCoinImage}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showCoinImage: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Imagem da Moeda</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showSpreadE}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showSpreadE: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Lucro Entrada (E)</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showSpreadS}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showSpreadS: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Lucro Saída (S)</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showFunding}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showFunding: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Taxa de Funding</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showExpiration}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showExpiration: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Expiração Funding</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showValidTime}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showValidTime: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Tempo de Vida</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showLiquidity}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showLiquidity: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Liquidez</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showSpotVolume}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showSpotVolume: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Volume Spot (Book)</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showFuturesVolume}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showFuturesVolume: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Volume Futuros (Book)</span>
+                </label>
+
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={viewConfig.showVolume24h}
+                    onChange={(e) =>
+                      setViewConfig((prev) => ({
+                        ...prev,
+                        showVolume24h: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Volume 24h</span>
+                </label>
+              </div>
+
+              <div className={styles.modalButtons}>
+                <button
+                  className={styles.confirmButton}
+                  onClick={() => {
+                    localStorage.setItem(
+                      "viewConfig",
+                      JSON.stringify(viewConfig)
+                    );
+                    setIsViewConfigOpen(false);
+                  }}
+                >
+                  Salvar
+                </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setIsViewConfigOpen(false)}
                 >
                   Cancelar
                 </button>
@@ -1020,11 +1291,21 @@ const Futuros: NextPage<FuturosProps> = ({
                     <button
                       className={styles.filterButton}
                       onClick={() => setIsFilterModalOpen(true)}
+                      title="Filtro de Lucro"
                     >
                       <Funnel size={20} weight="bold" />
                     </button>
 
-                    {/* 🔥 Novo botão para abrir calculadora */}
+                    {/* Botão de configuração de visualização */}
+                    <button
+                      className={styles.filterButton2}
+                      onClick={() => setIsViewConfigOpen(true)}
+                      title="Configurar Visualização"
+                    >
+                      ⚙️
+                    </button>
+
+                    {/* Botão para abrir calculadora */}
                     <button
                       className={styles.filterButton2}
                       onClick={() =>
@@ -1034,6 +1315,7 @@ const Futuros: NextPage<FuturosProps> = ({
                           "width=400,height=700,toolbar=no,menubar=no,location=no,status=no,scrollbars=yes,resizable=yes"
                         )
                       }
+                      title="Calculadora"
                     >
                       <Calculator size={20} weight="bold" />
                     </button>
@@ -1104,7 +1386,7 @@ const Futuros: NextPage<FuturosProps> = ({
                         </svg>
                       </button>
                     </div>
-                    <div className={styles.checkText}>
+                    {/* <div className={styles.checkText}>
                       <p>
                         <strong>Modo Clean?</strong>
                       </p>
@@ -1121,7 +1403,7 @@ const Futuros: NextPage<FuturosProps> = ({
                           isChecked ? "is-checked" : ""
                         }`}
                       ></span>
-                    </label>
+                    </label> */}
                   </div>
                 </>
                 {/* {isAdmin && (
@@ -1169,47 +1451,257 @@ const Futuros: NextPage<FuturosProps> = ({
                   </div>
                 )
               ) : (
-                <div className={styles.operations}>
-                  {filteredOperations.map((operation) => {
-                    const key = `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
-                    return (
-                      <FuturosOperationCard
-                        key={key}
-                        coin={{
-                          image: operation.coinImage,
-                          name: operation.coin,
-                          ask: operation.lowestAsk,
-                          bid: operation.highestBid,
-                          fee: operation.fee,
-                          tax: operation.tax,
-                          symbol: operation.ticker,
-                          spread: operation.spread,
-                          spreadS: operation.spreadS,
-                          fundingRate: operation.fundingRate,
-                          spotVolume24H: operation.spotVolume24h,
-                          futVolume24H: operation.futVolume24h,
-                          validSince: operation.validSince ?? 0,
-                          fundingRateExpTs: operation.fundingRateExpTs,
+                <>
+                  <div className={styles.operationsHeader}>
+                    <div className={styles.headerLeft}>
+                      <p className={styles.totalCount}>
+                        Mostrando {startIndex + 1}-
+                        {Math.min(endIndex, operationsToShow.length)} de{" "}
+                        {operationsToShow.length}{" "}
+                        {isGrouped ? "grupos" : "oportunidades"}
+                      </p>
+                    </div>
+                    <div className={styles.headerRight}>
+                      <button
+                        className={`${styles.groupButton} ${
+                          isGrouped ? styles.active : ""
+                        }`}
+                        onClick={() => {
+                          setIsGrouped(!isGrouped);
+                          setExpandedGroups(new Set());
                         }}
-                        dollarPrice={dollarPrice}
-                        isAdmin={isAdmin}
-                        isChecked={isChecked}
-                        isOpen={isOpen}
-                        onClick={() => setSelectedOperation(operation)}
-                        onCalculatorClick={() =>
-                          handleCalculatorClick(operation)
+                        title={
+                          isGrouped ? "Desagrupar moedas" : "Agrupar por moeda"
                         }
-                        isFavorite={favorites.includes(key)}
-                        onToggleFavorite={() => toggleFavorite(key)}
-                        onDeleteClick={() => setOperationToDelete(key)}
-                        onChartClick={(url) => {
-                          setTradingViewUrl(url);
-                          setIsTradingViewOpen(true);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <rect x="3" y="3" width="7" height="7" rx="1" />
+                          <rect x="14" y="3" width="7" height="7" rx="1" />
+                          <rect x="14" y="14" width="7" height="7" rx="1" />
+                          <rect x="3" y="14" width="7" height="7" rx="1" />
+                        </svg>
+                        <span>{isGrouped ? "Desagrupar" : "Agrupar"}</span>
+                      </button>
+                      <div className={styles.rowsSelector}>
+                        <label>Linhas:</label>
+                        <select
+                          value={itemsPerPage}
+                          onChange={(e) =>
+                            setItemsPerPage(Number(e.target.value))
+                          }
+                        >
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={30}>30</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.operations}>
+                    {paginatedOperations.map((operation: any) => {
+                      const isGroup =
+                        operation._isGroup && operation._groupCount > 1;
+                      const isExpanded = expandedGroups.has(operation.ticker);
+                      const opsToRender = isGroup
+                        ? isExpanded
+                          ? operation._groupedOps
+                          : [operation._groupedOps[0]]
+                        : [operation];
+
+                      // Key única para o grupo ou operação individual
+                      const groupKey = isGroup
+                        ? `group-${operation.ticker}`
+                        : `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
+
+                      return (
+                        <div
+                          key={groupKey}
+                          className={`${styles.operationGroup} ${
+                            isGroup ? styles.grouped : ""
+                          } ${isExpanded ? styles.expanded : ""}`}
+                        >
+                          {opsToRender.map((op: any, idx: number) => {
+                            const key = `${op.ticker}-${op.lowestAsk.exchange}-${op.highestBid.exchange}`;
+                            return (
+                              <div
+                                key={key}
+                                className={`${styles.cardWrapper} ${
+                                  isGroup && idx === 0
+                                    ? styles.hasExpandButton
+                                    : ""
+                                }`}
+                                style={
+                                  isExpanded && isGroup
+                                    ? {
+                                        animationDelay: `${idx * 0.05}s`,
+                                      }
+                                    : {}
+                                }
+                              >
+                                {isGroup && idx === 0 && !isExpanded && (
+                                  <button
+                                    className={styles.expandButton}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newExpanded = new Set(
+                                        expandedGroups
+                                      );
+                                      newExpanded.add(operation.ticker);
+                                      setExpandedGroups(newExpanded);
+                                    }}
+                                    title={`Expandir ${operation._groupCount} oportunidades`}
+                                  >
+                                    <div className={styles.expandIcon}>
+                                      <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2.5"
+                                      >
+                                        <path d="M9 18l6-6-6-6" />
+                                      </svg>
+                                    </div>
+                                    <div className={styles.expandBadge}>
+                                      {operation._groupCount}
+                                    </div>
+                                  </button>
+                                )}
+                                <FuturosOperationCard
+                                  coin={{
+                                    image: op.coinImage,
+                                    name: op.coin,
+                                    ask: op.lowestAsk,
+                                    bid: op.highestBid,
+                                    fee: op.fee,
+                                    tax: op.tax,
+                                    symbol: op.ticker,
+                                    spread: op.spread,
+                                    spreadS: op.spreadS,
+                                    fundingRate: op.fundingRate,
+                                    spotVolume24H: op.spotVolume24h,
+                                    futVolume24H: op.futVolume24h,
+                                    validSince: op.validSince ?? 0,
+                                    fundingRateExpTs: op.fundingRateExpTs,
+                                  }}
+                                  dollarPrice={dollarPrice}
+                                  isAdmin={isAdmin}
+                                  isChecked={isChecked}
+                                  isOpen={isOpen}
+                                  viewConfig={viewConfig}
+                                  onClick={() => setSelectedOperation(op)}
+                                  onCalculatorClick={() =>
+                                    handleCalculatorClick(op)
+                                  }
+                                  isFavorite={favorites.includes(key)}
+                                  onToggleFavorite={() => toggleFavorite(key)}
+                                  onDeleteClick={() =>
+                                    setOperationToDelete(key)
+                                  }
+                                  onChartClick={(url) => {
+                                    setTradingViewUrl(url);
+                                    setIsTradingViewOpen(true);
+                                  }}
+                                />
+                              </div>
+                            );
+                          })}
+
+                          {isGroup && isExpanded && (
+                            <button
+                              className={styles.collapseButton}
+                              onClick={() => {
+                                const newExpanded = new Set(expandedGroups);
+                                newExpanded.delete(operation.ticker);
+                                setExpandedGroups(newExpanded);
+                              }}
+                            >
+                              Recolher {operation.ticker}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {totalPages > 1 && (
+                    <div className={styles.pagination}>
+                      <button
+                        onClick={() => setCurrentPageIndex(0)}
+                        disabled={currentPageIndex === 0}
+                        className={styles.paginationBtn}
+                      >
+                        ««
+                      </button>
+                      <button
+                        onClick={() =>
+                          setCurrentPageIndex((prev) => Math.max(0, prev - 1))
+                        }
+                        disabled={currentPageIndex === 0}
+                        className={styles.paginationBtn}
+                      >
+                        ‹
+                      </button>
+                      <div className={styles.pageNumbers}>
+                        {Array.from(
+                          { length: Math.min(5, totalPages) },
+                          (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i;
+                            } else if (currentPageIndex < 3) {
+                              pageNum = i;
+                            } else if (currentPageIndex > totalPages - 4) {
+                              pageNum = totalPages - 5 + i;
+                            } else {
+                              pageNum = currentPageIndex - 2 + i;
+                            }
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPageIndex(pageNum)}
+                                className={`${styles.pageBtn} ${
+                                  currentPageIndex === pageNum
+                                    ? styles.active
+                                    : ""
+                                }`}
+                              >
+                                {pageNum + 1}
+                              </button>
+                            );
+                          }
+                        )}
+                      </div>
+                      <button
+                        onClick={() =>
+                          setCurrentPageIndex((prev) =>
+                            Math.min(totalPages - 1, prev + 1)
+                          )
+                        }
+                        disabled={currentPageIndex >= totalPages - 1}
+                        className={styles.paginationBtn}
+                      >
+                        ›
+                      </button>
+                      <button
+                        onClick={() => setCurrentPageIndex(totalPages - 1)}
+                        disabled={currentPageIndex >= totalPages - 1}
+                        className={styles.paginationBtn}
+                      >
+                        »»
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </main>
           </div>

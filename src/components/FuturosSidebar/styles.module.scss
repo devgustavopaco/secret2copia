@@ -3,17 +3,19 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 0;
-  gap: 1rem;
+  gap: 1.25rem;
 
-  min-width: 209px;
-  max-width: 209px;
+  min-width: 220px;
+  max-width: 220px;
 
   border-radius: 8px;
   font-family: "Raleway", sans-serif;
 
   .title {
     font-size: 32px;
-    font-weight: 600;
+    font-weight: 700;
+    color: #e0f2ff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
 .updateButton {
@@ -25,50 +27,88 @@
   align-items: center;
 }
 .ExchangesSection {
-  min-width: 209px;
+  min-width: 220px;
   .labelExchangeSection {
-    color: #fff;
+    color: #e0f2ff;
     font-family: "Raleway";
-    font-size: 17.432px;
+    font-size: 17px;
     font-style: normal;
     font-weight: 700;
     line-height: normal;
     text-transform: uppercase;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
   .addExchange {
-    border-radius: 8px;
-    background: rgba(123, 97, 255, 0.2);
+    border-radius: 12px;
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.25) 0%,
+      rgba(37, 99, 235, 0.15) 100%
+    );
+    border: 1.5px solid rgba(59, 130, 246, 0.35);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-inline: 18px;
-    padding-block: 12px;
+    padding-block: 14px;
     margin-block: 15px;
-    transition: background 1.5s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 
     p {
-      color: #fff;
+      color: #60a5fa;
       font-family: "Raleway";
-      font-size: 17.432px;
+      font-size: 16px;
       font-style: normal;
-      font-weight: 600;
+      font-weight: 700;
       line-height: normal;
       text-transform: uppercase;
     }
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.35) 0%,
+        rgba(37, 99, 235, 0.25) 100%
+      );
+      border-color: rgba(59, 130, 246, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+    }
     &.addChecked {
-      background: rgba(100, 255, 97, 0.2);
+      background: linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.25) 0%,
+        rgba(34, 197, 94, 0.15) 100%
+      );
+      border-color: rgba(34, 197, 94, 0.35);
+      p {
+        color: #22c55e;
+      }
+      &:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.35) 0%,
+          rgba(34, 197, 94, 0.25) 100%
+        );
+        border-color: rgba(34, 197, 94, 0.5);
+      }
     }
   }
 
   .aroundImage {
-    width: 37.333px;
-    height: 37.333px;
-    background: rgba(123, 97, 255, 0.3);
-    transition: background 1.5s ease;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.3) 0%,
+      rgba(37, 99, 235, 0.2) 100%
+    );
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.4);
     display: flex;
-    padding: 5px;
+    padding: 6px;
 
     img {
       display: flex;
@@ -76,7 +116,12 @@
       margin-inline: auto;
     }
     &.aroundChecked {
-      background: rgba(100, 255, 97, 0.3);
+      background: linear-gradient(
+        135deg,
+        rgba(34, 197, 94, 0.3) 0%,
+        rgba(34, 197, 94, 0.2) 100%
+      );
+      border-color: rgba(34, 197, 94, 0.4);
     }
   }
 
@@ -84,33 +129,63 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(5px);
-    padding-inline: 18px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(64, 156, 255, 0.25);
+    background: linear-gradient(
+      135deg,
+      rgba(15, 35, 65, 0.7) 0%,
+      rgba(20, 45, 80, 0.6) 100%
+    );
+    backdrop-filter: blur(10px);
+    padding-inline: 16px;
     padding-block: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      border-color: rgba(64, 156, 255, 0.4);
+      background: linear-gradient(
+        135deg,
+        rgba(20, 45, 80, 0.8) 0%,
+        rgba(25, 55, 95, 0.7) 100%
+      );
+      box-shadow: 0 4px 12px rgba(64, 156, 255, 0.15);
+    }
 
     .selectedExchangesBlock {
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--white, #fff);
+      color: #e0f2ff;
       text-align: center;
       font-family: "Raleway";
-      font-size: 14.996px;
+      font-size: 14px;
       font-style: normal;
-      font-weight: 600;
+      font-weight: 700;
       line-height: normal;
       text-transform: uppercase;
 
       img {
-        width: 37.333px;
-        height: 37.333px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         object-fit: cover;
-        border: 1px solid #fff;
+        border: 2px solid rgba(64, 156, 255, 0.4);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    > img {
+      transition: all 0.2s ease;
+      cursor: pointer;
+      opacity: 0.7;
+      filter: brightness(0.9);
+
+      &:hover {
+        opacity: 1;
+        filter: brightness(1.2);
+        transform: scale(1.1);
       }
     }
   }
@@ -296,19 +371,47 @@
   width: 100%;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  border-radius: 18.667px;
-  border: 1px solid #fff;
-  background: rgba(18, 133, 171, 0.5);
-  padding: 15px;
+  gap: 0.75rem;
+  border-radius: 14px;
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(37, 99, 235, 0.25) 100%
+  );
+  padding: 16px;
   cursor: pointer;
-  min-height: 65px;
+  min-height: 68px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.4) 0%,
+      rgba(37, 99, 235, 0.35) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  }
+
   span {
-    color: #fff;
+    color: #e0f2ff;
     font-family: Raleway;
-    font-size: 20px;
+    font-size: 18px;
     font-style: normal;
-    font-weight: 600;
-    line-height: 13px; /* 65% */
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  img {
+    filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.1);
   }
 }
