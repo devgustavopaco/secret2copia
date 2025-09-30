@@ -553,14 +553,14 @@ export function FuturosOperationCard({
         </small>
 
         {/* 👇 Novo bloco: tempo de vida */}
-        {coin.validSince && (
+        {/* {coin.validSince && (
           <small
             className={styles.expire2}
             title="Tempo de vida da oportunidade"
           >
             time: {formatElapsed(now - coin.validSince)}
           </small>
-        )}
+        )} */}
       </div>
 
       {/* Volumes (compacto) */}
