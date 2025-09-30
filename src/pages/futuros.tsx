@@ -88,6 +88,22 @@ const Futuros: NextPage<FuturosProps> = ({
     showLiquidity: true,
   });
 
+  // Toggle do Sidebar (com persistência)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarOpen");
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  // Salvar estado do sidebar
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sidebarOpen", JSON.stringify(isSidebarOpen));
+    }
+  }, [isSidebarOpen]);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -1218,7 +1234,44 @@ const Futuros: NextPage<FuturosProps> = ({
                 isAdmin={isAdmin}
               />
             </div>
-            <div onClick={(event) => clickOnSidebar(event)}>
+            <button
+              className={`${styles.sidebarToggle} ${
+                !isSidebarOpen ? styles.toggleClosed : ""
+              }`}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              title={isSidebarOpen ? "Fechar Sidebar" : "Abrir Sidebar"}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {isSidebarOpen ? (
+                  <>
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <polyline points="15 6 21 12 15 18" />
+                  </>
+                )}
+              </svg>
+            </button>
+            {/* Sidebar com Toggle */}
+            <div
+              className={`${styles.sidebarWrapper} ${
+                !isSidebarOpen ? styles.sidebarClosed : ""
+              }`}
+              onClick={(event) => clickOnSidebar(event)}
+            >
               <FuturosSidebar
                 isChecked={isChecked}
                 dollarPrice={dollarPrice}
@@ -1235,7 +1288,14 @@ const Futuros: NextPage<FuturosProps> = ({
                 isOpen={isOpen}
               />
             </div>
-            <main>
+
+            {/* diminua esse svg de tamanho  */}
+
+            <main
+              className={`${styles.mainContent} ${
+                !isSidebarOpen ? styles.mainExpanded : ""
+              }`}
+            >
               <div className={styles.topPart}>
                 <h1>
                   {isFetching && <BeatLoader color="#969696" size="0.5rem" />}
