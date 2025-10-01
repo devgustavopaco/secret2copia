@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Calculator, Star, Trash } from "phosphor-react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
@@ -43,6 +44,18 @@ interface ViewConfig {
   showLiquidity: boolean;
 }
 
+interface TokenStats {
+  updatedAt: number;
+  ePeak30m: number;
+  sPeak30m: number;
+  ePeak6h: number;
+  sPeak6h: number;
+  peaksE1p30m: number;
+  peaksE1p6h: number;
+  peaksS1p30m: number;
+  peaksS1p6h: number;
+}
+
 interface FuturosOperationCardProps {
   coin: {
     image?: string;
@@ -60,6 +73,7 @@ interface FuturosOperationCardProps {
     futVolume24H?: number;
     validSince: number;
     fundingRateExpTs?: number | null;
+    tokenStats?: TokenStats;
   };
   dollarPrice?: number;
   onClick: () => void;
@@ -149,6 +163,67 @@ export function FuturosOperationCard({
     showLiquidity: true,
   },
 }: FuturosOperationCardProps) {
+  const [showTokenStats, setShowTokenStats] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [tooltipElement, setTooltipElement] = useState<HTMLElement | null>(
+    null
+  );
+
+  // Função para calcular posição do tooltip
+  const calculateTooltipPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: rect.bottom + 8,
+      left: rect.left,
+    };
+  };
+
+  // Função para formatar estatísticas do token
+  const formatTokenStats = (stats: TokenStats) => {
+    const formatPercent = (value: number) =>
+      new Intl.NumberFormat("pt-BR", {
+        style: "percent",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(value); // valor já é fração
+
+    const formatDate = (timestamp: number) =>
+      new Date(timestamp).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+    return {
+      ePeak30m: formatPercent(stats.ePeak30m),
+      sPeak30m: formatPercent(stats.sPeak30m),
+      ePeak6h: formatPercent(stats.ePeak6h),
+      sPeak6h: formatPercent(stats.sPeak6h),
+      peaksE1p30m: stats.peaksE1p30m,
+      peaksE1p6h: stats.peaksE1p6h,
+      peaksS1p30m: stats.peaksS1p30m,
+      peaksS1p6h: stats.peaksS1p6h,
+      updatedAt: formatDate(stats.updatedAt),
+    };
+  };
+
+  // Criar elemento para o tooltip
+  useEffect(() => {
+    const tooltipDiv = document.createElement("div");
+    tooltipDiv.style.position = "fixed";
+    tooltipDiv.style.zIndex = "999999";
+    tooltipDiv.style.pointerEvents = "none";
+    setTooltipElement(tooltipDiv);
+
+    return () => {
+      if (tooltipDiv.parentNode) {
+        tooltipDiv.parentNode.removeChild(tooltipDiv);
+      }
+    };
+  }, []);
+
   const { data: auth } = useSession();
   const { data: user } = trpc.useQuery([
     "user.getUserByEmail",
@@ -494,12 +569,158 @@ export function FuturosOperationCard({
               `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
             }
             alt={coin.name}
+            onMouseEnter={(e) => {
+              if (coin.tokenStats && tooltipElement) {
+                const position = calculateTooltipPosition(e.currentTarget);
+                setTooltipPosition(position);
+                setShowTokenStats(true);
+                document.body.appendChild(tooltipElement);
+              }
+            }}
+            onMouseLeave={() => {
+              setShowTokenStats(false);
+              if (tooltipElement && tooltipElement.parentNode) {
+                tooltipElement.parentNode.removeChild(tooltipElement);
+              }
+            }}
           />
         )}
-        <div className={styles.assetText}>
+        <div
+          className={styles.assetText}
+          onMouseEnter={(e) => {
+            if (coin.tokenStats && tooltipElement) {
+              const position = calculateTooltipPosition(e.currentTarget);
+              setTooltipPosition(position);
+              setShowTokenStats(true);
+              document.body.appendChild(tooltipElement);
+            }
+          }}
+          onMouseLeave={() => {
+            setShowTokenStats(false);
+            if (tooltipElement && tooltipElement.parentNode) {
+              tooltipElement.parentNode.removeChild(tooltipElement);
+            }
+          }}
+        >
           <strong className={styles.sym}>{coin.symbol}</strong>
           <span className={styles.assetName}>{coin.name}</span>
         </div>
+
+        {/* Token Stats Tooltip */}
+        {showTokenStats &&
+          coin.tokenStats &&
+          tooltipElement &&
+          createPortal(
+            <div
+              className={styles.tokenStatsTooltip}
+              style={{
+                top: `${tooltipPosition.top}px`,
+                left: `${tooltipPosition.left}px`,
+              }}
+            >
+              <div className={styles.tooltipHeader}>
+                <h3>Token {coin.symbol} | Estatísticas</h3>
+                <div className={styles.tooltipMenu}>⋮</div>
+              </div>
+
+              <div className={styles.tooltipContent}>
+                <div className={styles.tooltipColumn}>
+                  <div className={styles.tooltipSection}>
+                    <h4>30 minutos</h4>
+                    <div className={styles.tooltipRow}>
+                      <span>Entrada:</span>
+                      <span className={styles.positiveValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).ePeak30m
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>Saída:</span>
+                      <span className={styles.negativeValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).sPeak30m
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.tooltipSection}>
+                    <h4>Total</h4>
+                    <div className={styles.tooltipRow}>
+                      <span>Entrada:</span>
+                      <span className={styles.positiveValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).ePeak6h
+                          : "N/A"}
+                      </span>
+                      <span className={styles.timestamp}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).updatedAt
+                          : ""}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>Saída:</span>
+                      <span className={styles.negativeValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).sPeak6h
+                          : "N/A"}
+                      </span>
+                      <span className={styles.timestamp}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).updatedAt
+                          : ""}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.tooltipColumn}>
+                  <div className={styles.tooltipSection}>
+                    <h4>6 horas</h4>
+                    <div className={styles.tooltipRow}>
+                      <span>Entrada:</span>
+                      <span className={styles.positiveValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).ePeak6h
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>Saída:</span>
+                      <span className={styles.negativeValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).sPeak6h
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.tooltipSection}>
+                    <h4>Picos</h4>
+                    <div className={styles.tooltipRow}>
+                      <span>E Positivas +1%:</span>
+                      <span className={styles.neutralValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).peaksE1p30m
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>invertidos:</span>
+                      <span className={styles.neutralValue}>
+                        {coin.tokenStats
+                          ? formatTokenStats(coin.tokenStats).peaksS1p30m
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            tooltipElement
+          )}
       </div>
 
       {/* Spot */}

@@ -1653,6 +1653,7 @@ const Futuros: NextPage<FuturosProps> = ({
                                     futVolume24H: op.futVolume24h,
                                     validSince: op.validSince ?? 0,
                                     fundingRateExpTs: op.fundingRateExpTs,
+                                    tokenStats: op.tokenStats,
                                   }}
                                   dollarPrice={dollarPrice}
                                   isAdmin={isAdmin}

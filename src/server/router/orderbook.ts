@@ -159,10 +159,23 @@ export interface Orderbook {
   asks: OrderbookOperation[];
 }
 
+export interface TokenStats {
+  updatedAt: number;
+  ePeak30m: number;
+  sPeak30m: number;
+  ePeak6h: number;
+  sPeak6h: number;
+  peaksE1p30m: number;
+  peaksE1p6h: number;
+  peaksS1p30m: number;
+  peaksS1p6h: number;
+}
+
 export interface ArbitrageOpportunity {
   coin: string;
   coinImage?: string;
-  ticker: string;
+  ticker: string; // ex: "AGTUSDT" (no socket você pode remover o "USDT" pra UI)
+
   lowestAsk: {
     exchange: string;
     price: number;
@@ -179,17 +192,25 @@ export interface ArbitrageOpportunity {
     image_url?: string;
     orderbook: Orderbook;
   };
+
   tax: number;
   fee: number;
+
+  // spreads (E = futures bid / spot ask - 1; S = spot bid / futures ask - 1)
   spread: number;
   spreadS: number;
   isFutures?: boolean;
   isOpen?: boolean;
+
+  // metadados de mercado
   fundingRate?: number;
   spotVolume24h?: number;
   futVolume24h?: number;
   validSince?: number | null;
   fundingRateExpTs?: number | null;
+
+  // 👇 novos dados agregados do token (30m / 6h / picos)
+  tokenStats?: TokenStats;
 }
 
 interface FilteredOrderbook {

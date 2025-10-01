@@ -47,6 +47,16 @@ export function useArbitrageSocket(
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
+  console.log("opportunities", opportunities[0]?.tokenStats);
+  // useEffect(() => {
+  //   const zec = opportunities.find(
+  //     (opp) => opp.ticker.replace(/USDT$/, "") === "ZEC"
+  //   );
+  //   if (zec) {
+  //     console.log("🔎 TokenStats para ZEC:", zec.tokenStats);
+  //   }
+  // }, [opportunities]);
+
   const socketRef = useRef<Socket | null>(null);
 
   const indexRef = useRef<Map<string, ArbitrageOpportunity>>(new Map());
