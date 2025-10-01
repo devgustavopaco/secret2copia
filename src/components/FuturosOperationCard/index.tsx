@@ -5,6 +5,7 @@ import { Calculator, Star, Trash } from "phosphor-react";
 import { trpc } from "../../utils/trpc";
 import styles from "./styles.module.scss";
 import { getCorrectSymbol } from "../../constants/symbolMappings";
+import { TokenStats } from "../../server/router/orderbook";
 
 type Ticker =
   | "SHIB"
@@ -42,18 +43,6 @@ interface ViewConfig {
   showFuturesVolume: boolean;
   showVolume24h: boolean;
   showLiquidity: boolean;
-}
-
-interface TokenStats {
-  updatedAt: number;
-  ePeak30m: number;
-  sPeak30m: number;
-  ePeak6h: number;
-  sPeak6h: number;
-  peaksE1p30m: number;
-  peaksE1p6h: number;
-  peaksS1p30m: number;
-  peaksS1p6h: number;
 }
 
 interface FuturosOperationCardProps {
@@ -178,35 +167,33 @@ export function FuturosOperationCard({
     };
   };
 
-  // Função para formatar estatísticas do token
-  const formatTokenStats = (stats: TokenStats) => {
-    const formatPercent = (value: number) =>
-      new Intl.NumberFormat("pt-BR", {
-        style: "percent",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value); // valor já é fração
+  // % → usar Intl como fração: dividir por 100
+  const fmtPct = (x?: number) =>
+    x === undefined
+      ? "—"
+      : new Intl.NumberFormat("pt-BR", {
+          style: "percent",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(x / 100);
 
-    const formatDate = (timestamp: number) =>
-      new Date(timestamp).toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+  const fmtDateTime = (ts?: number) =>
+    !ts
+      ? ""
+      : new Date(ts).toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-    return {
-      ePeak30m: formatPercent(stats.ePeak30m),
-      sPeak30m: formatPercent(stats.sPeak30m),
-      ePeak6h: formatPercent(stats.ePeak6h),
-      sPeak6h: formatPercent(stats.sPeak6h),
-      peaksE1p30m: stats.peaksE1p30m,
-      peaksE1p6h: stats.peaksE1p6h,
-      peaksS1p30m: stats.peaksS1p30m,
-      peaksS1p6h: stats.peaksS1p6h,
-      updatedAt: formatDate(stats.updatedAt),
-    };
+  // classe para colorir valor (positivo/negativo/neutro)
+  const valClass = (v?: number) => {
+    if (v === undefined) return styles.neutralValue;
+    if (v > 0) return styles.positiveValue;
+    if (v < 0) return styles.negativeValue;
+    return styles.neutralValue;
   };
 
   // Criar elemento para o tooltip
@@ -624,95 +611,106 @@ export function FuturosOperationCard({
               </div>
 
               <div className={styles.tooltipContent}>
+                {/* COLUNA 1 — 1h */}
                 <div className={styles.tooltipColumn}>
                   <div className={styles.tooltipSection}>
-                    <h4>30 minutos</h4>
+                    <h4>1 hora</h4>
                     <div className={styles.tooltipRow}>
-                      <span>Entrada:</span>
-                      <span className={styles.positiveValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).ePeak30m
-                          : "N/A"}
+                      <span>E Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxE1h)}>
+                        {fmtPct(coin.tokenStats?.maxE1h)}
                       </span>
                     </div>
                     <div className={styles.tooltipRow}>
-                      <span>Saída:</span>
-                      <span className={styles.negativeValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).sPeak30m
-                          : "N/A"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.tooltipSection}>
-                    <h4>Total</h4>
-                    <div className={styles.tooltipRow}>
-                      <span>Entrada:</span>
-                      <span className={styles.positiveValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).ePeak6h
-                          : "N/A"}
-                      </span>
-                      <span className={styles.timestamp}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).updatedAt
-                          : ""}
+                      <span>E Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minE1h)}>
+                        {fmtPct(coin.tokenStats?.minE1h)}
                       </span>
                     </div>
                     <div className={styles.tooltipRow}>
-                      <span>Saída:</span>
-                      <span className={styles.negativeValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).sPeak6h
-                          : "N/A"}
+                      <span>S Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxS1h)}>
+                        {fmtPct(coin.tokenStats?.maxS1h)}
                       </span>
-                      <span className={styles.timestamp}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).updatedAt
-                          : ""}
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>S Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minS1h)}>
+                        {fmtPct(coin.tokenStats?.minS1h)}
                       </span>
                     </div>
                   </div>
                 </div>
 
+                {/* COLUNA 2 — 6h */}
                 <div className={styles.tooltipColumn}>
                   <div className={styles.tooltipSection}>
                     <h4>6 horas</h4>
                     <div className={styles.tooltipRow}>
-                      <span>Entrada:</span>
-                      <span className={styles.positiveValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).ePeak6h
-                          : "N/A"}
+                      <span>E Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxE6h)}>
+                        {fmtPct(coin.tokenStats?.maxE6h)}
                       </span>
                     </div>
                     <div className={styles.tooltipRow}>
-                      <span>Saída:</span>
-                      <span className={styles.negativeValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).sPeak6h
-                          : "N/A"}
+                      <span>E Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minE6h)}>
+                        {fmtPct(coin.tokenStats?.minE6h)}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>S Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxS6h)}>
+                        {fmtPct(coin.tokenStats?.maxS6h)}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>S Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minS6h)}>
+                        {fmtPct(coin.tokenStats?.minS6h)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COLUNA 3 — 24h + atualizado em */}
+                <div className={styles.tooltipColumn}>
+                  <div className={styles.tooltipSection}>
+                    <h4>24 horas</h4>
+                    <div className={styles.tooltipRow}>
+                      <span>E Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxE24h)}>
+                        {fmtPct(coin.tokenStats?.maxE24h)}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>E Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minE24h)}>
+                        {fmtPct(coin.tokenStats?.minE24h)}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>S Máx:</span>
+                      <span className={valClass(coin.tokenStats?.maxS24h)}>
+                        {fmtPct(coin.tokenStats?.maxS24h)}
+                      </span>
+                    </div>
+                    <div className={styles.tooltipRow}>
+                      <span>S Mín:</span>
+                      <span className={valClass(coin.tokenStats?.minS24h)}>
+                        {fmtPct(coin.tokenStats?.minS24h)}
                       </span>
                     </div>
                   </div>
 
                   <div className={styles.tooltipSection}>
-                    <h4>Picos</h4>
                     <div className={styles.tooltipRow}>
-                      <span>E Positivas +1%:</span>
-                      <span className={styles.neutralValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).peaksE1p30m
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>invertidos:</span>
-                      <span className={styles.neutralValue}>
-                        {coin.tokenStats
-                          ? formatTokenStats(coin.tokenStats).peaksS1p30m
-                          : "N/A"}
+                      <span className={styles.timestamp}>
+                        {coin.tokenStats?.updatedAt
+                          ? `Atualizado: ${fmtDateTime(
+                              coin.tokenStats.updatedAt
+                            )}`
+                          : ""}
                       </span>
                     </div>
                   </div>

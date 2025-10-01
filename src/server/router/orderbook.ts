@@ -160,15 +160,23 @@ export interface Orderbook {
 }
 
 export interface TokenStats {
-  updatedAt: number;
-  ePeak30m: number;
-  sPeak30m: number;
-  ePeak6h: number;
-  sPeak6h: number;
-  peaksE1p30m: number;
-  peaksE1p6h: number;
-  peaksS1p30m: number;
-  peaksS1p6h: number;
+  updatedAt?: number;
+
+  // E = (futures bid / spot ask - 1) * 100
+  maxE1h?: number;
+  minE1h?: number;
+  maxE6h?: number;
+  minE6h?: number;
+  maxE24h?: number;
+  minE24h?: number;
+
+  // S = (spot bid / futures ask - 1) * 100
+  maxS1h?: number;
+  minS1h?: number;
+  maxS6h?: number;
+  minS6h?: number;
+  maxS24h?: number;
+  minS24h?: number;
 }
 
 export interface ArbitrageOpportunity {
