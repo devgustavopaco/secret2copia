@@ -45,6 +45,7 @@ export default function OportunidadePage() {
   const router = useRouter();
   const { data: auth } = useSession();
   const [isOpen, setIsOpen] = useState(true);
+  const [viewMode, setViewMode] = useState<"both" | "entry" | "exit">("both");
   const [opportunity, setOpportunity] = useState<ArbitrageOpportunity | null>(
     null
   );
@@ -153,7 +154,23 @@ export default function OportunidadePage() {
   }, [opportunity, user?.dolarValue, dollarPrice, isOpen, spread]);
 
   const handleBack = () => router.back();
-  const toggleOperation = () => setIsOpen(!isOpen);
+  const toggleOperation = () => {
+    if (viewMode === "entry") {
+      setViewMode("exit");
+    } else if (viewMode === "exit") {
+      setViewMode("entry");
+    }
+  };
+
+  const toggleViewMode = () => {
+    if (viewMode === "both") {
+      setViewMode("entry");
+    } else if (viewMode === "entry") {
+      setViewMode("exit");
+    } else {
+      setViewMode("both");
+    }
+  };
 
   if (!ticker || !coin) {
     return (
@@ -239,48 +256,122 @@ export default function OportunidadePage() {
             <button onClick={handleBack} className={styles.backButton}>
               <ArrowLeft size={24} />
             </button>
-            <button onClick={toggleOperation} className={styles.toggleButton}>
-              <ArrowsCounterClockwise size={24} />
+            <button
+              onClick={toggleViewMode}
+              className={styles.menuButton}
+              title={
+                viewMode === "both"
+                  ? "Mostrar apenas uma seção"
+                  : viewMode === "entry"
+                  ? "Mostrar apenas Fechamento"
+                  : "Mostrar apenas Entrada"
+              }
+            >
+              <div
+                className={`${styles.hamburger} ${
+                  viewMode !== "both" ? styles.active : ""
+                }`}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </button>
+            {viewMode !== "both" && (
+              <button
+                onClick={toggleOperation}
+                className={styles.toggleButton}
+                title={`Alternar para ${
+                  viewMode === "entry" ? "Fechamento" : "Entrada"
+                }`}
+              >
+                <ArrowsCounterClockwise size={24} />
+              </button>
+            )}
           </div>
 
           <div className={styles.opportunityCard}>
             <h1 className={styles.coinName}>{ticker}</h1>
-            <p className={styles.operationType}>
-              {isOpen ? "Entrada" : "Saída"}
-            </p>
 
-            <div className={styles.pricesContainer}>
-              <div className={styles.priceItem}>
-                <span className={styles.exchangeName}>
-                  {firstExchange} {firstType}
-                </span>
-                <span className={styles.price}>
-                  {numberFormatter.format(firstPrice)}
-                </span>
-              </div>
+            {/* ENTRADA */}
+            {(viewMode === "both" || viewMode === "entry") && (
+              <div className={styles.operationSection}>
+                <h2 className={styles.sectionTitle}>ENTRADA</h2>
+                <div className={styles.pricesContainer}>
+                  <div className={styles.priceItem}>
+                    <span className={styles.exchangeName}>
+                      {opportunity.lowestAsk.exchange}_spot
+                    </span>
+                    <span className={styles.price}>
+                      {numberFormatter.format(spotAsk)}
+                    </span>
+                  </div>
 
-              <div className={styles.profitItem}>
-                <span className={styles.profitLabel}>Lucro</span>
-                <span
-                  className={`${styles.profit} ${
-                    currentSpread >= 0 ? styles.positive : styles.negative
-                  }`}
-                >
-                  {currentSpread >= 0 ? "+" : ""}
-                  {currentSpread.toFixed(2)}%
-                </span>
-              </div>
+                  <div className={styles.profitItem}>
+                    <span className={styles.profitLabel}>ENTRADA</span>
+                    <span
+                      className={`${styles.profit} ${
+                        opportunity.spread >= 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {opportunity.spread >= 0 ? "+" : ""}
+                      {opportunity.spread.toFixed(2)}%
+                    </span>
+                  </div>
 
-              <div className={styles.priceItem}>
-                <span className={styles.exchangeName}>
-                  {secondExchange} {secondType}
-                </span>
-                <span className={styles.price}>
-                  {numberFormatter.format(secondPrice)}
-                </span>
+                  <div className={styles.priceItem}>
+                    <span className={styles.exchangeName}>
+                      {opportunity.highestBid.exchange}_futures
+                    </span>
+                    <span className={styles.price}>
+                      {numberFormatter.format(futBid)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* FECHAMENTO */}
+            {(viewMode === "both" || viewMode === "exit") && (
+              <div className={styles.operationSection}>
+                <h2 className={styles.sectionTitle}>FECHAMENTO</h2>
+                <div className={styles.pricesContainer}>
+                  <div className={styles.priceItem}>
+                    <span className={styles.exchangeName}>
+                      {opportunity.lowestAsk.exchange}_spot
+                    </span>
+                    <span className={styles.price}>
+                      {numberFormatter.format(spotBid)}
+                    </span>
+                  </div>
+
+                  <div className={styles.profitItem}>
+                    <span className={styles.profitLabel}>FECHAMENTO</span>
+                    <span
+                      className={`${styles.profit} ${
+                        opportunity.spreadS >= 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {opportunity.spreadS >= 0 ? "+" : ""}
+                      {opportunity.spreadS.toFixed(2)}%
+                    </span>
+                  </div>
+
+                  <div className={styles.priceItem}>
+                    <span className={styles.exchangeName}>
+                      {opportunity.highestBid.exchange}_futures
+                    </span>
+                    <span className={styles.price}>
+                      {numberFormatter.format(futAsk)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

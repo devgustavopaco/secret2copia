@@ -21,7 +21,8 @@
 }
 
 .backButton,
-.toggleButton {
+.toggleButton,
+.menuButton {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 8px;
@@ -36,6 +37,41 @@
   }
 }
 
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 24px;
+  height: 18px;
+  position: relative;
+  justify-content: center;
+
+  span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: currentColor;
+    border-radius: 2px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: center;
+  }
+
+  &.active {
+    span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+  }
+}
+
 .opportunityCard {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
@@ -43,6 +79,33 @@
   text-align: center;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.operationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 0.9rem;
+  color: #60a5fa;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-align: center;
+  padding: 8px 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(37, 99, 235, 0.1) 100%
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .coinName {
@@ -92,7 +155,12 @@
   font-size: 1.1rem;
   color: white;
   font-weight: 700;
-  font-family: "Inter", monospace;
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .profitItem {
@@ -116,7 +184,12 @@
 .profit {
   font-size: 1.3rem;
   font-weight: 700;
-  font-family: "Inter", monospace;
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   &.positive {
     color: #00ff88;
@@ -143,6 +216,11 @@
 
   .opportunityCard {
     padding: 15px 10px;
+    gap: 15px;
+  }
+
+  .operationSection {
+    gap: 10px;
   }
 
   .coinName {
@@ -150,7 +228,7 @@
   }
 
   .price {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .profit {
@@ -159,5 +237,10 @@
 
   .header {
     margin-bottom: 10px;
+  }
+
+  .sectionTitle {
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
 }
