@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "../../../utils/trpc";
 import styles from "./styles.module.scss";
+import Portal from "../../Portal";
 
 interface ModalExchange {
   isOpen?: boolean;
@@ -98,82 +99,85 @@ export function FullScreenModal({
   };
 
   return (
-    <div
-      className={`${styles.container} ${
-        isCleaned
-          ? styles.containerCleaned
-          : isChecked
-          ? styles.containerChecked
-          : ""
-      }`}
-    >
-      <div className={`${styles.contentModal} container`}>
-        <div className={styles.headerModal}>
-          <div className={styles.contentHeaderModal}>
-            <p>
-              SELECIONE CORRETORAS PARA A {operation?.toUpperCase() || "COMPRA"}
-            </p>
-            <img src="images/X.svg" alt="Close modal" onClick={onClose} />
+    <Portal>
+      <div
+        className={`${styles.container} ${
+          isCleaned
+            ? styles.containerCleaned
+            : isChecked
+            ? styles.containerChecked
+            : ""
+        }`}
+      >
+        <div className={`${styles.contentModal} container`}>
+          <div className={styles.headerModal}>
+            <div className={styles.contentHeaderModal}>
+              <p>
+                SELECIONE CORRETORAS PARA A{" "}
+                {operation?.toUpperCase() || "COMPRA"}
+              </p>
+              <img src="images/X.svg" alt="Close modal" onClick={onClose} />
+            </div>
           </div>
-        </div>
 
-        <div className={styles.selectedExchangesContainer}>
-          {Array.isArray(selectedExchanges) &&
-            selectedExchanges.map((exchange) => (
-              <div key={exchange.id} className={styles.selectedExchanges}>
-                <div className={styles.selectedExchangesBlock}>
-                  <img
-                    src={exchange.image_url || ""}
-                    alt={`${exchange.name} Logo`}
-                  />
-                  <p>{exchange.name}</p>
-                </div>
-                <img
-                  src="images/X.svg"
-                  alt="Remove exchange"
-                  onClick={() => handleRemoveExchangeClick(exchange)}
-                  style={{ cursor: "pointer" }}
-                />
-              </div>
-            ))}
-        </div>
-
-        <div className={styles.orderExchanges}>
-          <div className={styles.orderExchangesBlock}>
-            {filteredExchanges.map((exchange) => {
-              const isSelected = selectedExchanges.find(
-                (e) => e.id === exchange.id
-              );
-              return (
-                <div
-                  key={exchange.id}
-                  className={`${styles.exchangeCard} ${
-                    isSelected ? styles.selected : ""
-                  }`}
-                  onClick={() => handleAddExchangeClick(exchange)}
-                >
-                  <img
-                    src={exchange.image_url || ""}
-                    alt={`${exchange.name} Logo`}
-                  />
-                  <p>{exchange.name}</p>
-
-                  {isSelected ? (
+          <div className={styles.selectedExchangesContainer}>
+            {Array.isArray(selectedExchanges) &&
+              selectedExchanges.map((exchange) => (
+                <div key={exchange.id} className={styles.selectedExchanges}>
+                  <div className={styles.selectedExchangesBlock}>
                     <img
-                      src="images/checkedIcon.svg"
-                      className={styles.selectedIcon}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveExchangeClick(exchange);
-                      }}
+                      src={exchange.image_url || ""}
+                      alt={`${exchange.name} Logo`}
                     />
-                  ) : null}
+                    <p>{exchange.name}</p>
+                  </div>
+                  <img
+                    src="images/X.svg"
+                    alt="Remove exchange"
+                    onClick={() => handleRemoveExchangeClick(exchange)}
+                    style={{ cursor: "pointer" }}
+                  />
                 </div>
-              );
-            })}
+              ))}
+          </div>
+
+          <div className={styles.orderExchanges}>
+            <div className={styles.orderExchangesBlock}>
+              {filteredExchanges.map((exchange) => {
+                const isSelected = selectedExchanges.find(
+                  (e) => e.id === exchange.id
+                );
+                return (
+                  <div
+                    key={exchange.id}
+                    className={`${styles.exchangeCard} ${
+                      isSelected ? styles.selected : ""
+                    }`}
+                    onClick={() => handleAddExchangeClick(exchange)}
+                  >
+                    <img
+                      src={exchange.image_url || ""}
+                      alt={`${exchange.name} Logo`}
+                    />
+                    <p>{exchange.name}</p>
+
+                    {isSelected ? (
+                      <img
+                        src="images/checkedIcon.svg"
+                        className={styles.selectedIcon}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveExchangeClick(exchange);
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

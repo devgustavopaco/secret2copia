@@ -769,20 +769,23 @@ export function FuturosOperationCard({
       <div className={styles.cellSpreads}>
         {viewConfig.showSpreadE && (
           <span
-            className={`${styles.chip} ${isLong ? styles.green : styles.red}`}
+            className={`${styles.chip} ${
+              (coin.spread ?? 0) > 0 ? styles.green : styles.red
+            }`}
             title="Lucro E"
           >
-            E {formatterSpread.format(coin.spread / 100)}
+            E {formatterSpread.format((coin.spread ?? 0) / 100)}
           </span>
         )}
+
         {viewConfig.showSpreadS && (
           <span
             className={`${styles.chip} ${
-              coin.spreadS > 0 ? styles.green : styles.red
+              (coin.spreadS ?? 0) > 0 ? styles.green : styles.red
             }`}
             title="Lucro S"
           >
-            S {formatterSpread.format(coin.spreadS / 100)}
+            S {formatterSpread.format((coin.spreadS ?? 0) / 100)}
           </span>
         )}
       </div>

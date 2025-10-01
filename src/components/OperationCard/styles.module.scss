@@ -265,6 +265,12 @@
       }
     }
   }
+  .spreadPositive {
+    color: var(--green-200);
+  }
+  .spreadNegative {
+    color: var(--red-200);
+  }
 }
 
 .lottieAnimation {

@@ -136,7 +136,10 @@ export function OperationCard({
   const animationData = isChecked
     ? require("/public/animations/checkPurple.json")
     : require("/public/animations/checkGreen.json");
-
+  const isSpreadNegative =
+    typeof coin.spread === "number" &&
+    Number.isFinite(coin.spread) &&
+    coin.spread < 0;
   const [dimension, setDimension] = useState({ width: 40, height: 40 });
 
   useEffect(() => {
@@ -227,9 +230,13 @@ export function OperationCard({
       <hr />
 
       <div className={styles["card-footer"]}>
-        <p>
+        <p
+          className={
+            isSpreadNegative ? styles.spreadNegative : styles.spreadPositive
+          }
+        >
           <span>Spread</span>
-          {formatterSpread.format(coin.spread / 100)}
+          {formatterSpread.format((coin.spread ?? 0) / 100)}
         </p>
         <p>
           <span>Taxas</span>
