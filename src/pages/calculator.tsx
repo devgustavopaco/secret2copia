@@ -280,6 +280,8 @@ function loadCalcs(): ExecCalc[] {
 function saveCalcs(c: ExecCalc[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(LS_KEY, JSON.stringify(c));
+  // Disparar evento customizado para atualizar outros componentes
+  window.dispatchEvent(new CustomEvent("calculatorsUpdated"));
 }
 
 function OneExecCard({
@@ -402,8 +404,31 @@ function OneExecCard({
 
 function ExecCalculatorDeck({ onBack }: { onBack?: () => void }) {
   const [calcs, setCalcs] = useState<ExecCalc[]>([]);
-  useEffect(() => setCalcs(loadCalcs()), []);
-  useEffect(() => saveCalcs(calcs), [calcs]);
+
+  useEffect(() => {
+    setCalcs(loadCalcs());
+  }, []);
+
+  // Escutar mudanças no localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCalcs(loadCalcs());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("calculatorsUpdated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("calculatorsUpdated", handleStorageChange);
+    };
+  }, []);
+
+  // Função para atualizar calculadoras
+  const updateCalcs = (newCalcs: ExecCalc[]) => {
+    setCalcs(newCalcs);
+    saveCalcs(newCalcs);
+  };
 
   return (
     <section className={`${styles.card} ${styles.full}`}>
@@ -418,11 +443,11 @@ function ExecCalculatorDeck({ onBack }: { onBack?: () => void }) {
           <button
             className={styles.btn}
             onClick={() =>
-              setCalcs((c) => [
-                ...c,
+              updateCalcs([
+                ...calcs,
                 {
                   id: crypto.randomUUID(),
-                  name: `Calculadora #${c.length + 1}`,
+                  name: `Calculadora #${calcs.length + 1}`,
                   entrySpot: "",
                   entryShort: "",
                   exitSpot: "",
@@ -445,13 +470,9 @@ function ExecCalculatorDeck({ onBack }: { onBack?: () => void }) {
               key={c.id}
               calc={c}
               onChange={(next) =>
-                setCalcs((prev) =>
-                  prev.map((x) => (x.id === next.id ? next : x))
-                )
+                updateCalcs(calcs.map((x) => (x.id === next.id ? next : x)))
               }
-              onDelete={() =>
-                setCalcs((prev) => prev.filter((x) => x.id !== c.id))
-              }
+              onDelete={() => updateCalcs(calcs.filter((x) => x.id !== c.id))}
             />
           ))}
         </div>
@@ -460,11 +481,141 @@ function ExecCalculatorDeck({ onBack }: { onBack?: () => void }) {
   );
 }
 
+/** ===================== Grid de Calculadoras Salvas ===================== */
+function SavedCalculatorsGrid({
+  onViewDeck,
+  onEditCalculator,
+}: {
+  onViewDeck: () => void;
+  onEditCalculator?: (calcId: string) => void;
+}) {
+  const [calcs, setCalcs] = useState<ExecCalc[]>([]);
+
+  useEffect(() => {
+    setCalcs(loadCalcs());
+  }, []);
+
+  // Escutar mudanças no localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCalcs(loadCalcs());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Também escutar um evento customizado para mudanças na mesma aba
+    window.addEventListener("calculatorsUpdated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("calculatorsUpdated", handleStorageChange);
+    };
+  }, []);
+
+  if (calcs.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <div className={styles.emptyIcon}>📱</div>
+        <h3 className={styles.emptyTitle}>Nenhuma calculadora criada</h3>
+        <p className={styles.emptyDescription}>
+          Crie sua primeira calculadora personalizada para começar
+        </p>
+        <button className={styles.createBtn} onClick={onViewDeck}>
+          + Criar Calculadora
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.savedGrid}>
+      {calcs.slice(0, 4).map((calc) => (
+        <div
+          key={calc.id}
+          className={styles.savedCard}
+          onClick={() =>
+            onEditCalculator ? onEditCalculator(calc.id) : onViewDeck()
+          }
+        >
+          <div className={styles.savedHeader}>
+            <h4 className={styles.savedName}>{calc.name}</h4>
+            <div className={styles.savedStatus}>
+              {calc.entrySpot &&
+              calc.entryShort &&
+              calc.exitSpot &&
+              calc.exitShort
+                ? "✅ Completa"
+                : "⚠️ Incompleta"}
+            </div>
+          </div>
+          <div className={styles.savedPreview}>
+            <div className={styles.savedRow}>
+              <span>Entrada:</span>
+              <span className={styles.savedValue}>
+                {calc.entrySpot && calc.entryShort
+                  ? `${(
+                      (toNum(calc.entryShort) / toNum(calc.entrySpot) - 1) *
+                      100
+                    ).toFixed(2)}%`
+                  : "--"}
+              </span>
+            </div>
+            <div className={styles.savedRow}>
+              <span>Saída:</span>
+              <span className={styles.savedValue}>
+                {calc.exitSpot && calc.exitShort
+                  ? `${(
+                      (toNum(calc.exitSpot) / toNum(calc.exitShort) - 1) *
+                      100
+                    ).toFixed(2)}%`
+                  : "--"}
+              </span>
+            </div>
+            <div className={styles.savedRow}>
+              <span>Total:</span>
+              <span className={styles.savedValue}>
+                {(() => {
+                  if (
+                    calc.entrySpot &&
+                    calc.entryShort &&
+                    calc.exitSpot &&
+                    calc.exitShort
+                  ) {
+                    const entryProfit =
+                      (toNum(calc.entryShort) / toNum(calc.entrySpot) - 1) *
+                      100;
+                    const exitProfit =
+                      (toNum(calc.exitSpot) / toNum(calc.exitShort) - 1) * 100;
+                    return `${(entryProfit + exitProfit).toFixed(2)}%`;
+                  }
+                  return "--";
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+      {calcs.length > 4 && (
+        <div className={styles.viewAllCard} onClick={onViewDeck}>
+          <div className={styles.viewAllContent}>
+            <div className={styles.viewAllIcon}>📋</div>
+            <div className={styles.viewAllText}>
+              <h4>Ver Todas</h4>
+              <p>+{calcs.length - 4} calculadoras</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** ===================== Página com navegação ===================== */
 type View = "menu" | "avg" | "fraction" | "deck";
 
 export default function Calculators() {
   const [view, setView] = useState<View>("menu");
+  const [editingCalcId, setEditingCalcId] = useState<string | null>(null);
 
   return (
     <>
@@ -507,36 +658,63 @@ export default function Calculators() {
 
         {/* Menu de entrada com CTAs grandes */}
         {view === "menu" && (
-          <div className={styles.ctaGrid}>
-            <button
-              className={`${styles.cta} ${styles.ctaAvg}`}
-              onClick={() => setView("avg")}
-            >
-              <span className={styles.ctaTitle}>Preço Médio</span>
-              <span className={styles.ctaSubtitle}>
-                Calcular média de compras
-              </span>
-            </button>
+          <div className={styles.menuContainer}>
+            {/* Seção de Calculadoras Criadas */}
+            <div className={styles.savedSection}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Suas Calculadoras</h2>
+                <button
+                  className={styles.refreshBtn}
+                  onClick={() =>
+                    window.dispatchEvent(new CustomEvent("calculatorsUpdated"))
+                  }
+                  title="Atualizar calculadoras"
+                >
+                  🔄
+                </button>
+              </div>
+              <SavedCalculatorsGrid
+                onViewDeck={() => setView("deck")}
+                onEditCalculator={(calcId) => {
+                  setEditingCalcId(calcId);
+                  setView("deck");
+                }}
+              />
+            </div>
 
-            <button
-              className={`${styles.cta} ${styles.ctaFraction}`}
-              onClick={() => setView("fraction")}
-            >
-              <span className={styles.ctaTitle}>Ordem Fracionada</span>
-              <span className={styles.ctaSubtitle}>
-                Divide execução em partes
-              </span>
-            </button>
+            {/* Seção de Ferramentas */}
+            <div className={styles.toolsSection}>
+              <h2 className={styles.sectionTitle}>Ferramentas</h2>
+              <div className={styles.toolsGrid}>
+                <button
+                  className={`${styles.toolCard} ${styles.toolAvg}`}
+                  onClick={() => setView("avg")}
+                >
+                  <div className={styles.toolIcon}>📊</div>
+                  <div className={styles.toolContent}>
+                    <h3 className={styles.toolTitle}>Preço Médio</h3>
+                    <p className={styles.toolDescription}>
+                      Calcular média ponderada de compras
+                    </p>
+                  </div>
+                  <div className={styles.toolArrow}>→</div>
+                </button>
 
-            <button
-              className={`${styles.cta} ${styles.ctaDeck}`}
-              onClick={() => setView("deck")}
-            >
-              <span className={styles.ctaTitle}>Calculadoras</span>
-              <span className={styles.ctaSubtitle}>
-                Nomeie e salve entradas/saídas
-              </span>
-            </button>
+                <button
+                  className={`${styles.toolCard} ${styles.toolFraction}`}
+                  onClick={() => setView("fraction")}
+                >
+                  <div className={styles.toolIcon}>🔢</div>
+                  <div className={styles.toolContent}>
+                    <h3 className={styles.toolTitle}>Ordem Fracionada</h3>
+                    <p className={styles.toolDescription}>
+                      Divide execução em partes percentuais
+                    </p>
+                  </div>
+                  <div className={styles.toolArrow}>→</div>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
