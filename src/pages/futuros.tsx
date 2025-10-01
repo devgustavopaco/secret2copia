@@ -1242,8 +1242,8 @@ const Futuros: NextPage<FuturosProps> = ({
               title={isSidebarOpen ? "Fechar Sidebar" : "Abrir Sidebar"}
             >
               <svg
-                width="24"
-                height="24"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

@@ -20,6 +20,11 @@ export default class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap"
             rel="stylesheet"
           ></link>
+          {/* Fontes otimizadas para números e dados */}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+          />
           <link rel="shortcut icon" href="/favicon.ico" type="image/ico" />
         </Head>
         <body>

@@ -1,27 +1,28 @@
-/* ======== Harmonic Blue Theme Row ======== */
+/* ======== Harmonic Blue Theme Row - Compact & Intuitive ======== */
 .row {
   --glass: rgba(15, 35, 65, 0.75);
   --stroke: rgba(64, 156, 255, 0.2);
-  --fs: 13px;
-  --fs-sm: 11.5px;
-  --fs-lg: 14px;
-  --row-px: 16px;
-  --row-py: 14px;
+  --fs: 12px;
+  --fs-sm: 10.5px;
+  --fs-lg: 13px;
+  --fs-xl: 15px;
+  --row-px: 12px;
+  --row-py: 10px;
 
   display: grid;
   grid-template-columns:
-    minmax(180px, 1.3fr) /* asset */
-    minmax(150px, 1.1fr) /* spot  */
-    minmax(150px, 1.1fr) /* fut   */
-    minmax(170px, 1fr) /* spreads */
-    minmax(220px, 1.2fr) /* funding+exp */
-    minmax(190px, 1fr) /* vols */
+    minmax(140px, 1.2fr) /* asset */
+    minmax(100px, 0.9fr) /* spot price */
+    minmax(100px, 0.9fr) /* fut price */
+    minmax(120px, 1fr) /* spreads */
+    minmax(140px, 1.1fr) /* funding */
+    minmax(120px, 0.8fr) /* volumes */
     auto; /* actions */
 
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: var(--row-py) var(--row-px);
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(
     135deg,
     rgba(15, 35, 65, 0.85) 0%,
@@ -31,7 +32,7 @@
   color: #e8f4ff;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(12px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
 
   &:hover {
     background: linear-gradient(
@@ -55,31 +56,31 @@
       inset 0 0 0 1px rgba(239, 68, 68, 0.15);
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1200px) {
     grid-template-columns:
-      minmax(140px, 1.2fr)
+      minmax(120px, 1.1fr)
+      minmax(90px, 0.8fr)
+      minmax(90px, 0.8fr)
+      minmax(100px, 0.9fr)
       minmax(120px, 1fr)
-      minmax(120px, 1fr)
-      minmax(150px, 1fr)
-      minmax(180px, 1.1fr)
-      minmax(160px, 1fr)
+      minmax(100px, 0.7fr)
       auto;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     grid-template-columns:
-      minmax(140px, 1.1fr)
-      minmax(115px, 0.9fr)
-      minmax(115px, 0.9fr)
-      minmax(140px, 0.9fr)
-      minmax(170px, 1fr)
-      minmax(1px, 0.8fr)
+      minmax(110px, 1fr)
+      minmax(80px, 0.7fr)
+      minmax(80px, 0.7fr)
+      minmax(90px, 0.8fr)
+      minmax(110px, 0.9fr)
+      minmax(80px, 0.6fr)
       auto;
   }
 
   @media (max-width: 700px) {
     grid-template-columns: 1fr 1fr 1fr auto;
-    grid-auto-rows: minmax(40px, auto);
+    grid-auto-rows: minmax(35px, auto);
     .cellSpreads,
     .cellVol {
       display: none;
@@ -93,13 +94,19 @@
   align-items: center;
 }
 .priceMono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", monospace;
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", monospace;
   font-weight: 700;
-  font-size: var(--fs-lg);
-  color: #e0f2ff;
+  font-size: var(--fs-xl);
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .exLink {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   text-align: left;
   background: rgba(64, 156, 255, 0.1);
   border: 1px solid rgba(64, 156, 255, 0.25);
@@ -110,6 +117,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   &:hover {
     background: rgba(64, 156, 255, 0.2);
     color: #93c5fd;
@@ -117,25 +127,29 @@
   }
 }
 .subKpi {
+  font-family: "Roboto Mono", monospace;
   font-size: var(--fs-sm);
   color: #94a3b8;
   font-weight: 500;
   margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  opacity: 0.8;
 }
 
 /* Asset */
 .cellAsset {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   img {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(64, 156, 255, 0.3);
-    box-shadow: 0 2px 8px rgba(64, 156, 255, 0.15);
+    box-shadow: 0 2px 6px rgba(64, 156, 255, 0.15);
   }
 }
 .assetText {
@@ -145,18 +159,24 @@
   min-width: 0;
 }
 .sym {
-  font-size: 15px;
-  font-weight: 700;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--fs-xl);
+  font-weight: 800;
   letter-spacing: 0.3px;
   white-space: nowrap;
-  color: #e0f2ff;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .assetName {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: var(--fs-sm);
   color: #94a3b8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 /* Spreads */
@@ -167,13 +187,17 @@
   flex-wrap: wrap;
 }
 .chip {
-  padding: 5px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: "Roboto Mono", monospace;
   font-weight: 700;
   font-size: var(--fs);
   border: 1.5px solid transparent;
-  line-height: 1.3;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 .green {
   color: #22c55e;
@@ -201,20 +225,29 @@
   align-items: flex-start;
 }
 .funding {
-  font-weight: 800;
+  font-family: "Roboto Mono", monospace;
+  font-weight: 700;
   font-size: var(--fs-lg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .expire {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: var(--fs-sm);
   color: #94a3b8;
   background: rgba(64, 156, 255, 0.08);
   padding: 2px 8px;
   border-radius: 6px;
   width: fit-content;
+  font-weight: 500;
 }
 .expire2 {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: var(--fs-sm);
   color: #22c55e;
+  font-weight: 500;
 }
 
 /* Volumes compactos */
@@ -225,13 +258,17 @@
   flex-wrap: wrap;
 }
 .volItem {
-  font-size: var(--fs);
-  color: #cbd5e1;
-  font-weight: 600;
+  font-family: "Roboto Mono", monospace;
+  font-size: var(--fs-sm);
+  color: #94a3b8;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 .volBadge {
+  font-family: "Roboto Mono", monospace;
   font-size: var(--fs-sm);
-  font-weight: 700;
+  font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
   background: linear-gradient(
@@ -241,31 +278,45 @@
   );
   color: #60a5fa;
   border: 1px solid rgba(59, 130, 246, 0.3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* Labels de seção para melhor organização */
+.sectionLabel {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  opacity: 0.8;
 }
 
 /* Ações compactas */
 .cellActions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   justify-content: flex-end;
 }
 .iconBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: rgba(64, 156, 255, 0.1);
   border: 1.5px solid rgba(64, 156, 255, 0.25);
   display: grid;
   place-items: center;
   color: #60a5fa;
-  font-size: 13px;
+  font-size: 11px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   &:hover {
     background: rgba(64, 156, 255, 0.2);
     border-color: rgba(64, 156, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(64, 156, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(64, 156, 255, 0.2);
   }
   &.danger {
     color: #ef4444;
