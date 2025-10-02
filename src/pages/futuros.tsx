@@ -16,6 +16,7 @@ import { BuyExchangeMobile } from "../components/Mobile/BuyExchangeMobile";
 import { SellExchangeMobile } from "../components/Mobile/SellExchangeMobile";
 import { ModalOrderBook } from "../components/Modals/ModalOrderBook";
 import { FuturosOperationCard } from "../components/FuturosOperationCard";
+import { FuturosTable } from "../components/FuturosOperationCard/FuturosTable";
 import { FuturosSidebar } from "../components/FuturosSidebar";
 import Soccer from "../icons/Soccer";
 import { updateIP } from "../server/db/checkIP";
@@ -1566,134 +1567,25 @@ const Futuros: NextPage<FuturosProps> = ({
                       </div>
                     </div>
                   </div>
-                  <div className={styles.operations}>
-                    {paginatedOperations.map((operation: any) => {
-                      const isGroup =
-                        operation._isGroup && operation._groupCount > 1;
-                      const isExpanded = expandedGroups.has(operation.ticker);
-                      const opsToRender = isGroup
-                        ? isExpanded
-                          ? operation._groupedOps
-                          : [operation._groupedOps[0]]
-                        : [operation];
-
-                      // Key única para o grupo ou operação individual
-                      const groupKey = isGroup
-                        ? `group-${operation.ticker}`
-                        : `${operation.ticker}-${operation.lowestAsk.exchange}-${operation.highestBid.exchange}`;
-
-                      return (
-                        <div
-                          key={groupKey}
-                          className={`${styles.operationGroup} ${
-                            isGroup ? styles.grouped : ""
-                          } ${isExpanded ? styles.expanded : ""}`}
-                        >
-                          {opsToRender.map((op: any, idx: number) => {
-                            const key = `${op.ticker}-${op.lowestAsk.exchange}-${op.highestBid.exchange}`;
-                            return (
-                              <div
-                                key={key}
-                                className={`${styles.cardWrapper} ${
-                                  isGroup && idx === 0
-                                    ? styles.hasExpandButton
-                                    : ""
-                                }`}
-                                style={
-                                  isExpanded && isGroup
-                                    ? {
-                                        animationDelay: `${idx * 0.05}s`,
-                                      }
-                                    : {}
-                                }
-                              >
-                                {isGroup && idx === 0 && !isExpanded && (
-                                  <button
-                                    className={styles.expandButton}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const newExpanded = new Set(
-                                        expandedGroups
-                                      );
-                                      newExpanded.add(operation.ticker);
-                                      setExpandedGroups(newExpanded);
-                                    }}
-                                    title={`Expandir ${operation._groupCount} oportunidades`}
-                                  >
-                                    <div className={styles.expandIcon}>
-                                      <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.5"
-                                      >
-                                        <path d="M9 18l6-6-6-6" />
-                                      </svg>
-                                    </div>
-                                    <div className={styles.expandBadge}>
-                                      {operation._groupCount}
-                                    </div>
-                                  </button>
-                                )}
-                                <FuturosOperationCard
-                                  coin={{
-                                    image: op.coinImage,
-                                    name: op.coin,
-                                    ask: op.lowestAsk,
-                                    bid: op.highestBid,
-                                    fee: op.fee,
-                                    tax: op.tax,
-                                    symbol: op.ticker,
-                                    spread: op.spread,
-                                    spreadS: op.spreadS,
-                                    fundingRate: op.fundingRate,
-                                    spotVolume24H: op.spotVolume24h,
-                                    futVolume24H: op.futVolume24h,
-                                    validSince: op.validSince ?? 0,
-                                    fundingRateExpTs: op.fundingRateExpTs,
-                                    tokenStats: op.tokenStats,
-                                  }}
-                                  dollarPrice={dollarPrice}
-                                  isAdmin={isAdmin}
-                                  isChecked={isChecked}
-                                  isOpen={isOpen}
-                                  viewConfig={viewConfig}
-                                  onClick={() => setSelectedOperation(op)}
-                                  onCalculatorClick={() =>
-                                    handleCalculatorClick(op)
-                                  }
-                                  isFavorite={favorites.includes(key)}
-                                  onToggleFavorite={() => toggleFavorite(key)}
-                                  onDeleteClick={() =>
-                                    setOperationToDelete(key)
-                                  }
-                                  onChartClick={(url) => {
-                                    setTradingViewUrl(url);
-                                    setIsTradingViewOpen(true);
-                                  }}
-                                />
-                              </div>
-                            );
-                          })}
-
-                          {isGroup && isExpanded && (
-                            <button
-                              className={styles.collapseButton}
-                              onClick={() => {
-                                const newExpanded = new Set(expandedGroups);
-                                newExpanded.delete(operation.ticker);
-                                setExpandedGroups(newExpanded);
-                              }}
-                            >
-                              Recolher {operation.ticker}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <FuturosTable
+                    operations={paginatedOperations}
+                    viewConfig={viewConfig}
+                    dollarPrice={dollarPrice}
+                    isOpen={isOpen}
+                    isFavorite={(key: string) => favorites.includes(key)}
+                    onToggleFavorite={(key: string) => toggleFavorite(key)}
+                    onDeleteClick={(key: string) => setOperationToDelete(key)}
+                    onCalculatorClick={(operation: any) =>
+                      handleCalculatorClick(operation)
+                    }
+                    onChartClick={(url: string) => {
+                      setTradingViewUrl(url);
+                      setIsTradingViewOpen(true);
+                    }}
+                    onClick={(operation: any) =>
+                      setSelectedOperation(operation)
+                    }
+                  />
                   {totalPages > 1 && (
                     <div className={styles.pagination}>
                       <button

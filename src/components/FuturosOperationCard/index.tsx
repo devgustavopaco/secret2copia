@@ -1,11 +1,40 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calculator, Star, Trash } from "phosphor-react";
+import {
+  Calculator,
+  Star,
+  Trash,
+  ChartLine,
+  ArrowSquareOut,
+  CaretDown,
+  CaretRight,
+} from "phosphor-react";
 import { trpc } from "../../utils/trpc";
-import styles from "./styles.module.scss";
 import { getCorrectSymbol } from "../../constants/symbolMappings";
 import { TokenStats } from "../../server/router/orderbook";
+
+// Material-UI imports
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Chip,
+  Typography,
+  Box,
+  Avatar,
+  Tooltip,
+  Card,
+  CardContent,
+  Grid,
+  Divider,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 type Ticker =
   | "SHIB"
@@ -76,6 +105,11 @@ interface FuturosOperationCardProps {
   onDeleteClick: () => void;
   onChartClick?: (url: string) => void;
   viewConfig?: ViewConfig;
+  // Propriedades de grupo
+  isGroup?: boolean;
+  groupCount?: number;
+  groupedOps?: any[];
+  isExpanded?: boolean;
 }
 
 const numberFormatter = new Intl.NumberFormat("pt-BR", {
@@ -129,6 +163,107 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
 const calculatePrice = (price: number, isUSD: boolean, dolarValue: number) =>
   isUSD ? price : price / dolarValue;
 
+// Styled components
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+  },
+  "&:hover": {
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+    cursor: "pointer",
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+  color: "#ffffff",
+  fontSize: "0.9rem",
+  padding: "12px 8px",
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: "rgba(59, 130, 246, 0.15)",
+  "& .MuiTableCell-head": {
+    color: "#e0f2ff",
+    fontWeight: 700,
+    fontSize: "0.85rem",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    borderBottom: "2px solid rgba(59, 130, 246, 0.3)",
+  },
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  backgroundColor: "transparent",
+  borderRadius: "12px",
+  overflow: "hidden",
+  "&::-webkit-scrollbar": {
+    height: "8px",
+  },
+  "&::-webkit-scrollbar-track": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: "rgba(59, 130, 246, 0.5)",
+    borderRadius: "4px",
+  },
+}));
+
+const ExchangeChip = styled(Chip)(({ theme }) => ({
+  backgroundColor: "rgba(59, 130, 246, 0.2)",
+  color: "#60a5fa",
+  border: "1px solid rgba(59, 130, 246, 0.3)",
+  fontSize: "0.75rem",
+  height: "24px",
+  "&:hover": {
+    backgroundColor: "rgba(59, 130, 246, 0.3)",
+    color: "#ffffff",
+  },
+}));
+
+const PriceTypography = styled(Typography)(({ theme }) => ({
+  fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+  fontWeight: 700,
+  color: "#ffffff",
+}));
+
+const SpreadChip = styled(Chip)(({ theme }) => ({
+  fontSize: "0.8rem",
+  fontWeight: 700,
+  height: "28px",
+  "&.positive": {
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    color: "#10b981",
+    border: "1px solid rgba(16, 185, 129, 0.3)",
+  },
+  "&.negative": {
+    backgroundColor: "rgba(239, 68, 68, 0.2)",
+    color: "#ef4444",
+    border: "1px solid rgba(239, 68, 68, 0.3)",
+  },
+}));
+
+const ActionButton = styled(IconButton)(({ theme }) => ({
+  color: "rgba(255, 255, 255, 0.7)",
+  padding: "6px",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    color: "#ffffff",
+  },
+  "&.favorite": {
+    color: "#fbbf24",
+    "&:hover": {
+      backgroundColor: "rgba(251, 191, 36, 0.2)",
+    },
+  },
+}));
+
 export function FuturosOperationCard({
   coin,
   dollarPrice = 1,
@@ -151,6 +286,10 @@ export function FuturosOperationCard({
     showVolume24h: true,
     showLiquidity: true,
   },
+  isGroup = false,
+  groupCount = 0,
+  groupedOps = [],
+  isExpanded = false,
 }: FuturosOperationCardProps) {
   const [showTokenStats, setShowTokenStats] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -190,10 +329,10 @@ export function FuturosOperationCard({
 
   // classe para colorir valor (positivo/negativo/neutro)
   const valClass = (v?: number) => {
-    if (v === undefined) return styles.neutralValue;
-    if (v > 0) return styles.positiveValue;
-    if (v < 0) return styles.negativeValue;
-    return styles.neutralValue;
+    if (v === undefined) return "neutralValue";
+    if (v > 0) return "positiveValue";
+    if (v < 0) return "negativeValue";
+    return "neutralValue";
   };
 
   // Criar elemento para o tooltip
@@ -470,27 +609,6 @@ export function FuturosOperationCard({
       window.location.href = url;
   }
 
-  function handleBothExchangesRedirect() {
-    const sEx = coin.ask.exchange.toLowerCase().replace(/ spot| futures/g, "");
-    const fEx = coin.bid.exchange.toLowerCase().replace(/ spot| futures/g, "");
-    const sPair = formatPairForExchange(sEx, coin.symbol, false);
-    const fPair = formatPairForExchange(fEx, coin.symbol, true);
-    const sUrl = (spotLinks as any)[sEx]?.(coin.symbol, sPair);
-    const fUrl = (futuresLinks as any)[fEx]?.(coin.symbol, fPair);
-    if (sUrl)
-      window.open(
-        sUrl,
-        "SpotWindow",
-        "width=1200,height=800,scrollbars=yes,resizable=yes"
-      );
-    if (fUrl)
-      window.open(
-        fUrl,
-        "FuturesWindow",
-        "width=1200,height=800,scrollbars=yes,resizable=yes"
-      );
-  }
-
   function generateTradingViewURL() {
     const map: Record<string, string> = {
       MEXC: "MEXC",
@@ -541,361 +659,576 @@ export function FuturosOperationCard({
       : coin.bid.orderbook?.asks[0]?.sumVolume) ?? 0;
   const spotLiquidity = spotDisplayPrice * spotVolume;
   const futuresLiquidity = futuresDisplayPrice * futuresVolume;
+
   return (
-    <section
-      className={`${styles.row} ${isLong ? styles.long : styles.short}`}
-      onClick={onClick}
-      title={`${coin.name} (${coin.symbol})`}
-    >
+    <StyledTableRow onClick={onClick}>
       {/* Asset */}
-      <div className={styles.cellAsset}>
-        {viewConfig.showCoinImage && (
-          <img
-            src={
-              coin.image ??
-              `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
-            }
-            alt={coin.name}
-            onMouseEnter={(e) => {
-              if (coin.tokenStats && tooltipElement) {
-                const position = calculateTooltipPosition(e.currentTarget);
-                setTooltipPosition(position);
-                setShowTokenStats(true);
-                document.body.appendChild(tooltipElement);
+      <StyledTableCell>
+        <Box display="flex" alignItems="center" gap={1}>
+          {viewConfig.showCoinImage && (
+            <Avatar
+              src={
+                coin.image ??
+                `https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`
               }
-            }}
-            onMouseLeave={() => {
-              setShowTokenStats(false);
-              if (tooltipElement && tooltipElement.parentNode) {
-                tooltipElement.parentNode.removeChild(tooltipElement);
-              }
-            }}
-          />
-        )}
-        <div
-          className={styles.assetText}
-          onMouseEnter={(e) => {
-            if (coin.tokenStats && tooltipElement) {
-              const position = calculateTooltipPosition(e.currentTarget);
-              setTooltipPosition(position);
-              setShowTokenStats(true);
-              document.body.appendChild(tooltipElement);
-            }
-          }}
-          onMouseLeave={() => {
-            setShowTokenStats(false);
-            if (tooltipElement && tooltipElement.parentNode) {
-              tooltipElement.parentNode.removeChild(tooltipElement);
-            }
-          }}
-        >
-          <strong className={styles.sym}>{coin.symbol}</strong>
-          <span className={styles.assetName}>{coin.name}</span>
-        </div>
-
-        {/* Token Stats Tooltip */}
-        {showTokenStats &&
-          coin.tokenStats &&
-          tooltipElement &&
-          createPortal(
-            <div
-              className={styles.tokenStatsTooltip}
-              style={{
-                top: `${tooltipPosition.top}px`,
-                left: `${tooltipPosition.left}px`,
+              alt={coin.name}
+              sx={{ width: 32, height: 32 }}
+              onMouseEnter={(e) => {
+                if (coin.tokenStats && tooltipElement) {
+                  const position = calculateTooltipPosition(e.currentTarget);
+                  setTooltipPosition(position);
+                  setShowTokenStats(true);
+                  document.body.appendChild(tooltipElement);
+                }
               }}
+              onMouseLeave={() => {
+                setShowTokenStats(false);
+                if (tooltipElement && tooltipElement.parentNode) {
+                  tooltipElement.parentNode.removeChild(tooltipElement);
+                }
+              }}
+            />
+          )}
+          <Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              {isGroup && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "20px",
+                    height: "20px",
+                    cursor: "pointer",
+                    color: "#60a5fa",
+                    "&:hover": {
+                      color: "#ffffff",
+                    },
+                  }}
+                >
+                  {isExpanded ? (
+                    <CaretDown size={16} weight="bold" />
+                  ) : (
+                    <CaretRight size={16} weight="bold" />
+                  )}
+                </Box>
+              )}
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, color: "#ffffff" }}
+              >
+                {coin.symbol}
+              </Typography>
+              {isGroup && groupCount > 1 && (
+                <Chip
+                  label={`+${groupCount - 1}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    color: "#60a5fa",
+                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    fontSize: "0.7rem",
+                    height: "20px",
+                    fontWeight: 600,
+                  }}
+                />
+              )}
+            </Box>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255, 255, 255, 0.7)" }}
             >
-              <div className={styles.tooltipHeader}>
-                <h3>Token {coin.symbol} | Estatísticas</h3>
-                <div className={styles.tooltipMenu}>⋮</div>
-              </div>
+              {coin.name}
+            </Typography>
+          </Box>
+        </Box>
+      </StyledTableCell>
 
-              <div className={styles.tooltipContent}>
-                {/* COLUNA 1 — 1h */}
-                <div className={styles.tooltipColumn}>
-                  <div className={styles.tooltipSection}>
-                    <h4>1 hora</h4>
-                    <div className={styles.tooltipRow}>
-                      <span>E Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxE1h)}>
-                        {fmtPct(coin.tokenStats?.maxE1h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>E Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minE1h)}>
-                        {fmtPct(coin.tokenStats?.minE1h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxS1h)}>
-                        {fmtPct(coin.tokenStats?.maxS1h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minS1h)}>
-                        {fmtPct(coin.tokenStats?.minS1h)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+      {/* Spot Info */}
+      <StyledTableCell>
+        <Box>
+          <ExchangeChip
+            label={coin.ask.exchange}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRedirect(coin.ask.exchange, coin.symbol, "USDT", false);
+            }}
+            icon={<ArrowSquareOut size={10} />}
+          />
+          <Box mt={0.5}>
+            <PriceTypography variant="body2">
+              $
+              {dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}
+            </PriceTypography>
+            {viewConfig.showLiquidity && (
+              <Typography
+                variant="caption"
+                sx={{ color: "rgba(255, 255, 255, 0.6)" }}
+              >
+                Liq: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </StyledTableCell>
 
-                {/* COLUNA 2 — 6h */}
-                <div className={styles.tooltipColumn}>
-                  <div className={styles.tooltipSection}>
-                    <h4>6 horas</h4>
-                    <div className={styles.tooltipRow}>
-                      <span>E Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxE6h)}>
-                        {fmtPct(coin.tokenStats?.maxE6h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>E Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minE6h)}>
-                        {fmtPct(coin.tokenStats?.minE6h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxS6h)}>
-                        {fmtPct(coin.tokenStats?.maxS6h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minS6h)}>
-                        {fmtPct(coin.tokenStats?.minS6h)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* COLUNA 3 — 24h + atualizado em */}
-                <div className={styles.tooltipColumn}>
-                  <div className={styles.tooltipSection}>
-                    <h4>24 horas</h4>
-                    <div className={styles.tooltipRow}>
-                      <span>E Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxE24h)}>
-                        {fmtPct(coin.tokenStats?.maxE24h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>E Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minE24h)}>
-                        {fmtPct(coin.tokenStats?.minE24h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Máx:</span>
-                      <span className={valClass(coin.tokenStats?.maxS24h)}>
-                        {fmtPct(coin.tokenStats?.maxS24h)}
-                      </span>
-                    </div>
-                    <div className={styles.tooltipRow}>
-                      <span>S Mín:</span>
-                      <span className={valClass(coin.tokenStats?.minS24h)}>
-                        {fmtPct(coin.tokenStats?.minS24h)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.tooltipSection}>
-                    <div className={styles.tooltipRow}>
-                      <span className={styles.timestamp}>
-                        {coin.tokenStats?.updatedAt
-                          ? `Atualizado: ${fmtDateTime(
-                              coin.tokenStats.updatedAt
-                            )}`
-                          : ""}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>,
-            tooltipElement
-          )}
-      </div>
-
-      {/* Spot */}
-      <div className={styles.cell}>
-        <button
-          className={styles.exLink}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleRedirect(coin.ask.exchange, coin.symbol, "USDT", false);
-          }}
-          title="Abrir Spot"
-        >
-          {coin.ask.exchange}
-        </button>
-        <div className={styles.priceMono}>
-          ${dynamicDecimalFormatter(spotDisplayPrice, coin.symbol as Ticker)}{" "}
-          {viewConfig.showLiquidity && (
-            <div className={styles.subKpi}>
-              Liq.: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Futures */}
-      <div className={styles.cell}>
-        <button
-          className={styles.exLink}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true);
-          }}
-          title="Abrir Futuros"
-        >
-          {coin.bid.exchange}
-        </button>
-        <div className={styles.priceMono}>
-          ${dynamicDecimalFormatter(futuresDisplayPrice, coin.symbol as Ticker)}
-          {viewConfig.showLiquidity && (
-            <div className={styles.subKpi}>
-              Liq.: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Futures Info */}
+      <StyledTableCell>
+        <Box>
+          <ExchangeChip
+            label={coin.bid.exchange}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRedirect(coin.bid.exchange, coin.symbol, "USDT", true);
+            }}
+            icon={<ArrowSquareOut size={10} />}
+          />
+          <Box mt={0.5}>
+            <PriceTypography variant="body2">
+              $
+              {dynamicDecimalFormatter(
+                futuresDisplayPrice,
+                coin.symbol as Ticker
+              )}
+            </PriceTypography>
+            {viewConfig.showLiquidity && (
+              <Typography
+                variant="caption"
+                sx={{ color: "rgba(255, 255, 255, 0.6)" }}
+              >
+                Liq: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </StyledTableCell>
 
       {/* Spreads */}
-      <div className={styles.cellSpreads}>
-        {viewConfig.showSpreadE && (
-          <span
-            className={`${styles.chip} ${
-              (coin.spread ?? 0) > 0 ? styles.green : styles.red
-            }`}
-            title="Lucro E"
+      <StyledTableCell>
+        <Box display="flex" flexDirection="column" gap={0.5}>
+          <SpreadChip
+            label={`E: ${formatterSpread.format((coin.spread ?? 0) / 100)}`}
+            size="small"
+            className={(coin.spread ?? 0) > 0 ? "positive" : "negative"}
+          />
+          <SpreadChip
+            label={`S: ${formatterSpread.format((coin.spreadS ?? 0) / 100)}`}
+            size="small"
+            className={(coin.spreadS ?? 0) > 0 ? "positive" : "negative"}
+          />
+        </Box>
+      </StyledTableCell>
+
+      {/* Funding & Time */}
+      <StyledTableCell>
+        <Box display="flex" flexDirection="column" gap={0.3}>
+          {viewConfig.showFunding && (
+            <Typography
+              variant="caption"
+              sx={{
+                color:
+                  coin.fundingRate && coin.fundingRate > 0
+                    ? "#10b981"
+                    : "#ef4444",
+                fontFamily: "monospace",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+              }}
+            >
+              F:{" "}
+              {coin.fundingRate !== undefined
+                ? fundingFormatter.format(coin.fundingRate)
+                : "—"}
+            </Typography>
+          )}
+          {viewConfig.showValidTime && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#fbbf24",
+                fontFamily: "monospace",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+              }}
+            >
+              T: {formatElapsed(now - coin.validSince)}
+            </Typography>
+          )}
+        </Box>
+      </StyledTableCell>
+
+      {/* Volumes */}
+      <StyledTableCell>
+        <Box display="flex" flexDirection="column" gap={0.3}>
+          {viewConfig.showSpotVolume && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#ffffff",
+                fontFamily: "monospace",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+              }}
+            >
+              S: {numberFormatter.format(spotVolume)}
+            </Typography>
+          )}
+          {viewConfig.showFuturesVolume && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#ffffff",
+                fontFamily: "monospace",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+              }}
+            >
+              F: {numberFormatter.format(futuresVolume)}
+            </Typography>
+          )}
+        </Box>
+      </StyledTableCell>
+
+      {/* Volumes 24h */}
+      <StyledTableCell>
+        <Box display="flex" flexDirection="column" gap={0.3}>
+          {viewConfig.showVolume24h && (
+            <>
+              {coin.spotVolume24H !== undefined && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#60a5fa",
+                    fontFamily: "monospace",
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  S: {formatCompactNumber(coin.spotVolume24H)}
+                </Typography>
+              )}
+              {coin.futVolume24H !== undefined && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#60a5fa",
+                    fontFamily: "monospace",
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  F: {formatCompactNumber(coin.futVolume24H)}
+                </Typography>
+              )}
+            </>
+          )}
+        </Box>
+      </StyledTableCell>
+
+      {/* Actions */}
+      <StyledTableCell>
+        <Box display="flex" gap={0.5}>
+          <Tooltip title="Favorito">
+            <ActionButton
+              size="small"
+              className={isFavorite ? "favorite" : ""}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite();
+              }}
+            >
+              <Star size={16} weight={isFavorite ? "fill" : "regular"} />
+            </ActionButton>
+          </Tooltip>
+
+          <Tooltip title="Calculadora">
+            <ActionButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCalculatorClick?.();
+              }}
+            >
+              <Calculator size={16} />
+            </ActionButton>
+          </Tooltip>
+
+          <Tooltip title="Gráfico">
+            <ActionButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleChartRedirect();
+              }}
+            >
+              <ChartLine size={16} />
+            </ActionButton>
+          </Tooltip>
+
+          <Tooltip title="Excluir">
+            <ActionButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteClick();
+              }}
+            >
+              <Trash size={16} />
+            </ActionButton>
+          </Tooltip>
+        </Box>
+      </StyledTableCell>
+
+      {/* Token Stats Tooltip */}
+      {showTokenStats &&
+        coin.tokenStats &&
+        tooltipElement &&
+        createPortal(
+          <Card
+            sx={{
+              position: "fixed",
+              top: `${tooltipPosition.top}px`,
+              left: `${tooltipPosition.left}px`,
+              backgroundColor: "rgba(15, 35, 65, 0.95)",
+              border: "1px solid rgba(64, 156, 255, 0.3)",
+              borderRadius: "12px",
+              backdropFilter: "blur(20px)",
+              zIndex: 999999,
+              maxWidth: 500,
+              minWidth: 350,
+            }}
           >
-            E {formatterSpread.format((coin.spread ?? 0) / 100)}
-          </span>
-        )}
+            <CardContent>
+              <Typography variant="h6" sx={{ color: "#e0f2ff", mb: 1 }}>
+                Token {coin.symbol} | Estatísticas
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={4}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "#60a5fa", mb: 1 }}
+                  >
+                    1 hora
+                  </Typography>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxE1h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxE1h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minE1h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minE1h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxS1h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxS1h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minS1h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minS1h)}
+                    </Typography>
+                  </Box>
+                </Grid>
 
-        {viewConfig.showSpreadS && (
-          <span
-            className={`${styles.chip} ${
-              (coin.spreadS ?? 0) > 0 ? styles.green : styles.red
-            }`}
-            title="Lucro S"
-          >
-            S {formatterSpread.format((coin.spreadS ?? 0) / 100)}
-          </span>
-        )}
-      </div>
+                <Grid item xs={4}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "#60a5fa", mb: 1 }}
+                  >
+                    6 horas
+                  </Typography>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxE6h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxE6h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minE6h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minE6h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxS6h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxS6h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minS6h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minS6h)}
+                    </Typography>
+                  </Box>
+                </Grid>
 
-      {/* Funding + Expiração */}
-      <div className={styles.cellFunding}>
-        {viewConfig.showFunding && (
-          <span
-            className={`${styles.funding} ${
-              coin.fundingRate && coin.fundingRate > 0
-                ? styles.green
-                : styles.red
-            }`}
-            title="Taxa de financiamento (8h)"
-          >
-            {coin.fundingRate !== undefined
-              ? fundingFormatter.format(coin.fundingRate)
-              : "—"}
-          </span>
+                <Grid item xs={4}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "#60a5fa", mb: 1 }}
+                  >
+                    24 horas
+                  </Typography>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxE24h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxE24h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">E Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minE24h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minE24h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Máx:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.maxS24h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.maxS24h)}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography variant="caption">S Mín:</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          valClass(coin.tokenStats?.minS24h) === "positiveValue"
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {fmtPct(coin.tokenStats?.minS24h)}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+              {coin.tokenStats?.updatedAt && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "rgba(255, 255, 255, 0.5)",
+                    fontStyle: "italic",
+                    mt: 1,
+                    display: "block",
+                  }}
+                >
+                  Atualizado: {fmtDateTime(coin.tokenStats.updatedAt)}
+                </Typography>
+              )}
+            </CardContent>
+          </Card>,
+          tooltipElement
         )}
-        {viewConfig.showExpiration && (
-          <small
-            className={styles.expire}
-            title={expMs ? new Date(expMs).toLocaleString("pt-BR") : "—"}
-          >
-            {expirationLabel}
-          </small>
-        )}
-
-        {/* Tempo de vida da oportunidade */}
-        {viewConfig.showValidTime && coin.validSince && (
-          <small
-            className={styles.expire2}
-            title="Tempo de vida da oportunidade"
-          >
-            time: {formatElapsed(now - coin.validSince)}
-          </small>
-        )}
-      </div>
-
-      {/* Volumes (compacto) */}
-      <div className={styles.cellVol}>
-        {viewConfig.showSpotVolume && (
-          <span className={styles.volItem} title="Volume Spot (book)">
-            S: {numberFormatter.format(spotVolume)}
-          </span>
-        )}
-        {viewConfig.showFuturesVolume && (
-          <span className={styles.volItem} title="Volume Futuros (book)">
-            F: {numberFormatter.format(futuresVolume)}
-          </span>
-        )}
-        {viewConfig.showVolume24h && coin.spotVolume24H !== undefined && (
-          <span className={styles.volBadge} title="Spot 24h">
-            S24h {formatCompactNumber(coin.spotVolume24H)}
-          </span>
-        )}
-        {viewConfig.showVolume24h && coin.futVolume24H !== undefined && (
-          <span className={styles.volBadge} title="Futuros 24h">
-            F24h {formatCompactNumber(coin.futVolume24H)}
-          </span>
-        )}
-      </div>
-
-      {/* Ações */}
-      <div className={styles.cellActions}>
-        <button
-          className={styles.iconBtn}
-          title="Favorito"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite();
-          }}
-        >
-          <Star size={16} weight={isFavorite ? "fill" : "regular"} />
-        </button>
-
-        <button
-          className={styles.iconBtn}
-          title="Calculadora"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCalculatorClick?.();
-          }}
-        >
-          <Calculator size={16} />
-        </button>
-
-        <button
-          className={styles.iconBtn}
-          title="Gráfico"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleChartRedirect();
-          }}
-        >
-          📈
-        </button>
-
-        <button
-          className={`${styles.iconBtn} ${styles.danger}`}
-          title="Excluir"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeleteClick();
-          }}
-        >
-          <Trash size={16} />
-        </button>
-      </div>
-    </section>
+    </StyledTableRow>
   );
 }
