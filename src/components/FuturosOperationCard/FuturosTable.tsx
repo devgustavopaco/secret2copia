@@ -94,7 +94,7 @@ export function FuturosTable({
     });
   };
   return (
-    <StyledTableContainer component={Paper} elevation={0}>
+    <StyledTableContainer>
       <StyledTable aria-label="futuros operations table">
         <StyledTableHead>
           <TableRow>
