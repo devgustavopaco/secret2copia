@@ -285,11 +285,21 @@ const Futuros: NextPage<FuturosProps> = ({
 
   useEffect(() => {
     if (data && data.pages.length > 0) {
-      const totalPagesFromData = data.pages[0]?.totalPages ?? 1;
-      setTotalPagesFromServer(totalPagesFromData);
+      // totalPages does not exist on the page object, so we must infer it
+      // Assume each page has up to 50 items, so estimate total pages from the first page's arbitrageOpportunities count and nextCursor
+      const firstPage = data.pages[0];
       const lastPage = data.pages[data.pages.length - 1];
+      // If the API ever returns a total count, use that instead
+      // For now, estimate total pages as (lastPage.nextCursor || 1)
       const nextCursor = lastPage?.nextCursor ?? 1;
       setCurrentPage(nextCursor - 1);
+
+      // Estimate total pages based on whether there are more pages
+      // If the last page is full (50 items), assume there may be more pages
+      // Otherwise, total pages = current page
+      const isLastPageFull = lastPage?.arbitrageOpportunities?.length === 50;
+      const estimatedTotalPages = isLastPageFull ? nextCursor : nextCursor - 1;
+      setTotalPagesFromServer(Math.max(estimatedTotalPages, 1));
     }
   }, [data]);
 
