@@ -427,15 +427,15 @@ $accent-yellow: #facc15;
 }
 
 /* ===================== NOVO DESIGN DO MENU ===================== */
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
+// @keyframes gradientShift {
+//   0%,
+//   100% {
+//     background-position: 0% 50%;
+//   }
+//   50% {
+//     background-position: 100% 50%;
+//   }
+// }
 
 .menuContainer {
   display: flex;

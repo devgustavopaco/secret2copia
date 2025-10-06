@@ -10,6 +10,7 @@ import {
   styled,
 } from "@mui/material";
 import { FuturosOperationCard } from "./index";
+import { GlassTableContainer } from "../../components/glassTableContainer";
 
 // Styled components
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
@@ -17,42 +18,51 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: "12px",
   overflow: "hidden",
   "&::-webkit-scrollbar": {
-    height: "8px",
+    height: "10px",
   },
   "&::-webkit-scrollbar-track": {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(0, 0, 0, 0.15)",
+    borderRadius: "10px",
   },
   "&::-webkit-scrollbar-thumb": {
-    backgroundColor: "rgba(59, 130, 246, 0.5)",
-    borderRadius: "4px",
+    background:
+      "linear-gradient(135deg, rgba(59, 130, 246, 0.6), rgba(124, 58, 237, 0.6))",
+    borderRadius: "10px",
+    border: "2px solid rgba(255, 255, 255, 0.1)",
+    "&:hover": {
+      background:
+        "linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(124, 58, 237, 0.8))",
+    },
   },
 }));
 
 const StyledTable = styled(Table)(({ theme }) => ({
   minWidth: 650,
   "& .MuiTableCell-root": {
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
   },
 }));
 
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
   backgroundColor: "rgba(59, 130, 246, 0.15)",
+  backdropFilter: "blur(15px)",
   "& .MuiTableCell-head": {
-    color: "#e0f2ff",
-    fontWeight: 700,
-    fontSize: "0.85rem",
+    color: "#ffffff",
+    fontWeight: 900,
+    fontSize: "0.95rem",
     textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    borderBottom: "2px solid rgba(59, 130, 246, 0.3)",
+    letterSpacing: "0.8px",
+    borderBottom: "2px solid rgba(59, 130, 246, 0.4)",
     padding: "16px 8px",
   },
 }));
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+  borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
   color: "#ffffff",
-  fontSize: "0.9rem",
+  fontSize: "0.95rem",
   padding: "12px 8px",
+  fontWeight: 600,
 }));
 
 interface FuturosTableProps {
@@ -94,7 +104,7 @@ export function FuturosTable({
     });
   };
   return (
-    <StyledTableContainer>
+    <GlassTableContainer>
       <StyledTable aria-label="futuros operations table">
         <StyledTableHead>
           <TableRow>
@@ -204,6 +214,6 @@ export function FuturosTable({
           })}
         </TableBody>
       </StyledTable>
-    </StyledTableContainer>
+    </GlassTableContainer>
   );
 }

@@ -8,15 +8,20 @@
   // Mantido para compatibilidade
 }
 
-// Classes para valores (usadas no tooltip)
+// Classes para valores (usadas no tooltip) - cores VIBRANTES sem glow
 .positiveValue {
-  color: #10b981;
+  color: #22c55e !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
 }
 
 .negativeValue {
-  color: #ef4444;
+  color: #ef4444 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
 }
 
 .neutralValue {
-  color: rgba(255, 255, 255, 0.7);
+  color: #f0f9ff !important;
+  font-weight: 700 !important;
 }

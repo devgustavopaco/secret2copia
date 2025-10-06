@@ -216,50 +216,64 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 }));
 
 const ExchangeChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: "rgba(59, 130, 246, 0.2)",
+  backgroundColor: "rgba(59, 130, 246, 0.3)",
   color: "#60a5fa",
-  border: "1px solid rgba(59, 130, 246, 0.3)",
-  fontSize: "0.75rem",
-  height: "24px",
+  border: "1.5px solid #60a5fa",
+  fontSize: "0.8rem",
+  height: "26px",
+  fontWeight: 700,
+  "& .MuiChip-icon": {
+    color: "#ffffff !important",
+  },
   "&:hover": {
-    backgroundColor: "rgba(59, 130, 246, 0.3)",
-    color: "#ffffff",
+    backgroundColor: "rgba(59, 130, 246, 0.4)",
+    color: "#3b82f6",
+    borderColor: "#3b82f6",
+    transform: "scale(1.05)",
   },
 }));
 
 const PriceTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-  fontWeight: 700,
+  fontWeight: 900,
   color: "#ffffff",
+  fontSize: "1rem",
 }));
 
 const SpreadChip = styled(Chip)(({ theme }) => ({
-  fontSize: "0.8rem",
+  fontSize: "0.9rem",
   fontWeight: 700,
-  height: "28px",
+  height: "32px",
   "&.positive": {
-    backgroundColor: "rgba(16, 185, 129, 0.2)",
-    color: "#10b981",
-    border: "1px solid rgba(16, 185, 129, 0.3)",
+    backgroundColor: "rgba(34, 197, 94, 0.35)",
+    color: "#ffffff",
+    border: "2px solid #22c55e",
+    fontWeight: 900,
+    letterSpacing: "0.5px",
   },
   "&.negative": {
-    backgroundColor: "rgba(239, 68, 68, 0.2)",
-    color: "#ef4444",
-    border: "1px solid rgba(239, 68, 68, 0.3)",
+    backgroundColor: "rgba(239, 68, 68, 0.35)",
+    color: "#ffffff",
+    border: "2px solid #ef4444",
+    fontWeight: 900,
+    letterSpacing: "0.5px",
   },
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  color: "rgba(255, 255, 255, 0.7)",
+  color: "#60a5fa",
   padding: "6px",
+  transition: "all 0.2s",
   "&:hover": {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    color: "#ffffff",
+    backgroundColor: "rgba(59, 130, 246, 0.2)",
+    color: "#3b82f6",
+    transform: "scale(1.15)",
   },
   "&.favorite": {
     color: "#fbbf24",
     "&:hover": {
       backgroundColor: "rgba(251, 191, 36, 0.2)",
+      color: "#f59e0b",
     },
   },
 }));
@@ -715,7 +729,11 @@ export function FuturosOperationCard({
               )}
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: 700, color: "#ffffff" }}
+                sx={{
+                  fontWeight: 900,
+                  color: "#ffffff",
+                  fontSize: "1.05rem",
+                }}
               >
                 {coin.symbol}
               </Typography>
@@ -724,19 +742,19 @@ export function FuturosOperationCard({
                   label={`+${groupCount - 1}`}
                   size="small"
                   sx={{
-                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    backgroundColor: "rgba(59, 130, 246, 0.35)",
                     color: "#60a5fa",
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                    border: "1.5px solid #60a5fa",
                     fontSize: "0.7rem",
                     height: "20px",
-                    fontWeight: 600,
+                    fontWeight: 900,
                   }}
                 />
               )}
             </Box>
             <Typography
               variant="caption"
-              sx={{ color: "rgba(255, 255, 255, 0.7)" }}
+              sx={{ color: "#cbd5e1", fontWeight: 500 }}
             >
               {coin.name}
             </Typography>
@@ -764,7 +782,7 @@ export function FuturosOperationCard({
             {viewConfig.showLiquidity && (
               <Typography
                 variant="caption"
-                sx={{ color: "rgba(255, 255, 255, 0.6)" }}
+                sx={{ color: "#cbd5e1", fontWeight: 600, fontSize: "0.75rem" }}
               >
                 Liq: ${Math.floor(spotLiquidity).toLocaleString("pt-BR")}
               </Typography>
@@ -796,7 +814,7 @@ export function FuturosOperationCard({
             {viewConfig.showLiquidity && (
               <Typography
                 variant="caption"
-                sx={{ color: "rgba(255, 255, 255, 0.6)" }}
+                sx={{ color: "#cbd5e1", fontWeight: 600, fontSize: "0.75rem" }}
               >
                 Liq: ${Math.floor(futuresLiquidity).toLocaleString("pt-BR")}
               </Typography>
@@ -830,11 +848,11 @@ export function FuturosOperationCard({
               sx={{
                 color:
                   coin.fundingRate && coin.fundingRate > 0
-                    ? "#10b981"
+                    ? "#22c55e"
                     : "#ef4444",
                 fontFamily: "monospace",
-                fontWeight: 600,
-                fontSize: "0.75rem",
+                fontWeight: 900,
+                fontSize: "0.85rem",
               }}
             >
               F:{" "}
@@ -847,10 +865,10 @@ export function FuturosOperationCard({
             <Typography
               variant="caption"
               sx={{
-                color: "#fbbf24",
+                color: "#facc15",
                 fontFamily: "monospace",
-                fontWeight: 600,
-                fontSize: "0.75rem",
+                fontWeight: 900,
+                fontSize: "0.85rem",
               }}
             >
               T: {formatElapsed(now - coin.validSince)}
@@ -868,8 +886,8 @@ export function FuturosOperationCard({
               sx={{
                 color: "#ffffff",
                 fontFamily: "monospace",
-                fontWeight: 600,
-                fontSize: "0.75rem",
+                fontWeight: 900,
+                fontSize: "0.85rem",
               }}
             >
               S: {numberFormatter.format(spotVolume)}
@@ -881,8 +899,8 @@ export function FuturosOperationCard({
               sx={{
                 color: "#ffffff",
                 fontFamily: "monospace",
-                fontWeight: 600,
-                fontSize: "0.75rem",
+                fontWeight: 900,
+                fontSize: "0.85rem",
               }}
             >
               F: {numberFormatter.format(futuresVolume)}
@@ -902,8 +920,8 @@ export function FuturosOperationCard({
                   sx={{
                     color: "#60a5fa",
                     fontFamily: "monospace",
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
+                    fontWeight: 900,
+                    fontSize: "0.85rem",
                   }}
                 >
                   S: {formatCompactNumber(coin.spotVolume24H)}
@@ -915,8 +933,8 @@ export function FuturosOperationCard({
                   sx={{
                     color: "#60a5fa",
                     fontFamily: "monospace",
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
+                    fontWeight: 900,
+                    fontSize: "0.85rem",
                   }}
                 >
                   F: {formatCompactNumber(coin.futVolume24H)}
@@ -1019,8 +1037,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxE1h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1034,8 +1053,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minE1h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1049,8 +1069,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxS1h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1064,8 +1085,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minS1h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1088,8 +1110,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxE6h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1103,8 +1126,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minE6h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1118,8 +1142,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxS6h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1133,8 +1158,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minS6h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1157,8 +1183,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxE24h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1172,8 +1199,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minE24h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1187,8 +1215,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.maxS24h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
@@ -1202,8 +1231,9 @@ export function FuturosOperationCard({
                       sx={{
                         color:
                           valClass(coin.tokenStats?.minS24h) === "positiveValue"
-                            ? "#10b981"
+                            ? "#22c55e"
                             : "#ef4444",
+                        fontWeight: 900,
                         fontFamily: "monospace",
                       }}
                     >
