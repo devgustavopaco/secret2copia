@@ -67,7 +67,7 @@ export default function OportunidadePage() {
     if (!ticker || !buyExchange || !sellExchange) return;
 
     const socket: Socket = io(
-      "https://arbitrage-socket-production.up.railway.app/",
+      "https://humble-adaptation-production.up.railway.app/",
       {
         transports: ["websocket"],
       }
