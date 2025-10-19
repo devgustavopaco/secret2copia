@@ -36,7 +36,7 @@ const checkCredentials = async (req: NextApiRequest, res: NextApiResponse) => {
   const user = await prisma.user.findUnique({
     where: {
       email: req.body.email,
-      isFutures: true,
+      // isFutures: true,
     },
     select: {
       id: true,

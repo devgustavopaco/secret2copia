@@ -1,0 +1,292 @@
+.header {
+  padding-left: 17vw;
+  position: relative;
+}
+.glowLine {
+  width: 5%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  position: absolute;
+  top: 100%;
+  left: 55%;
+  transform: translateX(-50%);
+  border-radius: 50px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9),
+    0 0 28px rgba(255, 255, 255, 0.8), 0 0 60px rgba(255, 255, 255, 0.7),
+    0 0 100px rgba(255, 255, 255, 0.6);
+  animation: glowPulseWhite 2.2s ease-in-out infinite alternate;
+}
+
+/* animação de pulsação de luz branca */
+@keyframes glowPulseWhite {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(255, 255, 255, 0.4),
+      0 0 80px rgba(255, 255, 255, 0.3);
+    opacity: 0.7;
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 1),
+      0 0 40px rgba(255, 255, 255, 0.9), 0 0 80px rgba(255, 255, 255, 0.8),
+      0 0 120px rgba(255, 255, 255, 0.7);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(255, 255, 255, 0.4),
+      0 0 80px rgba(255, 255, 255, 0.3);
+    opacity: 0.7;
+  }
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: 20px;
+  padding-inline: 3vw;
+  gap: 23vw;
+  //   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  ul {
+    display: flex;
+    flex-direction: row;
+    // justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 30px;
+    // justify-content: space-between;
+    width: 100%;
+  }
+  li {
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 20px;
+    opacity: 0.6;
+  }
+}
+.hamburgerMenu {
+  position: relative;
+  isolation: isolate; /* evita que pseudos interfiram na pilha */
+  width: 41px;
+  height: 41px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* força cursor também sobre o <img> interno */
+  cursor: pointer;
+  & * {
+    cursor: pointer;
+  }
+
+  transition: background-color 200ms ease, transform 200ms ease,
+    box-shadow 200ms ease;
+  will-change: transform;
+}
+
+/* deixa o conteúdo (ícone) acima dos pseudos */
+.hamburgerMenu > img {
+  position: relative;
+  z-index: 1;
+  pointer-events: none; /* evita que o <img> bloqueie o hover no pai */
+}
+
+.hamburgerMenu::before,
+.hamburgerMenu::after {
+  position: absolute;
+  z-index: 0; /* pseudos atrás do conteúdo */
+  pointer-events: none;
+}
+
+/* borda gradiente circular */
+.hamburgerMenu::before {
+  content: "";
+  inset: 0;
+  border-radius: 50%;
+  padding: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* substitui o bloco atual do ::after por este */
+.hamburgerMenu::after {
+  content: "";
+  position: absolute;
+  inset: -6px; /* leve expansão para o glow sair pra fora */
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(125, 95, 255, 0.55) 0%,
+    /* var(--purple-400) ~ #7d5fff */ rgba(125, 95, 255, 0.35) 45%,
+    rgba(149, 125, 255, 0.2) 65%,
+    /* var(--purple-200) ~ #957dff */ rgba(125, 95, 255, 0) 80%
+  );
+  filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  z-index: 0;
+}
+
+/* animação suave de “respirar” o glow */
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: blur(8px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.12);
+    filter: blur(12px);
+    opacity: 1;
+  }
+}
+
+/* no hover: brilho de fundo + leve crescimento + sombras roxas */
+.hamburgerMenu:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
+    /* aro interno roxo */ 0 0 10px 2px rgba(125, 95, 255, 0.45),
+    /* glow próximo */ 0 0 26px 8px rgba(113, 88, 226, 0.35); /* glow distante (var(--purple-500)) */
+}
+
+/* ativa o glow roxo pulsando */
+.hamburgerMenu:hover::after {
+  opacity: 1;
+  animation: pulseGlow 1.4s ease-in-out infinite;
+}
+
+/* opcional: mesmo efeito ao focar por teclado */
+.hamburgerMenu:focus-visible {
+  background-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
+    0 0 10px 2px rgba(125, 95, 255, 0.45), 0 0 26px 8px rgba(113, 88, 226, 0.35);
+}
+.hamburgerMenu:focus-visible::after {
+  opacity: 1;
+  animation: pulseGlow 1.4s ease-in-out infinite;
+}
+.hamburgerMenu {
+  color: #fff; /* cor padrão do ícone */
+}
+
+.hamburgerIcon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  transition: color 200ms ease, transform 200ms ease;
+}
+
+/* muda a cor do ícone junto com o hover do botão */
+.hamburgerMenu:hover,
+.hamburgerMenu:focus-visible {
+  color: #9785f2;
+}
+.headerRight {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 30px;
+  width: 50%;
+  .profileName {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .profileIcon {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+
+  .profileIcon img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .profileIcon img::before,
+  .profileIcon img::after {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    content: "";
+  }
+
+  /* borda gradiente */
+  .profileIcon img::before {
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 1) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: 1;
+  }
+
+  /* glow roxo */
+  .profileIcon img::after {
+    inset: -6px;
+    background: radial-gradient(
+      circle,
+      rgba(125, 95, 255, 0.55) 0%,
+      rgba(125, 95, 255, 0.35) 45%,
+      rgba(149, 125, 255, 0.2) 65%,
+      rgba(125, 95, 255, 0) 80%
+    );
+    filter: blur(8px);
+    opacity: 0;
+    transition: opacity 220ms ease;
+    z-index: 0;
+  }
+
+  /* animação do glow */
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      transform: scale(1);
+      filter: blur(8px);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.12);
+      filter: blur(12px);
+      opacity: 1;
+    }
+  }
+
+  /* hover na imagem */
+  .profileIcon:hover img::after {
+    opacity: 1;
+    animation: pulseGlow 1.4s ease-in-out infinite;
+  }
+}

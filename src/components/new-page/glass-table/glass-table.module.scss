@@ -1,0 +1,529 @@
+.wrapper {
+  --gt-surface: rgba(255, 255, 255, 0.06);
+  --gt-surface-strong: rgba(255, 255, 255, 0.08);
+  --gt-border-strong: rgba(255, 255, 255, 0.9);
+  --gt-border-weak: rgba(255, 255, 255, 0.25);
+  --gt-text: #ffffff;
+  --gt-text-dim: rgba(255, 255, 255, 1);
+  --gt-positive: #32ff7e;
+  --gt-negative: #ff5c5c;
+  --gt-purple: #7d5fff;
+  --gt-purple-deep: #7158e2;
+  --gt-padding: 4vw;
+  --gt-tab-w: 7px; /* ← mais fina (ajuste p/ 6–8) */
+  --gt-tab-r: 9px; /* raio da ponta */
+  --gt-tab-gap: 8px;
+  --gt-glow-rgb: 151, 133, 242;
+
+  color: var(--gt-text);
+  width: calc(100% - 17vw);
+  margin-left: 17vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--gt-padding);
+  overflow: hidden;
+  max-height: 100%;
+  transition: margin-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.sidebarClosed {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+.td,
+.td * {
+  transition: color 0.18s ease, text-shadow 0.18s ease;
+}
+
+/* 3) glow nos textos ao hover/focus da linha */
+.row:hover .td,
+.row:hover .td *:not(button):not(svg):not(img),
+.row:focus-within .td,
+.row:focus-within .td *:not(button):not(svg):not(img) {
+  text-shadow: 0 0 6px rgba(var(--gt-glow-rgb), 0.4),
+    0 0 12px rgba(var(--gt-glow-rgb), 0.3),
+    0 0 22px rgba(var(--gt-glow-rgb), 0.2);
+}
+
+/* (opcional) um leve brilho nas labels “muted” pra não sumirem */
+.row:hover .td .muted,
+.row:focus-within .td .muted {
+  text-shadow: 0 0 4px rgba(var(--gt-glow-rgb), 0.45),
+    0 0 10px rgba(var(--gt-glow-rgb), 0.35);
+}
+
+/* (opcional) dar um glow nos ícones de ação também */
+.row:hover .actions svg,
+.row:focus-within .actions svg {
+  filter: drop-shadow(0 0 8px rgba(var(--gt-glow-rgb), 0.35))
+    drop-shadow(0 0 16px rgba(var(--gt-glow-rgb), 0.25));
+}
+
+/* acessibilidade: respeita usuários que preferem menos animação */
+@media (prefers-reduced-motion: reduce) {
+  .td,
+  .td * {
+    transition: none;
+  }
+}
+
+/* ====== ÁREA DO VIDRO ====== */
+.surface {
+  position: relative;
+  background: var(--gt-surface);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 6px 24px rgba(0, 0, 0, 0.35);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  flex: 1;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  isolation: isolate;
+
+  /* borda gradiente */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom,
+      var(--gt-border-strong) 0%,
+      var(--gt-border-weak) 50%,
+      var(--gt-border-strong) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+.surface::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none; /* alguns engines respeitam */
+}
+.surface::-webkit-scrollbar-thumb,
+.surface::-webkit-scrollbar-track {
+  background: transparent; /* garante que nada apareça */
+}
+/* scrollbar discreta */
+.surface::-webkit-scrollbar {
+  width: 8px;
+}
+.surface::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+.surface::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ====== TABLE ====== */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  /* ⚠️ remove o “vidro” extra */
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+
+  /* só uma linha sutil de separação */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.th {
+  text-align: left;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--gt-text-dim);
+  padding: 14px 16px;
+  white-space: nowrap;
+}
+
+.align-center {
+  text-align: center;
+}
+.align-right {
+  text-align: right;
+}
+
+/* corpo */
+.tbody {
+}
+
+.row {
+  transition: background-color 0.18s ease, box-shadow 0.22s ease,
+    transform 0.18s ease;
+  position: relative;
+}
+.row:not(:last-child) .td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* hover com glow roxo */
+.row:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(125, 95, 255, 0.1) 0%,
+    rgba(125, 95, 255, 0.06) 100%
+  );
+  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.45) inset,
+    0 6px 20px rgba(125, 95, 255, 0.22);
+}
+
+.clickable {
+  cursor: pointer;
+}
+.clickable:active {
+  transform: translateY(1px);
+}
+
+/* zebra opcional */
+.zebra .tbody .row:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+/* densidade */
+.dense .th {
+  padding: 10px 14px;
+}
+.dense .td {
+  padding: 10px 14px;
+}
+
+/* células */
+.td {
+  padding: 14px 16px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+.empty {
+  text-align: center;
+  color: var(--gt-text-dim);
+  padding: 40px 16px;
+}
+
+/* helpers */
+.muted {
+  color: var(--gt-text-dim);
+  font-size: 12px;
+}
+.positive {
+  color: var(--gt-positive);
+}
+.negative {
+  color: var(--gt-negative);
+}
+.bold {
+  font-weight: 600;
+}
+
+.price {
+  font-weight: 600;
+}
+.cellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+.subs {
+  display: flex;
+  gap: 12px;
+}
+.cellSplit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.iconBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--gt-text);
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.12s ease;
+}
+
+.iconBtn:active {
+  transform: translateY(1px);
+}
+
+/* Moeda (logo + ticker) */
+.cellCoin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.coinLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: block;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.1)
+  );
+}
+.coinTicker {
+  font-weight: 600;
+}
+
+/* chip de tempo */
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #ffdf7e;
+  background: transparent;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.toolbarRight {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 10px;
+}
+
+/* === Botão redondo de vidro (reuso do hamburger) === */
+/* Caminho relativo: este arquivo está em .../glass-table/glass-table.module.scss
+     e o sidebar está em .../sidebar.module.scss */
+.iconGlass {
+  composes: hamburgerMenu from "../sidebar.module.scss"; /* 👈 reusa o estilo */
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none; /* deixa o composes dominar */
+}
+
+/* tamanho do ícone dentro do botão */
+.iconGlass > img,
+.iconGlass > svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  pointer-events: none;
+}
+.searchGlass {
+  composes: hamburgerMenu from "../sidebar.module.scss";
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 320px;
+  max-width: 42vw;
+  height: 44px;
+  border-radius: 28px;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 0 0; /* espaço pro ícone à esquerda */
+  cursor: text; /* cursor de texto */
+  position: relative;
+  input {
+    width: 100%;
+    padding-left: 20px;
+  }
+}
+
+/* garante que a borda/halo sigam o formato pílula */
+.searchGlass::before {
+  border-radius: inherit !important;
+}
+.searchGlass::after {
+  border-radius: inherit !important;
+}
+
+/* comportamento no hover/focus (mesmo “glow” dos botões) */
+.searchGlass:hover,
+.searchGlass:focus-within {
+  background-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.01);
+  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
+    0 0 10px 2px rgba(125, 95, 255, 0.45), 0 0 26px 8px rgba(113, 88, 226, 0.35);
+}
+
+/* ícone do search */
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* input “transparente” */
+.searchInput {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--gt-text);
+  font-size: 14px;
+  line-height: 1;
+  &::placeholder {
+    color: var(--gt-text-dim);
+    opacity: 0.9;
+  }
+}
+
+/* Botão de vidro reutilizado (você já tem) */
+.iconGlass {
+  composes: hamburgerMenu from "../sidebar.module.scss";
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+}
+.iconGlass > img,
+.iconGlass > svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.th,
+.td {
+  position: relative;
+}
+.th:not(:last-child),
+.td:not(:last-child) {
+  padding-right: calc(16px + var(--gt-tab-w) + var(--gt-tab-gap));
+}
+
+/* base da tab: vidro branco bem leve */
+.th:not(:last-child)::after,
+.td:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 25%;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 0 var(--gt-tab-r) var(--gt-tab-r) 0;
+  pointer-events: none;
+  z-index: 1;
+  height: 50%;
+
+  /* vidro claro + leve bevel */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+
+  opacity: 0.95;
+}
+
+/* brilho “sheen” central fininho (fica chic!) */
+.th:not(:last-child)::before,
+.td:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 6px;
+  bottom: 6px;
+  width: var(--gt-tab-w);
+  border-radius: 0 var(--gt-tab-r) var(--gt-tab-r) 0;
+  pointer-events: none;
+  z-index: 2;
+
+  filter: blur(0.6px);
+  opacity: 1;
+}
+
+/* header um pouco menos forte que o body */
+.thead .th:not(:last-child)::after {
+  opacity: 1;
+}
+.thead .th:not(:last-child)::before {
+  opacity: 1;
+}
+
+/* hover: realça em branco (sem roxo), com glow suave */
+.row:hover .td:not(:last-child)::after {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  box-shadow: inset 1px 0 rgba(255, 255, 255, 0.9),
+    inset -1px 0 rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 6px 18px rgba(255, 255, 255, 0.12);
+}
+
+/* responsivo: some com a tab p/ ganhar espaço */
+@media (max-width: 900px) {
+  .th:not(:last-child),
+  .td:not(:last-child) {
+    padding-right: 16px;
+  }
+  .th:not(:last-child)::after,
+  .td:not(:last-child)::after,
+  .th:not(:last-child)::before,
+  .td:not(:last-child)::before {
+    display: none;
+  }
+}
+.bingo {
+  font-size: 12px;
+  color: #77ecd2;
+}
+.bingo img {
+  width: 12px;
+  height: 12px;
+}
+.live {
+  font-size: 10px;
+  color: #a0a0a0;
+}
