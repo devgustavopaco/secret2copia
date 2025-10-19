@@ -37,7 +37,7 @@ export type GlassTableProps<T extends object> = {
   rowKey?: (row: T, index: number) => string | number;
   /** clique na linha */
   onRowClick?: (row: T) => void;
-  /** cabeçalho sticky */
+  /** cabeçalho fixo (true = header fora do scroll) */
   stickyHeader?: boolean;
   /** altura máx. com scroll interno (ex.: 520, '60vh') */
   maxHeight?: number | string;
@@ -77,92 +77,68 @@ export default function GlassTable<T extends object>({
       }
     : undefined;
 
-  return (
-    <div
-      className={classnames(
-        `${styles.wrapper} ${!isSidebarOpen ? styles.sidebarClosed : ""}`,
-        stickyHeader && styles.sticky,
-        zebra && styles.zebra,
-        dense && styles.dense,
-        className
-      )}
-      style={styleVars}
-    >
-      <div className={styles.toolbar}>
-        <label className={styles.searchGlass}>
-          <img
-            src="/new-page/search-icon.svg"
-            alt=""
-            aria-hidden
-            className={styles.searchIcon}
-          />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Filtrar por símbolo"
-            aria-label="Filtrar por símbolo"
-          />
-        </label>
+  const renderColgroup = () => (
+    <colgroup>
+      {columns.map((col) => (
+        <col
+          key={col.id}
+          style={col.width ? { width: col.width } : undefined}
+        />
+      ))}
+    </colgroup>
+  );
 
-        {/* DIREITA: botões (já existentes) */}
-        <div className={styles.toolbarRight}>
-          <button
-            type="button"
-            className={styles.iconGlass}
-            aria-label="Privado"
-          >
-            <LockIcon />
-          </button>
-          <button
-            type="button"
-            className={styles.iconGlass}
-            aria-label="Modo grade"
-          >
-            <GroupIcon />
-          </button>
-          <button
-            type="button"
-            className={styles.iconGlass}
-            aria-label="Filtrar"
-          >
-            <FilterIcon />
-          </button>
-          <button
-            type="button"
-            className={styles.iconGlass}
-            aria-label="Calculadora"
-          >
-            <CalculatorIcon />
-          </button>
-          <button
-            type="button"
-            className={styles.iconGlass}
-            aria-label="Configurar"
-          >
-            <ConfigIcon />
-          </button>
-        </div>
-      </div>
-      <div className={styles.surface}>
+  const Header = (
+    <div className={styles.tableHead}>
+      <table className={styles.table}>
+        {renderColgroup()}
+        <thead className={styles.thead}>
+          <tr>
+            {columns.map((col) => (
+              <th
+                key={col.id}
+                className={classnames(
+                  styles.th,
+                  col.align && styles[`align-${col.align}`],
+                  col.className
+                )}
+                style={col.width ? { width: col.width } : undefined}
+                scope="col"
+              >
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+      </table>
+    </div>
+  );
+
+  const Body = (
+    <div className={styles.tableBody}>
+      <div className={styles.scroller}>
         <table className={styles.table}>
-          <thead className={styles.thead}>
-            <tr>
-              {columns.map((col) => (
-                <th
-                  key={col.id}
-                  className={classnames(
-                    styles.th,
-                    col.align && styles[`align-${col.align}`],
-                    col.className
-                  )}
-                  style={col.width ? { width: col.width } : undefined}
-                  scope="col"
-                >
-                  {col.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
+          {renderColgroup()}
+          {!stickyHeader && (
+            <thead className={styles.thead}>
+              <tr>
+                {columns.map((col) => (
+                  <th
+                    key={col.id}
+                    className={classnames(
+                      styles.th,
+                      col.align && styles[`align-${col.align}`],
+                      col.className
+                    )}
+                    style={col.width ? { width: col.width } : undefined}
+                    scope="col"
+                  >
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
 
           <tbody className={styles.tbody}>
             {data.length === 0 && (
@@ -229,6 +205,79 @@ export default function GlassTable<T extends object>({
       </div>
     </div>
   );
+
+  return (
+    <div
+      className={classnames(
+        styles.wrapper,
+        !isSidebarOpen && styles.sidebarClosed,
+        zebra && styles.zebra,
+        dense && styles.dense,
+        className
+      )}
+      style={styleVars}
+    >
+      <div className={styles.toolbar}>
+        <label className={styles.searchGlass}>
+          <img
+            src="/new-page/search-icon.svg"
+            alt=""
+            aria-hidden
+            className={styles.searchIcon}
+          />
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Filtrar por símbolo"
+            aria-label="Filtrar por símbolo"
+          />
+        </label>
+
+        <div className={styles.toolbarRight}>
+          <button
+            type="button"
+            className={styles.iconGlass}
+            aria-label="Privado"
+          >
+            <LockIcon />
+          </button>
+          <button
+            type="button"
+            className={styles.iconGlass}
+            aria-label="Modo grade"
+          >
+            <GroupIcon />
+          </button>
+          <button
+            type="button"
+            className={styles.iconGlass}
+            aria-label="Filtrar"
+          >
+            <FilterIcon />
+          </button>
+          <button
+            type="button"
+            className={styles.iconGlass}
+            aria-label="Calculadora"
+          >
+            <CalculatorIcon />
+          </button>
+          <button
+            type="button"
+            className={styles.iconGlass}
+            aria-label="Configurar"
+          >
+            <ConfigIcon />
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.surface}>
+        {stickyHeader && Header}
+        {Body}
+      </div>
+    </div>
+  );
 }
 
 /* =========================
@@ -259,9 +308,7 @@ const mockData: CoinRow[] = Array.from({ length: 100 }).map((_, i) => ({
   volumes24h: { s: "S: 30K", f: "F: 351K" },
 }));
 
-/** Exemplo de uso (pode apagar depois): */
 export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
-  console.log(isSidebarOpen);
   const columns: Column<CoinRow>[] = [
     {
       id: "moeda",
@@ -324,19 +371,12 @@ export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
       ),
       width: "160px",
     },
-    {
-      id: "funding",
-      header: "Funding",
-      field: "funding",
-      width: "120px",
-      //   align: "center",
-    },
+    { id: "funding", header: "Funding", field: "funding", width: "120px" },
     {
       id: "tempo",
       header: "Tempo",
       accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
       width: "150px",
-      //   align: "center",
     },
     {
       id: "volumes",
@@ -348,7 +388,6 @@ export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
         </div>
       ),
       width: "120px",
-      //   align: "center",
     },
     {
       id: "volumes24",
@@ -360,7 +399,6 @@ export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
         </div>
       ),
       width: "140px",
-      //   align: "center",
     },
     {
       id: "acoes",
@@ -382,7 +420,6 @@ export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
         </div>
       ),
       width: "112px",
-      //   align: "right",
     },
   ];
 

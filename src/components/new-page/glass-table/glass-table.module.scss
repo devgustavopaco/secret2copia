@@ -9,9 +9,9 @@
   --gt-negative: #ff5c5c;
   --gt-purple: #7d5fff;
   --gt-purple-deep: #7158e2;
-  --gt-padding: 4vw;
-  --gt-tab-w: 7px; /* ← mais fina (ajuste p/ 6–8) */
-  --gt-tab-r: 9px; /* raio da ponta */
+  --gt-padding: 3vw;
+  --gt-tab-w: 7px;
+  --gt-tab-r: 9px;
   --gt-tab-gap: 8px;
   --gt-glow-rgb: 151, 133, 242;
 
@@ -22,7 +22,8 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: var(--gt-padding);
+  padding-inline: var(--gt-padding);
+  padding-top: calc(var(--gt-padding) / 2);
   overflow: hidden;
   max-height: 100%;
   transition: margin-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -34,125 +35,110 @@
   width: 100% !important;
 }
 
-.td,
-.td * {
-  transition: color 0.18s ease, text-shadow 0.18s ease;
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.toolbarRight {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 10px;
 }
 
-/* 3) glow nos textos ao hover/focus da linha */
-.row:hover .td,
-.row:hover .td *:not(button):not(svg):not(img),
-.row:focus-within .td,
-.row:focus-within .td *:not(button):not(svg):not(img) {
-  text-shadow: 0 0 6px rgba(var(--gt-glow-rgb), 0.4),
-    0 0 12px rgba(var(--gt-glow-rgb), 0.3),
-    0 0 22px rgba(var(--gt-glow-rgb), 0.2);
-}
-
-/* (opcional) um leve brilho nas labels “muted” pra não sumirem */
-.row:hover .td .muted,
-.row:focus-within .td .muted {
-  text-shadow: 0 0 4px rgba(var(--gt-glow-rgb), 0.45),
-    0 0 10px rgba(var(--gt-glow-rgb), 0.35);
-}
-
-/* (opcional) dar um glow nos ícones de ação também */
-.row:hover .actions svg,
-.row:focus-within .actions svg {
-  filter: drop-shadow(0 0 8px rgba(var(--gt-glow-rgb), 0.35))
-    drop-shadow(0 0 16px rgba(var(--gt-glow-rgb), 0.25));
-}
-
-/* acessibilidade: respeita usuários que preferem menos animação */
-@media (prefers-reduced-motion: reduce) {
-  .td,
-  .td * {
-    transition: none;
-  }
-}
-
-/* ====== ÁREA DO VIDRO ====== */
+/* ===== Área do vidro principal como GRID: header (auto) + body (1fr) ===== */
 .surface {
   position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr; /* header fora do scroll + body rolável */
   background: var(--gt-surface);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
     0 6px 24px rgba(0, 0, 0, 0.35);
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 1px; /* espaço para a borda */
+  isolation: isolate;
+}
 
+/* Borda de vidro fixa ao redor de tudo */
+.surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--gt-border-strong) 0%,
+    var(--gt-border-weak) 50%,
+    var(--gt-border-strong) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2; /* acima do conteúdo */
+}
+
+/* ===== Header fixo (fora do scroll) ===== */
+.tableHead {
+  position: relative;
+  z-index: 3;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.12); /* linha sutil na base */
+}
+
+/* Remover sticky do thead — o header agora é independente */
+.thead {
+  position: relative;
+  top: 0;
+  z-index: 1;
+  background: transparent;
+  box-shadow: none;
+  isolation: isolate;
+}
+
+/* ===== Body rolável ===== */
+.tableBody {
+  position: relative;
+  z-index: 1;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden; /* garante que nada passe por trás do header */
+}
+
+.scroller {
+  height: 100%;
+  max-height: 70vh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* esconder scrollbar opcional */
   scrollbar-width: none;
   -ms-overflow-style: none;
-
-  flex: 1;
-  max-height: 70vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  isolation: isolate;
-
-  /* borda gradiente */
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    border-radius: inherit;
-    background: linear-gradient(
-      to bottom,
-      var(--gt-border-strong) 0%,
-      var(--gt-border-weak) 50%,
-      var(--gt-border-strong) 100%
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    z-index: 1;
-  }
 }
-.surface::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none; /* alguns engines respeitam */
-}
-.surface::-webkit-scrollbar-thumb,
-.surface::-webkit-scrollbar-track {
-  background: transparent; /* garante que nada apareça */
-}
-/* scrollbar discreta */
-.surface::-webkit-scrollbar {
-  width: 8px;
-}
-.surface::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-}
-.surface::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+.scroller::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
-/* ====== TABLE ====== */
+/* ===== Tabela base ===== */
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-}
-
-.thead {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-
-  /* ⚠️ remove o “vidro” extra */
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-
-  /* só uma linha sutil de separação */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  table-layout: fixed; /* alinha colunas via colgroup */
 }
 
 .th {
@@ -171,7 +157,7 @@
   text-align: right;
 }
 
-/* corpo */
+/* ===== Corpo/linhas ===== */
 .tbody {
 }
 
@@ -180,11 +166,11 @@
     transform 0.18s ease;
   position: relative;
 }
+
 .row:not(:last-child) .td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* hover com glow roxo */
 .row:hover {
   background: linear-gradient(
     180deg,
@@ -193,6 +179,26 @@
   );
   box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.45) inset,
     0 6px 20px rgba(125, 95, 255, 0.22);
+}
+
+.td,
+.td * {
+  transition: color 0.18s ease, text-shadow 0.18s ease;
+}
+
+.row:hover .td,
+.row:hover .td *:not(button):not(svg):not(img),
+.row:focus-within .td,
+.row:focus-within .td *:not(button):not(svg):not(img) {
+  text-shadow: 0 0 6px rgba(var(--gt-glow-rgb), 0.4),
+    0 0 12px rgba(var(--gt-glow-rgb), 0.3),
+    0 0 22px rgba(var(--gt-glow-rgb), 0.2);
+}
+
+.row:hover .td .muted,
+.row:focus-within .td .muted {
+  text-shadow: 0 0 4px rgba(var(--gt-glow-rgb), 0.45),
+    0 0 10px rgba(var(--gt-glow-rgb), 0.35);
 }
 
 .clickable {
@@ -260,6 +266,7 @@
   justify-content: space-between;
   gap: 12px;
 }
+
 .actions {
   display: inline-flex;
   align-items: center;
@@ -278,7 +285,6 @@
   cursor: pointer;
   transition: background-color 0.18s ease, transform 0.12s ease;
 }
-
 .iconBtn:active {
   transform: translateY(1px);
 }
@@ -304,7 +310,7 @@
   font-weight: 600;
 }
 
-/* chip de tempo */
+/* chip */
 .chip {
   display: inline-block;
   padding: 6px 10px;
@@ -313,125 +319,8 @@
   color: #ffdf7e;
   background: transparent;
 }
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.toolbarRight {
-  margin-left: auto;
-  display: inline-flex;
-  gap: 10px;
-}
 
-/* === Botão redondo de vidro (reuso do hamburger) === */
-/* Caminho relativo: este arquivo está em .../glass-table/glass-table.module.scss
-     e o sidebar está em .../sidebar.module.scss */
-.iconGlass {
-  composes: hamburgerMenu from "../sidebar.module.scss"; /* 👈 reusa o estilo */
-  width: 41px;
-  height: 41px;
-  border-radius: 50%;
-  border: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none; /* deixa o composes dominar */
-}
-
-/* tamanho do ícone dentro do botão */
-.iconGlass > img,
-.iconGlass > svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-  pointer-events: none;
-}
-.searchGlass {
-  composes: hamburgerMenu from "../sidebar.module.scss";
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 320px;
-  max-width: 42vw;
-  height: 44px;
-  border-radius: 28px;
-  background-color: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px 0 0; /* espaço pro ícone à esquerda */
-  cursor: text; /* cursor de texto */
-  position: relative;
-  input {
-    width: 100%;
-    padding-left: 20px;
-  }
-}
-
-/* garante que a borda/halo sigam o formato pílula */
-.searchGlass::before {
-  border-radius: inherit !important;
-}
-.searchGlass::after {
-  border-radius: inherit !important;
-}
-
-/* comportamento no hover/focus (mesmo “glow” dos botões) */
-.searchGlass:hover,
-.searchGlass:focus-within {
-  background-color: rgba(255, 255, 255, 0.16);
-  transform: scale(1.01);
-  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
-    0 0 10px 2px rgba(125, 95, 255, 0.45), 0 0 26px 8px rgba(113, 88, 226, 0.35);
-}
-
-/* ícone do search */
-.searchIcon {
-  position: absolute;
-  left: 14px;
-  width: 18px;
-  height: 18px;
-  opacity: 0.9;
-  pointer-events: none;
-}
-
-/* input “transparente” */
-.searchInput {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: var(--gt-text);
-  font-size: 14px;
-  line-height: 1;
-  &::placeholder {
-    color: var(--gt-text-dim);
-    opacity: 0.9;
-  }
-}
-
-/* Botão de vidro reutilizado (você já tem) */
-.iconGlass {
-  composes: hamburgerMenu from "../sidebar.module.scss";
-  width: 41px;
-  height: 41px;
-  border-radius: 50%;
-  border: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-}
-.iconGlass > img,
-.iconGlass > svg {
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-}
+/* ===== Tabs/listras verticais entre colunas ===== */
 .th,
 .td {
   position: relative;
@@ -454,18 +343,15 @@
   pointer-events: none;
   z-index: 1;
   height: 50%;
-
-  /* vidro claro + leve bevel */
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.28) 0%,
     rgba(255, 255, 255, 0.1) 100%
   );
-
   opacity: 0.95;
 }
 
-/* brilho “sheen” central fininho (fica chic!) */
+/* brilho “sheen” central */
 .th:not(:last-child)::before,
 .td:not(:last-child)::before {
   content: "";
@@ -477,32 +363,99 @@
   border-radius: 0 var(--gt-tab-r) var(--gt-tab-r) 0;
   pointer-events: none;
   z-index: 2;
-
   filter: blur(0.6px);
   opacity: 1;
 }
 
-/* header um pouco menos forte que o body */
-.thead .th:not(:last-child)::after {
-  opacity: 1;
-}
-.thead .th:not(:last-child)::before {
-  opacity: 1;
+/* desabilita as listras no header fixo (opcional, fica mais limpo) */
+.tableHead .th::after,
+.tableHead .th::before {
+  display: none;
 }
 
-/* hover: realça em branco (sem roxo), com glow suave */
-.row:hover .td:not(:last-child)::after {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  box-shadow: inset 1px 0 rgba(255, 255, 255, 0.9),
-    inset -1px 0 rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.35),
-    0 6px 18px rgba(255, 255, 255, 0.12);
+/* ===== Busca e botões de vidro (reuso) ===== */
+.iconGlass {
+  composes: hamburgerMenu from "../sidebar.module.scss";
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+}
+.iconGlass > img,
+.iconGlass > svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
 }
 
-/* responsivo: some com a tab p/ ganhar espaço */
+.searchGlass {
+  composes: hamburgerMenu from "../sidebar.module.scss";
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 320px;
+  max-width: 42vw;
+  height: 44px;
+  border-radius: 28px;
+  background-color: rgba(255, 255, 255, 0.1);
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 0 0;
+  cursor: text;
+  position: relative;
+  input {
+    width: 100%;
+    padding-left: 20px;
+  }
+}
+.searchGlass::before,
+.searchGlass::after {
+  border-radius: inherit !important;
+}
+.searchGlass:hover,
+.searchGlass:focus-within {
+  background-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.01);
+  box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
+    0 0 10px 2px rgba(125, 95, 255, 0.45), 0 0 26px 8px rgba(113, 88, 226, 0.35);
+}
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.searchInput {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--gt-text);
+  font-size: 14px;
+  line-height: 1;
+  &::placeholder {
+    color: var(--gt-text-dim);
+    opacity: 0.9;
+  }
+}
+
+/* ===== Acessibilidade: menos animação ===== */
+@media (prefers-reduced-motion: reduce) {
+  .td,
+  .td * {
+    transition: none;
+  }
+}
+
+/* ===== Responsivo: esconder tabs verticais para ganhar espaço ===== */
 @media (max-width: 900px) {
   .th:not(:last-child),
   .td:not(:last-child) {
@@ -515,6 +468,8 @@
     display: none;
   }
 }
+
+/* textos auxiliares */
 .bingo {
   font-size: 12px;
   color: #77ecd2;
