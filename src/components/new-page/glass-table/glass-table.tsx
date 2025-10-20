@@ -11,6 +11,8 @@ import CalculatorTableIcon from "../../Icons/CalculatorTableIcon";
 import TradingViewIcon from "../../Icons/TradingViewIcon";
 import StarIcon from "../../Icons/StarIcon";
 import TrashIcon from "../../Icons/TrashIcon";
+import type { ArbitrageOpportunity } from "../../../server/router/orderbook";
+import { PacmanLoader } from "react-spinners";
 
 export type Align = "left" | "center" | "right";
 
@@ -33,31 +35,104 @@ export type Column<T> = {
 export type GlassTableProps<T extends object> = {
   columns: Column<T>[];
   data: T[];
-  /** chave única por linha */
   rowKey?: (row: T, index: number) => string | number;
-  /** clique na linha */
   onRowClick?: (row: T) => void;
-  /** cabeçalho fixo (true = header fora do scroll) */
   stickyHeader?: boolean;
-  /** altura máx. com scroll interno (ex.: 520, '60vh') */
   maxHeight?: number | string;
-  /** zebra */
   zebra?: boolean;
-  /** linhas mais compactas */
   dense?: boolean;
-  /** mensagem quando vazio */
   emptyMessage?: string;
-  /** classe extra */
   className?: string;
-  /** se o sidebar está aberto */
   isSidebarOpen?: boolean;
+
+  /** ⬇️ NOVO: controle de busca + clique no filtro */
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  onFilterClick?: () => void;
 };
 
 function classnames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
+const fmtMoney = (n?: number) =>
+  typeof n === "number" && isFinite(n)
+    ? `$${n.toLocaleString("en-US", { maximumFractionDigits: 4 })}`
+    : "—";
+const fmtPct = (n?: number) =>
+  typeof n === "number" && isFinite(n) ? `${n.toFixed(2)}%` : "—";
+const safe = (s?: string) => s ?? "—";
+
+type CoinRow = {
+  id: string;
+  coin: { ticker: string; logo: string };
+  spot: { price: string; bingo: string; live: string };
+  futures: { price: string; bingo: string; live: string };
+  spreads: { long: string; short: string };
+  funding: string;
+  tempo: string;
+  volumes: { s: string; f: string };
+  volumes24h: { s: string; f: string };
+};
+
+// mapeia ArbitrageOpportunity -> CoinRow
+function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
+  const askP = op?.lowestAsk?.price ?? 0;
+  const askAmt = op?.lowestAsk?.amount ?? 0;
+  const bidP = op?.highestBid?.price ?? 0;
+  const bidAmt = op?.highestBid?.amount ?? 0;
+
+  const askLiq = askP * askAmt;
+  const bidLiq = bidP * bidAmt;
+
+  return {
+    id: `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`,
+    coin: {
+      ticker: op.ticker?.replace(/USDT$/i, "") || op.ticker || "—",
+      logo: op.coinImage || "/default-exchange.png",
+    },
+    spot: {
+      bingo: safe(op.lowestAsk?.exchange),
+      price: fmtMoney(askP),
+      live: askLiq ? `Liq $${askLiq.toFixed(0)}` : "—",
+    },
+    futures: {
+      bingo: safe(op.highestBid?.exchange),
+      price: fmtMoney(bidP),
+      live: bidLiq ? `Liq $${bidLiq.toFixed(0)}` : "—",
+    },
+    spreads: {
+      long: `E: ${fmtPct(op.spread)}`,
+      short: `S: ${fmtPct(op.spreadS)}`,
+    },
+    funding:
+      typeof (op as any).fundingRate === "number"
+        ? fmtPct((op as any).fundingRate * 100)
+        : safe((op as any).funding),
+    tempo: safe((op as any).validTime), // se vier do socket; senão mostra "—"
+    volumes: {
+      s: `S: ${askLiq ? askLiq.toFixed(0) : 0}`,
+      f: `F: ${bidLiq ? bidLiq.toFixed(0) : 0}`,
+    },
+    volumes24h: {
+      s: `S: ${
+        op.spotVolume24h
+          ? Math.round(op.spotVolume24h).toLocaleString("en-US")
+          : 0
+      }`,
+      f: `F: ${
+        op.futVolume24h
+          ? Math.round(op.futVolume24h).toLocaleString("en-US")
+          : 0
+      }`,
+    },
+  };
+}
+
 export default function GlassTable<T extends object>({
+  searchValue,
+  onSearchChange,
+  onFilterClick,
   columns,
   data,
   rowKey,
@@ -141,65 +216,64 @@ export default function GlassTable<T extends object>({
           )}
 
           <tbody className={styles.tbody}>
-            {data.length === 0 && (
-              <tr className={styles.row}>
-                <td
-                  className={classnames(styles.td, styles.empty)}
-                  colSpan={columns.length}
-                >
-                  {emptyMessage}
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length}>
+                  <div className={styles.loaderWrapper}>
+                    <PacmanLoader color="#7B61FF" size={40} />
+                  </div>
                 </td>
               </tr>
-            )}
-
-            {data.map((row, i) => {
-              const key = rowKey ? rowKey(row, i) : i;
-              const clickable = Boolean(onRowClick);
-              return (
-                <tr
-                  key={key}
-                  className={classnames(
-                    styles.row,
-                    clickable && styles.clickable
-                  )}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  tabIndex={onRowClick ? 0 : -1}
-                  onKeyDown={
-                    onRowClick
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onRowClick(row);
+            ) : (
+              data.map((row, i) => {
+                const key = rowKey ? rowKey(row, i) : i;
+                const clickable = Boolean(onRowClick);
+                return (
+                  <tr
+                    key={key}
+                    className={classnames(
+                      styles.row,
+                      clickable && styles.clickable
+                    )}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    tabIndex={onRowClick ? 0 : -1}
+                    onKeyDown={
+                      onRowClick
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              onRowClick(row);
+                            }
                           }
-                        }
-                      : undefined
-                  }
-                >
-                  {columns.map((col) => {
-                    const content = col.accessor
-                      ? col.accessor(row, i)
-                      : col.field
-                      ? // @ts-ignore – acesso dinâmico seguro pelo tipo
-                        (row as any)[col.field]
-                      : null;
+                        : undefined
+                    }
+                  >
+                    {columns.map((col) => {
+                      const content = col.accessor
+                        ? col.accessor(row, i)
+                        : col.field
+                        ? // @ts-ignore
+                          (row as any)[col.field]
+                        : null;
 
-                    return (
-                      <td
-                        key={col.id}
-                        className={classnames(
-                          styles.td,
-                          col.align && styles[`align-${col.align}`],
-                          col.className
-                        )}
-                        style={col.width ? { width: col.width } : undefined}
-                      >
-                        {content}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+                      return (
+                        <td
+                          key={col.id}
+                          className={classnames(
+                            styles.td,
+                            col.align && styles[`align-${col.align}`],
+                            col.className
+                          )}
+                          style={col.width ? { width: col.width } : undefined}
+                        >
+                          {content}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -230,6 +304,8 @@ export default function GlassTable<T extends object>({
             className={styles.searchInput}
             placeholder="Filtrar por símbolo"
             aria-label="Filtrar por símbolo"
+            value={searchValue}
+            onChange={(e) => onSearchChange?.(e.target.value)}
           />
         </label>
 
@@ -252,6 +328,7 @@ export default function GlassTable<T extends object>({
             type="button"
             className={styles.iconGlass}
             aria-label="Filtrar"
+            onClick={onFilterClick}
           >
             <FilterIcon />
           </button>
@@ -284,18 +361,6 @@ export default function GlassTable<T extends object>({
    DEMO COM MOCK DE DADOS
    ========================= */
 
-type CoinRow = {
-  id: string;
-  coin: { ticker: string; logo: string };
-  spot: { price: string; bingo: string; live: string };
-  futures: { price: string; bingo: string; live: string };
-  spreads: { long: string; short: string };
-  funding: string;
-  tempo: string;
-  volumes: { s: string; f: string };
-  volumes24h: { s: string; f: string };
-};
-
 const mockData: CoinRow[] = Array.from({ length: 100 }).map((_, i) => ({
   id: `bdxn-${i}`,
   coin: { ticker: "BDXN", logo: "/new-page/logo.svg" },
@@ -308,7 +373,25 @@ const mockData: CoinRow[] = Array.from({ length: 100 }).map((_, i) => ({
   volumes24h: { s: "S: 30K", f: "F: 351K" },
 }));
 
-export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
+export function DemoGlassTable({
+  searchValue,
+  onSearchChange,
+  onFilterClick,
+  isSidebarOpen,
+  opportunities,
+}: {
+  isSidebarOpen: boolean;
+  opportunities?: ArbitrageOpportunity[];
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  onFilterClick?: () => void;
+}) {
+  const [filter, setFilter] = React.useState("");
+
+  // fallback para mock quando não houver socket (dev/test)
+  const rows: CoinRow[] =
+    opportunities && opportunities.length ? opportunities.map(mapOppToRow) : [];
+
   const columns: Column<CoinRow>[] = [
     {
       id: "moeda",
@@ -425,8 +508,11 @@ export function DemoGlassTable({ isSidebarOpen }: { isSidebarOpen: boolean }) {
 
   return (
     <GlassTable<CoinRow>
+      searchValue={searchValue}
+      onSearchChange={onSearchChange}
+      onFilterClick={onFilterClick}
       columns={columns}
-      data={mockData}
+      data={rows}
       rowKey={(r) => r.id}
       maxHeight={560}
       zebra

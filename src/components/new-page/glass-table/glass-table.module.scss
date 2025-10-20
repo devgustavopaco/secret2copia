@@ -270,7 +270,7 @@
 .actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   justify-content: flex-end;
 }
 .iconBtn {
@@ -481,4 +481,21 @@
 .live {
   font-size: 10px;
   color: #a0a0a0;
+}
+.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+.loaderWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 56vh; /* altura visual da área de tabela */
+  width: 90%;
+  position: relative;
+  z-index: 10;
+  background: transparent;
 }

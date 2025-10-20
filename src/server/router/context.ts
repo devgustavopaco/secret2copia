@@ -5,9 +5,15 @@ import { unstable_getServerSession as getServerSession } from "next-auth";
 
 import { authOptions as nextAuthOptions } from "../../pages/api/auth/[...nextauth]";
 import { prisma } from "../db/client";
+import { GetServerSidePropsContext } from "next";
 
 export const createContext = async (
-  opts?: trpcNext.CreateNextContextOptions
+  opts?:
+    | trpcNext.CreateNextContextOptions
+    | {
+        req: GetServerSidePropsContext["req"];
+        res: GetServerSidePropsContext["res"];
+      }
 ) => {
   const req = opts?.req;
   const res = opts?.res;
@@ -23,6 +29,6 @@ export const createContext = async (
   };
 };
 
-type Context = trpc.inferAsyncReturnType<typeof createContext>;
+export type Context = trpc.inferAsyncReturnType<typeof createContext>;
 
 export const createRouter = () => trpc.router<Context>();

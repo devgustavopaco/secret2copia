@@ -2,6 +2,7 @@
 
 import React, { useEffect, useCallback, useRef } from "react";
 import styles from "./glass-modal.module.scss";
+import { trpc } from "../../../utils/trpc";
 
 type Props = {
   isOpen: boolean;
@@ -18,6 +19,12 @@ export default function GlassModal({
 }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // guarda a versão mais recente de onClose sem quebrar as deps
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // lock scroll do body
   useEffect(() => {
     if (!isOpen) return;
@@ -28,29 +35,34 @@ export default function GlassModal({
     };
   }, [isOpen]);
 
-  // fechar com ESC
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose]
-  );
   useEffect(() => {
     if (!isOpen) return;
-    window.addEventListener("keydown", onKeyDown);
-    // foco inicial
-    panelRef.current?.focus();
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, onKeyDown]);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseRef.current();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    // só foca o painel se nada dentro dele já estiver focado
+    const panel = panelRef.current;
+    const active = document.activeElement;
+    if (panel && (!active || !panel.contains(active))) {
+      panel.focus();
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]); // <-- apenas isOpen
 
   if (!isOpen) return null;
 
   const backdropClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget) onCloseRef.current();
   };
 
   return (
-    <div className={styles.overlay} onClick={backdropClick} aria-hidden={false}>
+    <div className={styles.overlay} onClick={backdropClick}>
       <div
         className={styles.panel}
         role="dialog"
@@ -66,13 +78,11 @@ export default function GlassModal({
           <button
             className={styles.close}
             aria-label="Fechar"
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
           >
-            {/* usa o X tipográfico pra manter leveza */}
             <span className={styles.closeGlyph}>×</span>
           </button>
         </header>
-
         <div className={styles.body}>{children}</div>
       </div>
     </div>

@@ -435,3 +435,181 @@
   /* aqui é opcional, pois a visibilidade vem do .collapsed + .sidebarHidden */
   /* se quiser, pode deixar vazio ou controlar opacidade extra */
 }
+/* === Lista de Exchanges Selecionadas === */
+.exchangeList {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 25vh;
+  width: 100%;
+  align-items: center;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge antigo */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
+  p {
+    opacity: 0.5;
+  }
+}
+
+/* === Exchange Item com borda e glow iguais ao botão .spotButton === */
+.exchangeItem {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 30px; /* mesmo raio do spotButton */
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 8px 14px 8px 18px;
+  cursor: default;
+
+  transition: background-color 0.2s ease, transform 0.2s ease,
+    box-shadow 0.25s ease, color 0.2s ease;
+  will-change: transform;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* borda gradiente branca (igual ao spotButton) */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 1) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* glow roxo igual */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle,
+      rgba(125, 95, 255, 0.45) 0%,
+      rgba(125, 95, 255, 0.3) 40%,
+      rgba(149, 125, 255, 0.16) 65%,
+      rgba(125, 95, 255, 0) 80%
+    );
+    filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.55) inset,
+      0 0 14px 3px rgba(125, 95, 255, 0.45),
+      0 0 32px 10px rgba(113, 88, 226, 0.35);
+    color: #cfc7ff;
+
+    &::after {
+      opacity: 1;
+      animation: pulseGlow 1.4s ease-in-out infinite;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    filter: brightness(1.02);
+  }
+
+  .exchangeLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    img {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    span {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+/* grupo esquerdo (ícone+nome) */
+.exchangeLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  span {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* === Botão X (apenas ícone limpo, sem fundo nem borda) === */
+.removeBtn {
+  all: unset; /* remove todos os estilos de botão padrão */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  img {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  }
+
+  &:hover img {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 4px rgba(150, 120, 255, 0.6));
+  }
+
+  &:active img {
+    transform: scale(0.96);
+    filter: brightness(1.3);
+  }
+}

@@ -70,6 +70,22 @@ export function useArbitrageSocket(
     const s = io(URL, { transports: ["websocket"] });
     socketRef.current = s;
 
+    const subscribeCurrent = () => {
+      if (!s.connected) return;
+      console.log("➡️ subscribe()", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
+      s.emit("subscribe", {
+        symbols,
+        refreshRate,
+        buyExchanges,
+        sellExchanges,
+      });
+    };
+
     let rafId: number | null = null;
     const scheduleFlush = () => {
       if (rafId != null) return;
@@ -78,42 +94,20 @@ export function useArbitrageSocket(
         setOpportunities(Array.from(indexRef.current.values()));
       });
     };
-    s.on("disconnect", () => {
-      // setIsConnected(false);
-    });
+
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");
       setIsConnected(true);
-      console.log("➡️ subscribe@connect", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
-      s.emit("subscribe", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
+      subscribeCurrent(); // 🚀 subscribe imediato ao conectar
     });
 
     s.on("reconnect", () => {
       console.log("♻️ Reconectado ao socket");
-
-      console.log("➡️ subscribe@reconnect", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
-      s.emit("subscribe", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
+      subscribeCurrent(); // 🚀 subscribe automático ao reconectar
     });
+
+    // ⬇️ já dispara logo ao montar (mesmo antes do evento connect)
+    setTimeout(subscribeCurrent, 1000);
 
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
       opp.coinImage = coinImageCache.get(opp.ticker) || "";
