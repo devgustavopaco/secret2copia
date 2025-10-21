@@ -11,6 +11,8 @@ import { GetServerSidePropsContext } from "next";
 import { createContext } from "../server/router/context";
 import { useArbitrageSocket } from "../hooks/useArbitrageSocket";
 import type { ArbitrageOpportunity } from "../server/router/orderbook";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 export default function FuturosNewPage({
   initialExchanges,
@@ -409,5 +411,10 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const trpcCtx = await createContext({ req: ctx.req, res: ctx.res });
   const caller = appRouter.createCaller(trpcCtx);
   const activeExchanges = await caller.query("exchange.getActiveExchanges");
+  // // verifique a session
+  const session = await getServerSession(ctx.req, ctx.res, authOptions);
+  if (!session) {
+    return { redirect: { destination: "/", permanent: false } };
+  }
   return { props: { initialExchanges: activeExchanges } };
 }
