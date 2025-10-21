@@ -36,9 +36,39 @@ export default function FuturosNewPage({
   // ✅ NOVO: busca por símbolo (controla a search da tabela)
   const [symbolFilter, setSymbolFilter] = useState("");
 
+  // ✅ NOVO: estado para modo de fechamento (lock icon)
+  const [isExitMode, setIsExitMode] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const saved = localStorage.getItem("isExitMode");
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
+
+  // ✅ NOVO: estado para pausar socket
+  const [isSocketPaused, setIsSocketPaused] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const saved = localStorage.getItem("isSocketPaused");
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
+
   // socket
   const [symbols] = useState<string[]>([]);
-  const [refreshRate] = useState<number>(1000);
+  const [refreshRate, setRefreshRate] = useState<number>(() => {
+    if (typeof window === "undefined") return 1000;
+    try {
+      const saved = localStorage.getItem("refreshRate");
+      return saved ? Number(saved) : 1000;
+    } catch {
+      return 1000;
+    }
+  });
   // Carrega exchanges salvas e depois inicializa o socket
   const [buyExNames, setBuyExNames] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
@@ -115,7 +145,8 @@ export default function FuturosNewPage({
     symbols,
     refreshRate,
     buyExNames,
-    sellExNames
+    sellExNames,
+    isSocketPaused
   );
 
   // ✅ opcional: feedback visual no console
@@ -137,7 +168,8 @@ export default function FuturosNewPage({
       const spotVol = op.spotVolume24h ?? 0;
       const futVol = op.futVolume24h ?? 0;
 
-      const p = op.spread; // (se quiser alternar E/S depois, troque para op.spreadS)
+      // Usa spread de entrada ou fechamento baseado no modo
+      const p = isExitMode ? op.spreadS : op.spread;
       const pass =
         p < maxProfit &&
         p > minProfit &&
@@ -151,8 +183,12 @@ export default function FuturosNewPage({
       return op.ticker?.toUpperCase().includes(symbolFilter.toUpperCase());
     });
 
-    // ordena por melhor spread (E). Se quiser por S, troque a ordenação.
-    return base.sort((a, b) => (b.spread ?? 0) - (a.spread ?? 0));
+    // ordena por melhor spread (entrada ou fechamento baseado no modo)
+    return base.sort((a, b) => {
+      const aSpread = isExitMode ? a.spreadS ?? 0 : a.spread ?? 0;
+      const bSpread = isExitMode ? b.spreadS ?? 0 : b.spread ?? 0;
+      return bSpread - aSpread;
+    });
   }, [
     opportunities,
     minProfit,
@@ -160,6 +196,7 @@ export default function FuturosNewPage({
     minLiquidity,
     minVolume24h,
     symbolFilter,
+    isExitMode,
   ]);
 
   // ---- resto igual ao seu código (exchanges permitidas + modal de exchanges) ----
@@ -237,6 +274,26 @@ export default function FuturosNewPage({
           searchValue={symbolFilter}
           onSearchChange={(v) => setSymbolFilter(v.toUpperCase())}
           onFilterClick={() => setIsFilterModalOpen(true)}
+          /** ⬇️ modo de fechamento */
+          isExitMode={isExitMode}
+          onToggleExitMode={() => {
+            const newValue = !isExitMode;
+            setIsExitMode(newValue);
+            localStorage.setItem("isExitMode", JSON.stringify(newValue));
+          }}
+          /** ⬇️ velocidade de atualização */
+          refreshRate={refreshRate}
+          onRefreshRateChange={(rate) => {
+            setRefreshRate(rate);
+            localStorage.setItem("refreshRate", rate.toString());
+          }}
+          /** ⬇️ pausar socket */
+          isSocketPaused={isSocketPaused}
+          onToggleSocketPause={() => {
+            const newValue = !isSocketPaused;
+            setIsSocketPaused(newValue);
+            localStorage.setItem("isSocketPaused", JSON.stringify(newValue));
+          }}
         />
       </main>
 

@@ -251,6 +251,7 @@ export default function OportunidadePage() {
       </Head>
 
       <div className={styles.container}>
+        <div className={styles.backgroundBlur}></div>
         <div className={styles.content}>
           <div className={styles.header}>
             <button onClick={handleBack} className={styles.backButton}>

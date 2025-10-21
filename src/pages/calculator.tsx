@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import styles from "../styles/arb-calculators.module.scss";
+import {
+  ChartIcon,
+  CalculatorIcon,
+  RefreshIcon,
+  PhoneIcon,
+  ListIcon,
+} from "../icons";
 
 /** ===================== helpers ===================== */
 const toNum = (v: string | number) => {
@@ -515,7 +522,9 @@ function SavedCalculatorsGrid({
   if (calcs.length === 0) {
     return (
       <div className={styles.emptyState}>
-        <div className={styles.emptyIcon}>📱</div>
+        <div className={styles.emptyIcon}>
+          <PhoneIcon />
+        </div>
         <h3 className={styles.emptyTitle}>Nenhuma calculadora criada</h3>
         <p className={styles.emptyDescription}>
           Crie sua primeira calculadora personalizada para começar
@@ -598,7 +607,9 @@ function SavedCalculatorsGrid({
       {calcs.length > 4 && (
         <div className={styles.viewAllCard} onClick={onViewDeck}>
           <div className={styles.viewAllContent}>
-            <div className={styles.viewAllIcon}>📋</div>
+            <div className={styles.viewAllIcon}>
+              <ListIcon />
+            </div>
             <div className={styles.viewAllText}>
               <h4>Ver Todas</h4>
               <p>+{calcs.length - 4} calculadoras</p>
@@ -624,110 +635,112 @@ export default function Calculators() {
       </Head>
 
       <main className={styles.wrap}>
-        <h1 className={styles.pageTitle}>Calculadoras de Arbitragem</h1>
+        <div className={styles.backgroundBlur}></div>
+        <div className={styles.contentWrapper}>
+          <h1 className={styles.pageTitle}>Calculadoras de Arbitragem</h1>
 
-        {/* Abas (desktop + sticky no mobile) */}
-        <nav className={styles.tabbar}>
-          <button
-            className={`${styles.tab} ${view === "menu" ? styles.active : ""}`}
-            onClick={() => setView("menu")}
-          >
-            Início
-          </button>
-          <button
-            className={`${styles.tab} ${view === "avg" ? styles.active : ""}`}
-            onClick={() => setView("avg")}
-          >
-            Preço Médio
-          </button>
-          <button
-            className={`${styles.tab} ${
-              view === "fraction" ? styles.active : ""
-            }`}
-            onClick={() => setView("fraction")}
-          >
-            Ordem Fracionada
-          </button>
-          <button
-            className={`${styles.tab} ${view === "deck" ? styles.active : ""}`}
-            onClick={() => setView("deck")}
-          >
-            Calculadoras
-          </button>
-        </nav>
+          {/* Abas (desktop + sticky no mobile) */}
+          <nav className={styles.tabbar}>
+            <button
+              className={`${styles.tab} ${
+                view === "menu" ? styles.active : ""
+              }`}
+              onClick={() => setView("menu")}
+            >
+              Início
+            </button>
+            <button
+              className={`${styles.tab} ${view === "avg" ? styles.active : ""}`}
+              onClick={() => setView("avg")}
+            >
+              Preço Médio
+            </button>
+            <button
+              className={`${styles.tab} ${
+                view === "fraction" ? styles.active : ""
+              }`}
+              onClick={() => setView("fraction")}
+            >
+              Ordem Fracionada
+            </button>
+            <button
+              className={`${styles.tab} ${
+                view === "deck" ? styles.active : ""
+              }`}
+              onClick={() => setView("deck")}
+            >
+              Calculadoras
+            </button>
+          </nav>
 
-        {/* Menu de entrada com CTAs grandes */}
-        {view === "menu" && (
-          <div className={styles.menuContainer}>
-            {/* Seção de Calculadoras Criadas */}
-            <div className={styles.savedSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Suas Calculadoras</h2>
-                <button
-                  className={styles.refreshBtn}
-                  onClick={() =>
-                    window.dispatchEvent(new CustomEvent("calculatorsUpdated"))
-                  }
-                  title="Atualizar calculadoras"
-                >
-                  🔄
-                </button>
+          {/* Menu de entrada com CTAs grandes */}
+          {view === "menu" && (
+            <div className={styles.menuContainer}>
+              {/* Seção de Calculadoras Criadas */}
+              <div className={styles.savedSection}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Suas Calculadoras</h2>
+                </div>
+                <SavedCalculatorsGrid
+                  onViewDeck={() => setView("deck")}
+                  onEditCalculator={(calcId) => {
+                    setEditingCalcId(calcId);
+                    setView("deck");
+                  }}
+                />
               </div>
-              <SavedCalculatorsGrid
-                onViewDeck={() => setView("deck")}
-                onEditCalculator={(calcId) => {
-                  setEditingCalcId(calcId);
-                  setView("deck");
-                }}
-              />
-            </div>
 
-            {/* Seção de Ferramentas */}
-            <div className={styles.toolsSection}>
-              <h2 className={styles.sectionTitle}>Ferramentas</h2>
-              <div className={styles.toolsGrid}>
-                <button
-                  className={`${styles.toolCard} ${styles.toolAvg}`}
-                  onClick={() => setView("avg")}
-                >
-                  <div className={styles.toolIcon}>📊</div>
-                  <div className={styles.toolContent}>
-                    <h3 className={styles.toolTitle}>Preço Médio</h3>
-                    <p className={styles.toolDescription}>
-                      Calcular média ponderada de compras
-                    </p>
-                  </div>
-                  <div className={styles.toolArrow}>→</div>
-                </button>
+              {/* Seção de Ferramentas */}
+              <div className={styles.toolsSection}>
+                <h2 className={styles.sectionTitle}>Ferramentas</h2>
+                <div className={styles.toolsGrid}>
+                  <button
+                    className={`${styles.toolCard} ${styles.toolAvg}`}
+                    onClick={() => setView("avg")}
+                  >
+                    <div className={styles.toolIcon}>
+                      <ChartIcon />
+                    </div>
+                    <div className={styles.toolContent}>
+                      <h3 className={styles.toolTitle}>Preço Médio</h3>
+                      <p className={styles.toolDescription}>
+                        Calcular média ponderada de compras
+                      </p>
+                    </div>
+                    <div className={styles.toolArrow}>→</div>
+                  </button>
 
-                <button
-                  className={`${styles.toolCard} ${styles.toolFraction}`}
-                  onClick={() => setView("fraction")}
-                >
-                  <div className={styles.toolIcon}>🔢</div>
-                  <div className={styles.toolContent}>
-                    <h3 className={styles.toolTitle}>Ordem Fracionada</h3>
-                    <p className={styles.toolDescription}>
-                      Divide execução em partes percentuais
-                    </p>
-                  </div>
-                  <div className={styles.toolArrow}>→</div>
-                </button>
+                  <button
+                    className={`${styles.toolCard} ${styles.toolFraction}`}
+                    onClick={() => setView("fraction")}
+                  >
+                    <div className={styles.toolIcon}>
+                      <CalculatorIcon />
+                    </div>
+                    <div className={styles.toolContent}>
+                      <h3 className={styles.toolTitle}>Ordem Fracionada</h3>
+                      <p className={styles.toolDescription}>
+                        Divide execução em partes percentuais
+                      </p>
+                    </div>
+                    <div className={styles.toolArrow}>→</div>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Conteúdo das calculadoras */}
-        {view === "avg" && (
-          <AveragePriceCalculator onBack={() => setView("menu")} />
-        )}
-        {view === "fraction" && (
-          <FractionalOrdersCalculator onBack={() => setView("menu")} />
-        )}
-        {view === "deck" && (
-          <ExecCalculatorDeck onBack={() => setView("menu")} />
-        )}
+          {/* Conteúdo das calculadoras */}
+          {view === "avg" && (
+            <AveragePriceCalculator onBack={() => setView("menu")} />
+          )}
+          {view === "fraction" && (
+            <FractionalOrdersCalculator onBack={() => setView("menu")} />
+          )}
+          {view === "deck" && (
+            <ExecCalculatorDeck onBack={() => setView("menu")} />
+          )}
+        </div>
       </main>
     </>
   );

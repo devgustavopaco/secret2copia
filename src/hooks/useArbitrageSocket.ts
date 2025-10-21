@@ -24,7 +24,8 @@ export function useArbitrageSocket(
   symbols: string[],
   refreshRate: number,
   buyExchanges: string[],
-  sellExchanges: string[]
+  sellExchanges: string[],
+  isPaused: boolean = false
 ) {
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
   useEffect(() => {
@@ -47,7 +48,6 @@ export function useArbitrageSocket(
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
-  console.log("opportunities", opportunities[0]);
   // useEffect(() => {
   //   const zec = opportunities.find(
   //     (opp) => opp.ticker.replace(/USDT$/, "") === "ZEC"
@@ -67,6 +67,16 @@ export function useArbitrageSocket(
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    if (isPaused) {
+      // Se pausado, apenas desconecta o socket mas mantém os dados
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setIsConnected(false);
+      return;
+    }
+
     const s = io(URL, { transports: ["websocket"] });
     socketRef.current = s;
 
@@ -138,7 +148,7 @@ export function useArbitrageSocket(
       s.disconnect();
       socketRef.current = null;
     };
-  }, []); // monta uma vez
+  }, [isPaused]); // monta uma vez, mas reconecta quando pausa muda
 
   useEffect(() => {
     const s = socketRef.current;

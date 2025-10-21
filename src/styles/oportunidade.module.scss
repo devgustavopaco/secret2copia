@@ -1,39 +1,109 @@
+// Variáveis do novo design system
+$bg: #000000;
+$surface: rgba(255, 255, 255, 0.06);
+$surface-strong: rgba(255, 255, 255, 0.08);
+$border-strong: rgba(255, 255, 255, 0.9);
+$border-weak: rgba(255, 255, 255, 0.25);
+$text: #ffffff;
+$text-dim: rgba(255, 255, 255, 0.7);
+$positive: #32ff7e;
+$negative: #ff5c5c;
+$purple: #7d5fff;
+$purple-deep: #7158e2;
+$glow-rgb: 151, 133, 242;
+
 .container {
   min-height: 100vh;
-  background: #0d0f12;
-  padding: 10px;
+  background-color: $bg;
+  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 0;
+
+  /* esconder scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge antigo */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+}
+
+.backgroundBlur {
+  position: absolute;
+  background-image: url("/new-page/background-blur.png");
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background-size: cover;
 }
 
 .content {
   width: 100%;
-  max-width: 280px;
+  max-width: 420px;
   position: relative;
+  z-index: 1;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 24px;
+  padding: 0 4px;
 }
 
 .backButton,
 .toggleButton,
 .menuButton {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 8px;
-  padding: 8px;
-  color: white;
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 0;
+  border-radius: 16px;
+  padding: 12px;
+  color: $text;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      $border-strong 0%,
+      $border-weak 50%,
+      $border-strong 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.55) inset,
+      0 0 14px 3px rgba(125, 95, 255, 0.45),
+      0 0 32px 10px rgba(113, 88, 226, 0.35);
+    color: #cfc7ff;
   }
 }
 
@@ -73,48 +143,95 @@
 }
 
 .opportunityCard {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 20px 15px;
+  position: relative;
+  isolation: isolate;
+  background: $surface;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  padding: 32px 24px;
   text-align: center;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 6px 24px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      $border-strong 0%,
+      $border-weak 50%,
+      $border-strong 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .operationSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 .sectionTitle {
-  font-size: 0.9rem;
-  color: #60a5fa;
+  font-size: 1rem;
+  color: $text;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   margin: 0;
   text-align: center;
-  padding: 8px 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.15) 0%,
-    rgba(37, 99, 235, 0.1) 100%
-  );
-  border-radius: 8px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 12px 16px;
+  background: linear-gradient(135deg, $purple 0%, $purple-deep 100%);
+  border-radius: 16px;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 4px 12px rgba(125, 95, 255, 0.3);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      rgba(125, 95, 255, 1) 0%,
+      rgba(125, 95, 255, 0.25) 50%,
+      rgba(125, 95, 255, 1) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .coinName {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: $text;
   margin: 0;
-  margin-bottom: 5px;
-  letter-spacing: 1px;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, $text 0%, rgba(255, 255, 255, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .operationType {
@@ -129,31 +246,37 @@
 .pricesContainer {
   display: flex;
   justify-content: space-between;
-  justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   flex-wrap: wrap;
+  padding: 16px 0;
 }
 
 .priceItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   flex: 1;
-  max-width: 80px;
+  max-width: 100px;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .exchangeName {
-  font-size: 0.7rem;
-  color: #a0a0a0;
-  font-weight: 500;
+  font-size: 0.75rem;
+  color: $text-dim;
+  font-weight: 600;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .price {
-  font-size: 1.1rem;
-  color: white;
+  font-size: 1.2rem;
+  color: $text;
   font-weight: 700;
   font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", monospace;
@@ -161,42 +284,74 @@
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .profitItem {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 12px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  gap: 8px;
+  padding: 16px 12px;
+  background: $surface;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 90px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 80px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .profitLabel {
-  font-size: 0.7rem;
-  color: #a0a0a0;
-  font-weight: 500;
+  font-size: 0.75rem;
+  color: $text-dim;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .profit {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
   font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
   &.positive {
-    color: #00ff88;
+    color: $positive;
+    text-shadow: 0 0 8px rgba(50, 255, 126, 0.3);
   }
 
   &.negative {
-    color: #ff3838;
+    color: $negative;
+    text-shadow: 0 0 8px rgba(255, 92, 92, 0.3);
   }
 }
 
@@ -205,7 +360,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #0d0f12;
+  background-color: $bg;
 }
 
 // Responsive adjustments
