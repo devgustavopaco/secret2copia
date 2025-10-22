@@ -200,6 +200,7 @@ export default function FuturosNewPage({
     symbolFilter,
     isExitMode,
   ]);
+  console.log("filteredOpps", filteredOpps[0]);
 
   // ---- resto igual ao seu código (exchanges permitidas + modal de exchanges) ----
   const ALLOWED_SPOT_EXCHANGES = [

@@ -1016,16 +1016,18 @@ export function DemoGlassTable({
           // Ainda não expirou
           updatedRow.fundingExpiry = `Exp: ${formatElapsed(timeUntilExpiry)}`;
         } else {
-          // Já expirou - mostrar data e hora da expiração
+          // Já expirou - mostrar data e hora da expiração (no horário de Brasília)
           const expiryDate = new Date(expiryTime);
           const dateStr = expiryDate.toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "2-digit",
+            timeZone: "America/Sao_Paulo",
           });
           const timeStr = expiryDate.toLocaleTimeString("pt-BR", {
             hour: "2-digit",
             minute: "2-digit",
+            timeZone: "America/Sao_Paulo",
           });
           updatedRow.fundingExpiry = `Expirou em: ${dateStr} ${timeStr}`;
         }
