@@ -115,6 +115,17 @@ const fmtPct = (n?: number) =>
   typeof n === "number" && isFinite(n) ? `${n.toFixed(2)}%` : "—";
 const safe = (s?: string) => s ?? "—";
 
+// Função para formatar volumes com abreviações
+const formatVolume = (volume: number) => {
+  if (volume >= 1000000) {
+    return `${(volume / 1000000).toFixed(1)}M`;
+  } else if (volume >= 1000) {
+    return `${(volume / 1000).toFixed(1)}K`;
+  } else {
+    return volume.toFixed(0);
+  }
+};
+
 type CoinRow = {
   id: string;
   coin: { ticker: string; logo: string };
@@ -122,6 +133,7 @@ type CoinRow = {
   futures: { price: string; bingo: string; live: string };
   spreads: { long: string; short: string };
   funding: string;
+  fundingExpiry: string;
   tempo: string;
   volumes: { s: string; f: string };
   volumes24h: { s: string; f: string };
@@ -161,22 +173,15 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
       typeof (op as any).fundingRate === "number"
         ? fmtPct((op as any).fundingRate * 100)
         : safe((op as any).funding),
+    fundingExpiry: "—", // será calculado no useMemo
     tempo: "—", // será calculado no useMemo
     volumes: {
       s: `S: ${askLiq ? askLiq.toFixed(0) : 0}`,
       f: `F: ${bidLiq ? bidLiq.toFixed(0) : 0}`,
     },
     volumes24h: {
-      s: `S: ${
-        op.spotVolume24h
-          ? Math.round(op.spotVolume24h).toLocaleString("en-US")
-          : 0
-      }`,
-      f: `F: ${
-        op.futVolume24h
-          ? Math.round(op.futVolume24h).toLocaleString("en-US")
-          : 0
-      }`,
+      s: `S: ${op.spotVolume24h ? formatVolume(op.spotVolume24h) : "0"}`,
+      f: `F: ${op.futVolume24h ? formatVolume(op.futVolume24h) : "0"}`,
     },
   };
 }
@@ -825,6 +830,7 @@ export function DemoGlassTable({
               "spot",
               "futuros",
               "spreads",
+              "showSpreadBackground",
               "funding",
               "tempo",
               "volumes",
@@ -838,6 +844,7 @@ export function DemoGlassTable({
           "spot",
           "futuros",
           "spreads",
+          "showSpreadBackground",
           "funding",
           "tempo",
           "volumes",
@@ -964,6 +971,11 @@ export function DemoGlassTable({
     { id: "spot", label: "Spot", required: false },
     { id: "futuros", label: "Futuros", required: false },
     { id: "spreads", label: "Spreads", required: false },
+    {
+      id: "showSpreadBackground",
+      label: "Mostrar Background do Spread",
+      required: false,
+    },
     { id: "funding", label: "Funding", required: false },
     { id: "tempo", label: "Tempo", required: false },
     { id: "volumes", label: "Volumes", required: false },
@@ -977,7 +989,7 @@ export function DemoGlassTable({
 
     const mappedRows = opportunities.map(mapOppToRow);
 
-    // Calcular tempo decorrido para cada linha
+    // Calcular tempo decorrido e expiração do funding para cada linha
     const rowsWithTime = mappedRows.map((row) => {
       const originalOpp = opportunities.find(
         (op) =>
@@ -986,14 +998,40 @@ export function DemoGlassTable({
           op.highestBid?.exchange === row.futures.bingo
       );
 
+      let updatedRow = { ...row };
+
+      // Calcular tempo decorrido
       if (originalOpp && (originalOpp as any).validSince) {
-        return {
-          ...row,
-          tempo: `T: ${formatElapsed(now - (originalOpp as any).validSince)}`,
-        };
+        updatedRow.tempo = `T: ${formatElapsed(
+          now - (originalOpp as any).validSince
+        )}`;
       }
 
-      return row;
+      // Calcular expiração do funding
+      if (originalOpp && (originalOpp as any).fundingRateExpTs) {
+        const expiryTime = (originalOpp as any).fundingRateExpTs;
+        const timeUntilExpiry = expiryTime - now;
+
+        if (timeUntilExpiry > 0) {
+          // Ainda não expirou
+          updatedRow.fundingExpiry = `Exp: ${formatElapsed(timeUntilExpiry)}`;
+        } else {
+          // Já expirou - mostrar data e hora da expiração
+          const expiryDate = new Date(expiryTime);
+          const dateStr = expiryDate.toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+          });
+          const timeStr = expiryDate.toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          updatedRow.fundingExpiry = `Expirou em: ${dateStr} ${timeStr}`;
+        }
+      }
+
+      return updatedRow;
     });
 
     // Filtrar oportunidades excluídas
@@ -1243,7 +1281,7 @@ export function DemoGlassTable({
             }}
             style={{ cursor: "pointer" }}
           >
-            {r.spot.bingo}{" "}
+            {r.spot.bingo.replace(/spot|futures/i, "")}
             <img src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
           <div className={styles.price}>{r.spot.price}</div>
@@ -1272,7 +1310,7 @@ export function DemoGlassTable({
             }}
             style={{ cursor: "pointer" }}
           >
-            {r.futures.bingo}{" "}
+            {r.futures.bingo.replace(/spot|futures/i, "")}
             <img src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
           <div className={styles.price}>{r.futures.price}</div>
@@ -1286,11 +1324,16 @@ export function DemoGlassTable({
       id: "spreads",
       header: "Spreads",
       accessor: (r) => (
-        <div className={styles.cellSplit}>
+        <div className={styles.cellSplitHorizontal}>
           <span
             className={classnames(
               isExitMode ? styles.negative : styles.positive,
-              styles.bold
+              styles.bold,
+              isElementVisible("showSpreadBackground") &&
+                classnames(
+                  styles.spreadCell,
+                  isExitMode ? styles.negative : styles.positive
+                )
             )}
           >
             {r.spreads.long}
@@ -1298,7 +1341,12 @@ export function DemoGlassTable({
           <span
             className={classnames(
               isExitMode ? styles.positive : styles.negative,
-              styles.bold
+              styles.bold,
+              isElementVisible("showSpreadBackground") &&
+                classnames(
+                  styles.spreadCell,
+                  isExitMode ? styles.positive : styles.negative
+                )
             )}
           >
             {r.spreads.short}
@@ -1306,14 +1354,43 @@ export function DemoGlassTable({
         </div>
       ),
       width: "160px",
+      align: "center",
     },
-    { id: "funding", header: "Funding", field: "funding", width: "120px" },
     {
-      id: "tempo",
-      header: "Tempo",
-      accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
-      width: "150px",
+      id: "funding",
+      header: "Funding",
+      accessor: (r) => {
+        // Extrair valor numérico do funding
+        const fundingValue = parseFloat(r.funding.replace(/[^\d.-]/g, "")) || 0;
+
+        // Determinar se é positivo ou negativo
+        const isPositive = fundingValue > 0;
+        const isNegative = fundingValue < 0;
+
+        // Formatar com sinal
+        const sign = isPositive ? "+" : isNegative ? "" : "";
+        const displayValue = `${sign}${r.funding}`;
+
+        return (
+          <div className={styles.fundingContainer}>
+            <span
+              className={classnames(
+                styles.fundingValue,
+                isPositive && styles.fundingPositive,
+                isNegative && styles.fundingNegative
+              )}
+            >
+              {displayValue}
+            </span>
+            {r.fundingExpiry !== "—" && (
+              <div className={styles.fundingExpiry}>{r.fundingExpiry}</div>
+            )}
+          </div>
+        );
+      },
+      width: "140px",
     },
+
     {
       id: "volumes",
       header: "Volumes",
@@ -1335,6 +1412,12 @@ export function DemoGlassTable({
         </div>
       ),
       width: "140px",
+    },
+    {
+      id: "tempo",
+      header: "Tempo",
+      accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
+      width: "150px",
     },
     {
       id: "acoes",

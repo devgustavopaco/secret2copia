@@ -255,6 +255,8 @@
 .cellStack {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
   gap: 0px;
 }
 .subs {
@@ -266,6 +268,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.cellSplitHorizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .actions {
@@ -1225,4 +1237,76 @@
   position: relative;
   z-index: 10;
   background: transparent;
+}
+
+/* Estilos para Funding */
+.fundingContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fundingValue {
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.fundingPositive {
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.fundingNegative {
+  color: #ff4757;
+  text-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+}
+
+.fundingExpiry {
+  font-size: 10px;
+  color: #a0a0a0;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Estilos para Background do Spread */
+.spreadCell {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: 2px;
+  display: inline-block;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+
+  // Borda verde para valores positivos
+  &.positive {
+    border-color: var(--gt-positive);
+    border-width: 2px;
+
+    &:hover {
+      border-color: var(--gt-positive);
+      background: rgba(50, 255, 126, 0.1);
+    }
+  }
+
+  // Borda vermelha para valores negativos
+  &.negative {
+    border-color: var(--gt-negative);
+    border-width: 2px;
+
+    &:hover {
+      border-color: var(--gt-negative);
+      background: rgba(255, 92, 92, 0.1);
+    }
+  }
 }

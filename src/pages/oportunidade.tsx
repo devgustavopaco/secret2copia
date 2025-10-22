@@ -301,7 +301,7 @@ export default function OportunidadePage() {
                 <div className={styles.pricesContainer}>
                   <div className={styles.priceItem}>
                     <span className={styles.exchangeName}>
-                      {opportunity.lowestAsk.exchange}_spot
+                      {opportunity.lowestAsk.exchange}
                     </span>
                     <span className={styles.price}>
                       {numberFormatter.format(spotAsk)}
@@ -324,7 +324,7 @@ export default function OportunidadePage() {
 
                   <div className={styles.priceItem}>
                     <span className={styles.exchangeName}>
-                      {opportunity.highestBid.exchange}_futures
+                      {opportunity.highestBid.exchange}
                     </span>
                     <span className={styles.price}>
                       {numberFormatter.format(futBid)}
@@ -341,7 +341,7 @@ export default function OportunidadePage() {
                 <div className={styles.pricesContainer}>
                   <div className={styles.priceItem}>
                     <span className={styles.exchangeName}>
-                      {opportunity.lowestAsk.exchange}_spot
+                      {opportunity.lowestAsk.exchange}
                     </span>
                     <span className={styles.price}>
                       {numberFormatter.format(spotBid)}
@@ -364,7 +364,7 @@ export default function OportunidadePage() {
 
                   <div className={styles.priceItem}>
                     <span className={styles.exchangeName}>
-                      {opportunity.highestBid.exchange}_futures
+                      {opportunity.highestBid.exchange}
                     </span>
                     <span className={styles.price}>
                       {numberFormatter.format(futAsk)}
