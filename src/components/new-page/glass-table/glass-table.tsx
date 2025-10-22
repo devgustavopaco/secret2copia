@@ -1202,10 +1202,12 @@ export function DemoGlassTable({
   const endIndex = startIndex + itemsPerPage;
   const paginatedRows = rows.slice(startIndex, endIndex);
 
-  // Resetar página quando dados mudarem
+  // Ajustar página atual se ela for maior que o total de páginas disponíveis
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [opportunities, isGrouped, expandedGroups]);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // Definir todas as colunas possíveis
   const allColumns: Column<CoinRow>[] = [
