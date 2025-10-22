@@ -113,6 +113,8 @@ const fmtMoney = (n?: number) =>
     : "—";
 const fmtPct = (n?: number) =>
   typeof n === "number" && isFinite(n) ? `${n.toFixed(2)}%` : "—";
+const fmtPctFunding = (n?: number) =>
+  typeof n === "number" && isFinite(n) ? `${n.toFixed(5)}%` : "—";
 const safe = (s?: string) => s ?? "—";
 
 // Função para formatar volumes com abreviações
@@ -171,7 +173,7 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
     },
     funding:
       typeof (op as any).fundingRate === "number"
-        ? fmtPct((op as any).fundingRate * 100)
+        ? fmtPctFunding((op as any).fundingRate * 100)
         : safe((op as any).funding),
     fundingExpiry: "—", // será calculado no useMemo
     tempo: "—", // será calculado no useMemo
