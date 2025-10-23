@@ -439,6 +439,7 @@ export function DemoGlassTable({
   onRefreshRateChange,
   isSocketPaused,
   onToggleSocketPause,
+  dollarPrice,
 }: {
   isSidebarOpen: boolean;
   opportunities?: ArbitrageOpportunity[];
@@ -451,6 +452,7 @@ export function DemoGlassTable({
   onRefreshRateChange?: (rate: number) => void;
   isSocketPaused?: boolean;
   onToggleSocketPause?: () => void;
+  dollarPrice?: number;
 }) {
   const [filter, setFilter] = React.useState("");
 
@@ -470,6 +472,19 @@ export function DemoGlassTable({
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Estado para tooltip
+  const [tooltip, setTooltip] = React.useState<{
+    isVisible: boolean;
+    content: React.ReactNode;
+    x: number;
+    y: number;
+  }>({
+    isVisible: false,
+    content: null,
+    x: 0,
+    y: 0,
+  });
 
   // Função para gerar URL do TradingView (igual à tela antiga)
   const generateTradingViewURL = (row: CoinRow) => {
@@ -720,6 +735,26 @@ export function DemoGlassTable({
     if (h > 0) return `${h}h ${m}m ${s}s`;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
+  };
+
+  // Funções para controlar tooltip
+  const showTooltip = (event: React.MouseEvent, content: React.ReactNode) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltip({
+      isVisible: true,
+      content,
+      x: rect.right + 8, // Posição à direita
+      y: rect.top + rect.height / 2, // Centralizado verticalmente
+    });
+  };
+
+  const hideTooltip = () => {
+    setTooltip({
+      isVisible: false,
+      content: null,
+      x: 0,
+      y: 0,
+    });
   };
 
   // Estado para favoritos
@@ -1218,54 +1253,202 @@ export function DemoGlassTable({
     {
       id: "moeda",
       header: "Moeda",
-      accessor: (r) => (
-        <div className={styles.cellCoin}>
-          {isElementVisible("showCoinLogo") && (
-            <img
-              src={r.coin.logo}
-              alt=""
-              width={32}
-              height={32}
-              className={styles.coinLogo}
-            />
-          )}
-          <span className={styles.coinTicker}>{r.coin.ticker}</span>
-          {/* Setinha de expansão para grupos */}
-          {(r as any)._isGroup && (r as any)._groupCount > 1 && (
-            <button
-              className={`${styles.expandButton} ${
-                (r as any)._isExpanded ? styles.expanded : ""
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleGroupExpansion(r.coin.ticker);
-              }}
-              title={
-                (r as any)._isExpanded
-                  ? "Colapsar grupo"
-                  : `Expandir grupo (${(r as any)._groupCount} operações)`
-              }
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+      accessor: (r) => {
+        // Buscar a oportunidade original para o tooltip
+        const originalOpp = opportunities?.find((opp) => {
+          const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
+          const rowTickerClean = r.coin.ticker;
+          const tickerMatch = oppTickerClean === rowTickerClean;
+          const spotMatch = opp.lowestAsk?.exchange === r.spot.bingo;
+          const futuresMatch = opp.highestBid?.exchange === r.futures.bingo;
+          return tickerMatch && spotMatch && futuresMatch;
+        });
+
+        const tooltipContent = originalOpp?.tokenStats ? (
+          <>
+            <div className={styles.tooltipHeader}>
+              <img
+                src={r.coin.logo}
+                alt=""
+                width={24}
+                height={24}
+                className={styles.tooltipLogo}
+              />
+              <span className={styles.tooltipTitle}>{r.coin.ticker}</span>
+            </div>
+            <div className={styles.tooltipBody}>
+              <div className={styles.tooltipSection}>
+                <h4 className={styles.tooltipSectionTitle}>
+                  Picos de Entrada (E)
+                </h4>
+                <div className={styles.tooltipStatsGrid}>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>1h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats.maxE1h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxE1h
+                        ? `${
+                            originalOpp.tokenStats.maxE1h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxE1h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>6h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats?.maxE6h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxE6h
+                        ? `${
+                            originalOpp.tokenStats.maxE6h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxE6h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>24h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats?.maxE24h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxE24h
+                        ? `${
+                            originalOpp.tokenStats.maxE24h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxE24h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.tooltipSection}>
+                <h4 className={styles.tooltipSectionTitle}>
+                  Picos de Saída (S)
+                </h4>
+                <div className={styles.tooltipStatsGrid}>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>1h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats.maxS1h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxS1h
+                        ? `${
+                            originalOpp.tokenStats.maxS1h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxS1h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>6h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats.maxS6h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxS6h
+                        ? `${
+                            originalOpp.tokenStats.maxS6h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxS6h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className={styles.tooltipStatItem}>
+                    <span className={styles.tooltipStatLabel}>24h</span>
+                    <span
+                      className={`${styles.tooltipStatValue} ${
+                        (originalOpp.tokenStats?.maxS24h ?? 0) > 0
+                          ? styles.positive
+                          : styles.negative
+                      }`}
+                    >
+                      {originalOpp.tokenStats.maxS24h
+                        ? `${
+                            originalOpp.tokenStats.maxS24h > 0 ? "+" : ""
+                          }${originalOpp.tokenStats.maxS24h.toFixed(4)}`
+                        : "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : null;
+
+        return (
+          <div
+            className={styles.cellCoin}
+            onMouseEnter={(e) =>
+              tooltipContent && showTooltip(e, tooltipContent)
+            }
+            onMouseLeave={hideTooltip}
+            onMouseMove={(e) =>
+              tooltipContent && showTooltip(e, tooltipContent)
+            }
+          >
+            {isElementVisible("showCoinLogo") && (
+              <img
+                src={r.coin.logo}
+                alt=""
+                width={32}
+                height={32}
+                className={styles.coinLogo}
+              />
+            )}
+            <span className={styles.coinTicker}>{r.coin.ticker}</span>
+            {/* Setinha de expansão para grupos */}
+            {(r as any)._isGroup && (r as any)._groupCount > 1 && (
+              <button
+                className={`${styles.expandButton} ${
+                  (r as any)._isExpanded ? styles.expanded : ""
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleGroupExpansion(r.coin.ticker);
+                }}
+                title={
+                  (r as any)._isExpanded
+                    ? "Colapsar grupo"
+                    : `Expandir grupo (${(r as any)._groupCount} operações)`
+                }
               >
-                <path
-                  d="M3 4.5L6 7.5L9 4.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-      ),
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5L6 7.5L9 4.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+        );
+      },
       width: "160px",
     },
     {
@@ -1866,6 +2049,19 @@ export function DemoGlassTable({
               style={{ border: "none" }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Tooltip */}
+      {tooltip.isVisible && (
+        <div
+          className={`${styles.tooltip} ${styles.visible}`}
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+          }}
+        >
+          <div className={styles.tooltipContent}>{tooltip.content}</div>
         </div>
       )}
     </>

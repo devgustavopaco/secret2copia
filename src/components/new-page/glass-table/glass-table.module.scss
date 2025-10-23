@@ -1332,3 +1332,310 @@
     }
   }
 }
+
+/* Estilos para Tooltip */
+.tooltip {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(-10px) scale(0.95);
+  margin-left: 8px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+}
+
+.tooltipContent {
+  background: rgba(20, 20, 30, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset, 0 0 30px rgba(125, 95, 255, 0.1);
+  padding: 24px;
+  min-width: 320px;
+  max-width: 360px;
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(125, 95, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(125, 95, 255, 0.2) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid rgba(20, 20, 30, 0.95);
+    z-index: 1;
+    filter: drop-shadow(-2px 0 4px rgba(0, 0, 0, 0.3));
+  }
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(125, 95, 255, 0.2);
+  position: relative;
+  z-index: 1;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(125, 95, 255, 0.5),
+      transparent
+    );
+  }
+}
+
+.tooltipLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.1)
+  );
+  border: 2px solid rgba(125, 95, 255, 0.3);
+  box-shadow: 0 0 20px rgba(125, 95, 255, 0.2);
+}
+
+.tooltipTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(125, 95, 255, 0.6);
+  letter-spacing: 0.5px;
+}
+
+.tooltipBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.tooltipSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.tooltipSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(125, 95, 255, 0.9);
+  margin: 0;
+  text-shadow: 0 0 8px rgba(125, 95, 255, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.tooltipExchange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tooltipPrice {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 8px rgba(125, 95, 255, 0.4);
+}
+
+.tooltipArrow {
+  font-size: 20px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 8px;
+}
+
+.tooltipFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.tooltipLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 60px;
+}
+
+.tooltipValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: right;
+  flex: 1;
+}
+
+/* Token Stats no Tooltip */
+.tooltipDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.tooltipStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tooltipStatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  background: rgba(125, 95, 255, 0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(125, 95, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(125, 95, 255, 0.2),
+      transparent
+    );
+    transition: left 0.8s ease;
+  }
+
+  &:hover {
+    background: rgba(125, 95, 255, 0.15);
+    border-color: rgba(125, 95, 255, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(125, 95, 255, 0.3),
+      0 0 0 1px rgba(125, 95, 255, 0.2) inset;
+
+    &::before {
+      left: 100%;
+    }
+  }
+}
+
+.tooltipStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(125, 95, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+}
+
+.tooltipStatValue {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(125, 95, 255, 0.5);
+  transition: all 0.2s ease;
+
+  &.positive {
+    color: #00ff88 !important;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+  }
+
+  &.negative {
+    color: #ff4757 !important;
+    text-shadow: 0 0 15px rgba(255, 71, 87, 0.8);
+  }
+}
+
+.tooltipStatItem:hover .tooltipStatLabel {
+  color: rgba(125, 95, 255, 1);
+  text-shadow: 0 0 6px rgba(125, 95, 255, 0.4);
+}
+
+.tooltipStatItem:hover .tooltipStatValue {
+  transform: scale(1.1);
+
+  &.positive {
+    color: #00ff88 !important;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 1);
+  }
+
+  &.negative {
+    color: #ff4757 !important;
+    text-shadow: 0 0 20px rgba(255, 71, 87, 1);
+  }
+
+  &:not(.positive):not(.negative) {
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(125, 95, 255, 0.8);
+  }
+}
