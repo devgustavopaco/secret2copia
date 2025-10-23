@@ -1423,7 +1423,7 @@ export function DemoGlassTable({
       id: "tempo",
       header: "Tempo",
       accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
-      width: "100px",
+      width: "120px",
       align: "center",
     },
     {
