@@ -30,6 +30,11 @@
   transition: margin-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+.wrapper:hover ~ .pagination {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 
 .sidebarClosed {
   margin-left: 0 !important;
@@ -273,7 +278,7 @@
 .cellSplitHorizontal {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: 20px;
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
@@ -387,6 +392,27 @@
   // left: 20vw;
   right: 0;
   z-index: 1000;
+
+  /* Invisível por padrão */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Aparecer quando passar o mouse sobre a própria paginação */
+.pagination:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Aparecer quando passar o mouse sobre qualquer elemento da tabela */
+.wrapper:hover .pagination,
+.surface:hover ~ .pagination {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .paginationInfo {
@@ -948,10 +974,6 @@
 .th,
 .td {
   position: relative;
-}
-.th:not(:last-child),
-.td:not(:last-child) {
-  padding-right: calc(16px + var(--gt-tab-w) + var(--gt-tab-gap));
 }
 
 /* base da tab: vidro branco bem leve */

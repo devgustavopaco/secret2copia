@@ -93,62 +93,68 @@ export default function NewPageHeader({
     <div className={styles.header}>
       <div className={styles.glowLine}></div>
       <div className={styles.headerContent}>
-        <ul>
-          <li>
-            <Link href="/home">
-              <a className={router.pathname === "/home" ? styles.active : ""}>
-                Home
-              </a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/futuros">
-              <a
-                className={router.pathname === "/futuros" ? styles.active : ""}
-              >
-                Futuros
-              </a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/videos">
-              <a className={router.pathname === "/videos" ? styles.active : ""}>
-                Mentoria
-              </a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/privacidade">
-              <a
-                className={
-                  router.pathname === "/privacidade" ? styles.active : ""
-                }
-              >
-                Privacidade
-              </a>
-            </Link>
-          </li>
-          <li>
-            <a href={supportNumber} target="_blank" rel="noopener noreferrer">
-              Contato
-            </a>
-          </li>
-          {auth?.role === "admin" && (
+        <div className={styles.headerLeft}>
+          <ul>
             <li>
-              <Link href="https://painel.nextgain.com.br/">
-                <a
-                  className={
-                    router.pathname === "https://painel.nextgain.com.br/"
-                      ? styles.active
-                      : ""
-                  }
-                >
-                  Dashboard
+              <Link href="/home">
+                <a className={router.pathname === "/home" ? styles.active : ""}>
+                  Home
                 </a>
               </Link>
             </li>
-          )}
-        </ul>
+            <li>
+              <Link href="/futuros">
+                <a
+                  className={
+                    router.pathname === "/futuros" ? styles.active : ""
+                  }
+                >
+                  Futuros
+                </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/videos">
+                <a
+                  className={router.pathname === "/videos" ? styles.active : ""}
+                >
+                  Mentoria
+                </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacidade">
+                <a
+                  className={
+                    router.pathname === "/privacidade" ? styles.active : ""
+                  }
+                >
+                  Privacidade
+                </a>
+              </Link>
+            </li>
+            <li>
+              <a href={supportNumber} target="_blank" rel="noopener noreferrer">
+                Contato
+              </a>
+            </li>
+            {auth?.role === "admin" && (
+              <li>
+                <Link href="https://painel.nextgain.com.br/">
+                  <a
+                    className={
+                      router.pathname === "https://painel.nextgain.com.br/"
+                        ? styles.active
+                        : ""
+                    }
+                  >
+                    Dashboard
+                  </a>
+                </Link>
+              </li>
+            )}
+          </ul>
+        </div>
         <div className={styles.headerRight}>
           <span className={styles.profileName}>
             Olá{auth && auth.user ? `, ${auth.user.name}` : ""}

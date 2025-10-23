@@ -1359,7 +1359,7 @@ export function DemoGlassTable({
           </span>
         </div>
       ),
-      width: "160px",
+      width: "200px",
       align: "center",
     },
     {
@@ -1394,7 +1394,7 @@ export function DemoGlassTable({
           </div>
         );
       },
-      width: "140px",
+      width: "100px",
     },
 
     {
@@ -1423,7 +1423,8 @@ export function DemoGlassTable({
       id: "tempo",
       header: "Tempo",
       accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
-      width: "150px",
+      width: "100px",
+      align: "center",
     },
     {
       id: "acoes",
@@ -1546,7 +1547,7 @@ export function DemoGlassTable({
           </button>
         </div>
       ),
-      width: "112px",
+      width: "140px",
     },
   ];
 
