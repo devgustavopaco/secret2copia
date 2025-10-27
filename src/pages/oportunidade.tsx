@@ -66,12 +66,9 @@ export default function OportunidadePage() {
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
-    const socket: Socket = io(
-      "https://socket-production-0614.up.railway.app/",
-      {
-        transports: ["websocket"],
-      }
-    );
+    const socket: Socket = io("wss://arbitrage-socket.fly.dev/", {
+      transports: ["websocket"],
+    });
 
     socket.on("connect", () => {
       console.log(
