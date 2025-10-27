@@ -66,7 +66,7 @@ export default function OportunidadePage() {
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
-    const socket: Socket = io("wss://arbitrage-socket.fly.dev/", {
+    const socket: Socket = io("wss://arbitrage-socket-stable.fly.dev/", {
       transports: ["websocket"],
     });
 

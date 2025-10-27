@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
-const URL = "wss://arbitrage-socket.fly.dev/";
+const URL = "wss://arbitrage-socket-stable.fly.dev/";
 
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
