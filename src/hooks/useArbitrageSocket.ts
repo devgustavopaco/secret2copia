@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
-const URL = "https://a-socket.nextgain.com.br/";
+const URL = "https://futures-socket-production-7788.up.railway.app/";
 
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
