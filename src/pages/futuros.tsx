@@ -169,7 +169,7 @@ export default function FuturosNewPage({
       const bidLiq = (op.highestBid?.price ?? 0) * (op.highestBid?.amount ?? 0);
       const spotVol = op.spotVolume24h ?? 0;
       const futVol = op.futVolume24h ?? 0;
-
+      if (op.ticker?.toUpperCase().includes("MET")) return false;
       // Usa spread de entrada ou fechamento baseado no modo
       const p = isExitMode ? op.spreadS : op.spread;
       const pass =
