@@ -21,7 +21,7 @@ import PlayIcon from "../../Icons/PlayIcon";
 
 // Função para abrir calculadora em popup
 const openCalculatorPopup = () => {
-  const width = 400;
+  const width = 800;
   const height = 800;
   const left = (window.screen.width - width) / 2;
   const top = (window.screen.height - height) / 2;
