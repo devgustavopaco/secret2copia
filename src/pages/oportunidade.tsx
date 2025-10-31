@@ -66,12 +66,9 @@ export default function OportunidadePage() {
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
-    const socket: Socket = io(
-      "https://futures-socket-production-7788.up.railway.app/",
-      {
-        transports: ["websocket"],
-      }
-    );
+    const socket: Socket = io("https://stable-socket.nextgain.com.br/", {
+      transports: ["websocket"],
+    });
 
     socket.on("connect", () => {
       console.log(
