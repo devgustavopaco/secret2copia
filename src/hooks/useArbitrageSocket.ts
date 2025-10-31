@@ -4,7 +4,7 @@ import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
 const URL = "https://stable-socket.nextgain.com.br/";
-//
+
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
