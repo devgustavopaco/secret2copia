@@ -921,11 +921,7 @@
   height: 32px;
   border-radius: 50%;
   display: block;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 0.1)
-  );
+  background: white;
 }
 .coinTicker {
   font-weight: 600;

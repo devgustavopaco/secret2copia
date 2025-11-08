@@ -13,6 +13,7 @@ import TradingViewIcon from "../../Icons/TradingViewIcon";
 import StarIcon from "../../Icons/StarIcon";
 import StarFilledIcon from "../../Icons/StarFilledIcon";
 import TrashIcon from "../../Icons/TrashIcon";
+import { useCoinLogo } from "../../../hooks/useCoinLogo";
 
 import type { ArbitrageOpportunity } from "../../../server/router/orderbook";
 import { PacmanLoader } from "react-spinners";
@@ -142,6 +143,7 @@ type CoinRow = {
 };
 
 // mapeia ArbitrageOpportunity -> CoinRow
+// mapeia ArbitrageOpportunity -> CoinRow
 function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
   const askP = op?.lowestAsk?.price ?? 0;
   const askAmt = op?.lowestAsk?.amount ?? 0;
@@ -155,37 +157,172 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
     id: `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`,
     coin: {
       ticker: op.ticker?.replace(/USDT$/i, "") || op.ticker || "—",
-      logo: op.coinImage || "/default-exchange.png",
+      logo: op.coinImage || "/default-coin.png",
     },
     spot: {
-      bingo: safe(op.lowestAsk?.exchange),
-      price: fmtMoney(askP),
+      bingo: op.lowestAsk?.exchange || "—",
+      price: `$${askP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
       live: askLiq ? `Liq $${askLiq.toFixed(0)}` : "—",
     },
     futures: {
-      bingo: safe(op.highestBid?.exchange),
-      price: fmtMoney(bidP),
+      bingo: op.highestBid?.exchange || "—",
+      price: `$${bidP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
       live: bidLiq ? `Liq $${bidLiq.toFixed(0)}` : "—",
     },
     spreads: {
-      long: `E: ${fmtPct(op.spread)}`,
-      short: `S: ${fmtPct(op.spreadS)}`,
+      long: `E: ${(op.spread ?? 0).toFixed(2)}%`,
+      short: `S: ${(op.spreadS ?? 0).toFixed(2)}%`,
     },
     funding:
-      typeof (op as any).fundingRate === "number"
-        ? fmtPctFunding((op as any).fundingRate * 100)
-        : safe((op as any).funding),
-    fundingExpiry: "—", // será calculado no useMemo
-    tempo: "—", // será calculado no useMemo
+      typeof op.fundingRate === "number"
+        ? `${(op.fundingRate * 100).toFixed(5)}%`
+        : "—",
+    fundingExpiry: "—",
+    tempo: "—",
     volumes: {
-      s: `S: ${askLiq ? askLiq.toFixed(0) : 0}`,
-      f: `F: ${bidLiq ? bidLiq.toFixed(0) : 0}`,
+      s: `S: ${askLiq.toFixed(0)}`,
+      f: `F: ${bidLiq.toFixed(0)}`,
     },
     volumes24h: {
-      s: `S: ${op.spotVolume24h ? formatVolume(op.spotVolume24h) : "0"}`,
-      f: `F: ${op.futVolume24h ? formatVolume(op.futVolume24h) : "0"}`,
+      s: `S: ${op.spotVolume24h ? op.spotVolume24h.toFixed(0) : "0"}`,
+      f: `F: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
     },
   };
+}
+
+function CoinCell({
+  r,
+  opportunities,
+  showTooltip,
+  hideTooltip,
+  isElementVisible,
+  toggleGroupExpansion,
+  styles,
+}: any) {
+  const logoUrl = useCoinLogo(r.coin.ticker, r.coin.ticker);
+
+  // Busca a oportunidade original para o tooltip
+  const originalOpp = opportunities?.find((opp: any) => {
+    const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
+    const rowTickerClean = r.coin.ticker;
+    const tickerMatch = oppTickerClean === rowTickerClean;
+    const spotMatch = opp.lowestAsk?.exchange === r.spot.bingo;
+    const futuresMatch = opp.highestBid?.exchange === r.futures.bingo;
+    return tickerMatch && spotMatch && futuresMatch;
+  });
+
+  const tooltipContent = originalOpp?.tokenStats ? (
+    <>
+      <div className={styles.tooltipHeader}>
+        <img
+          src={logoUrl}
+          alt=""
+          width={24}
+          height={24}
+          className={styles.tooltipLogo}
+        />
+        <span className={styles.tooltipTitle}>{r.coin.ticker}</span>
+      </div>
+      <div className={styles.tooltipBody}>
+        <div className={styles.tooltipSection}>
+          <h4 className={styles.tooltipSectionTitle}>Picos de Entrada (E)</h4>
+          <div className={styles.tooltipStatsGrid}>
+            {["1h", "6h", "24h"].map((period) => {
+              const value = originalOpp.tokenStats[`maxE${period}`];
+              return (
+                <div key={period} className={styles.tooltipStatItem}>
+                  <span className={styles.tooltipStatLabel}>{period}</span>
+                  <span
+                    className={`${styles.tooltipStatValue} ${
+                      value > 0 ? styles.positive : styles.negative
+                    }`}
+                  >
+                    {value ? `${value > 0 ? "+" : ""}${value.toFixed(4)}` : "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className={styles.tooltipSection}>
+          <h4 className={styles.tooltipSectionTitle}>Picos de Saída (S)</h4>
+          <div className={styles.tooltipStatsGrid}>
+            {["1h", "6h", "24h"].map((period) => {
+              const value = originalOpp.tokenStats[`maxS${period}`];
+              return (
+                <div key={period} className={styles.tooltipStatItem}>
+                  <span className={styles.tooltipStatLabel}>{period}</span>
+                  <span
+                    className={`${styles.tooltipStatValue} ${
+                      value > 0 ? styles.positive : styles.negative
+                    }`}
+                  >
+                    {value ? `${value > 0 ? "+" : ""}${value.toFixed(4)}` : "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  ) : null;
+
+  return (
+    <div
+      className={styles.cellCoin}
+      onMouseEnter={(e) => tooltipContent && showTooltip(e, tooltipContent)}
+      onMouseLeave={hideTooltip}
+      onMouseMove={(e) => tooltipContent && showTooltip(e, tooltipContent)}
+    >
+      {isElementVisible("showCoinLogo") && (
+        <img
+          src={logoUrl}
+          alt=""
+          width={32}
+          height={32}
+          className={styles.coinLogo}
+        />
+      )}
+      <span className={styles.coinTicker}>{r.coin.ticker}</span>
+
+      {/* Setinha de expansão para grupos */}
+      {(r as any)._isGroup && (r as any)._groupCount > 1 && (
+        <button
+          className={`${styles.expandButton} ${
+            (r as any)._isExpanded ? styles.expanded : ""
+          }`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleGroupExpansion(r.coin.ticker);
+          }}
+          title={
+            (r as any)._isExpanded
+              ? "Colapsar grupo"
+              : `Expandir grupo (${(r as any)._groupCount} operações)`
+          }
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 4.5L6 7.5L9 4.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
 }
 
 export default function GlassTable<T extends object>({
@@ -1253,204 +1390,21 @@ export function DemoGlassTable({
     {
       id: "moeda",
       header: "Moeda",
-      accessor: (r) => {
-        // Buscar a oportunidade original para o tooltip
-        const originalOpp = opportunities?.find((opp) => {
-          const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
-          const rowTickerClean = r.coin.ticker;
-          const tickerMatch = oppTickerClean === rowTickerClean;
-          const spotMatch = opp.lowestAsk?.exchange === r.spot.bingo;
-          const futuresMatch = opp.highestBid?.exchange === r.futures.bingo;
-          return tickerMatch && spotMatch && futuresMatch;
-        });
+      accessor: (r) => (
+        <CoinCell
+          r={r}
+          opportunities={opportunities}
+          showTooltip={showTooltip}
+          hideTooltip={hideTooltip}
+          isElementVisible={isElementVisible}
+          toggleGroupExpansion={toggleGroupExpansion}
+          styles={styles}
+        />
+      ),
 
-        const tooltipContent = originalOpp?.tokenStats ? (
-          <>
-            <div className={styles.tooltipHeader}>
-              <img
-                src={r.coin.logo}
-                alt=""
-                width={24}
-                height={24}
-                className={styles.tooltipLogo}
-              />
-              <span className={styles.tooltipTitle}>{r.coin.ticker}</span>
-            </div>
-            <div className={styles.tooltipBody}>
-              <div className={styles.tooltipSection}>
-                <h4 className={styles.tooltipSectionTitle}>
-                  Picos de Entrada (E)
-                </h4>
-                <div className={styles.tooltipStatsGrid}>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>1h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats.maxE1h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxE1h
-                        ? `${
-                            originalOpp.tokenStats.maxE1h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxE1h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>6h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats?.maxE6h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxE6h
-                        ? `${
-                            originalOpp.tokenStats.maxE6h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxE6h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>24h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats?.maxE24h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxE24h
-                        ? `${
-                            originalOpp.tokenStats.maxE24h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxE24h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.tooltipSection}>
-                <h4 className={styles.tooltipSectionTitle}>
-                  Picos de Saída (S)
-                </h4>
-                <div className={styles.tooltipStatsGrid}>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>1h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats.maxS1h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxS1h
-                        ? `${
-                            originalOpp.tokenStats.maxS1h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxS1h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>6h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats.maxS6h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxS6h
-                        ? `${
-                            originalOpp.tokenStats.maxS6h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxS6h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                  <div className={styles.tooltipStatItem}>
-                    <span className={styles.tooltipStatLabel}>24h</span>
-                    <span
-                      className={`${styles.tooltipStatValue} ${
-                        (originalOpp.tokenStats?.maxS24h ?? 0) > 0
-                          ? styles.positive
-                          : styles.negative
-                      }`}
-                    >
-                      {originalOpp.tokenStats.maxS24h
-                        ? `${
-                            originalOpp.tokenStats.maxS24h > 0 ? "+" : ""
-                          }${originalOpp.tokenStats.maxS24h.toFixed(4)}`
-                        : "—"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : null;
-
-        return (
-          <div
-            className={styles.cellCoin}
-            onMouseEnter={(e) =>
-              tooltipContent && showTooltip(e, tooltipContent)
-            }
-            onMouseLeave={hideTooltip}
-            onMouseMove={(e) =>
-              tooltipContent && showTooltip(e, tooltipContent)
-            }
-          >
-            {isElementVisible("showCoinLogo") && (
-              <img
-                src={r.coin.logo}
-                alt=""
-                width={32}
-                height={32}
-                className={styles.coinLogo}
-              />
-            )}
-            <span className={styles.coinTicker}>{r.coin.ticker}</span>
-            {/* Setinha de expansão para grupos */}
-            {(r as any)._isGroup && (r as any)._groupCount > 1 && (
-              <button
-                className={`${styles.expandButton} ${
-                  (r as any)._isExpanded ? styles.expanded : ""
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleGroupExpansion(r.coin.ticker);
-                }}
-                title={
-                  (r as any)._isExpanded
-                    ? "Colapsar grupo"
-                    : `Expandir grupo (${(r as any)._groupCount} operações)`
-                }
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3 4.5L6 7.5L9 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
-        );
-      },
       width: "160px",
     },
+
     {
       id: "spot",
       header: "Spot",

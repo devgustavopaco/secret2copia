@@ -1,10 +1,9 @@
-// hooks/useArbitrageSocket.ts
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
-const URL = "https://stable-socket.nextgain.com.br/";
-//
+const SOCKET_URL = "https://stable-socket.nextgain.com.br/";
+
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
@@ -15,7 +14,6 @@ const keyFromPair = (symbol: string, pairKey: string) => {
   return `${symbol}-${lowEx}-${highEx}`;
 };
 
-// helpers p/ comparar listas
 const normList = (xs: string[]) => xs.map((s) => s.toLowerCase()).sort();
 const arraysEqual = (a: string[], b: string[]) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
@@ -27,38 +25,40 @@ export function useArbitrageSocket(
   sellExchanges: string[],
   isPaused: boolean = false
 ) {
+  // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
+
+  // ✅ faz apenas uma chamada ao /api/coins/logos por sessão
   useEffect(() => {
+    let cancelled = false;
+
     async function loadCache() {
       try {
-        const res = await fetch("/api/getCoinImage");
-        const coins: { ticker: string; image_url: string | null }[] =
-          await res.json();
-        coins.forEach((c) => {
-          coinImageCache.set(c.ticker, c.image_url || "");
+        const res = await fetch("/api/coins/logos");
+        const logos: Record<string, string> = await res.json();
+
+        if (cancelled) return;
+
+        Object.entries(logos).forEach(([ticker, url]) => {
+          coinImageCache.set(ticker.toUpperCase(), url);
         });
-        console.log("✅ Cache de imagens carregado:", coinImageCache.size);
+
+        console.log(`✅ Logos carregados: ${coinImageCache.size}`);
       } catch (err) {
-        console.error("Erro ao carregar cache de imagens:", err);
+        console.error("Erro ao carregar logos:", err);
       }
     }
+
     loadCache();
+    return () => {
+      cancelled = true;
+    };
   }, [coinImageCache]);
 
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
-  // useEffect(() => {
-  //   const zec = opportunities.find(
-  //     (opp) => opp.ticker.replace(/USDT$/, "") === "ZEC"
-  //   );
-  //   if (zec) {
-  //     console.log("🔎 TokenStats para ZEC:", zec.tokenStats);
-  //   }
-  // }, [opportunities]);
-
   const socketRef = useRef<Socket | null>(null);
-
   const indexRef = useRef<Map<string, ArbitrageOpportunity>>(new Map());
   const prevSymbolsRef = useRef<string[]>([]);
   const prevRefreshRef = useRef<number>(refreshRate);
@@ -68,7 +68,6 @@ export function useArbitrageSocket(
 
   useEffect(() => {
     if (isPaused) {
-      // Se pausado, apenas desconecta o socket mas mantém os dados
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -77,17 +76,11 @@ export function useArbitrageSocket(
       return;
     }
 
-    const s = io(URL, { transports: ["websocket"] });
+    const s = io(SOCKET_URL, { transports: ["websocket"] });
     socketRef.current = s;
 
     const subscribeCurrent = () => {
       if (!s.connected) return;
-      console.log("➡️ subscribe()", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
       s.emit("subscribe", {
         symbols,
         refreshRate,
@@ -108,28 +101,32 @@ export function useArbitrageSocket(
     s.on("connect", () => {
       console.log("✅ Conectado ao socket");
       setIsConnected(true);
-      subscribeCurrent(); // 🚀 subscribe imediato ao conectar
+      subscribeCurrent();
     });
 
     s.on("reconnect", () => {
       console.log("♻️ Reconectado ao socket");
-      subscribeCurrent(); // 🚀 subscribe automático ao reconectar
+      subscribeCurrent();
     });
 
-    // ⬇️ já dispara logo ao montar (mesmo antes do evento connect)
+    // dispara logo após montar
     setTimeout(subscribeCurrent, 1000);
 
+    // 🔹 Atualizações completas
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
-      opp.coinImage = coinImageCache.get(opp.ticker) || "";
+      const symbol = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
+      opp.coinImage = coinImageCache.get(symbol) || "/default-coin.png";
       indexRef.current.set(keyOf(opp), opp);
       scheduleFlush();
     });
 
+    // 🔹 Deltas incrementais
     s.on("arbitrageDelta", (payload) => {
       const { symbol, upserts, deletes } = payload;
 
       for (const opp of upserts) {
-        opp.coinImage = coinImageCache.get(opp.ticker) || "";
+        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
+        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
         indexRef.current.set(keyOf(opp), opp);
       }
 
@@ -148,13 +145,13 @@ export function useArbitrageSocket(
       s.disconnect();
       socketRef.current = null;
     };
-  }, [isPaused]); // monta uma vez, mas reconecta quando pausa muda
+  }, [isPaused]);
 
+  // 🔹 Detecta mudanças em symbols / refresh / exchanges
   useEffect(() => {
     const s = socketRef.current;
     if (!s) return;
 
-    // 1) dif de symbols p/ unsubscribe/subscribe
     const added = symbols.filter(
       (sym) => !prevSymbolsRef.current.includes(sym)
     );
@@ -163,11 +160,9 @@ export function useArbitrageSocket(
     );
 
     if (removed.length) {
-      console.log("⬅️ unsubscribe", { symbols: removed });
       s.emit("unsubscribe", { symbols: removed });
     }
 
-    // 2) detecta mudanças de whitelist (compra/venda) e limpa UI
     const buyChanged = !arraysEqual(normList(buyExchanges), prevBuyRef.current);
     const sellChanged = !arraysEqual(
       normList(sellExchanges),
@@ -176,21 +171,11 @@ export function useArbitrageSocket(
     const refreshChanged = refreshRate !== prevRefreshRef.current;
 
     if (buyChanged || sellChanged) {
-      console.log("🧹 whitelist changed → limpar UI e resubscrever", {
-        buyExchanges,
-        sellExchanges,
-      });
       indexRef.current.clear();
-      setOpportunities([]); // limpa tela imediatamente
+      setOpportunities([]);
     }
 
     if (added.length || refreshChanged || buyChanged || sellChanged) {
-      console.log("➡️ subscribe", {
-        symbols,
-        refreshRate,
-        buyExchanges,
-        sellExchanges,
-      });
       s.emit("subscribe", {
         symbols,
         refreshRate,
