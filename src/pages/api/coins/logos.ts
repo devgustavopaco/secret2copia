@@ -21,7 +21,8 @@ async function imageExists(
   url: string,
   timeoutMs = DEFAULT_TIMEOUT
 ): Promise<boolean> {
-  if (IMG_OK_CACHE[url] !== undefined) return IMG_OK_CACHE[url];
+  const cached = IMG_OK_CACHE[url];
+  if (cached !== undefined) return cached;
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -182,7 +183,8 @@ async function resolveImage(
   const base = applyLocalOverride(base0);
   const cacheKey = `${base}|${coinNameHint ?? ""}`;
 
-  if (URL_CACHE[cacheKey]) return URL_CACHE[cacheKey];
+  const cachedUrl = URL_CACHE[cacheKey];
+  if (cachedUrl) return cachedUrl;
 
   // 1) MEXC
   {

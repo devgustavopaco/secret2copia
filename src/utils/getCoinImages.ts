@@ -197,7 +197,8 @@ export async function getCoinImage(
   const base = applyLocalOverride(base0);
   const cacheKey = `${base}|${opts.coinNameHint ?? ""}`;
 
-  if (URL_CACHE[cacheKey]) return URL_CACHE[cacheKey];
+  const cachedUrl = URL_CACHE[cacheKey];
+  if (cachedUrl) return cachedUrl;
 
   // 0) Overrides de contratos explícitos (TrustWallet)
   if (opts.contracts && opts.contracts.length) {
