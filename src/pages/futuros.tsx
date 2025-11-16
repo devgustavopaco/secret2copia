@@ -6,10 +6,15 @@ import NewPageSidebar from "../components/new-page/sidebar";
 import NewPageHeader from "../components/new-page/header/header";
 import { DemoGlassTable } from "../components/new-page/glass-table/glass-table";
 import GlassModal from "../components/new-page/modal/glass-modal";
+import ConfigIcon from "../components/Icons/ConfigIcon";
 import { appRouter } from "../server/router";
 import { GetServerSidePropsContext } from "next";
 import { createContext } from "../server/router/context";
 import { useArbitrageSocket } from "../hooks/useArbitrageSocket";
+import {
+  useSpreadAlert,
+  type SpreadAlertConfig,
+} from "../hooks/useSpreadAlert";
 import type { ArbitrageOpportunity } from "../server/router/orderbook";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -37,6 +42,9 @@ export default function FuturosNewPage({
 
   // ✅ NOVO: busca por símbolo (controla a search da tabela)
   const [symbolFilter, setSymbolFilter] = useState("");
+
+  // ✅ NOVO: estado para modal customizado
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
 
   // ✅ NOVO: estado para modo de fechamento (lock icon)
   const [isExitMode, setIsExitMode] = useState<boolean>(() => {
@@ -202,6 +210,46 @@ export default function FuturosNewPage({
   ]);
   console.log("filteredOpps", filteredOpps[0]);
 
+  // Estados para alerta de spread
+  const [spreadAlertConfig, setSpreadAlertConfig] =
+    useState<SpreadAlertConfig | null>(() => {
+      if (typeof window === "undefined") return null;
+      try {
+        const saved = localStorage.getItem("spreadAlertConfig");
+        return saved ? JSON.parse(saved) : null;
+      } catch {
+        return null;
+      }
+    });
+
+  // Estados temporários para o modal
+  const [tempSpreadValue, setTempSpreadValue] = useState<number>(1.0);
+  const [tempAlertDuration, setTempAlertDuration] = useState<number>(60);
+  const [tempRepeatAlerts, setTempRepeatAlerts] = useState<boolean>(false);
+  const [tempAlertInterval, setTempAlertInterval] = useState<number>(30);
+  const [validationError, setValidationError] = useState<string>("");
+
+  // Carregar valores salvos quando abrir o modal
+  useEffect(() => {
+    if (isCustomModalOpen && spreadAlertConfig) {
+      setTempSpreadValue(spreadAlertConfig.spreadValue);
+      setTempAlertDuration(spreadAlertConfig.alertDuration);
+      setTempRepeatAlerts(spreadAlertConfig.repeatAlerts);
+      setTempAlertInterval(spreadAlertConfig.alertInterval);
+      setValidationError("");
+    } else if (isCustomModalOpen && !spreadAlertConfig) {
+      // Valores padrão
+      setTempSpreadValue(1.0);
+      setTempAlertDuration(60);
+      setTempRepeatAlerts(false);
+      setTempAlertInterval(30);
+      setValidationError("");
+    }
+  }, [isCustomModalOpen, spreadAlertConfig]);
+
+  // Hook para monitorar alertas (deve estar depois de filteredOpps e isExitMode)
+  useSpreadAlert(filteredOpps, spreadAlertConfig, isExitMode);
+
   // ---- resto igual ao seu código (exchanges permitidas + modal de exchanges) ----
   const ALLOWED_SPOT_EXCHANGES = [
     "Gateio",
@@ -297,6 +345,8 @@ export default function FuturosNewPage({
             setIsSocketPaused(newValue);
             localStorage.setItem("isSocketPaused", JSON.stringify(newValue));
           }}
+          /** ⬇️ botão customizado acima do header */
+          onCustomButtonClick={() => setIsCustomModalOpen(true)}
         />
       </main>
 
@@ -340,6 +390,189 @@ export default function FuturosNewPage({
               </div>
             );
           })}
+        </div>
+      </GlassModal>
+
+      {/* MODAL CUSTOMIZADO - ALERTA DE SPREAD */}
+      <GlassModal
+        isOpen={isCustomModalOpen}
+        onClose={() => setIsCustomModalOpen(false)}
+        title="Alerta Geral de Spread"
+      >
+        <div className={styles.modalContent}>
+          <div className={styles.alertDescription}>
+            <p>
+              Configure um valor de spread que será monitorado em todas as
+              oportunidades de arbitragem disponíveis.
+            </p>
+            <ul>
+              <li>
+                Monitora automaticamente todas as combinações de exchanges
+              </li>
+              <li>
+                Receba notificação quando qualquer arbitragem atingir o spread
+                desejado ou acima
+              </li>
+            </ul>
+          </div>
+
+          <label>
+            Valor do Spread (%):
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={tempSpreadValue}
+              onChange={(e) => setTempSpreadValue(Number(e.target.value))}
+              placeholder="Ex: 1.5"
+            />
+          </label>
+
+          <label>
+            Duração do Alerta (segundos):
+            <input
+              type="number"
+              min="1"
+              max="300"
+              value={tempAlertDuration}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setTempAlertDuration(value);
+                // Validar quando alertas repetidos estão ativos
+                if (tempRepeatAlerts && value > tempAlertInterval) {
+                  setValidationError(
+                    "A duração não pode ser maior que o intervalo entre alertas"
+                  );
+                } else {
+                  setValidationError("");
+                }
+              }}
+              placeholder="Ex: 60"
+            />
+            <span className={styles.inputHint}>
+              Máximo: 300 segundos (5 minutos)
+            </span>
+          </label>
+
+          <div className={styles.switchContainer}>
+            <label className={styles.switchLabel}>
+              Enviar alertas repetidos?
+            </label>
+            <label className={styles.switch}>
+              <input
+                type="checkbox"
+                checked={tempRepeatAlerts}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setTempRepeatAlerts(checked);
+                  // Se ativar alertas repetidos, ajustar intervalo se necessário
+                  if (checked && tempAlertDuration > tempAlertInterval) {
+                    // Ajustar automaticamente o intervalo para ser igual à duração
+                    setTempAlertInterval(tempAlertDuration);
+                    setValidationError("");
+                  } else {
+                    setValidationError("");
+                  }
+                }}
+              />
+              <span className={styles.slider}></span>
+            </label>
+          </div>
+
+          {tempRepeatAlerts && (
+            <label>
+              Intervalo entre Alertas (segundos):
+              <input
+                type="number"
+                min="1"
+                max="300"
+                value={tempAlertInterval}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setTempAlertInterval(value);
+                  // Validar: intervalo deve ser >= duração
+                  if (value < tempAlertDuration) {
+                    setValidationError(
+                      "O intervalo deve ser maior ou igual à duração do alerta"
+                    );
+                  } else {
+                    setValidationError("");
+                  }
+                }}
+                placeholder="Ex: 30"
+              />
+              <span className={styles.inputHint}>
+                Máximo: 300 segundos (5 minutos). Deve ser ≥ duração do alerta
+              </span>
+            </label>
+          )}
+
+          {validationError && (
+            <div className={styles.validationError}>{validationError}</div>
+          )}
+        </div>
+
+        <div className={styles.modalButtons}>
+          <button
+            className={styles.confirmButton}
+            onClick={() => {
+              // Validar antes de salvar
+              if (tempRepeatAlerts && tempAlertDuration > tempAlertInterval) {
+                setValidationError(
+                  "A duração não pode ser maior que o intervalo entre alertas"
+                );
+                return;
+              }
+
+              // Limitar valores máximos
+              const finalDuration = Math.min(tempAlertDuration, 300);
+              const finalInterval = Math.min(tempAlertInterval, 300);
+
+              const newConfig: SpreadAlertConfig = {
+                spreadValue: tempSpreadValue,
+                alertDuration: finalDuration,
+                repeatAlerts: tempRepeatAlerts,
+                alertInterval: finalInterval,
+                isActive: true,
+              };
+              setSpreadAlertConfig(newConfig);
+              localStorage.setItem(
+                "spreadAlertConfig",
+                JSON.stringify(newConfig)
+              );
+              setValidationError("");
+              setIsCustomModalOpen(false);
+            }}
+            disabled={!!validationError}
+          >
+            {spreadAlertConfig?.isActive ? "Atualizar Alerta" : "Ativar Alerta"}
+          </button>
+          {spreadAlertConfig?.isActive && (
+            <button
+              className={styles.cancelButton}
+              onClick={() => {
+                const deactivatedConfig: SpreadAlertConfig = {
+                  ...spreadAlertConfig,
+                  isActive: false,
+                };
+                setSpreadAlertConfig(deactivatedConfig);
+                localStorage.setItem(
+                  "spreadAlertConfig",
+                  JSON.stringify(deactivatedConfig)
+                );
+                setIsCustomModalOpen(false);
+              }}
+              style={{ background: "#ff3838" }}
+            >
+              Desativar
+            </button>
+          )}
+          <button
+            className={styles.cancelButton}
+            onClick={() => setIsCustomModalOpen(false)}
+          >
+            Cancelar
+          </button>
         </div>
       </GlassModal>
 

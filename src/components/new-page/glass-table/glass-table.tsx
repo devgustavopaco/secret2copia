@@ -19,6 +19,7 @@ import type { ArbitrageOpportunity } from "../../../server/router/orderbook";
 import { PacmanLoader } from "react-spinners";
 import PauseIcon from "../../Icons/PauseIcon";
 import PlayIcon from "../../Icons/PlayIcon";
+import AlertIcon from "../../Icons/AlertIcon";
 
 // Função para abrir calculadora em popup
 const openCalculatorPopup = () => {
@@ -102,6 +103,9 @@ export type GlassTableProps<T extends object> = {
   /** ⬇️ NOVO: controle de modo de fechamento */
   isExitMode?: boolean;
   onToggleExitMode?: () => void;
+
+  /** ⬇️ NOVO: botão customizado acima do header */
+  onCustomButtonClick?: () => void;
 };
 
 function classnames(...xs: Array<string | false | null | undefined>) {
@@ -345,6 +349,7 @@ export default function GlassTable<T extends object>({
   onToggleGrouping,
   isExitMode = false,
   onToggleExitMode,
+  onCustomButtonClick,
 }: GlassTableProps<T>) {
   const styleVars: React.CSSProperties | undefined = maxHeight
     ? {
@@ -510,6 +515,17 @@ export default function GlassTable<T extends object>({
         </label>
 
         <div className={styles.toolbarRight}>
+          {onCustomButtonClick && (
+            <button
+              type="button"
+              className={styles.iconGlass}
+              aria-label={"Abrir modal"}
+              onClick={onCustomButtonClick}
+              title={"Abrir modal"}
+            >
+              {<AlertIcon />}
+            </button>
+          )}
           <button
             type="button"
             className={`${styles.iconGlass} ${isExitMode ? styles.active : ""}`}
@@ -577,6 +593,9 @@ export function DemoGlassTable({
   isSocketPaused,
   onToggleSocketPause,
   dollarPrice,
+  onCustomButtonClick,
+  customButtonLabel,
+  customButtonIcon,
 }: {
   isSidebarOpen: boolean;
   opportunities?: ArbitrageOpportunity[];
@@ -590,6 +609,9 @@ export function DemoGlassTable({
   isSocketPaused?: boolean;
   onToggleSocketPause?: () => void;
   dollarPrice?: number;
+  onCustomButtonClick?: () => void;
+  customButtonLabel?: string;
+  customButtonIcon?: React.ReactNode;
 }) {
   const [filter, setFilter] = React.useState("");
 
@@ -1708,6 +1730,7 @@ export function DemoGlassTable({
         onToggleGrouping={toggleGrouping}
         isExitMode={isExitMode}
         onToggleExitMode={onToggleExitMode}
+        onCustomButtonClick={onCustomButtonClick}
         // Adicionar botões extras na toolbar
         toolbarExtra={
           <>
