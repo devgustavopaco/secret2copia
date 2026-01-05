@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import styles from "../styles/futures-new.module.scss";
 import FuturesFuturesSidebar from "../components/new-page/sidebar-futures-futures";
 import NewPageHeader from "../components/new-page/header/header";
-import { DemoGlassTable } from "../components/new-page/glass-table/glass-table";
+import { DemoGlassTable } from "../components/new-page/glass-table/glass-table-futures-futures";
 import GlassModal from "../components/new-page/modal/glass-modal";
 import { appRouter } from "../server/router";
 import { GetServerSidePropsContext } from "next";
@@ -28,7 +28,7 @@ export default function FuturesVsFuturesPage({
   const [modalType, setModalType] = useState<"buy" | "sell">("buy");
   const [selectedExchanges, setSelectedExchanges] = useState<any[]>([]);
   const closeFilter = useCallback(() => setIsFilterModalOpen(false), []);
-  
+
   // Estados de filtro
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [minProfit, setMinProfit] = useState<number>(0.5);
@@ -176,6 +176,41 @@ export default function FuturesVsFuturesPage({
     }
   }, [isConnected, isReady, buyExNames, sellExNames]);
 
+  // 🔥 PROVA: Log detalhado das oportunidades recebidas
+  useEffect(() => {
+    if (opportunities.length > 0) {
+      console.log(
+        `\n📊 ===== PROVA: FUTURES vs FUTURES ===== \n` +
+          `Total de ${opportunities.length} oportunidades carregadas\n`
+      );
+      // Mostra as 3 primeiras oportunidades com detalhes técnicos
+      opportunities.slice(0, 3).forEach((opp, idx) => {
+        console.log(`\n🔥 Oportunidade #${idx + 1}:`, {
+          ticker: opp.ticker?.replace(/USDT$/i, ""),
+          COMPRA: {
+            exchange: opp.lowestAsk?.exchange,
+            price: `$${opp.lowestAsk?.price?.toFixed(4)}`,
+            tipo: opp.lowestAsk?.exchange?.includes("Futures")
+              ? "✅ FUTURES"
+              : "⚠️ Verificar no servidor",
+          },
+          VENDA: {
+            exchange: opp.highestBid?.exchange,
+            price: `$${opp.highestBid?.price?.toFixed(4)}`,
+            tipo: opp.highestBid?.exchange?.includes("Futures")
+              ? "✅ FUTURES"
+              : "⚠️ Verificar no servidor",
+          },
+          spread: `${opp.spread?.toFixed(4)}%`,
+          fundingRate: opp.fundingRate
+            ? `${(opp.fundingRate * 100).toFixed(5)}%`
+            : "N/A",
+        });
+      });
+      console.log(`\n===== FIM DA PROVA ===== \n`);
+    }
+  }, [opportunities]);
+
   // Aplica filtros
   const filteredOpps: ArbitrageOpportunity[] = useMemo(() => {
     const base = (opportunities ?? []).filter((op) => {
@@ -185,7 +220,7 @@ export default function FuturesVsFuturesPage({
       const spotVol = op.spotVolume24h ?? 0;
       const futVol = op.futVolume24h ?? 0;
       if (op.ticker?.toUpperCase().includes("MET")) return false;
-      
+
       const p = isExitMode ? op.spreadS : op.spread;
       const pass =
         p < maxProfit &&
@@ -261,7 +296,7 @@ export default function FuturesVsFuturesPage({
     "Bybit",
     "Huobi",
   ];
-  
+
   const filteredFuturesExchanges = initialExchanges?.filter((e) =>
     ALLOWED_FUTURES_EXCHANGES.includes(e.name)
   );
@@ -289,7 +324,7 @@ export default function FuturesVsFuturesPage({
       return updated;
     });
   };
-  
+
   const isExchangeSelected = (id: string) =>
     selectedExchanges.some((e) => e.id === id);
 
@@ -305,6 +340,70 @@ export default function FuturesVsFuturesPage({
         }}
       />
       <NewPageHeader />
+
+      {/* 🔥 BADGE DE PROVA: Indica visualmente que é Futures vs Futures */}
+      {/* <div
+        style={{
+          position: "fixed",
+          top: "80px",
+          right: "20px",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          padding: "12px 20px",
+          borderRadius: "10px",
+          fontWeight: "bold",
+          fontSize: "13px",
+          zIndex: 9999,
+          boxShadow: "0 8px 25px rgba(102, 126, 234, 0.5)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "6px",
+          border: "2px solid rgba(255, 255, 255, 0.2)",
+          backdropFilter: "blur(10px)",
+          animation: "pulse 2s ease-in-out infinite",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "15px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          🔥 MODO: FUTURES vs FUTURES
+        </div>
+        <div style={{ fontSize: "11px", opacity: 0.95, lineHeight: "1.4" }}>
+          ✅ Compra: Contratos Perpétuos
+        </div>
+        <div style={{ fontSize: "11px", opacity: 0.95, lineHeight: "1.4" }}>
+          ✅ Venda: Contratos Perpétuos
+        </div>
+        <div
+          style={{
+            fontSize: "11px",
+            opacity: 0.95,
+            marginTop: "4px",
+            paddingTop: "6px",
+            borderTop: "1px solid rgba(255,255,255,0.3)",
+          }}
+        >
+          {isConnected ? "🟢 Socket Conectado" : "🟡 Conectando..."}
+        </div>
+        <div style={{ fontSize: "11px", opacity: 0.95 }}>
+          📊 {opportunities.length} oportunidades ativas
+        </div>
+        <div
+          style={{
+            fontSize: "10px",
+            opacity: 0.8,
+            marginTop: "4px",
+            fontStyle: "italic",
+          }}
+        >
+          Abra o console (F12) para ver os logs técnicos
+        </div>
+      </div> */}
 
       <main className={styles.main}>
         <DemoGlassTable
@@ -328,7 +427,10 @@ export default function FuturesVsFuturesPage({
           onToggleSocketPause={() => {
             const newValue = !isSocketPaused;
             setIsSocketPaused(newValue);
-            localStorage.setItem("futFutIsSocketPaused", JSON.stringify(newValue));
+            localStorage.setItem(
+              "futFutIsSocketPaused",
+              JSON.stringify(newValue)
+            );
           }}
           onCustomButtonClick={() => setIsCustomModalOpen(true)}
         />
@@ -385,9 +487,7 @@ export default function FuturesVsFuturesPage({
       >
         <div className={styles.modalContent}>
           <div className={styles.alertDescription}>
-            <p>
-              Configure um valor de spread para arbitragem entre futuros.
-            </p>
+            <p>Configure um valor de spread para arbitragem entre futuros.</p>
           </div>
 
           <label>

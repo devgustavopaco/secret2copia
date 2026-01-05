@@ -117,7 +117,9 @@ export default function NewPageHeader({
               <Link href="/futuros-vs-futuros">
                 <a
                   className={
-                    router.pathname === "/futuros-vs-futuros" ? styles.active : ""
+                    router.pathname === "/futuros-vs-futuros"
+                      ? styles.active
+                      : ""
                   }
                 >
                   Futuros x Futuros

@@ -273,7 +273,11 @@ const fetchArbitrageOpportunity = async (
   // Processar exchanges de compra
   for (const exchange of buyExchanges) {
     const formattedExchange = formatExchangeName(exchange);
-    const exchangeStrategy = exchangeStrategies[formattedExchange];
+    // Se é futures vs futures, usa estratégia futures também para compra
+    const exchangeStrategy =
+      isFutures && futuresExchangeStrategies[formattedExchange]
+        ? futuresExchangeStrategies[formattedExchange]
+        : exchangeStrategies[formattedExchange];
 
     if (exchangeStrategy) {
       const coinPair = exchangeStrategy.formatPair(ticker, "usdt", isFanToken);
@@ -308,6 +312,26 @@ const fetchArbitrageOpportunity = async (
     }
     return acc;
   }, [] as Exchange[]);
+
+  // Log para debug: mostra se está usando Futures vs Futures
+  if (isFutures && orderBooks.length > 0) {
+    const buyEx = orderBooks.find((ob) =>
+      buyExchanges.some(
+        (ex) =>
+          formatExchangeName(ex) ===
+          formatExchangeName(ob.name.replace(" Futures", ""))
+      )
+    );
+    const sellEx = orderBooks.find((ob) =>
+      sellExchanges.some(
+        (ex) =>
+          formatExchangeName(ex) === formatExchangeName(ob.name.toLowerCase())
+      )
+    );
+    console.log(
+      `🔥 FUTURES vs FUTURES | ${ticker} | Buy: ${buyEx?.name} (isFutures: ${buyEx?.isFutures}) | Sell: ${sellEx?.name} (isFutures: ${sellEx?.isFutures})`
+    );
+  }
 
   const dolarValue = await getDollarValueForUser(ctx, email);
   const dollarPrice = await ServerSingleton.getInstance().getDollar();

@@ -153,6 +153,15 @@ export function Header({
               Futuros
             </a>
           </Link>
+          <Link href="/futuros-vs-futuros">
+            <a
+              className={`${styles.menuItem} ${
+                router.pathname === "/futuros-vs-futuros" ? styles.active : ""
+              }`}
+            >
+              Futuros/Futuros
+            </a>
+          </Link>
           <Link href="/videos">
             <a
               className={`${styles.menuItem} ${
@@ -238,6 +247,17 @@ export function Header({
               <Link href="/futuros">
                 <a className={router.pathname === "/futuros" ? "active" : ""}>
                   Futuros
+                </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/futuros-vs-futuros">
+                <a
+                  className={
+                    router.pathname === "/futuros-vs-futuros" ? "active" : ""
+                  }
+                >
+                  Futuros/Futuros
                 </a>
               </Link>
             </li>
@@ -330,6 +350,17 @@ export function Header({
             <Link href="/futuros">
               <a className={router.pathname === "/futuros" ? "active" : ""}>
                 Futuros
+              </a>
+            </Link>
+          </li>
+          <li>
+            <Link href="/futuros-vs-futuros">
+              <a
+                className={
+                  router.pathname === "/futuros-vs-futuros" ? "active" : ""
+                }
+              >
+                Futuros/Futuros
               </a>
             </Link>
           </li>

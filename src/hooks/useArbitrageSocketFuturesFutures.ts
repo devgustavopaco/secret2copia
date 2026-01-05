@@ -118,6 +118,25 @@ export function useArbitrageSocketFuturesFutures(
     s.on("arbitrageUpdate", (opp: ArbitrageOpportunity) => {
       const symbol = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
       opp.coinImage = coinImageCache.get(symbol) || "/default-coin.png";
+
+      // 🔥 PROVA: Log detalhado mostrando que é Futures vs Futures
+      console.log(`🔥 FUTURES vs FUTURES RECEBIDO:`, {
+        moeda: symbol,
+        compra: {
+          exchange: opp.lowestAsk?.exchange,
+          isFutures:
+            opp.lowestAsk?.exchange?.includes("Futures") || "CHECK SERVER LOG",
+          preco: opp.lowestAsk?.price,
+        },
+        venda: {
+          exchange: opp.highestBid?.exchange,
+          isFutures:
+            opp.highestBid?.exchange?.includes("Futures") || "CHECK SERVER LOG",
+          preco: opp.highestBid?.price,
+        },
+        spread: opp.spread?.toFixed(2) + "%",
+      });
+
       indexRef.current.set(keyOf(opp), opp);
       scheduleFlush();
     });
