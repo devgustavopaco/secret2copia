@@ -109,7 +109,18 @@ export default function NewPageHeader({
                     router.pathname === "/futuros" ? styles.active : ""
                   }
                 >
-                  Futuros
+                  Spot x Futuros
+                </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/futuros-vs-futuros">
+                <a
+                  className={
+                    router.pathname === "/futuros-vs-futuros" ? styles.active : ""
+                  }
+                >
+                  Futuros x Futuros
                 </a>
               </Link>
             </li>
