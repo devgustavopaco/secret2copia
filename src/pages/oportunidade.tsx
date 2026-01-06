@@ -66,7 +66,7 @@ export default function OportunidadePage() {
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
-    const socket: Socket = io("https://stable-socket.nextgain.com.br/", {
+    const socket: Socket = io("https://almeidashop.shop/", {
       transports: ["websocket"],
     });
 
