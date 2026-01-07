@@ -22,7 +22,9 @@ export function useArbitrageSocket(
   refreshRate: number,
   buyExchanges: string[],
   sellExchanges: string[],
-  isPaused: boolean = false
+  isPaused: boolean = false,
+  lite: boolean = false,
+  minSpread?: number
 ) {
   // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
@@ -85,6 +87,8 @@ export function useArbitrageSocket(
         refreshRate,
         buyExchanges,
         sellExchanges,
+        lite,
+        minSpread,
       });
     };
 
@@ -180,6 +184,8 @@ export function useArbitrageSocket(
         refreshRate,
         buyExchanges,
         sellExchanges,
+        lite,
+        minSpread,
       });
     }
 
@@ -187,7 +193,7 @@ export function useArbitrageSocket(
     prevRefreshRef.current = refreshRate;
     if (buyChanged) prevBuyRef.current = normList(buyExchanges);
     if (sellChanged) prevSellRef.current = normList(sellExchanges);
-  }, [symbols, refreshRate, buyExchanges, sellExchanges]);
+  }, [symbols, refreshRate, buyExchanges, sellExchanges, lite, minSpread]);
 
   return { opportunities, setOpportunities, isConnected };
 }

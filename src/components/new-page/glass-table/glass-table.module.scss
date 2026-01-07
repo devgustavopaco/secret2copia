@@ -260,6 +260,14 @@
 .zebra .tbody .row:nth-child(odd) {
   background-color: rgba(255, 255, 255, 0.025);
 }
+.zebraRow {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.virtualSpacer td {
+  padding: 0;
+  border: 0;
+}
 
 /* densidade */
 .dense .th {

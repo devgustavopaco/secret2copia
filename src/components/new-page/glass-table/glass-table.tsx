@@ -87,6 +87,7 @@ export type GlassTableProps<T extends object> = {
   emptyMessage?: string;
   className?: string;
   isSidebarOpen?: boolean;
+  virtualized?: boolean;
 
   /** ⬇️ NOVO: controle de busca + clique no filtro */
   searchValue?: string;
@@ -121,6 +122,8 @@ const fmtPct = (n?: number) =>
 const fmtPctFunding = (n?: number) =>
   typeof n === "number" && isFinite(n) ? `${n.toFixed(5)}%` : "—";
 const safe = (s?: string) => s ?? "—";
+const fmtNumber = (n?: number) =>
+  typeof n === "number" && isFinite(n) ? String(n) : "—";
 
 // Função para formatar volumes com abreviações
 const formatVolume = (volume: number) => {
@@ -146,9 +149,12 @@ type CoinRow = {
   volumes24h: { s: string; f: string };
 };
 
+const oppKey = (op: ArbitrageOpportunity) =>
+  `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`;
+
 // mapeia ArbitrageOpportunity -> CoinRow
 // mapeia ArbitrageOpportunity -> CoinRow
-function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
+function mapOppToRow(op: ArbitrageOpportunity, isExitMode?: boolean): CoinRow {
   const askP = op?.lowestAsk?.price ?? 0;
   const askAmt = op?.lowestAsk?.amount ?? 0;
   const bidP = op?.highestBid?.price ?? 0;
@@ -156,6 +162,12 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
 
   const askLiq = askP * askAmt;
   const bidLiq = bidP * bidAmt;
+  const spotAsk = op?.lowestAsk?.orderbook?.asks?.[0]?.price ?? askP;
+  const spotBid = op?.lowestAsk?.orderbook?.bids?.[0]?.price ?? askP;
+  const futBid = op?.highestBid?.orderbook?.bids?.[0]?.price ?? bidP;
+  const futAsk = op?.highestBid?.orderbook?.asks?.[0]?.price ?? bidP;
+  const spotPrice = isExitMode ? spotBid : spotAsk;
+  const futuresPrice = isExitMode ? futAsk : futBid;
 
   return {
     id: `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`,
@@ -165,12 +177,12 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
     },
     spot: {
       bingo: op.lowestAsk?.exchange || "—",
-      price: `$${askP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
+      price: fmtNumber(spotPrice),
       live: askLiq ? `Liq $${askLiq.toFixed(0)}` : "—",
     },
     futures: {
       bingo: op.highestBid?.exchange || "—",
-      price: `$${bidP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
+      price: fmtNumber(futuresPrice),
       live: bidLiq ? `Liq $${bidLiq.toFixed(0)}` : "—",
     },
     spreads: {
@@ -196,7 +208,7 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
 
 function CoinCell({
   r,
-  opportunities,
+  getOpp,
   showTooltip,
   hideTooltip,
   isElementVisible,
@@ -206,14 +218,7 @@ function CoinCell({
   const logoUrl = useCoinLogo(r.coin.ticker, r.coin.ticker);
 
   // Busca a oportunidade original para o tooltip
-  const originalOpp = opportunities?.find((opp: any) => {
-    const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
-    const rowTickerClean = r.coin.ticker;
-    const tickerMatch = oppTickerClean === rowTickerClean;
-    const spotMatch = opp.lowestAsk?.exchange === r.spot.bingo;
-    const futuresMatch = opp.highestBid?.exchange === r.futures.bingo;
-    return tickerMatch && spotMatch && futuresMatch;
-  });
+  const originalOpp = getOpp ? getOpp(r.id) : null;
 
   const tooltipContent = originalOpp?.tokenStats ? (
     <>
@@ -344,6 +349,7 @@ export default function GlassTable<T extends object>({
   emptyMessage = "Sem dados",
   className,
   isSidebarOpen,
+  virtualized = false,
   toolbarExtra,
   isGrouped = false,
   onToggleGrouping,
@@ -357,6 +363,82 @@ export default function GlassTable<T extends object>({
           typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
       }
     : undefined;
+  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const [scrollTop, setScrollTop] = React.useState(0);
+  const [viewportHeight, setViewportHeight] = React.useState(0);
+  const rowHeight = dense ? 44 : 56;
+  const overscan = 6;
+  const useVirtual = virtualized && data.length > 0;
+
+  React.useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        setScrollTop(el.scrollTop);
+      });
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    setViewportHeight(el.clientHeight);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        setViewportHeight(el.clientHeight);
+      });
+      ro.observe(el);
+    } else {
+      const onResize = () => setViewportHeight(el.clientHeight);
+      window.addEventListener("resize", onResize);
+      return () => {
+        window.removeEventListener("resize", onResize);
+        el.removeEventListener("scroll", onScroll);
+        if (raf) window.cancelAnimationFrame(raf);
+      };
+    }
+
+    return () => {
+      if (ro) ro.disconnect();
+      el.removeEventListener("scroll", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const virtualWindow = React.useMemo(() => {
+    if (!useVirtual || viewportHeight <= 0) {
+      return {
+        startIndex: 0,
+        endIndex: data.length,
+        items: data,
+        topPad: 0,
+        bottomPad: 0,
+      };
+    }
+
+    const startIndex = Math.max(
+      0,
+      Math.floor(scrollTop / rowHeight) - overscan
+    );
+    const endIndex = Math.min(
+      data.length,
+      Math.ceil((scrollTop + viewportHeight) / rowHeight) + overscan
+    );
+    const topPad = startIndex * rowHeight;
+    const bottomPad = Math.max(0, (data.length - endIndex) * rowHeight);
+
+    return {
+      startIndex,
+      endIndex,
+      items: data.slice(startIndex, endIndex),
+      topPad,
+      bottomPad,
+    };
+  }, [useVirtual, viewportHeight, scrollTop, rowHeight, overscan, data]);
 
   const renderColgroup = () => (
     <colgroup>
@@ -397,7 +479,7 @@ export default function GlassTable<T extends object>({
 
   const Body = (
     <div className={styles.tableBody}>
-      <div className={styles.scroller}>
+      <div className={styles.scroller} ref={scrollerRef}>
         <table className={styles.table}>
           {renderColgroup()}
           {!stickyHeader && (
@@ -431,54 +513,76 @@ export default function GlassTable<T extends object>({
                 </td>
               </tr>
             ) : (
-              data.map((row, i) => {
-                const key = rowKey ? rowKey(row, i) : i;
-                const clickable = Boolean(onRowClick);
-                return (
-                  <tr
-                    key={key}
-                    className={classnames(
-                      styles.row,
-                      clickable && styles.clickable
-                    )}
-                    onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    tabIndex={onRowClick ? 0 : -1}
-                    onKeyDown={
-                      onRowClick
-                        ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              onRowClick(row);
-                            }
-                          }
-                        : undefined
-                    }
-                  >
-                    {columns.map((col) => {
-                      const content = col.accessor
-                        ? col.accessor(row, i)
-                        : col.field
-                        ? // @ts-ignore
-                          (row as any)[col.field]
-                        : null;
-
-                      return (
-                        <td
-                          key={col.id}
-                          className={classnames(
-                            styles.td,
-                            col.align && styles[`align-${col.align}`],
-                            col.className
-                          )}
-                          style={col.width ? { width: col.width } : undefined}
-                        >
-                          {content}
-                        </td>
-                      );
-                    })}
+              <>
+                {virtualWindow.topPad > 0 && (
+                  <tr className={styles.virtualSpacer}>
+                    <td
+                      colSpan={columns.length}
+                      style={{ height: virtualWindow.topPad }}
+                    />
                   </tr>
-                );
-              })
+                )}
+                {virtualWindow.items.map((row, i) => {
+                  const actualIndex = virtualWindow.startIndex + i;
+                  const key = rowKey ? rowKey(row, actualIndex) : actualIndex;
+                  const clickable = Boolean(onRowClick);
+                  const zebraRow =
+                    zebra && actualIndex % 2 === 0 ? styles.zebraRow : undefined;
+                  return (
+                    <tr
+                      key={key}
+                      className={classnames(
+                        styles.row,
+                        zebraRow,
+                        clickable && styles.clickable
+                      )}
+                      onClick={onRowClick ? () => onRowClick(row) : undefined}
+                      tabIndex={onRowClick ? 0 : -1}
+                      onKeyDown={
+                        onRowClick
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                onRowClick(row);
+                              }
+                            }
+                          : undefined
+                      }
+                    >
+                      {columns.map((col) => {
+                        const content = col.accessor
+                          ? col.accessor(row, actualIndex)
+                          : col.field
+                          ? // @ts-ignore
+                            (row as any)[col.field]
+                          : null;
+
+                        return (
+                          <td
+                            key={col.id}
+                            className={classnames(
+                              styles.td,
+                              col.align && styles[`align-${col.align}`],
+                              col.className
+                            )}
+                            style={col.width ? { width: col.width } : undefined}
+                          >
+                            {content}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+                {virtualWindow.bottomPad > 0 && (
+                  <tr className={styles.virtualSpacer}>
+                    <td
+                      colSpan={columns.length}
+                      style={{ height: virtualWindow.bottomPad }}
+                    />
+                  </tr>
+                )}
+              </>
             )}
           </tbody>
         </table>
@@ -644,6 +748,12 @@ export function DemoGlassTable({
     x: 0,
     y: 0,
   });
+  const oppMap = React.useMemo(() => {
+    if (!opportunities?.length) return new Map<string, ArbitrageOpportunity>();
+    return new Map(opportunities.map((op) => [oppKey(op), op] as const));
+  }, [opportunities]);
+
+  const getOpp = React.useCallback((id: string) => oppMap.get(id), [oppMap]);
 
   // Função para gerar URL do TradingView (igual à tela antiga)
   const generateTradingViewURL = (row: CoinRow) => {
@@ -1183,16 +1293,14 @@ export function DemoGlassTable({
   const rows: CoinRow[] = React.useMemo(() => {
     if (!opportunities || !opportunities.length) return [];
 
-    const mappedRows = opportunities.map(mapOppToRow);
+    const mappedRows = opportunities.map((op) => mapOppToRow(op, isExitMode));
+    const oppMap = new Map(
+      opportunities.map((op) => [oppKey(op), op] as const)
+    );
 
     // Calcular tempo decorrido e expiração do funding para cada linha
     const rowsWithTime = mappedRows.map((row) => {
-      const originalOpp = opportunities.find(
-        (op) =>
-          op.ticker?.replace(/USDT$/i, "") === row.coin.ticker &&
-          op.lowestAsk?.exchange === row.spot.bingo &&
-          op.highestBid?.exchange === row.futures.bingo
-      );
+      const originalOpp = oppMap.get(row.id);
 
       let updatedRow = { ...row };
 
@@ -1415,7 +1523,7 @@ export function DemoGlassTable({
       accessor: (r) => (
         <CoinCell
           r={r}
-          opportunities={opportunities}
+          getOpp={getOpp}
           showTooltip={showTooltip}
           hideTooltip={hideTooltip}
           isElementVisible={isElementVisible}
@@ -1723,6 +1831,7 @@ export function DemoGlassTable({
         data={paginatedRows}
         rowKey={(r) => r.id}
         maxHeight={560}
+        virtualized
         zebra
         onRowClick={(r) => console.log("click row:", r.id)}
         isSidebarOpen={isSidebarOpen}

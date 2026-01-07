@@ -156,7 +156,9 @@ export default function FuturosNewPage({
     refreshRate,
     buyExNames,
     sellExNames,
-    isSocketPaused
+    isSocketPaused,
+    true,
+    0.5
   );
 
   // ✅ opcional: feedback visual no console

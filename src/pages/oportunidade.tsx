@@ -83,6 +83,7 @@ export default function OportunidadePage() {
         buyExchanges: [sellExchange],
         sellExchanges: [buyExchange],
         refreshRate: 1000,
+        lite: true,
       });
     });
 
@@ -120,26 +121,26 @@ export default function OportunidadePage() {
 
     // preços corretos do book
     const spotAsk = calcPrice(
-      opportunity.lowestAsk.orderbook.asks[0]?.price ??
+      opportunity.lowestAsk.orderbook?.asks?.[0]?.price ??
         opportunity.lowestAsk.price,
       opportunity.lowestAsk.isUSD,
       dolarValue
     );
     const spotBid = calcPrice(
-      opportunity.lowestAsk.orderbook.bids[0]?.price ??
+      opportunity.lowestAsk.orderbook?.bids?.[0]?.price ??
         opportunity.lowestAsk.price,
       opportunity.lowestAsk.isUSD,
       dolarValue
     );
 
     const futBid = calcPrice(
-      opportunity.highestBid.orderbook.bids[0]?.price ??
+      opportunity.highestBid.orderbook?.bids?.[0]?.price ??
         opportunity.highestBid.price,
       opportunity.highestBid.isUSD,
       dolarValue
     );
     const futAsk = calcPrice(
-      opportunity.highestBid.orderbook.asks[0]?.price ??
+      opportunity.highestBid.orderbook?.asks?.[0]?.price ??
         opportunity.highestBid.price,
       opportunity.highestBid.isUSD,
       dolarValue
@@ -199,26 +200,26 @@ export default function OportunidadePage() {
 
   // preços corretos
   const spotAsk = calcPrice(
-    opportunity.lowestAsk.orderbook.asks[0]?.price ??
+    opportunity.lowestAsk.orderbook?.asks?.[0]?.price ??
       opportunity.lowestAsk.price,
     opportunity.lowestAsk.isUSD,
     dolarValue
   );
   const spotBid = calcPrice(
-    opportunity.lowestAsk.orderbook.bids[0]?.price ??
+    opportunity.lowestAsk.orderbook?.bids?.[0]?.price ??
       opportunity.lowestAsk.price,
     opportunity.lowestAsk.isUSD,
     dolarValue
   );
 
   const futBid = calcPrice(
-    opportunity.highestBid.orderbook.bids[0]?.price ??
+    opportunity.highestBid.orderbook?.bids?.[0]?.price ??
       opportunity.highestBid.price,
     opportunity.highestBid.isUSD,
     dolarValue
   );
   const futAsk = calcPrice(
-    opportunity.highestBid.orderbook.asks[0]?.price ??
+    opportunity.highestBid.orderbook?.asks?.[0]?.price ??
       opportunity.highestBid.price,
     opportunity.highestBid.isUSD,
     dolarValue
