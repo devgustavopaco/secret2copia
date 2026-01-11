@@ -113,6 +113,174 @@ export default function OportunidadePage() {
   const isFutures = (exchange: string) =>
     exchange.toLowerCase().includes("futures");
 
+  const formatPairForExchange = (exchange: string, coin: string) => {
+    const pair = `${coin}USDT`;
+
+    switch (exchange) {
+      case "bybit":
+      case "binance":
+      case "gate":
+      case "bitget":
+      case "kucoin":
+      case "mexc":
+      case "bingx":
+        return pair;
+      default:
+        return pair;
+    }
+  };
+
+  const spotLinks = {
+    bybit: (coin: string, pair: string) => {
+      const special: Record<string, string> = {
+        FIRE: "FIRE",
+        VELO: "VELO",
+        ZK: "ZK",
+      };
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.bybit.com/trade/${sc}${pair}`;
+    },
+    binance: (coin: string, pair: string) => {
+      const special: Record<string, string> = { TKO: "TKO", ZK: "ZK" };
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.binance.com/en/trade/${sc}${pair}`;
+    },
+    gate: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(base, "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.gate.io/trade/${base}_${quote}`;
+    },
+    bitget: (_: string, pair: string) =>
+      `https://www.bitget.com/pt/spot/${pair}`,
+    kucoin: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(base, "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://trade.kucoin.com/${base}-${quote}`;
+    },
+    mexc: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(base, "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.mexc.com/exchange/${base}_${quote}`;
+    },
+    bingx: (_: string, pair: string) => `https://bingx.com/en-us/spot/${pair}`,
+    huobi: (coin: string, pair: string) => {
+      const base = coin.toLowerCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toLowerCase() || "usdt";
+      return `https://www.htx.com/trade/${base}_${quote}?type=spot`;
+    },
+  };
+
+  const futuresLinks = {
+    bybit: (coin: string, pair: string) => {
+      const special: Record<string, string> = {
+        FIRE: "FIRE",
+        VELO: "VELO",
+        ZK: "ZK",
+      };
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.bybit.com/trade/${sc}${pair}`;
+    },
+    binance: (coin: string, pair: string) => {
+      const special: Record<string, string> = { TKO: "TKO", ZK: "ZK" };
+      const sc = special[coin.toUpperCase()] || coin;
+      return `https://www.binance.com/en/futures/${sc}${pair}_PERP`;
+    },
+    gate: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.gate.com/pt/futures/USDT/${base}_${quote}`;
+    },
+    bitget: (_: string, pair: string) =>
+      `https://www.bitget.com/futures/usdt/${pair}`,
+    kucoin: (_: string, pair: string) =>
+      `https://futures.kucoin.com/trade/${pair.replace("-", "")}M`,
+    mexc: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.mexc.com/futures/${base}_${quote}?type=linear_swap`;
+    },
+    bingx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://bingx.com/en/perpetual/${base}-${quote}`;
+    },
+    huobi: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.htx.com/futures/linear_swap/exchange#contract_code=${base}-${quote}&contract_type=swap&type=cross`;
+    },
+  };
+
+  const handleRedirect = (
+    exchange: string,
+    coin: string,
+    isFuturesExchange = false
+  ) => {
+    let normalized = exchange.toLowerCase().replace(/ spot| futures/g, "");
+    if (normalized.includes("gate")) normalized = "gate";
+
+    const links = isFuturesExchange ? futuresLinks : spotLinks;
+    const formattedPair = formatPairForExchange(normalized, coin);
+    const builder = (links as any)[normalized];
+
+    if (!builder) return;
+
+    const url = builder(coin, formattedPair);
+    const newTab = window.open(url, "_blank");
+
+    if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
+      window.location.href = url;
+    }
+  };
+
+  const tickerValue = Array.isArray(ticker) ? ticker[0] : ticker;
+  const coinValue = Array.isArray(coin) ? coin[0] : coin;
+
+  const handleExchangeLink = (exchangeName: string) => {
+    if (!tickerValue) return;
+    handleRedirect(exchangeName, tickerValue, isFutures(exchangeName));
+  };
+
   // === SPREAD CALC ===
   const currentSpread = useMemo(() => {
     if (!opportunity) return parseFloat(spread as string);
@@ -241,10 +409,10 @@ export default function OportunidadePage() {
   return (
     <>
       <Head>
-        <title>{ticker} - Oportunidade | NEXTGAIN</title>
+        <title>{tickerValue} - Oportunidade | NEXTGAIN</title>
         <meta
           name="description"
-          content={`Oportunidade de arbitragem para ${coin} (${ticker})`}
+          content={`Oportunidade de arbitragem para ${coinValue} (${tickerValue})`}
         />
       </Head>
 
@@ -298,9 +466,23 @@ export default function OportunidadePage() {
                 <h2 className={styles.sectionTitle}>ENTRADA</h2>
                 <div className={styles.pricesContainer}>
                   <div className={styles.priceItem}>
-                    <span className={styles.exchangeName}>
-                      {opportunity.lowestAsk.exchange}
-                    </span>
+                    <button
+                      className={styles.exchangeLink}
+                      onClick={() =>
+                        handleExchangeLink(opportunity.lowestAsk.exchange)
+                      }
+                      type="button"
+                    >
+                      <span className={styles.exchangeName}>
+                        {opportunity.lowestAsk.exchange}
+                      </span>
+                      <img
+                        src="/new-page/link.svg"
+                        alt=""
+                        width={12}
+                        height={12}
+                      />
+                    </button>
                     <span className={styles.price}>
                       {numberFormatter.format(spotAsk)}
                     </span>
@@ -321,9 +503,23 @@ export default function OportunidadePage() {
                   </div>
 
                   <div className={styles.priceItem}>
-                    <span className={styles.exchangeName}>
-                      {opportunity.highestBid.exchange}
-                    </span>
+                    <button
+                      className={styles.exchangeLink}
+                      onClick={() =>
+                        handleExchangeLink(opportunity.highestBid.exchange)
+                      }
+                      type="button"
+                    >
+                      <span className={styles.exchangeName}>
+                        {opportunity.highestBid.exchange}
+                      </span>
+                      <img
+                        src="/new-page/link.svg"
+                        alt=""
+                        width={12}
+                        height={12}
+                      />
+                    </button>
                     <span className={styles.price}>
                       {numberFormatter.format(futBid)}
                     </span>
@@ -338,9 +534,23 @@ export default function OportunidadePage() {
                 <h2 className={styles.sectionTitle}>FECHAMENTO</h2>
                 <div className={styles.pricesContainer}>
                   <div className={styles.priceItem}>
-                    <span className={styles.exchangeName}>
-                      {opportunity.lowestAsk.exchange}
-                    </span>
+                    <button
+                      className={styles.exchangeLink}
+                      onClick={() =>
+                        handleExchangeLink(opportunity.lowestAsk.exchange)
+                      }
+                      type="button"
+                    >
+                      <span className={styles.exchangeName}>
+                        {opportunity.lowestAsk.exchange}
+                      </span>
+                      <img
+                        src="/new-page/link.svg"
+                        alt=""
+                        width={12}
+                        height={12}
+                      />
+                    </button>
                     <span className={styles.price}>
                       {numberFormatter.format(spotBid)}
                     </span>
@@ -361,9 +571,23 @@ export default function OportunidadePage() {
                   </div>
 
                   <div className={styles.priceItem}>
-                    <span className={styles.exchangeName}>
-                      {opportunity.highestBid.exchange}
-                    </span>
+                    <button
+                      className={styles.exchangeLink}
+                      onClick={() =>
+                        handleExchangeLink(opportunity.highestBid.exchange)
+                      }
+                      type="button"
+                    >
+                      <span className={styles.exchangeName}>
+                        {opportunity.highestBid.exchange}
+                      </span>
+                      <img
+                        src="/new-page/link.svg"
+                        alt=""
+                        width={12}
+                        height={12}
+                      />
+                    </button>
                     <span className={styles.price}>
                       {numberFormatter.format(futAsk)}
                     </span>

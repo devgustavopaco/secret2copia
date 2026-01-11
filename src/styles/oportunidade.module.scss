@@ -274,6 +274,20 @@ $glow-rgb: 151, 133, 242;
   letter-spacing: 0.5px;
 }
 
+.exchangeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.exchangeLink:hover .exchangeName {
+  color: $text;
+}
+
 .price {
   font-size: 1.2rem;
   color: $text;

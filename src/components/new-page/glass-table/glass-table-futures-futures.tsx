@@ -46,9 +46,12 @@ const openOpportunityPopup = (params: URLSearchParams) => {
   const left = (window.screen.width - width) / 2;
   const top = (window.screen.height - height) / 2;
 
+  const windowName = `opportunity-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
   const popup = window.open(
     `/oportunidade?${params.toString()}`,
-    "opportunity",
+    windowName,
     `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no`
   );
 
