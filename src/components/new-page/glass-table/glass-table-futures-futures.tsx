@@ -143,11 +143,55 @@ type CoinRow = {
   sell: { price: string; bingo: string; live: string };
   spreads: { long: string; short: string };
   funding: string;
-  fundingExpiry: string;
-  tempo: string;
+  fundingRateExpTs?: number;
+  validSince?: number;
   volumes: { b: string; s: string };
   volumes24h: { b: string; s: string };
 };
+
+const oppKey = (op: ArbitrageOpportunity) =>
+  `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`;
+
+const nowStore = (() => {
+  let now = Date.now();
+  let timer: number | null = null;
+  const listeners = new Set<() => void>();
+
+  const tick = () => {
+    now = Date.now();
+    listeners.forEach((listener) => listener());
+  };
+
+  const start = () => {
+    if (timer !== null) return;
+    timer = window.setInterval(tick, 1000);
+  };
+
+  const stop = () => {
+    if (timer === null || listeners.size > 0) return;
+    window.clearInterval(timer);
+    timer = null;
+  };
+
+  return {
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      start();
+      return () => {
+        listeners.delete(listener);
+        stop();
+      };
+    },
+    getSnapshot() {
+      return now;
+    },
+  };
+})();
+
+const useNow = () =>
+  React.useSyncExternalStore(nowStore.subscribe, nowStore.getSnapshot, () =>
+    Date.now()
+  );
 
 // mapeia ArbitrageOpportunity -> CoinRow (Futures vs Futures)
 function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
@@ -160,7 +204,7 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
   const bidLiq = bidP * bidAmt;
 
   return {
-    id: `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`,
+    id: oppKey(op),
     coin: {
       ticker: op.ticker?.replace(/USDT$/i, "") || op.ticker || "—",
       logo: op.coinImage || "/default-coin.png",
@@ -183,8 +227,8 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
       typeof op.fundingRate === "number"
         ? `${(op.fundingRate * 100).toFixed(5)}%`
         : "—",
-    fundingExpiry: "—",
-    tempo: "—",
+    fundingRateExpTs: (op as any).fundingRateExpTs,
+    validSince: (op as any).validSince,
     volumes: {
       b: `Buy: ${askLiq.toFixed(0)}`,
       s: `Sell: ${bidLiq.toFixed(0)}`,
@@ -198,24 +242,17 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
 
 function CoinCell({
   r,
-  opportunities,
+  getOpp,
   showTooltip,
   hideTooltip,
-  isElementVisible,
+  showLogo,
   toggleGroupExpansion,
   styles,
 }: any) {
   const logoUrl = useCoinLogo(r.coin.ticker, r.coin.ticker);
 
   // Busca a oportunidade original para o tooltip
-  const originalOpp = opportunities?.find((opp: any) => {
-    const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
-    const rowTickerClean = r.coin.ticker;
-    const tickerMatch = oppTickerClean === rowTickerClean;
-    const buyMatch = opp.lowestAsk?.exchange === r.buy.bingo;
-    const sellMatch = opp.highestBid?.exchange === r.sell.bingo;
-    return tickerMatch && buyMatch && sellMatch;
-  });
+  const originalOpp = getOpp ? getOpp(r.id) : null;
 
   const tooltipContent = originalOpp?.tokenStats ? (
     <>
@@ -282,7 +319,7 @@ function CoinCell({
       onMouseLeave={hideTooltip}
       onMouseMove={(e) => tooltipContent && showTooltip(e, tooltipContent)}
     >
-      {isElementVisible("showCoinLogo") && (
+      {showLogo && (
         <img
           src={logoUrl}
           alt=""
@@ -330,6 +367,97 @@ function CoinCell({
     </div>
   );
 }
+
+const ActionCell = React.memo(
+  ({
+    ticker,
+    buyExchange,
+    sellExchange,
+    isFavorited,
+    onToggleFavorite,
+    onOpenOpportunity,
+    onOpenTradingView,
+    onDelete,
+    styles,
+  }: {
+    ticker: string;
+    buyExchange: string;
+    sellExchange: string;
+    isFavorited: boolean;
+    onToggleFavorite: (key: string) => void;
+    onOpenOpportunity: (
+      ticker: string,
+      buyExchange: string,
+      sellExchange: string
+    ) => void;
+    onOpenTradingView: (
+      ticker: string,
+      buyExchange: string,
+      sellExchange: string
+    ) => void;
+    onDelete: (key: string, name: string) => void;
+    styles: any;
+  }) => {
+    const key = `${ticker}-${buyExchange}-${sellExchange}`;
+    const name = `${ticker} (${buyExchange} → ${sellExchange})`;
+
+    return (
+      <div className={styles.actions}>
+        <button
+          className={`${styles.iconBtn} ${isFavorited ? styles.favorited : ""}`}
+          aria-label="Favoritar"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleFavorite(key);
+          }}
+        >
+          {isFavorited ? <StarFilledIcon /> : <StarIcon />}
+        </button>
+        <button
+          className={styles.iconBtn}
+          aria-label="Abrir Calculadora"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenOpportunity(ticker, buyExchange, sellExchange);
+          }}
+        >
+          <CalculatorTableIcon />
+        </button>
+        <button
+          className={styles.iconBtn}
+          aria-label="Abrir TradingView"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenTradingView(ticker, buyExchange, sellExchange);
+          }}
+        >
+          <TradingViewIcon />
+        </button>
+        <button
+          className={styles.iconBtn}
+          aria-label="Excluir"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete(key, name);
+          }}
+        >
+          <TrashIcon />
+        </button>
+      </div>
+    );
+  },
+  (prev, next) =>
+    prev.ticker === next.ticker &&
+    prev.buyExchange === next.buyExchange &&
+    prev.sellExchange === next.sellExchange &&
+    prev.isFavorited === next.isFavorited
+);
 
 export default function GlassTable<T extends object>({
   searchValue,
@@ -625,14 +753,7 @@ export function DemoGlassTable({
 
   // Estados para paginação
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [itemsPerPage, setItemsPerPage] = React.useState(10);
-
-  // Estado para tempo atual (para calcular tempo decorrido)
-  const [now, setNow] = React.useState(Date.now());
-  React.useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const [itemsPerPage, setItemsPerPage] = React.useState(40);
 
   // Estado para tooltip
   const [tooltip, setTooltip] = React.useState<{
@@ -646,9 +767,24 @@ export function DemoGlassTable({
     x: 0,
     y: 0,
   });
+  const oppMap = React.useMemo(() => {
+    if (!opportunities?.length) return new Map<string, ArbitrageOpportunity>();
+    return new Map(opportunities.map((op) => [oppKey(op), op] as const));
+  }, [opportunities]);
+
+  const getOpp = React.useCallback((id: string) => oppMap.get(id), [oppMap]);
+  const oppsRef = React.useRef<ArbitrageOpportunity[]>([]);
+
+  React.useEffect(() => {
+    oppsRef.current = opportunities ?? [];
+  }, [opportunities]);
 
   // Função para gerar URL do TradingView (para futures vs futures)
-  const generateTradingViewURL = (row: CoinRow) => {
+  const generateTradingViewURL = (
+    ticker: string,
+    buyExchange: string,
+    sellExchange: string
+  ) => {
     const map: Record<string, string> = {
       MEXC: "MEXC",
       BITGET: "BITGET",
@@ -659,9 +795,9 @@ export function DemoGlassTable({
       KUCOIN: "KUCOIN",
     };
 
-    const base = row.coin.ticker.toUpperCase();
-    const cleanBuy = row.buy.bingo.replace(/ spot| futures/i, "").trim();
-    const cleanSell = row.sell.bingo.replace(/ spot| futures/i, "").trim();
+    const base = ticker.toUpperCase();
+    const cleanBuy = buyExchange.replace(/ spot| futures/i, "").trim();
+    const cleanSell = sellExchange.replace(/ spot| futures/i, "").trim();
 
     const buySymbol = `${
       map[cleanBuy.toUpperCase()] || cleanBuy.toUpperCase()
@@ -881,11 +1017,14 @@ export function DemoGlassTable({
   };
 
   // Função para abrir TradingView
-  const handleTradingViewClick = (row: CoinRow) => {
-    const url = generateTradingViewURL(row);
-    setTradingViewUrl(url);
-    setIsTradingViewOpen(true);
-  };
+  const handleTradingViewClick = React.useCallback(
+    (ticker: string, buyExchange: string, sellExchange: string) => {
+      const url = generateTradingViewURL(ticker, buyExchange, sellExchange);
+      setTradingViewUrl(url);
+      setIsTradingViewOpen(true);
+    },
+    []
+  );
 
   // Função para formatar tempo decorrido (igual à tabela antiga)
   const formatElapsed = (ms: number) => {
@@ -896,6 +1035,53 @@ export function DemoGlassTable({
     if (h > 0) return `${h}h ${m}m ${s}s`;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
+  };
+
+  const FundingExpiry = ({ expiryTime }: { expiryTime?: number }) => {
+    const now = useNow();
+
+    if (!expiryTime) return null;
+
+    const timeUntilExpiry = expiryTime - now;
+
+    if (timeUntilExpiry > 0) {
+      return (
+        <div className={styles.fundingExpiry}>
+          {`Exp: ${formatElapsed(timeUntilExpiry)}`}
+        </div>
+      );
+    }
+
+    const expiryDate = new Date(expiryTime);
+    const dateStr = expiryDate.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      timeZone: "America/Sao_Paulo",
+    });
+    const timeStr = expiryDate.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "America/Sao_Paulo",
+    });
+
+    return (
+      <div className={styles.fundingExpiry}>
+        {`Expirou em: ${dateStr} ${timeStr}`}
+      </div>
+    );
+  };
+
+  const TempoCell = ({ validSince }: { validSince?: number }) => {
+    const now = useNow();
+
+    if (!validSince) return <span className={styles.chip}>—</span>;
+
+    return (
+      <span className={styles.chip}>
+        {`T: ${formatElapsed(now - validSince)}`}
+      </span>
+    );
   };
 
   // Funções para controlar tooltip
@@ -930,7 +1116,7 @@ export function DemoGlassTable({
   });
 
   // Função para toggle de favorito
-  const toggleFavorite = (key: string) => {
+  const toggleFavorite = React.useCallback((key: string) => {
     setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(key)) {
@@ -946,7 +1132,7 @@ export function DemoGlassTable({
       );
       return newFavorites;
     });
-  };
+  }, []);
 
   // Função para verificar se é favorito
   const isFavorite = React.useCallback(
@@ -1078,13 +1264,66 @@ export function DemoGlassTable({
   );
 
   // Função para abrir modal de confirmação
-  const openDeleteModal = (key: string, name: string) => {
+  const openDeleteModal = React.useCallback((key: string, name: string) => {
     setDeleteModal({
       isOpen: true,
       opportunityKey: key,
       opportunityName: name,
     });
-  };
+  }, []);
+
+  const handleOpenOpportunity = React.useCallback(
+    (ticker: string, buyExchange: string, sellExchange: string) => {
+      const list = oppsRef.current;
+
+      const originalOpp = list.find((opp) => {
+        const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
+        const tickerMatch = oppTickerClean === ticker;
+        const buyMatch = opp.lowestAsk?.exchange === buyExchange;
+        const sellMatch = opp.highestBid?.exchange === sellExchange;
+        return tickerMatch && buyMatch && sellMatch;
+      });
+
+      if (!originalOpp) {
+        const fallbackOpp = list.find(
+          (opp) => opp.ticker?.replace(/USDT$/i, "") === ticker
+        );
+
+        if (fallbackOpp) {
+          const params = new URLSearchParams({
+            ticker,
+            coin: ticker,
+            buyExchange: fallbackOpp.highestBid?.exchange ?? "",
+            buyPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
+            buyIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
+            sellExchange: fallbackOpp.lowestAsk?.exchange ?? "",
+            sellPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
+            sellIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
+            spread: fallbackOpp.spread?.toString() ?? "0",
+          });
+
+          openOpportunityPopup(params);
+        }
+
+        return;
+      }
+
+      const params = new URLSearchParams({
+        ticker,
+        coin: ticker,
+        buyExchange: originalOpp.highestBid?.exchange ?? "",
+        buyPrice: originalOpp.highestBid?.price?.toString() ?? "0",
+        buyIsUSD: originalOpp.highestBid?.isUSD ? "true" : "false",
+        sellExchange: originalOpp.lowestAsk?.exchange ?? "",
+        sellPrice: originalOpp.lowestAsk?.price?.toString() ?? "0",
+        sellIsUSD: originalOpp.lowestAsk?.isUSD ? "true" : "false",
+        spread: originalOpp.spread?.toString() ?? "0",
+      });
+
+      openOpportunityPopup(params);
+    },
+    []
+  );
 
   // Função para restaurar oportunidade
   const restoreOpportunity = (key: string) => {
@@ -1181,102 +1420,16 @@ export function DemoGlassTable({
     { id: "acoes", label: "Ações", required: false },
   ];
 
-  // fallback para mock quando não houver socket (dev/test)
-  const rows: CoinRow[] = React.useMemo(() => {
-    if (!opportunities || !opportunities.length) return [];
+  const [rows, setRows] = React.useState<CoinRow[]>([]);
+  const pendingRowsRef = React.useRef<CoinRow[]>([]);
+  const sortTimerRef = React.useRef<number | null>(null);
 
-    const mappedRows = opportunities.map(mapOppToRow);
+  const sortRows = React.useCallback(
+    (rowsToSort: CoinRow[]) => {
+      if (!rowsToSort.length) return rowsToSort;
 
-    // Calcular tempo decorrido e expiração do funding para cada linha
-    const rowsWithTime = mappedRows.map((row) => {
-      const originalOpp = opportunities.find(
-        (op) =>
-          op.ticker?.replace(/USDT$/i, "") === row.coin.ticker &&
-          op.lowestAsk?.exchange === row.buy.bingo &&
-          op.highestBid?.exchange === row.sell.bingo
-      );
-
-      let updatedRow = { ...row };
-
-      // Calcular tempo decorrido
-      if (originalOpp && (originalOpp as any).validSince) {
-        updatedRow.tempo = `T: ${formatElapsed(
-          now - (originalOpp as any).validSince
-        )}`;
-      }
-
-      // Calcular expiração do funding
-      if (originalOpp && (originalOpp as any).fundingRateExpTs) {
-        const expiryTime = (originalOpp as any).fundingRateExpTs;
-        const timeUntilExpiry = expiryTime - now;
-
-        if (timeUntilExpiry > 0) {
-          // Ainda não expirou
-          updatedRow.fundingExpiry = `Exp: ${formatElapsed(timeUntilExpiry)}`;
-        } else {
-          // Já expirou - mostrar data e hora da expiração (no horário de Brasília)
-          const expiryDate = new Date(expiryTime);
-          const dateStr = expiryDate.toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          const timeStr = expiryDate.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          updatedRow.fundingExpiry = `Expirou em: ${dateStr} ${timeStr}`;
-        }
-      }
-
-      return updatedRow;
-    });
-
-    // Filtrar oportunidades excluídas
-    const filteredRows = rowsWithTime.filter((row) => {
-      const key = `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`;
-      return !isExcluded(key);
-    });
-
-    // Se não estiver agrupado, retorna ordenação normal
-    if (!isGrouped) {
-      return filteredRows.sort((a, b) => {
-        const aKey = `${a.coin.ticker}-${a.buy.bingo}-${a.sell.bingo}`;
-        const bKey = `${b.coin.ticker}-${b.buy.bingo}-${b.sell.bingo}`;
-
-        const aIsFavorite = isFavorite(aKey);
-        const bIsFavorite = isFavorite(bKey);
-
-        // Se um é favorito e outro não, o favorito vem primeiro
-        if (aIsFavorite && !bIsFavorite) return -1;
-        if (!aIsFavorite && bIsFavorite) return 1;
-
-        // Usa spread de entrada ou fechamento baseado no modo
-        const aSpread = isExitMode
-          ? parseFloat(a.spreads.short.replace(/[^\d.-]/g, "")) || 0
-          : parseFloat(a.spreads.long.replace(/[^\d.-]/g, "")) || 0;
-        const bSpread = isExitMode
-          ? parseFloat(b.spreads.short.replace(/[^\d.-]/g, "")) || 0
-          : parseFloat(b.spreads.long.replace(/[^\d.-]/g, "")) || 0;
-
-        return bSpread - aSpread; // Maior spread primeiro
-      });
-    }
-
-    // Se estiver agrupado, agrupa por ticker (igual à tabela antiga)
-    const groups: Record<string, CoinRow[]> = {};
-    filteredRows.forEach((row) => {
-      if (!groups[row.coin.ticker]) groups[row.coin.ticker] = [];
-      groups[row.coin.ticker]!.push(row);
-    });
-
-    // Para cada grupo, pega apenas o melhor (maior spread) ou todas se expandido
-    const groupedRows = Object.entries(groups)
-      .flatMap(([ticker, rows]) => {
-        // Ordena por favoritos primeiro, depois por spread (entrada ou fechamento)
-        const sortedRows = [...rows].sort((a, b) => {
+      if (!isGrouped) {
+        return [...rowsToSort].sort((a, b) => {
           const aKey = `${a.coin.ticker}-${a.buy.bingo}-${a.sell.bingo}`;
           const bKey = `${b.coin.ticker}-${b.buy.bingo}-${b.sell.bingo}`;
 
@@ -1286,7 +1439,6 @@ export function DemoGlassTable({
           if (aIsFavorite && !bIsFavorite) return -1;
           if (!aIsFavorite && bIsFavorite) return 1;
 
-          // Usa spread de entrada ou fechamento baseado no modo
           const aSpread = isExitMode
             ? parseFloat(a.spreads.short.replace(/[^\d.-]/g, "")) || 0
             : parseFloat(a.spreads.long.replace(/[^\d.-]/g, "")) || 0;
@@ -1296,106 +1448,157 @@ export function DemoGlassTable({
 
           return bSpread - aSpread;
         });
+      }
 
-        const isExpanded = expandedGroups.has(ticker);
+      const groups: Record<string, CoinRow[]> = {};
+      rowsToSort.forEach((row) => {
+        if (!groups[row.coin.ticker]) groups[row.coin.ticker] = [];
+        groups[row.coin.ticker]!.push(row);
+      });
 
-        if (isExpanded) {
-          // Se expandido, retorna todas as linhas do grupo
-          return sortedRows.map((row, index) => ({
-            ...row,
-            _isGroup: rows.length > 1,
-            _groupCount: rows.length,
-            _isExpanded: true,
-            _isFirstInGroup: index === 0,
-            _isLastInGroup: index === sortedRows.length - 1,
-          }));
-        } else {
-          // Se não expandido, retorna apenas o melhor do grupo
+      const groupedRows = Object.entries(groups)
+        .flatMap(([ticker, rowsInGroup]) => {
+          const sortedRows = [...rowsInGroup].sort((a, b) => {
+            const aKey = `${a.coin.ticker}-${a.buy.bingo}-${a.sell.bingo}`;
+            const bKey = `${b.coin.ticker}-${b.buy.bingo}-${b.sell.bingo}`;
+
+            const aIsFavorite = isFavorite(aKey);
+            const bIsFavorite = isFavorite(bKey);
+
+            if (aIsFavorite && !bIsFavorite) return -1;
+            if (!aIsFavorite && bIsFavorite) return 1;
+
+            const aSpread = isExitMode
+              ? parseFloat(a.spreads.short.replace(/[^\d.-]/g, "")) || 0
+              : parseFloat(a.spreads.long.replace(/[^\d.-]/g, "")) || 0;
+            const bSpread = isExitMode
+              ? parseFloat(b.spreads.short.replace(/[^\d.-]/g, "")) || 0
+              : parseFloat(b.spreads.long.replace(/[^\d.-]/g, "")) || 0;
+
+            return bSpread - aSpread;
+          });
+
+          const isExpanded = expandedGroups.has(ticker);
+
+          if (isExpanded) {
+            return sortedRows.map((row, index) => ({
+              ...row,
+              _isGroup: rowsInGroup.length > 1,
+              _groupCount: rowsInGroup.length,
+              _isExpanded: true,
+              _isFirstInGroup: index === 0,
+              _isLastInGroup: index === sortedRows.length - 1,
+            }));
+          }
+
           const bestRow = sortedRows[0];
           if (!bestRow) return [];
 
           return [
             {
               ...bestRow,
-              _isGroup: rows.length > 1,
-              _groupCount: rows.length,
+              _isGroup: rowsInGroup.length > 1,
+              _groupCount: rowsInGroup.length,
               _isExpanded: false,
               _isFirstInGroup: true,
               _isLastInGroup: true,
             },
           ];
-        }
-      })
-      .filter((x): x is NonNullable<typeof x> => x !== null);
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null);
 
-    // Agrupa novamente para ordenar corretamente por grupos
-    const finalGroups: Record<string, CoinRow[]> = {};
-    groupedRows.forEach((row) => {
-      if (!finalGroups[row.coin.ticker]) {
-        finalGroups[row.coin.ticker] = [];
-      }
-      finalGroups[row.coin.ticker]!.push(row);
+      const finalGroups: Record<string, CoinRow[]> = {};
+      groupedRows.forEach((row) => {
+        if (!finalGroups[row.coin.ticker]) {
+          finalGroups[row.coin.ticker] = [];
+        }
+        finalGroups[row.coin.ticker]!.push(row);
+      });
+
+      const sortedGroupKeys = Object.keys(finalGroups).sort(
+        (aTicker, bTicker) => {
+          const aGroup = finalGroups[aTicker]!;
+          const bGroup = finalGroups[bTicker]!;
+
+          const aHasFavorite = aGroup.some((row) =>
+            isFavorite(`${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`)
+          );
+          const bHasFavorite = bGroup.some((row) =>
+            isFavorite(`${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`)
+          );
+
+          if (aHasFavorite && !bHasFavorite) return -1;
+          if (!aHasFavorite && bHasFavorite) return 1;
+
+          const aBestSpread = Math.max(
+            ...aGroup.map((row) => {
+              const spread = isExitMode
+                ? parseFloat(row.spreads.short.replace(/[^\d.-]/g, "")) || 0
+                : parseFloat(row.spreads.long.replace(/[^\d.-]/g, "")) || 0;
+              return spread;
+            })
+          );
+          const bBestSpread = Math.max(
+            ...bGroup.map((row) => {
+              const spread = isExitMode
+                ? parseFloat(row.spreads.short.replace(/[^\d.-]/g, "")) || 0
+                : parseFloat(row.spreads.long.replace(/[^\d.-]/g, "")) || 0;
+              return spread;
+            })
+          );
+
+          return bBestSpread - aBestSpread;
+        }
+      );
+
+      return sortedGroupKeys.flatMap((ticker) => finalGroups[ticker]!);
+    },
+    [isGrouped, isExitMode, isFavorite, expandedGroups]
+  );
+
+  // fallback para mock quando não houver socket (dev/test)
+  const mappedRows: CoinRow[] = React.useMemo(() => {
+    if (!opportunities || !opportunities.length) return [];
+
+    const mappedRows = opportunities.map(mapOppToRow);
+
+    // Filtrar oportunidades excluídas
+    const filteredRows = mappedRows.filter((row) => {
+      const key = `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`;
+      return !isExcluded(key);
     });
 
-    // Ordena os grupos por favoritos e melhor spread
-    const sortedGroupKeys = Object.keys(finalGroups).sort(
-      (aTicker, bTicker) => {
-        const aGroup = finalGroups[aTicker]!;
-        const bGroup = finalGroups[bTicker]!;
+    return filteredRows;
+  }, [opportunities, isExcluded, isExitMode]);
 
-        // Verifica se algum item do grupo A é favorito
-        const aHasFavorite = aGroup.some((row) =>
-          isFavorite(`${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`)
-        );
+  React.useEffect(() => {
+    if (!mappedRows.length) {
+      pendingRowsRef.current = [];
+      setRows([]);
+      return;
+    }
+    pendingRowsRef.current = mappedRows;
+    if (sortTimerRef.current != null) return;
+    sortTimerRef.current = window.setTimeout(() => {
+      sortTimerRef.current = null;
+      setRows(sortRows(pendingRowsRef.current));
+    }, 500);
+  }, [mappedRows, sortRows]);
 
-        // Verifica se algum item do grupo B é favorito
-        const bHasFavorite = bGroup.some((row) =>
-          isFavorite(`${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`)
-        );
-
-        // Grupos com favoritos vêm primeiro
-        if (aHasFavorite && !bHasFavorite) return -1;
-        if (!aHasFavorite && bHasFavorite) return 1;
-
-        // Se ambos ou nenhum são favoritos, ordena por melhor spread do grupo
-        const aBestSpread = Math.max(
-          ...aGroup.map((row) => {
-            const spread = isExitMode
-              ? parseFloat(row.spreads.short.replace(/[^\d.-]/g, "")) || 0
-              : parseFloat(row.spreads.long.replace(/[^\d.-]/g, "")) || 0;
-            return spread;
-          })
-        );
-        const bBestSpread = Math.max(
-          ...bGroup.map((row) => {
-            const spread = isExitMode
-              ? parseFloat(row.spreads.short.replace(/[^\d.-]/g, "")) || 0
-              : parseFloat(row.spreads.long.replace(/[^\d.-]/g, "")) || 0;
-            return spread;
-          })
-        );
-
-        return bBestSpread - aBestSpread;
+  React.useEffect(() => {
+    return () => {
+      if (sortTimerRef.current != null) {
+        window.clearTimeout(sortTimerRef.current);
       }
-    );
-
-    // Retorna os grupos ordenados, mantendo a ordem dentro de cada grupo
-    return sortedGroupKeys.flatMap((ticker) => finalGroups[ticker]!);
-  }, [
-    opportunities,
-    isExcluded,
-    isFavorite,
-    isGrouped,
-    expandedGroups,
-    isExitMode,
-    now,
-  ]);
+    };
+  }, []);
 
   // Calcular dados de paginação
   const totalItems = rows.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  const clampedItemsPerPage = Math.min(itemsPerPage, 40);
+  const totalPages = Math.ceil(totalItems / clampedItemsPerPage);
+  const startIndex = (currentPage - 1) * clampedItemsPerPage;
+  const endIndex = startIndex + clampedItemsPerPage;
   const paginatedRows = rows.slice(startIndex, endIndex);
 
   // Ajustar página atual se ela for maior que o total de páginas disponíveis
@@ -1405,6 +1608,13 @@ export function DemoGlassTable({
     }
   }, [currentPage, totalPages]);
 
+  React.useEffect(() => {
+    if (itemsPerPage > 40) {
+      setItemsPerPage(40);
+      setCurrentPage(1);
+    }
+  }, [itemsPerPage]);
+
   // Definir todas as colunas possíveis
   const allColumns: Column<CoinRow>[] = [
     {
@@ -1413,10 +1623,10 @@ export function DemoGlassTable({
       accessor: (r) => (
         <CoinCell
           r={r}
-          opportunities={opportunities}
+          getOpp={getOpp}
           showTooltip={showTooltip}
           hideTooltip={hideTooltip}
-          isElementVisible={isElementVisible}
+          showLogo={isElementVisible("showCoinLogo")}
           toggleGroupExpansion={toggleGroupExpansion}
           styles={styles}
         />
@@ -1447,8 +1657,9 @@ export function DemoGlassTable({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
               justifyContent: "center",
+              whiteSpace: "nowrap",
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1499,8 +1710,9 @@ export function DemoGlassTable({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
               justifyContent: "center",
+              whiteSpace: "nowrap",
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1591,9 +1803,7 @@ export function DemoGlassTable({
             >
               {displayValue}
             </span>
-            {r.fundingExpiry !== "—" && (
-              <div className={styles.fundingExpiry}>{r.fundingExpiry}</div>
-            )}
+            <FundingExpiry expiryTime={r.fundingRateExpTs} />
           </div>
         );
       },
@@ -1625,7 +1835,7 @@ export function DemoGlassTable({
     {
       id: "tempo",
       header: "Tempo",
-      accessor: (r) => <span className={styles.chip}>{r.tempo}</span>,
+      accessor: (r) => <TempoCell validSince={r.validSince} />,
       width: "100px",
       align: "center",
     },
@@ -1633,121 +1843,19 @@ export function DemoGlassTable({
       id: "acoes",
       header: "Ações",
       accessor: (row: CoinRow) => (
-        <div className={styles.actions}>
-          <button
-            className={`${styles.iconBtn} ${
-              isFavorite(
-                `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`
-              )
-                ? styles.favorited
-                : ""
-            }`}
-            aria-label="Favoritar"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const key = `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`;
-              toggleFavorite(key);
-            }}
-          >
-            {isFavorite(
-              `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`
-            ) ? (
-              <StarFilledIcon />
-            ) : (
-              <StarIcon />
-            )}
-          </button>
-          <button
-            className={styles.iconBtn}
-            aria-label="Abrir Calculadora"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              // Buscar a oportunidade original pelos dados da linha
-              const originalOpp = opportunities?.find((opp) => {
-                // Remover USDT do ticker da oportunidade para comparar
-                const oppTickerClean = opp.ticker?.replace(/USDT$/i, "");
-                const rowTickerClean = row.coin.ticker;
-
-                const tickerMatch = oppTickerClean === rowTickerClean;
-                const buyMatch = opp.lowestAsk?.exchange === row.buy.bingo;
-                const sellMatch = opp.highestBid?.exchange === row.sell.bingo;
-
-                return tickerMatch && buyMatch && sellMatch;
-              });
-
-              if (!originalOpp) {
-                // Fallback: usar a primeira oportunidade com o mesmo ticker
-                const fallbackOpp = opportunities?.find(
-                  (opp) => opp.ticker?.replace(/USDT$/i, "") === row.coin.ticker
-                );
-
-                if (fallbackOpp) {
-                  const params = new URLSearchParams({
-                    ticker: row.coin.ticker,
-                    coin: row.coin.ticker,
-                    buyExchange: fallbackOpp.highestBid?.exchange ?? "",
-                    buyPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
-                    buyIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
-                    sellExchange: fallbackOpp.lowestAsk?.exchange ?? "",
-                    sellPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
-                    sellIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
-                    spread: fallbackOpp.spread?.toString() ?? "0",
-                  });
-
-                  openOpportunityPopup(params);
-                  return;
-                }
-
-                return;
-              }
-
-              const params = new URLSearchParams({
-                ticker: row.coin.ticker, // Sem USDT
-                coin: row.coin.ticker,
-                buyExchange: originalOpp.highestBid?.exchange ?? "",
-                buyPrice: originalOpp.highestBid?.price?.toString() ?? "0",
-                buyIsUSD: originalOpp.highestBid?.isUSD ? "true" : "false",
-                sellExchange: originalOpp.lowestAsk?.exchange ?? "",
-                sellPrice: originalOpp.lowestAsk?.price?.toString() ?? "0",
-                sellIsUSD: originalOpp.lowestAsk?.isUSD ? "true" : "false",
-                spread: originalOpp.spread?.toString() ?? "0",
-              });
-
-              openOpportunityPopup(params);
-            }}
-          >
-            <CalculatorTableIcon />
-          </button>
-          <button
-            className={styles.iconBtn}
-            aria-label="Abrir TradingView"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleTradingViewClick(row);
-            }}
-          >
-            <TradingViewIcon />
-          </button>
-          <button
-            className={styles.iconBtn}
-            aria-label="Excluir"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const key = `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`;
-              const name = `${row.coin.ticker} (${row.buy.bingo} → ${row.sell.bingo})`;
-              openDeleteModal(key, name);
-            }}
-          >
-            <TrashIcon />
-          </button>
-        </div>
+        <ActionCell
+          ticker={row.coin.ticker}
+          buyExchange={row.buy.bingo}
+          sellExchange={row.sell.bingo}
+          isFavorited={isFavorite(
+            `${row.coin.ticker}-${row.buy.bingo}-${row.sell.bingo}`
+          )}
+          onToggleFavorite={toggleFavorite}
+          onOpenOpportunity={handleOpenOpportunity}
+          onOpenTradingView={handleTradingViewClick}
+          onDelete={openDeleteModal}
+          styles={styles}
+        />
       ),
       width: "140px",
     },
@@ -1766,6 +1874,7 @@ export function DemoGlassTable({
         data={paginatedRows}
         rowKey={(r) => r.id}
         maxHeight={560}
+        virtualized
         zebra
         onRowClick={(r) => console.log("click row:", r.id)}
         isSidebarOpen={isSidebarOpen}
@@ -1857,8 +1966,7 @@ export function DemoGlassTable({
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
+                  <option value={40}>40</option>
                 </select>
               </label>
             </div>

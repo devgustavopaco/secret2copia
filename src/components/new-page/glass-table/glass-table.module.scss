@@ -213,6 +213,7 @@
   transition: background-color 0.18s ease, box-shadow 0.22s ease,
     transform 0.18s ease;
   position: relative;
+  height: var(--gt-row-h, 80px);
 }
 
 .row:not(:last-child) .td {
@@ -282,6 +283,9 @@
   padding: 14px 16px;
   font-size: 14px;
   vertical-align: middle;
+  height: var(--gt-row-h, 80px);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .empty {
   text-align: center;
@@ -313,6 +317,8 @@
   align-items: center;
   width: 100%;
   gap: 0px;
+  max-height: 100%;
+  overflow: hidden;
 }
 .subs {
   display: flex;

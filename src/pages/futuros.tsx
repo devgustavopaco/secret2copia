@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useDeferredValue } from "react";
 import styles from "../styles/futures-new.module.scss";
 import NewPageSidebar from "../components/new-page/sidebar";
 import NewPageHeader from "../components/new-page/header/header";
@@ -172,8 +172,9 @@ export default function FuturosNewPage({
   }, [isConnected, isReady, buyExNames, sellExNames]);
 
   // ✅ NOVO: aplica filtros iguais aos da tela antiga
+  const deferredOpportunities = useDeferredValue(opportunities ?? []);
   const filteredOpps: ArbitrageOpportunity[] = useMemo(() => {
-    const base = (opportunities ?? []).filter((op) => {
+    const base = deferredOpportunities.filter((op) => {
       if (!op) return false;
       const askLiq = (op.lowestAsk?.price ?? 0) * (op.lowestAsk?.amount ?? 0);
       const bidLiq = (op.highestBid?.price ?? 0) * (op.highestBid?.amount ?? 0);
@@ -202,7 +203,7 @@ export default function FuturosNewPage({
       return bSpread - aSpread;
     });
   }, [
-    opportunities,
+    deferredOpportunities,
     minProfit,
     maxProfit,
     minLiquidity,
@@ -210,7 +211,6 @@ export default function FuturosNewPage({
     symbolFilter,
     isExitMode,
   ]);
-  console.log("filteredOpps", filteredOpps[0]);
 
   // Estados para alerta de spread
   const [spreadAlertConfig, setSpreadAlertConfig] =
