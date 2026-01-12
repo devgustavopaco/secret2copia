@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
-const SOCKET_URL = "https://almeidashop.shop/";
+const SOCKET_URL = "https://almeidashop.shop";
+const SOCKET_PATH = "/futuros/socket.io";
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
@@ -76,7 +77,10 @@ export function useArbitrageSocketFuturesFutures(
       return;
     }
 
-    const s = io(SOCKET_URL, { transports: ["websocket"] });
+    const s = io(SOCKET_URL, {
+      transports: ["websocket"],
+      path: SOCKET_PATH,
+    });
     socketRef.current = s;
 
     const subscribeCurrent = () => {
@@ -88,6 +92,7 @@ export function useArbitrageSocketFuturesFutures(
         buyExchanges,
         sellExchanges,
         isFutures: true, // Flag especial para indicar futures vs futures
+        lite: true,
       });
     };
 
@@ -203,6 +208,7 @@ export function useArbitrageSocketFuturesFutures(
         buyExchanges,
         sellExchanges,
         isFutures: true, // Sempre true para futuros vs futuros
+        lite: true,
       });
     }
 

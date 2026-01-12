@@ -17,6 +17,9 @@ export default function NewPageHeader({
   const { data: auth } = useSession();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isFuturesActive =
+    router.pathname === "/futuros" ||
+    router.pathname === "/futuros-vs-futuros";
 
   // Buscar dados do usuário
   const email = auth?.user?.email || "";
@@ -102,29 +105,36 @@ export default function NewPageHeader({
                 </a>
               </Link>
             </li>
-            <li>
-              <Link href="/futuros">
-                <a
-                  className={
-                    router.pathname === "/futuros" ? styles.active : ""
-                  }
-                >
-                  Spot x Futuros
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/futuros-vs-futuros">
-                <a
-                  className={
-                    router.pathname === "/futuros-vs-futuros"
-                      ? styles.active
-                      : ""
-                  }
-                >
-                  Futuros x Futuros
-                </a>
-              </Link>
+            <li className={styles.dropdown}>
+              <span
+                className={`${styles.dropdownToggle} ${
+                  isFuturesActive ? styles.active : ""
+                }`}
+              >
+                Futuros
+              </span>
+              <div className={styles.dropdownMenu}>
+                <Link href="/futuros">
+                  <a
+                    className={
+                      router.pathname === "/futuros" ? styles.active : ""
+                    }
+                  >
+                    Spot x Fut
+                  </a>
+                </Link>
+                <Link href="/futuros-vs-futuros">
+                  <a
+                    className={
+                      router.pathname === "/futuros-vs-futuros"
+                        ? styles.active
+                        : ""
+                    }
+                  >
+                    Fut x Fut
+                  </a>
+                </Link>
+              </div>
             </li>
             <li>
               <Link href="/videos">

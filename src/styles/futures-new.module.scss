@@ -241,7 +241,7 @@
 /* 📝 Descrição do Alerta */
 .alertDescription {
   margin-bottom: 8px;
-  
+
   p {
     color: #e2e2e2;
     font-size: 0.95rem;
@@ -304,7 +304,7 @@
 
     &:checked + .slider {
       background: linear-gradient(90deg, #8c5fff, #6d41ff);
-      
+
       &::before {
         transform: translateX(24px);
       }

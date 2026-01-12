@@ -267,7 +267,7 @@ function CoinCell({
   const tooltipContent = originalOpp?.tokenStats ? (
     <>
       <div className={styles.tooltipHeader}>
-        <img
+        <Image
           src={logoUrl}
           alt=""
           width={24}
@@ -330,7 +330,7 @@ function CoinCell({
       onMouseMove={(e) => tooltipContent && showTooltip(e, tooltipContent)}
     >
       {showLogo && (
-        <img
+        <Image
           src={logoUrl}
           alt=""
           width={32}
@@ -743,9 +743,11 @@ export default function GlassTable<T extends object>({
     >
       <div className={styles.toolbar}>
         <label className={styles.searchGlass}>
-          <img
+          <Image
             src="/new-page/search-icon.svg"
             alt=""
+            width={16}
+            height={16}
             className={styles.searchIcon}
           />
           <input
@@ -1313,6 +1315,7 @@ export function DemoGlassTable({
       }
     }
   );
+  ActionCell.displayName = "ActionCell";
 
   // Estado para colunas visíveis (persistido no localStorage)
   const [visibleColumns, setVisibleColumns] = React.useState<Set<string>>(
@@ -1773,7 +1776,7 @@ export function DemoGlassTable({
             style={{ cursor: "pointer" }}
           >
             {r.spot.bingo.replace(/spot|futures/i, "")}
-            <img src="/new-page/link.svg" alt="" width={12} height={12} />
+            <Image src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
           <div className={styles.price}>{r.spot.price}</div>
           <div className={styles.live}>{r.spot.live}</div>
@@ -1802,7 +1805,7 @@ export function DemoGlassTable({
             style={{ cursor: "pointer" }}
           >
             {r.futures.bingo.replace(/spot|futures/i, "")}
-            <img src="/new-page/link.svg" alt="" width={12} height={12} />
+            <Image src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
           <div className={styles.price}>{r.futures.price}</div>
           <div className={styles.live}>{r.futures.live}</div>

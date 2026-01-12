@@ -92,13 +92,13 @@ export function useArbitrageSocket(
       });
     };
 
-    let flushTimer: number | null = null;
+    let rafId: number | null = null;
     const scheduleFlush = () => {
-      if (flushTimer != null) return;
-      flushTimer = window.setTimeout(() => {
-        flushTimer = null;
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
         setOpportunities(Array.from(indexRef.current.values()));
-      }, 120);
+      });
     };
 
     s.on("connect", () => {
@@ -147,8 +147,8 @@ export function useArbitrageSocket(
       s.off();
       s.disconnect();
       socketRef.current = null;
-      if (flushTimer != null) {
-        window.clearTimeout(flushTimer);
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
       }
     };
   }, [isPaused]);

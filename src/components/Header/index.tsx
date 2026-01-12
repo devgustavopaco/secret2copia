@@ -52,6 +52,9 @@ export function Header({
   }
 
   const router = useRouter();
+  const isFuturesActive =
+    router.pathname === "/futuros" ||
+    router.pathname === "/futuros-vs-futuros";
 
   const [toggle, settoggle] = useState(true);
 
@@ -243,23 +246,30 @@ export function Header({
                 </a>
               </Link>
             </li>
-            <li>
-              <Link href="/futuros">
-                <a className={router.pathname === "/futuros" ? "active" : ""}>
-                  Futuros
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/futuros-vs-futuros">
-                <a
-                  className={
-                    router.pathname === "/futuros-vs-futuros" ? "active" : ""
-                  }
-                >
-                  Futuros/Futuros
-                </a>
-              </Link>
+            <li className={styles.dropdown}>
+              <span
+                className={`${styles.dropdownToggle} ${
+                  isFuturesActive ? "active" : ""
+                }`}
+              >
+                Futuros
+              </span>
+              <div className={styles.dropdownMenu}>
+                <Link href="/futuros">
+                  <a className={router.pathname === "/futuros" ? "active" : ""}>
+                    Spot x Fut
+                  </a>
+                </Link>
+                <Link href="/futuros-vs-futuros">
+                  <a
+                    className={
+                      router.pathname === "/futuros-vs-futuros" ? "active" : ""
+                    }
+                  >
+                    Fut x Fut
+                  </a>
+                </Link>
+              </div>
             </li>
             <li>
               <Link href="/videos">

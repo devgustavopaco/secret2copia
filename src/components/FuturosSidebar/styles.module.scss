@@ -213,7 +213,8 @@
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(59, 130, 246, 0.015), inset 0 1px 0 rgba(255, 255, 255, 0.015),
+    0 4px 16px rgba(59, 130, 246, 0.015),
+    inset 0 1px 0 rgba(255, 255, 255, 0.015),
     inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
   display: flex;
   flex-direction: column;
@@ -405,7 +406,8 @@
   min-height: 68px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(59, 130, 246, 0.015), inset 0 1px 0 rgba(255, 255, 255, 0.015),
+    0 4px 16px rgba(59, 130, 246, 0.015),
+    inset 0 1px 0 rgba(255, 255, 255, 0.015),
     inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
 
   &:hover {

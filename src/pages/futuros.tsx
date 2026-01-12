@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useDeferredValue } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useDeferredValue,
+} from "react";
 import styles from "../styles/futures-new.module.scss";
 import NewPageSidebar from "../components/new-page/sidebar";
 import NewPageHeader from "../components/new-page/header/header";

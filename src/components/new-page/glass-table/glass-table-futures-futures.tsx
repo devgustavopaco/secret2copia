@@ -50,7 +50,7 @@ const openOpportunityPopup = (params: URLSearchParams) => {
     .toString(36)
     .slice(2)}`;
   const popup = window.open(
-    `/oportunidade?${params.toString()}`,
+    `/oportunidade-fut?${params.toString()}`,
     windowName,
     `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no`
   );
@@ -90,6 +90,7 @@ export type GlassTableProps<T extends object> = {
   emptyMessage?: string;
   className?: string;
   isSidebarOpen?: boolean;
+  virtualized?: boolean;
 
   /** ⬇️ NOVO: controle de busca + clique no filtro */
   searchValue?: string;
@@ -124,6 +125,8 @@ const fmtPct = (n?: number) =>
 const fmtPctFunding = (n?: number) =>
   typeof n === "number" && isFinite(n) ? `${n.toFixed(5)}%` : "—";
 const safe = (s?: string) => s ?? "—";
+const fmtNumber = (n?: number) =>
+  typeof n === "number" && isFinite(n) ? String(n) : "—";
 
 // Função para formatar volumes com abreviações
 const formatVolume = (volume: number) => {
@@ -145,8 +148,8 @@ type CoinRow = {
   funding: string;
   fundingRateExpTs?: number;
   validSince?: number;
-  volumes: { b: string; s: string };
-  volumes24h: { b: string; s: string };
+  volumes: { s: string; f: string };
+  volumes24h: { s: string; f: string };
 };
 
 const oppKey = (op: ArbitrageOpportunity) =>
@@ -195,10 +198,20 @@ const useNow = () =>
 
 // mapeia ArbitrageOpportunity -> CoinRow (Futures vs Futures)
 function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
-  const askP = op?.lowestAsk?.price ?? 0;
-  const askAmt = op?.lowestAsk?.amount ?? 0;
-  const bidP = op?.highestBid?.price ?? 0;
-  const bidAmt = op?.highestBid?.amount ?? 0;
+  const askP =
+    op?.lowestAsk?.orderbook?.asks?.[0]?.price ?? op?.lowestAsk?.price ?? 0;
+  const askAmt =
+    op?.lowestAsk?.orderbook?.asks?.[0]?.amount ??
+    op?.lowestAsk?.amount ??
+    0;
+  const bidP =
+    op?.highestBid?.orderbook?.bids?.[0]?.price ??
+    op?.highestBid?.price ??
+    0;
+  const bidAmt =
+    op?.highestBid?.orderbook?.bids?.[0]?.amount ??
+    op?.highestBid?.amount ??
+    0;
 
   const askLiq = askP * askAmt;
   const bidLiq = bidP * bidAmt;
@@ -211,12 +224,12 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
     },
     buy: {
       bingo: op.lowestAsk?.exchange || "—",
-      price: `$${askP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
+      price: fmtNumber(askP),
       live: askLiq ? `Liq $${askLiq.toFixed(0)}` : "—",
     },
     sell: {
       bingo: op.highestBid?.exchange || "—",
-      price: `$${bidP.toLocaleString("en-US", { maximumFractionDigits: 4 })}`,
+      price: fmtNumber(bidP),
       live: bidLiq ? `Liq $${bidLiq.toFixed(0)}` : "—",
     },
     spreads: {
@@ -230,12 +243,12 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
     fundingRateExpTs: (op as any).fundingRateExpTs,
     validSince: (op as any).validSince,
     volumes: {
-      b: `Buy: ${askLiq.toFixed(0)}`,
-      s: `Sell: ${bidLiq.toFixed(0)}`,
+      s: `S: ${askLiq.toFixed(0)}`,
+      f: `F: ${bidLiq.toFixed(0)}`,
     },
     volumes24h: {
-      b: `Buy: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
-      s: `Sell: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
+      s: `S: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
+      f: `F: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
     },
   };
 }
@@ -257,7 +270,7 @@ function CoinCell({
   const tooltipContent = originalOpp?.tokenStats ? (
     <>
       <div className={styles.tooltipHeader}>
-        <img
+        <Image
           src={logoUrl}
           alt=""
           width={24}
@@ -320,7 +333,7 @@ function CoinCell({
       onMouseMove={(e) => tooltipContent && showTooltip(e, tooltipContent)}
     >
       {showLogo && (
-        <img
+        <Image
           src={logoUrl}
           alt=""
           width={32}
@@ -629,9 +642,11 @@ export default function GlassTable<T extends object>({
     >
       <div className={styles.toolbar}>
         <label className={styles.searchGlass}>
-          <img
+          <Image
             src="/new-page/search-icon.svg"
             alt=""
+            width={16}
+            height={16}
             className={styles.searchIcon}
           />
           <input
@@ -1199,6 +1214,7 @@ export function DemoGlassTable({
       }
     }
   );
+  ActionCell.displayName = "ActionCell";
 
   // Estado para colunas visíveis (persistido no localStorage)
   const [visibleColumns, setVisibleColumns] = React.useState<Set<string>>(
@@ -1290,17 +1306,17 @@ export function DemoGlassTable({
         );
 
         if (fallbackOpp) {
-          const params = new URLSearchParams({
-            ticker,
-            coin: ticker,
-            buyExchange: fallbackOpp.highestBid?.exchange ?? "",
-            buyPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
-            buyIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
-            sellExchange: fallbackOpp.lowestAsk?.exchange ?? "",
-            sellPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
-            sellIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
-            spread: fallbackOpp.spread?.toString() ?? "0",
-          });
+        const params = new URLSearchParams({
+          ticker,
+          coin: ticker,
+          buyExchange: fallbackOpp.lowestAsk?.exchange ?? "",
+          buyPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
+          buyIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
+          sellExchange: fallbackOpp.highestBid?.exchange ?? "",
+          sellPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
+          sellIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
+          spread: fallbackOpp.spread?.toString() ?? "0",
+        });
 
           openOpportunityPopup(params);
         }
@@ -1311,12 +1327,12 @@ export function DemoGlassTable({
       const params = new URLSearchParams({
         ticker,
         coin: ticker,
-        buyExchange: originalOpp.highestBid?.exchange ?? "",
-        buyPrice: originalOpp.highestBid?.price?.toString() ?? "0",
-        buyIsUSD: originalOpp.highestBid?.isUSD ? "true" : "false",
-        sellExchange: originalOpp.lowestAsk?.exchange ?? "",
-        sellPrice: originalOpp.lowestAsk?.price?.toString() ?? "0",
-        sellIsUSD: originalOpp.lowestAsk?.isUSD ? "true" : "false",
+        buyExchange: originalOpp.lowestAsk?.exchange ?? "",
+        buyPrice: originalOpp.lowestAsk?.price?.toString() ?? "0",
+        buyIsUSD: originalOpp.lowestAsk?.isUSD ? "true" : "false",
+        sellExchange: originalOpp.highestBid?.exchange ?? "",
+        sellPrice: originalOpp.highestBid?.price?.toString() ?? "0",
+        sellIsUSD: originalOpp.highestBid?.isUSD ? "true" : "false",
         spread: originalOpp.spread?.toString() ?? "0",
       });
 
@@ -1415,14 +1431,14 @@ export function DemoGlassTable({
     },
     { id: "funding", label: "Funding", required: false },
     { id: "tempo", label: "Tempo", required: false },
-    { id: "volumes", label: "Liquidez", required: false },
-    { id: "volumes24", label: "Vol. 24H (Futures)", required: false },
+    { id: "volumes", label: "Volumes", required: false },
+    { id: "volumes24", label: "Volumes 24H", required: false },
     { id: "acoes", label: "Ações", required: false },
   ];
 
   const [rows, setRows] = React.useState<CoinRow[]>([]);
   const pendingRowsRef = React.useRef<CoinRow[]>([]);
-  const sortTimerRef = React.useRef<number | null>(null);
+  const sortRafRef = React.useRef<number | null>(null);
 
   const sortRows = React.useCallback(
     (rowsToSort: CoinRow[]) => {
@@ -1569,7 +1585,7 @@ export function DemoGlassTable({
     });
 
     return filteredRows;
-  }, [opportunities, isExcluded, isExitMode]);
+  }, [opportunities, isExcluded]);
 
   React.useEffect(() => {
     if (!mappedRows.length) {
@@ -1578,17 +1594,17 @@ export function DemoGlassTable({
       return;
     }
     pendingRowsRef.current = mappedRows;
-    if (sortTimerRef.current != null) return;
-    sortTimerRef.current = window.setTimeout(() => {
-      sortTimerRef.current = null;
+    if (sortRafRef.current != null) return;
+    sortRafRef.current = requestAnimationFrame(() => {
+      sortRafRef.current = null;
       setRows(sortRows(pendingRowsRef.current));
-    }, 500);
+    });
   }, [mappedRows, sortRows]);
 
   React.useEffect(() => {
     return () => {
-      if (sortTimerRef.current != null) {
-        window.clearTimeout(sortTimerRef.current);
+      if (sortRafRef.current != null) {
+        cancelAnimationFrame(sortRafRef.current);
       }
     };
   }, []);
@@ -1664,7 +1680,7 @@ export function DemoGlassTable({
           >
             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               {r.buy.bingo.replace(/spot|futures/i, "")}
-              <img src="/new-page/link.svg" alt="" width={12} height={12} />
+              <Image src="/new-page/link.svg" alt="" width={12} height={12} />
             </span>
             <span
               style={{
@@ -1717,7 +1733,7 @@ export function DemoGlassTable({
           >
             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               {r.sell.bingo.replace(/spot|futures/i, "")}
-              <img src="/new-page/link.svg" alt="" width={12} height={12} />
+              <Image src="/new-page/link.svg" alt="" width={12} height={12} />
             </span>
             <span
               style={{
@@ -1812,22 +1828,22 @@ export function DemoGlassTable({
 
     {
       id: "volumes",
-      header: "Liquidez",
+      header: "Volumes",
       accessor: (r) => (
         <div className={styles.cellSplit}>
-          <span className={styles.muted}>{r.volumes.b}</span>
           <span className={styles.muted}>{r.volumes.s}</span>
+          <span className={styles.muted}>{r.volumes.f}</span>
         </div>
       ),
       width: "120px",
     },
     {
       id: "volumes24",
-      header: "Vol. 24H (Futures)",
+      header: "Volumes 24H",
       accessor: (r) => (
         <div className={styles.cellSplit}>
-          <span className={styles.muted}>{r.volumes24h.b}</span>
           <span className={styles.muted}>{r.volumes24h.s}</span>
+          <span className={styles.muted}>{r.volumes24h.f}</span>
         </div>
       ),
       width: "140px",
