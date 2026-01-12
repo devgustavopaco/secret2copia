@@ -201,17 +201,11 @@ function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
   const askP =
     op?.lowestAsk?.orderbook?.asks?.[0]?.price ?? op?.lowestAsk?.price ?? 0;
   const askAmt =
-    op?.lowestAsk?.orderbook?.asks?.[0]?.amount ??
-    op?.lowestAsk?.amount ??
-    0;
+    op?.lowestAsk?.orderbook?.asks?.[0]?.amount ?? op?.lowestAsk?.amount ?? 0;
   const bidP =
-    op?.highestBid?.orderbook?.bids?.[0]?.price ??
-    op?.highestBid?.price ??
-    0;
+    op?.highestBid?.orderbook?.bids?.[0]?.price ?? op?.highestBid?.price ?? 0;
   const bidAmt =
-    op?.highestBid?.orderbook?.bids?.[0]?.amount ??
-    op?.highestBid?.amount ??
-    0;
+    op?.highestBid?.orderbook?.bids?.[0]?.amount ?? op?.highestBid?.amount ?? 0;
 
   const askLiq = askP * askAmt;
   const bidLiq = bidP * bidAmt;
@@ -1306,17 +1300,17 @@ export function DemoGlassTable({
         );
 
         if (fallbackOpp) {
-        const params = new URLSearchParams({
-          ticker,
-          coin: ticker,
-          buyExchange: fallbackOpp.lowestAsk?.exchange ?? "",
-          buyPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
-          buyIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
-          sellExchange: fallbackOpp.highestBid?.exchange ?? "",
-          sellPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
-          sellIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
-          spread: fallbackOpp.spread?.toString() ?? "0",
-        });
+          const params = new URLSearchParams({
+            ticker,
+            coin: ticker,
+            buyExchange: fallbackOpp.lowestAsk?.exchange ?? "",
+            buyPrice: fallbackOpp.lowestAsk?.price?.toString() ?? "0",
+            buyIsUSD: fallbackOpp.lowestAsk?.isUSD ? "true" : "false",
+            sellExchange: fallbackOpp.highestBid?.exchange ?? "",
+            sellPrice: fallbackOpp.highestBid?.price?.toString() ?? "0",
+            sellIsUSD: fallbackOpp.highestBid?.isUSD ? "true" : "false",
+            spread: fallbackOpp.spread?.toString() ?? "0",
+          });
 
           openOpportunityPopup(params);
         }

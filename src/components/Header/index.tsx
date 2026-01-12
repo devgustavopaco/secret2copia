@@ -53,8 +53,7 @@ export function Header({
 
   const router = useRouter();
   const isFuturesActive =
-    router.pathname === "/futuros" ||
-    router.pathname === "/futuros-vs-futuros";
+    router.pathname === "/futuros" || router.pathname === "/futuros-vs-futuros";
 
   const [toggle, settoggle] = useState(true);
 

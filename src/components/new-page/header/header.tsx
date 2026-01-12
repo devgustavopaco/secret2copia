@@ -18,8 +18,7 @@ export default function NewPageHeader({
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isFuturesActive =
-    router.pathname === "/futuros" ||
-    router.pathname === "/futuros-vs-futuros";
+    router.pathname === "/futuros" || router.pathname === "/futuros-vs-futuros";
 
   // Buscar dados do usuário
   const email = auth?.user?.email || "";
