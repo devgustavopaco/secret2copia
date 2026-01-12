@@ -14,4 +14,12 @@ function defineNextConfig(config) {
 
 export default defineNextConfig({
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.cryptocompare.com",
+      },
+    ],
+  },
 });
