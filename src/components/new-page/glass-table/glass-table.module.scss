@@ -567,15 +567,7 @@
 
 @media (max-width: 768px) {
   .pagination {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    position: fixed;
-    bottom: 0.5vw;
-    left: 3vw;
-    right: 3vw;
-    margin-left: 3vw !important;
-    margin-right: 3vw !important;
+    display: none !important; /* Esconde a paginação desktop no mobile - usamos o botão flutuante */
   }
 
   .paginationInfo {
@@ -1208,7 +1200,7 @@
   position: relative;
   input {
     width: 100%;
-    padding-left: 20px;
+    padding-left: 44px; /* Espaço adequado para a lupa */
   }
 }
 .searchGlass::before,
@@ -1222,11 +1214,21 @@
   box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
     0 0 10px 2px rgba(125, 95, 255, 0.45), 0 0 26px 8px rgba(113, 88, 226, 0.35);
 }
-.searchIcon {
+.searchIconWrapper {
   position: absolute;
-  left: 14px;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 18px;
   height: 18px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.searchIcon {
   opacity: 0.9;
   pointer-events: none;
 }
@@ -1312,6 +1314,11 @@
   position: relative;
   z-index: 10;
   background: transparent;
+}
+
+/* Mobile Cards Container - escondido por padrão no desktop */
+.mobileCardsContainer {
+  display: none;
 }
 
 /* Estilos para Funding */
@@ -1690,5 +1697,999 @@
   &:not(.positive):not(.negative) {
     color: #ffffff;
     text-shadow: 0 0 15px rgba(125, 95, 255, 0.8);
+  }
+}
+
+/* ===== MEDIA QUERIES PARA MOBILE (768px e abaixo) ===== */
+@media (max-width: 768px) {
+  /* Esconde a tabela em mobile */
+  .surface {
+    display: none;
+  }
+
+  /* Mostra os cards em mobile */
+  .mobileCardsContainer {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    /* esconder scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .opportunityCard {
+    background: var(--gt-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    position: relative;
+    isolation: isolate;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(
+        to bottom,
+        var(--gt-border-strong) 0%,
+        var(--gt-border-weak) 50%,
+        var(--gt-border-strong) 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cardLogo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    flex-shrink: 0;
+  }
+
+  .cardTitle {
+    flex: 1;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+    }
+
+    .cardExchanges {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .cardBody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cardField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .cardValue {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .cardSubValue {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 2px;
+    }
+  }
+
+  .cardSpread {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .cardSpreadItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+
+    label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+    }
+
+    .spreadValue {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    &.positive {
+      border-color: var(--gt-positive);
+
+      .spreadValue {
+        color: var(--gt-positive);
+        text-shadow: 0 0 8px rgba(50, 255, 126, 0.4);
+      }
+    }
+
+    &.negative {
+      border-color: var(--gt-negative);
+
+      .spreadValue {
+        color: var(--gt-negative);
+        text-shadow: 0 0 8px rgba(255, 92, 92, 0.4);
+      }
+    }
+  }
+
+  .cardActions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+
+  .cardActionBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+      color: #ffffff;
+    }
+  }
+
+  .emptyCards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+
+    p {
+      font-size: 16px;
+      margin-top: 16px;
+    }
+  }
+  .wrapper {
+    width: 100%;
+    margin-left: 0;
+    padding-inline: 12px;
+    padding-top: 12px;
+    --gt-padding: 12px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .toolbarRight {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .searchGlass {
+    width: 100%;
+    max-width: 100%;
+    height: 40px;
+    border-radius: 20px;
+    padding: 0 14px 0 0;
+    order: -1; /* Coloca o search sempre em primeiro */
+
+    input {
+      padding-left: 42px; /* Espaço adequado para a lupa */
+      font-size: 13px;
+    }
+  }
+
+  .searchIconWrapper {
+    left: 16px; /* Bem afastado da borda em mobile */
+    width: 16px;
+    height: 16px;
+  }
+
+  .iconGlass {
+    width: 36px;
+    height: 36px;
+
+    > img,
+    > svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .refreshRateContainer {
+    padding: 6px 10px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .refreshRateLabel {
+    font-size: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .refreshRateSelect {
+    font-size: 11px;
+    min-width: 50px;
+    padding: 2px 4px;
+  }
+
+  .customButtonContainer {
+    margin-bottom: 8px;
+  }
+
+  .customButton {
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .surface {
+    border-radius: 12px;
+  }
+
+  .tableHead,
+  .tableBody {
+    border-radius: 12px 12px 0 0;
+  }
+
+  .scroller {
+    max-height: calc(100vh - 220px);
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 100%;
+    table-layout: auto;
+  }
+
+  .th {
+    font-size: 11px;
+    padding: 8px 6px;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+
+  .td {
+    font-size: 11px;
+    padding: 8px 6px;
+    height: auto;
+    min-height: 55px;
+    vertical-align: middle;
+  }
+
+  .row {
+    height: auto;
+    min-height: 55px;
+  }
+
+  .cellStack {
+    gap: 2px;
+    font-size: 11px;
+  }
+
+  .muted {
+    font-size: 9px;
+  }
+
+  .price {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .cellCoin {
+    gap: 8px;
+  }
+
+  .coinLogo {
+    width: 22px;
+    height: 22px;
+  }
+
+  .coinTicker {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .cellSplitHorizontal {
+    gap: 6px;
+    flex-wrap: nowrap;
+    font-size: 11px;
+  }
+
+  .spreadCell {
+    padding: 2px 5px;
+    font-size: 10px;
+    margin: 1px;
+    border-width: 1px;
+  }
+
+  .fundingContainer {
+    gap: 1px;
+  }
+
+  .fundingValue {
+    font-size: 11px;
+  }
+
+  .fundingExpiry {
+    font-size: 8px;
+  }
+
+  .actions {
+    gap: 2px;
+    justify-content: center;
+  }
+
+  .iconBtn {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .chip {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .bingo {
+    font-size: 10px;
+    padding: 1px 3px;
+
+    img {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  .modalLarge {
+    max-width: 95vw;
+    max-height: 85vh;
+    border-radius: 16px;
+  }
+
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    top: 12px;
+    right: 12px;
+    font-size: 16px;
+  }
+
+  .tooltip {
+    display: none !important;
+  }
+
+  .pagination {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    padding: 12px 16px;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+  }
+
+  /* Esconde colunas menos importantes em telas muito pequenas */
+  @media (max-width: 480px) {
+    .th:nth-child(n + 7),
+    .td:nth-child(n + 7) {
+      display: none;
+    }
+
+    .th {
+      font-size: 10px;
+      padding: 6px 4px;
+    }
+
+    .td {
+      font-size: 10px;
+      padding: 6px 4px;
+    }
+
+    .coinTicker {
+      font-size: 11px;
+    }
+
+    .spreadCell {
+      font-size: 9px;
+      padding: 2px 4px;
+    }
+  }
+
+  /* Estilos dos Cards Mobile */
+  .opportunityCard {
+    background: var(--gt-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 6px 24px rgba(0, 0, 0, 0.35);
+    padding: 1px;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(125, 95, 255, 0.6) inset,
+        0 0 14px 3px rgba(125, 95, 255, 0.45),
+        0 0 32px 10px rgba(113, 88, 226, 0.35);
+    }
+  }
+
+  .cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  }
+
+  .cardLogo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    flex-shrink: 0;
+  }
+
+  .cardTitle {
+    flex: 1;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gt-text);
+      margin: 0 0 4px 0;
+    }
+  }
+
+  .cardExchanges {
+    font-size: 13px;
+    color: var(--gt-text-dim);
+    
+    span {
+      font-weight: 500;
+    }
+  }
+
+  .cardBody {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+  }
+
+  /* Quando há header, ajusta o padding top do body */
+  .cardHeader + .cardBody {
+    padding-top: 0;
+  }
+
+  .cardField {
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--gt-text-dim);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+  }
+
+  .cardValue {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gt-text);
+  }
+
+  .cardSubValue {
+    font-size: 12px;
+    color: var(--gt-text-dim);
+    margin-top: 4px;
+  }
+
+  .cardSpread {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .cardSpreadItem {
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--gt-text-dim);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    &.positive {
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.08);
+
+      .spreadValue {
+        color: #22c55e;
+      }
+    }
+
+    &.negative {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.08);
+
+      .spreadValue {
+        color: #ef4444;
+      }
+    }
+
+    /* Quando não tem background, usa cor normal do texto */
+    &:not(.positive):not(.negative) {
+      .spreadValue {
+        color: var(--gt-text);
+      }
+    }
+  }
+
+  .spreadValue {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .cardActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 16px 16px;
+  }
+
+  .cardActionBtn {
+    composes: iconBtn;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &.favorited {
+      background: rgba(255, 193, 7, 0.15);
+      border-color: rgba(255, 193, 7, 0.4);
+      color: #ffc107;
+
+      &:hover {
+        background: rgba(255, 193, 7, 0.25);
+      }
+    }
+  }
+
+  .mobileCardsContainer {
+    padding: 16px;
+    padding-bottom: 32px; /* Espaço normal */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .emptyCards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+
+    p {
+      color: var(--gt-text-dim);
+      font-size: 14px;
+    }
+  }
+
+  /* Botão Flutuante de Paginação Mobile */
+  .paginationFloatingBtn {
+    position: fixed !important;
+    bottom: 195px !important; /* Bem acima do search e toolbar */
+    right: 20px !important;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, rgba(125, 95, 255, 0.95) 0%, rgba(113, 88, 226, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(125, 95, 255, 0.5),
+                0 0 0 1px rgba(125, 95, 255, 0.4) inset;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 99999 !important;
+    color: white;
+    pointer-events: auto;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .pageIndicator {
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+      opacity: 0.9;
+    }
+
+    &:active {
+      transform: scale(0.95);
+      box-shadow: 0 4px 12px rgba(125, 95, 255, 0.3);
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(125, 95, 255, 0.5),
+                  0 0 0 1px rgba(125, 95, 255, 0.4) inset;
+    }
+  }
+
+  /* Overlay do Modal */
+  .paginationModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Classe de animação para fechar o overlay */
+  .paginationModalOverlay.fadeOut {
+    animation: fadeOut 0.3s ease forwards;
+  }
+
+  /* Modal de Paginação */
+  .paginationModal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 25, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(125, 95, 255, 0.3);
+    border-bottom: none;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(125, 95, 255, 0.2) inset;
+    z-index: 10000;
+    animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    max-height: 70vh;
+    overflow: hidden;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  /* Classe de animação para fechar o modal */
+  .paginationModal.slideDown {
+    animation: slideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .paginationModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .closePaginationBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+
+  .paginationModalBody {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    max-height: calc(70vh - 72px);
+  }
+
+  .paginationInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .paginationInfoText {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+  }
+
+  .itemsPerPageSelector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: rgba(125, 95, 255, 0.8);
+        box-shadow: 0 0 0 3px rgba(125, 95, 255, 0.2);
+      }
+    }
+  }
+
+  .paginationControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pageNumbers {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .paginationButton {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:active:not(:disabled) {
+      background: rgba(125, 95, 255, 0.3);
+      border-color: rgba(125, 95, 255, 0.6);
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, rgba(125, 95, 255, 0.8) 0%, rgba(113, 88, 226, 0.8) 100%);
+      border-color: rgba(125, 95, 255, 0.6);
+      color: white;
+      box-shadow: 0 4px 12px rgba(125, 95, 255, 0.4);
+    }
+  }
+
+  /* Links clicáveis nas exchanges dos cards */
+  .exchangeLink {
+    cursor: pointer;
+    color: var(--gt-text);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    
+    &:hover {
+      color: rgba(125, 95, 255, 0.9);
+      background: rgba(125, 95, 255, 0.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    img {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover img {
+      opacity: 1;
+    }
   }
 }

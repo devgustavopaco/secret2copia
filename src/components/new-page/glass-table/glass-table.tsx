@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./glass-table.module.scss";
 import LockIcon from "../../Icons/LockIcon";
@@ -743,13 +743,15 @@ export default function GlassTable<T extends object>({
     >
       <div className={styles.toolbar}>
         <label className={styles.searchGlass}>
-          <Image
-            src="/new-page/search-icon.svg"
-            alt=""
-            width={16}
-            height={16}
-            className={styles.searchIcon}
-          />
+          <span className={styles.searchIconWrapper}>
+            <Image
+              src="/new-page/search-icon.svg"
+              alt=""
+              width={16}
+              height={16}
+              className={styles.searchIcon}
+            />
+          </span>
           <input
             type="text"
             className={styles.searchInput}
@@ -1937,8 +1939,415 @@ export function DemoGlassTable({
   // Filtrar colunas visíveis
   const columns = allColumns.filter((col) => isColumnVisible(col.id));
 
+  // Estado para detectar mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Estado para controlar modal de paginação mobile
+  const [isPaginationModalOpen, setIsPaginationModalOpen] = useState(false);
+  const [isPaginationModalClosing, setIsPaginationModalClosing] = useState(false);
+
+  // Função para fechar o modal com animação
+  const closePaginationModal = () => {
+    setIsPaginationModalClosing(true);
+    setTimeout(() => {
+      setIsPaginationModalOpen(false);
+      setIsPaginationModalClosing(false);
+    }, 300); // Duração da animação
+  };
+
+  // Componente separado para o card mobile (para usar o hook corretamente)
+  const MobileOpportunityCard = ({ row }: { row: CoinRow }) => {
+    const opp = getOpp(row.id);
+    if (!opp) return null;
+
+    // USA O MESMO SISTEMA DO DESKTOP!
+    const logoUrl = useCoinLogo(row.coin.ticker, row.coin.ticker);
+    
+    // Extrai os valores numéricos dos spreads (remove "E: " e "%")
+    const spreadLong = parseFloat(row.spreads.long.replace(/[^\d.-]/g, ''));
+    const spreadShort = parseFloat(row.spreads.short.replace(/[^\d.-]/g, ''));
+    const spreadClass = spreadLong > 0 ? "positive" : "negative";
+
+    // Verifica se o header deve ser exibido
+    const showHeader = isColumnVisible("showCoinLogo") || isColumnVisible("moeda");
+
+    return (
+      <div key={row.id} className={styles.opportunityCard}>
+        {showHeader && (
+          <div className={styles.cardHeader}>
+            {isColumnVisible("showCoinLogo") && (
+              <Image
+                src={logoUrl}
+                alt=""
+                width={40}
+                height={40}
+                className={styles.cardLogo}
+              />
+            )}
+            {isColumnVisible("moeda") && (
+              <div className={styles.cardTitle}>
+                <h3>{row.coin.ticker}</h3>
+                <div className={styles.cardExchanges}>
+                  <span 
+                    className={styles.exchangeLink}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRedirect(
+                        row.spot.bingo,
+                        row.coin.ticker,
+                        `${row.coin.ticker}USDT`,
+                        false
+                      );
+                    }}
+                  >
+                    {row.spot.bingo.replace(/spot|futures/i, "")}
+                    <Image src="/new-page/link.svg" alt="" width={10} height={10} />
+                  </span>
+                  {" → "}
+                  <span 
+                    className={styles.exchangeLink}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRedirect(
+                        row.futures.bingo,
+                        row.coin.ticker,
+                        `${row.coin.ticker}USDT`,
+                        true
+                      );
+                    }}
+                  >
+                    {row.futures.bingo.replace(/spot|futures/i, "")}
+                    <Image src="/new-page/link.svg" alt="" width={10} height={10} />
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+          <div className={styles.cardBody}>
+            {isColumnVisible("spot") && (
+              <div className={styles.cardField}>
+                <label>Spot</label>
+                <div className={styles.cardValue}>{row.spot.price}</div>
+                <div className={styles.cardSubValue}>{row.spot.live}</div>
+              </div>
+            )}
+
+            {isColumnVisible("futuros") && (
+              <div className={styles.cardField}>
+                <label>Futuros</label>
+                <div className={styles.cardValue}>{row.futures.price}</div>
+                <div className={styles.cardSubValue}>{row.futures.live}</div>
+              </div>
+            )}
+
+            {isColumnVisible("funding") && (
+              <div className={styles.cardField}>
+                <label>Funding</label>
+                <div className={styles.cardValue}>
+                  {row.funding ? `${parseFloat(row.funding) > 0 ? "+" : ""}${row.funding}%` : "—"}
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("volumes") && (
+              <div className={styles.cardField}>
+                <label>Volumes</label>
+                <div className={styles.cardValue}>
+                  {typeof row.volumes === 'string' ? row.volumes : 
+                   row.volumes && typeof row.volumes === 'object' ? 
+                   `S: ${row.volumes.s} / F: ${row.volumes.f}` : "—"}
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("volumes24") && (
+              <div className={styles.cardField}>
+                <label>Volume 24h</label>
+                <div className={styles.cardValue}>
+                  {typeof row.volumes24h === 'string' ? row.volumes24h : 
+                   row.volumes24h && typeof row.volumes24h === 'object' ? 
+                   `S: ${row.volumes24h.s} / F: ${row.volumes24h.f}` : "—"}
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("tempo") && (
+              <div className={styles.cardField}>
+                <label>Tempo</label>
+                <div className={styles.cardValue}>
+                  <TempoCell validSince={row.validSince} />
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("spreads") && (
+              <div className={styles.cardSpread}>
+                <div className={`${styles.cardSpreadItem} ${
+                  isElementVisible("showSpreadBackground") ? styles[spreadClass] : ""
+                }`}>
+                  <label>Entrada (E)</label>
+                  <div className={styles.spreadValue}>
+                    {spreadLong > 0 ? "+" : ""}{spreadLong.toFixed(2)}%
+                  </div>
+                </div>
+                <div className={`${styles.cardSpreadItem} ${
+                  isElementVisible("showSpreadBackground") 
+                    ? (spreadShort > 0 ? styles.positive : styles.negative)
+                    : ""
+                }`}>
+                  <label>Saída (S)</label>
+                  <div className={styles.spreadValue}>
+                    {spreadShort > 0 ? "+" : ""}{spreadShort.toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("acoes") && (
+              <div className={styles.cardActions}>
+                <button
+                  className={`${styles.cardActionBtn} ${
+                    isFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`)
+                      ? styles.favorited
+                      : ""
+                  }`}
+                  onClick={() =>
+                    toggleFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`)
+                  }
+                  title="Favoritar"
+                >
+                  {isFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`) ? (
+                    <StarFilledIcon />
+                  ) : (
+                    <StarIcon />
+                  )}
+                </button>
+                <button
+                  className={styles.cardActionBtn}
+                  onClick={() => {
+                    const url = generateTradingViewURL(
+                      row.coin.ticker,
+                      row.spot.bingo,
+                      row.futures.bingo
+                    );
+                    setTradingViewUrl(url);
+                    setIsTradingViewOpen(true);
+                  }}
+                  title="Ver gráfico TradingView"
+                >
+                  <TradingViewIcon />
+                </button>
+                <button
+                  className={styles.cardActionBtn}
+                  onClick={() => openCalculatorPopup()}
+                  title="Abrir calculadora"
+                >
+                  <CalculatorTableIcon />
+                </button>
+                <button
+                  className={styles.cardActionBtn}
+                  onClick={() =>
+                    openDeleteModal(
+                      `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`,
+                      `${row.coin.ticker} (${row.spot.bingo} → ${row.futures.bingo})`
+                    )
+                  }
+                  title="Excluir oportunidade"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+  // Renderiza cards mobile
+  const renderMobileCards = () => {
+    if (paginatedRows.length === 0) {
+      return (
+        <div className={styles.emptyCards}>
+          <PacmanLoader color="#7B61FF" size={30} />
+          <p>Carregando oportunidades...</p>
+        </div>
+      );
+    }
+
+    return paginatedRows.map((r) => (
+      <MobileOpportunityCard key={r.id} row={r} />
+    ));
+  };
+
   return (
     <>
+      {/* Mobile Cards Container */}
+      {isMobile && (
+        <div className={styles.mobileCardsContainer}>
+          {renderMobileCards()}
+        </div>
+      )}
+
+      {/* Botão Flutuante de Paginação Mobile */}
+      {isMobile && totalPages > 1 && (
+        <button
+          className={styles.paginationFloatingBtn}
+          onClick={() => {
+            if (isPaginationModalOpen) {
+              closePaginationModal();
+            } else {
+              setIsPaginationModalOpen(true);
+            }
+          }}
+          title={isPaginationModalOpen ? "Fechar navegação" : "Abrir navegação"}
+          style={{
+            position: 'fixed',
+            bottom: '250px',
+            right: '20px',
+            zIndex: 99999
+          }}
+        >
+          {isPaginationModalOpen ? (
+            // Ícone X quando está aberto
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            // Ícone de lista quando está fechado
+            <>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="7" cy="6" r="1.5" fill="currentColor"/>
+                <circle cx="7" cy="12" r="1.5" fill="currentColor"/>
+                <circle cx="7" cy="18" r="1.5" fill="currentColor"/>
+              </svg>
+              <span className={styles.pageIndicator}>{currentPage}/{totalPages}</span>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Modal de Paginação Mobile */}
+      {isMobile && isPaginationModalOpen && (
+        <>
+          <div 
+            className={`${styles.paginationModalOverlay} ${isPaginationModalClosing ? styles.fadeOut : ''}`}
+            onClick={closePaginationModal}
+          />
+          <div className={`${styles.paginationModal} ${isPaginationModalClosing ? styles.slideDown : ''}`}>
+            <div className={styles.paginationModalHeader}>
+              <h3>Navegação</h3>
+            </div>
+
+            <div className={styles.paginationModalBody}>
+              <div className={styles.paginationInfo}>
+                <span className={styles.paginationInfoText}>
+                  Mostrando {startIndex + 1} - {Math.min(endIndex, totalItems)} de {totalItems} oportunidades
+                </span>
+                <div className={styles.itemsPerPageSelector}>
+                  <label>Por página:</label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={40}>40</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.paginationControls}>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  title="Primeira página"
+                >
+                  ⏮
+                </button>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  title="Página anterior"
+                >
+                  ◀
+                </button>
+
+                <div className={styles.pageNumbers}>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        className={`${styles.paginationButton} ${
+                          currentPage === pageNum ? styles.active : ""
+                        }`}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          closePaginationModal();
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  title="Próxima página"
+                >
+                  ▶
+                </button>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  title="Última página"
+                >
+                  ⏭
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Desktop Table */}
       <GlassTable<CoinRow>
         searchValue={searchValue}
         onSearchChange={onSearchChange}
