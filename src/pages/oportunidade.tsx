@@ -66,6 +66,32 @@ export default function OportunidadePage() {
   useEffect(() => {
     if (!ticker || !buyExchange || !sellExchange) return;
 
+    const buy =
+      (Array.isArray(buyExchange) ? buyExchange[0] : buyExchange) ?? "";
+    const sell =
+      (Array.isArray(sellExchange) ? sellExchange[0] : sellExchange) ?? "";
+    const buyLower = buy.toLowerCase();
+    const sellLower = sell.toLowerCase();
+    const buyIsSpot = buyLower.includes("spot");
+    const buyIsFut = buyLower.includes("futures");
+    const sellIsSpot = sellLower.includes("spot");
+    const sellIsFut = sellLower.includes("futures");
+
+    const spotExchange = buyIsSpot
+      ? buy
+      : sellIsSpot
+      ? sell
+      : sellIsFut && !buyIsFut
+      ? buy
+      : buy;
+    const futuresExchange = buyIsFut
+      ? buy
+      : sellIsFut
+      ? sell
+      : buyIsSpot && !sellIsSpot
+      ? sell
+      : sell;
+
     const socket: Socket = io("https://almeidashop.shop/", {
       transports: ["websocket"],
     });
@@ -80,22 +106,30 @@ export default function OportunidadePage() {
 
       socket.emit("subscribe", {
         symbols: [`${ticker}USDT`],
-        buyExchanges: [sellExchange],
-        sellExchanges: [buyExchange],
+        buyExchanges: [spotExchange],
+        sellExchanges: [futuresExchange],
         refreshRate: 1000,
         lite: true,
       });
     });
 
     socket.on("arbitrageDelta", (data) => {
-      console.log(data, "DT");
-      if (data.upserts?.length > 0) {
-        setOpportunity(data.upserts[0]);
-      }
+      if (!data?.upserts?.length) return;
+      const next = data.upserts.find(
+        (opp: ArbitrageOpportunity) =>
+          opp.lowestAsk?.exchange === spotExchange &&
+          opp.highestBid?.exchange === futuresExchange
+      );
+      if (next) setOpportunity(next);
     });
 
     socket.on("arbitrageUpdate", (opp) => {
-      setOpportunity(opp);
+      if (
+        opp.lowestAsk?.exchange === spotExchange &&
+        opp.highestBid?.exchange === futuresExchange
+      ) {
+        setOpportunity(opp);
+      }
     });
 
     return () => {
@@ -124,6 +158,7 @@ export default function OportunidadePage() {
       case "kucoin":
       case "mexc":
       case "bingx":
+      case "okx":
         return pair;
       default:
         return pair;
@@ -188,6 +223,16 @@ export default function OportunidadePage() {
           .toLowerCase() || "usdt";
       return `https://www.htx.com/trade/${base}_${quote}?type=spot`;
     },
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-spot/${base}-${quote}`;
+    },
   };
 
   const futuresLinks = {
@@ -248,6 +293,16 @@ export default function OportunidadePage() {
           .replace("_", "")
           .toUpperCase() || "USDT";
       return `https://www.htx.com/futures/linear_swap/exchange#contract_code=${base}-${quote}&contract_type=swap&type=cross`;
+    },
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-swap/${base}-${quote}-SWAP`;
     },
   };
 

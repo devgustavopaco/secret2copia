@@ -577,6 +577,16 @@ export function FuturosOperationCard({
     kucoin: (_: string, pair: string) => `https://www.kucoin.com/trade/${pair}`,
     bingx: (_: string, pair: string) =>
       `https://bingx.com/spot/${pair.replace("_", "")}`,
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-spot/${base}-${quote}`;
+    },
   };
   const futuresLinks = {
     bybit: (coin: string, pair: string) => {
@@ -603,6 +613,16 @@ export function FuturosOperationCard({
       `https://futures.mexc.com/exchange/${pair}`,
     bingx: (coin: string, pair: string) =>
       `https://bingx.com/en-us/futures/${coin.toUpperCase()}_${pair}`,
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-swap/${base}-${quote}-SWAP`;
+    },
   };
 
   function handleRedirect(
@@ -632,6 +652,7 @@ export function FuturosOperationCard({
       GATE: "GATEIO",
       GATEIO: "GATEIO",
       KUCOIN: "KUCOIN",
+      OKX: "OKX",
     };
     const base = coin.symbol.toUpperCase();
     const cleanSpot = coin.ask.exchange.replace(/ spot| futures/i, "").trim();

@@ -9,7 +9,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1100;
 
   overflow: hidden;
   transform: translateY(0);
@@ -318,7 +318,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 950; /* abaixo do 1000 do sidebar, acima do conteúdo */
+  z-index: 1090; /* abaixo do sidebar, acima do header/conteúdo */
   width: 100%;
   max-width: 17vw;
 

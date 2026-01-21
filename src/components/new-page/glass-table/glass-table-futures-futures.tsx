@@ -802,6 +802,7 @@ export function DemoGlassTable({
       GATE: "GATEIO",
       GATEIO: "GATEIO",
       KUCOIN: "KUCOIN",
+      OKX: "OKX",
     };
 
     const base = ticker.toUpperCase();
@@ -851,6 +852,7 @@ export function DemoGlassTable({
         case "kucoin":
         case "mexc":
         case "bingx":
+        case "okx":
           return pair;
         default:
           return pair;
@@ -864,6 +866,7 @@ export function DemoGlassTable({
         case "kucoin":
         case "mexc":
         case "bingx":
+        case "okx":
           return pair;
         default:
           return pair;
@@ -934,6 +937,16 @@ export function DemoGlassTable({
           .toLowerCase() || "usdt";
       return `https://www.htx.com/trade/${base}_${quote}?type=spot`;
     },
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-spot/${base}-${quote}`;
+    },
   };
 
   // Links para exchanges futures
@@ -998,6 +1011,16 @@ export function DemoGlassTable({
           .replace("_", "")
           .toUpperCase() || "USDT";
       return `https://www.htx.com/futures/linear_swap/exchange#contract_code=${base}-${quote}&contract_type=swap&type=cross`;
+    },
+    okx: (coin: string, pair: string) => {
+      const base = coin.toUpperCase();
+      const quote =
+        pair
+          .replace(new RegExp(base, "i"), "")
+          .replace("-", "")
+          .replace("_", "")
+          .toUpperCase() || "USDT";
+      return `https://www.okx.com/trade-swap/${base}-${quote}-SWAP`;
     },
   };
 

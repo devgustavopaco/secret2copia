@@ -267,6 +267,7 @@ export default function FuturosNewPage({
     "Kucoin",
     "Bybit",
     "Huobi",
+    "Okx",
   ];
   const ALLOWED_FUTURES_EXCHANGES = [
     "Gateio",
@@ -276,6 +277,7 @@ export default function FuturosNewPage({
     "Kucoin",
     "Bybit",
     "Huobi",
+    "Okx",
   ];
   const filteredSpotExchanges = initialExchanges?.filter((e) =>
     ALLOWED_SPOT_EXCHANGES.includes(e.name)

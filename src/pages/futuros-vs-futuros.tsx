@@ -295,6 +295,7 @@ export default function FuturesVsFuturesPage({
     "Kucoin",
     "Bybit",
     "Huobi",
+    "Okx",
   ];
 
   const filteredFuturesExchanges = initialExchanges?.filter((e) =>
