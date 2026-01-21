@@ -4,16 +4,31 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import LogoutIcon from "../../Icons/LogoutIcon";
+import HamburgerIcon from "../../Icons/HamburgerIcon";
 import { trpc } from "../../../utils/trpc";
 import styles from "./header.module.scss";
 
 interface NewPageHeaderProps {
   supportNumber?: string;
+  onMenuClick?: () => void; // Callback para abrir a sidebar em mobile
 }
 
 export default function NewPageHeader({
   supportNumber = "https://wa.me/5511999999999",
+  onMenuClick,
 }: NewPageHeaderProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detecta se é mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const { data: auth } = useSession();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -95,6 +110,36 @@ export default function NewPageHeader({
     <div className={styles.header}>
       <div className={styles.glowLine}></div>
       <div className={styles.headerContent}>
+        {/* Botão de menu hamburguer em mobile */}
+        {isMobile && (
+          <div
+            className={styles.mobileMenuButton}
+            role="button"
+            aria-label="Abrir menu"
+            tabIndex={0}
+            onClick={onMenuClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onMenuClick?.();
+              }
+            }}
+          >
+            <HamburgerIcon className={styles.hamburgerIcon} />
+          </div>
+        )}
+
+        {/* Logo visível em mobile */}
+        <div className={styles.mobileLogo}>
+          <Image
+            src="/new-page/logo.svg"
+            alt="Logo"
+            width={60}
+            height={40}
+            priority
+          />
+        </div>
+        
         <div className={styles.headerLeft}>
           <ul>
             <li>

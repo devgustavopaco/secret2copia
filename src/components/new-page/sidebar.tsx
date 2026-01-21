@@ -9,13 +9,30 @@ import ArrowIcon from "../Icons/ArrowIcon";
 type Props = {
   onToggleChange?: (isOpen: boolean) => void;
   onAddExchange?: (type: "spot" | "futures") => void;
+  forceCollapsed?: boolean; // Permite controle externo do estado collapsed
+  onCollapseChange?: (collapsed: boolean) => void; // Notifica mudanças no estado
 };
 
 export default function NewPageSidebar({
   onToggleChange,
   onAddExchange,
+  forceCollapsed,
+  onCollapseChange,
 }: Props) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Detecta se é mobile e inicia collapsed se for
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  });
+
+  // Sincroniza com forceCollapsed quando fornecido
+  useEffect(() => {
+    if (forceCollapsed !== undefined) {
+      setCollapsed(forceCollapsed);
+    }
+  }, [forceCollapsed]);
   const [spotExchanges, setSpotExchanges] = useState<any[]>([]);
   const [futuresExchanges, setFuturesExchanges] = useState<any[]>([]);
 
@@ -36,9 +53,10 @@ export default function NewPageSidebar({
     setCollapsed((prev) => {
       const newValue = !prev;
       onToggleChange?.(!newValue ? true : false);
+      onCollapseChange?.(newValue); // Notifica o pai sobre a mudança
       return newValue;
     });
-  }, [onToggleChange]);
+  }, [onToggleChange, onCollapseChange]);
 
   const onKey = useCallback(
     (e: React.KeyboardEvent) => {
@@ -53,6 +71,18 @@ export default function NewPageSidebar({
   useEffect(() => {
     onToggleChange?.(!collapsed);
   }, [collapsed, onToggleChange]);
+
+  // Fecha a sidebar automaticamente em mobile ao redimensionar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768 && !collapsed) {
+        setCollapsed(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [collapsed]);
 
   // === remove handlers (atualizam LS + evento global) ===
   const removeFromSpot = (id: string) => {

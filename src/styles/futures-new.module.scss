@@ -226,6 +226,58 @@
   }
 }
 
+/* ===== MEDIA QUERIES PARA MOBILE ===== */
+@media (max-width: 768px) {
+  .container {
+    overflow-x: hidden;
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  .modalGrid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .exchangeCard {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+  }
+
+  .exchangeIcon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 6px;
+  }
+
+  .modalContent {
+    padding: 20px;
+    gap: 16px;
+
+    label {
+      font-size: 0.9rem;
+
+      input {
+        padding: 12px 14px;
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .modalButtons {
+    padding: 16px 20px 8px;
+    gap: 10px;
+
+    button {
+      min-width: 100px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+    }
+  }
+}
+
 /* 💫 Animação de entrada */
 @keyframes fadeIn {
   from {

@@ -636,7 +636,7 @@ export default function GlassTable<T extends object>({
     >
       <div className={styles.toolbar}>
         <label className={styles.searchGlass}>
-          <Image
+        <Image
             src="/new-page/search-icon.svg"
             alt=""
             width={16}

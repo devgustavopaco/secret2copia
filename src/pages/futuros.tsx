@@ -31,6 +31,7 @@ export default function FuturosNewPage({
   initialExchanges: any[];
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"spot" | "futures">("spot");
   const [selectedExchanges, setSelectedExchanges] = useState<any[]>([]);
@@ -313,6 +314,18 @@ export default function FuturosNewPage({
   const isExchangeSelected = (id: string) =>
     selectedExchanges.some((e) => e.id === id);
 
+  // Função para abrir/fechar a sidebar em mobile
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => !prev);
+  };
+
+  // Fecha a sidebar quando o modal abre (especialmente em mobile)
+  useEffect(() => {
+    if (modalOpen && typeof window !== "undefined" && window.innerWidth <= 768) {
+      setSidebarCollapsed(true);
+    }
+  }, [modalOpen]);
+
   return (
     <div className={styles.container}>
       <div className={styles.backgroundBlur}></div>
@@ -323,8 +336,10 @@ export default function FuturosNewPage({
           setModalType(type);
           setModalOpen(true);
         }}
+        forceCollapsed={sidebarCollapsed}
+        onCollapseChange={setSidebarCollapsed}
       />
-      <NewPageHeader />
+      <NewPageHeader onMenuClick={toggleSidebar} />
 
       <main className={styles.main}>
         {/* ⬇️ Tabela já com filtros aplicados */}

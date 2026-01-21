@@ -613,3 +613,109 @@
     filter: brightness(1.3);
   }
 }
+
+/* ===== MEDIA QUERIES PARA MOBILE (768px e abaixo) ===== */
+@media (max-width: 768px) {
+  /* Sidebar ocupa a tela toda em mobile */
+  .sidebar {
+    max-width: 100vw;
+    width: 100vw;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Por padrão, a sidebar fica escondida em mobile */
+  .sidebar:not(.collapsed) {
+    /* Sidebar visível em mobile quando não está collapsed */
+  }
+
+  .sidebarHeader {
+    padding: 16px;
+  }
+
+  .sidebarTopBody {
+    padding-top: 30px;
+    padding-inline: 16px;
+    height: auto;
+    max-height: 35vh;
+  }
+
+  .spotButton {
+    height: 44px;
+    padding: 0 16px 0 24px;
+    font-size: 14px;
+  }
+
+  .label {
+    font-size: 14px;
+  }
+
+  .plusIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .exchangeList {
+    max-height: 20vh;
+    gap: 8px;
+  }
+
+  .exchangeItem {
+    padding: 6px 12px 6px 14px;
+    font-size: 13px;
+
+    .exchangeLeft {
+      gap: 8px;
+
+      img {
+        width: 20px;
+        height: 20px;
+      }
+
+      span {
+        font-size: 13px;
+      }
+    }
+  }
+
+  .removeBtn img {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Header colapsado em mobile - ESCONDER porque já temos o header principal */
+  .sidebarHidden {
+    display: none !important; /* Esconde completamente em mobile */
+  }
+
+  .hiddenLogo {
+    max-width: 120px;
+  }
+
+  .sidebarFab {
+    width: 36px;
+    height: 36px;
+  }
+
+  .arrowIcon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .hamburgerMenu {
+    width: 36px;
+    height: 36px;
+  }
+
+  .hamburgerIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .divisor {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+}
