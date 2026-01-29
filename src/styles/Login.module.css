@@ -1,0 +1,304 @@
+.body {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  justify-content: center;
+}
+.body .halfLeft {
+  flex: 1;
+  max-width: 42%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  animation: changeBackground 15s ease-in-out infinite;
+}
+.body .halfLeft .contentBox {
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 2.5rem;
+}
+.body .halfLeft .contentBox img {
+  -o-object-fit: cover;
+  object-fit: cover;
+  width: 185px;
+}
+.body .halfRight {
+  flex: 1;
+  width: 100%;
+  background-color: #0d0f12;
+}
+.body .halfRight .contentBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 512px;
+  margin-inline: auto;
+  height: 100%;
+}
+
+.formBox {
+  width: 500px;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2rem;
+}
+.formBox h3 {
+  color: var(--white);
+  text-align: center;
+  font-weight: 500;
+}
+.formBox p {
+  color: var(--white);
+  text-align: center;
+  font-weight: 500;
+  margin-top: 2rem;
+}
+.formBox h1 {
+  color: var(--white);
+  font-weight: 600;
+  font-size: var(--fs-500);
+  display: inline-block;
+}
+.formBox button {
+  padding: 1rem 1rem;
+  color: var(--white);
+  width: 100%;
+  background: var(--purple-500);
+  box-shadow: 0px 10px 30px rgba(123, 97, 255, 0.3);
+  border-radius: 8px;
+  transition: filter 0.2s ease;
+  margin-top: 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+.formBox button:hover,
+.formBox button:focus {
+  filter: brightness(0.8);
+}
+.formBox button:active {
+  filter: brightness(0.7);
+}
+.formBox form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.formBoxForget {
+  width: 500px;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 1rem;
+}
+.formBoxForget h3 {
+  color: var(--white);
+  text-align: center;
+  font-weight: 500;
+}
+.formBoxForget p {
+  color: var(--white);
+  text-align: center;
+  font-weight: 500;
+  margin-top: 2rem;
+  margin-bottom: 40px;
+}
+.formBoxForget h1 {
+  color: var(--white);
+  font-weight: 600;
+  font-size: var(--fs-500);
+  display: inline-block;
+}
+.formBoxForget button {
+  padding: 1rem 1rem;
+  color: var(--white);
+  width: 100%;
+  background: var(--purple-500);
+  box-shadow: 0px 10px 30px rgba(123, 97, 255, 0.3);
+  border-radius: 8px;
+  transition: filter 0.2s ease;
+  margin-top: 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+.formBoxForget button:hover,
+.formBoxForget button:focus {
+  filter: brightness(0.8);
+}
+.formBoxForget button:active {
+  filter: brightness(0.7);
+}
+.formBoxForget form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.inputBox span {
+  margin-bottom: 0.25rem;
+  display: inline-block;
+  color: var(--white);
+  font-weight: 500;
+  font-size: var(--fs-400);
+}
+.inputBox input {
+  width: 100%;
+  padding: 0.5rem;
+  font-weight: 400;
+  border: none;
+  font-size: var(--fs-400) !important;
+  letter-spacing: 1px;
+  background: #21202d;
+  color: #fff;
+  border-radius: 8px;
+  height: 52px;
+}
+.inputBox .inputPassword {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+}
+.inputBox .inputPassword .eyeIcon {
+  position: absolute;
+  cursor: pointer;
+  margin-right: 15px;
+}
+
+.remember {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+  color: whitesmoke;
+  font-weight: 400;
+  font-size: var(--fs-300);
+}
+
+.check {
+  margin-right: 10px;
+  accent-color: var(--purple-500);
+  width: 20px;
+  height: 20px;
+}
+
+.socialMedia {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.icon {
+  font-size: var(--fs-700);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  color: whitesmoke;
+  border-radius: 50%;
+  transition: 0.3;
+}
+.icon:hover {
+  color: var(--purple-500);
+}
+
+.forgotPassword {
+  display: flex;
+  justify-content: center;
+  margin-inline: auto;
+  padding-top: 5px;
+  width: 100%;
+  padding: 1rem;
+}
+.forgotPassword span {
+  color: var(--white);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.1s ease-in-out;
+}
+.forgotPassword span:hover {
+  color: #dddddd;
+}
+
+.comeBack {
+  display: flex;
+  justify-content: flex-start;
+  margin-inline: auto;
+  padding-top: 5px;
+  width: 100%;
+  padding: 1.5rem;
+}
+.comeBack span {
+  color: var(--white);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.1s ease-in-out;
+}
+.comeBack span:hover {
+  color: #dddddd;
+}
+
+@media screen and (max-width: 968px) {
+  .body {
+    flex-direction: column;
+  }
+  .body .halfLeft {
+    height: 45vh;
+    flex: auto;
+  }
+  .body .halfRight {
+    height: 60vh;
+    flex: auto;
+    padding: 3rem 0;
+  }
+  .formBox {
+    width: 90vw;
+  }
+}
+@media screen and (max-width: 500px) {
+  .body .halfLeft {
+    height: 30vh;
+    max-width: 100%;
+  }
+}
+@keyframes changeBackground {
+  0% {
+    background-image: url("/images/login.png");
+  }
+  33.33% {
+    background-image: url("/images/login2.png");
+  }
+  66.66% {
+    background-image: url("/images/login3.png");
+  }
+  100% {
+    background-image: url("/images/login.png");
+  }
+} /*# sourceMappingURL=Login.module.css.map */

@@ -1,0 +1,171 @@
+.cronogramaSection {
+  justify-content: center;
+  min-width: 25rem;
+}
+.cronogramaSection .modules {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 1.5rem;
+}
+.cronogramaSection .modules p {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+.cronogramaSection h2 {
+  font-size: 1.5rem;
+  font-weight: normal;
+}
+@media only screen and (max-width: 768px) {
+  .cronogramaSection {
+    display: none;
+  }
+}
+
+.divisor::before {
+  content: "";
+  display: block;
+  width: 100%;
+  background-color: var(--gray-500);
+  height: 1px;
+  border-radius: 100vw;
+  margin-top: 1.3rem;
+}
+
+.content {
+  overflow-y: auto;
+  max-height: 800px;
+}
+.content::-webkit-scrollbar {
+  width: 0.25rem;
+}
+.content::-webkit-scrollbar-track {
+  background-color: var(--gray-500);
+  border-radius: 100vw;
+}
+.content::-webkit-scrollbar-thumb {
+  background-color: var(--white);
+  border-radius: 100vw;
+  -webkit-transition: filter 0.2s ease;
+  transition: filter 0.2s ease;
+}
+.content::-webkit-scrollbar-thumb:hover {
+  filter: brightness(0.8);
+}
+.content .videoModules {
+  width: 100%;
+  background-color: #21202d;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 435px;
+  cursor: pointer;
+}
+.content .videoModules span {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.content .class {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 1rem;
+}
+.content .class label {
+  display: flex;
+  align-items: center;
+  padding: 2.75rem 0;
+}
+.content .class label input[type="checkbox"] {
+  width: 24px;
+  height: 20px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 2px solid #d9d9d9;
+  background-color: #d9d9d9;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.content .class label input[type="checkbox"]:checked {
+  border-color: #7b61ff;
+  background-color: #7b61ff;
+}
+.content .class label img {
+  width: 167px;
+  height: 107px;
+  margin-left: 0.5rem;
+}
+.content .class label span {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-left: 1.3rem;
+}
+
+.containerTriangle {
+  display: flex;
+  align-items: center;
+  margin-left: -10px;
+}
+
+.classContainer {
+  margin-block: 2rem;
+  margin-right: 1.5rem;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.date {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #8d8d99;
+}
+
+.classRoomSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 5px;
+  margin-top: 0.6rem;
+}
+.classRoomSection img {
+  width: 167px;
+  height: 107px;
+  margin-right: 1rem;
+}
+.classRoomSection .classRoom {
+  margin-top: 0.5rem;
+}
+.classRoomSection .content {
+  display: flex;
+  gap: 0.7rem;
+  font-size: 14px;
+}
+.classRoomSection .content span,
+.classRoomSection .content svg {
+  color: var(--purple-200);
+}
+.classRoomSection .classRoomContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.classRoomSection .classRoomContent h6 {
+  padding: 3px;
+  border: 1px solid #00875f;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 13px;
+}
+.classRoomSection .className {
+  font-size: 20px;
+  font-weight: 500;
+} /*# sourceMappingURL=styles.module.css.map */

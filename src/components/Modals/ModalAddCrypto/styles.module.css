@@ -1,0 +1,183 @@
+.modalBackground {
+  animation: fadein 0.5s;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.685);
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContainer {
+  width: 400px;
+  height: auto;
+  border-radius: 12px;
+  background: #211f2d;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.details {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  font-size: var(--fs-400);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inputBox input {
+  height: 45px;
+  width: 100%;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: #3a3847;
+  color: var(--gray-100);
+}
+
+.inputImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.inputImage img {
+  height: 70px;
+  width: 70px;
+}
+
+.inputBoxInline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.inputBoxInline > span {
+  margin-bottom: 0;
+}
+.inputBoxInline > input {
+  cursor: pointer;
+  height: 1rem;
+  width: 1rem;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: var(--gray-600);
+  color: var(--gray-100);
+}
+
+.inputBoxFile input {
+  border-radius: 3px;
+  font-size: 15px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modalHeader h3 {
+  font-size: var(--fs-500);
+  font-weight: 600;
+}
+.modalHeader button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  color: var(--white);
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  transition: filter 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+.modalHeader button:hover,
+.modalHeader button:focus {
+  color: var(--purple-500);
+  background-color: var(--gray-700);
+}
+.modalHeader button:active {
+  filter: brightness(0.8);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.footer button {
+  width: 150px;
+  height: 45px;
+  color: var(--white);
+  border-radius: 4px;
+}
+
+.addBtn {
+  background-color: var(--purple-500);
+  transition: filter 0.2s ease;
+}
+.addBtn:hover,
+.addBtn:focus {
+  filter: brightness(0.8);
+}
+.addBtn:active {
+  filter: brightness(0.7);
+}
+
+.voltarBtn {
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
+  border: 1px solid var(--white);
+}
+.voltarBtn:hover,
+.voltarBtn:focus {
+  color: var(--purple-200);
+  border-color: var(--purple-200);
+  filter: brightness(0.8);
+}
+.voltarBtn:active {
+  filter: brightness(0.7);
+}
+
+.cleanImageBlock {
+  display: flex;
+  justify-content: center;
+}
+
+.cleanImage {
+  padding: 10px;
+  background-color: transparent;
+  color: var(--white);
+  border-radius: 4px;
+  transition: filter 0.2s ease, color 0.2s ease, border 0.2s ease;
+  border: 1px solid var(--white);
+}
+.cleanImage:hover,
+.cleanImage:focus {
+  color: var(--purple-200);
+  border-color: var(--purple-200);
+  filter: brightness(0.8);
+}
+.cleanImage:active {
+  filter: brightness(0.7);
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+} /*# sourceMappingURL=styles.module.css.map */

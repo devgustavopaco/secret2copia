@@ -1,0 +1,97 @@
+.swipperBlock {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  gap: 10px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.addExchange {
+  border-radius: 8px;
+  background: rgba(123, 97, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 18px;
+  padding-block: 12px;
+  margin-block: 15px;
+  gap: 10px;
+  cursor: pointer;
+  width: 230px;
+  transition: background 1.5s ease;
+  height: 62px;
+
+  p {
+    color: #fff;
+    font-family: "Raleway";
+    font-size: 17.432px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    text-transform: uppercase;
+  }
+
+  &.addChecked {
+    background: rgba(100, 255, 97, 0.2);
+  }
+}
+
+.aroundImage {
+  width: 37.333px;
+  height: 37.333px;
+  background: rgba(123, 97, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  padding: 5px;
+  transition: background 1.5s ease;
+
+  img {
+    display: flex;
+    align-items: center;
+    margin-inline: auto;
+  }
+  &.aroundChecked {
+    background: rgba(100, 255, 97, 0.3);
+  }
+}
+
+.selectedExchanges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(5px);
+  padding-inline: 18px;
+  padding-block: 12px;
+  gap: 10px;
+  margin-bottom: 8px;
+  width: 230px;
+  height: 62px;
+
+  .selectedExchangesBlock {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--white, #fff);
+    text-align: center;
+    font-family: "Raleway";
+    font-size: 14.996px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    text-transform: uppercase;
+
+    img {
+      width: 37.333px;
+      height: 37.333px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #fff;
+    }
+  }
+}

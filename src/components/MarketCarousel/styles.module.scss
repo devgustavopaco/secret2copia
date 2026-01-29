@@ -1,0 +1,72 @@
+.currencyContainer {
+  display: flex;
+  align-items: center;
+  gap: 350px;
+  padding-top: 20px;
+  width: 100%;
+  padding-bottom: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid #7158e2;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.currencyRow {
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  animation: scroll-left 80s linear infinite;
+}
+
+.currencyItem {
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #7158e2;
+  border-left: 1px solid #7158e2;
+  padding-inline: 15px;
+  width: auto;
+  gap: 10px;
+
+  .LeftSideCurrencyItem {
+    display: flex;
+    align-items: center;
+
+    p {
+      margin-left: 5px;
+    }
+  }
+
+  .RightSideCurrencyItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .positive {
+      color: #1daf23;
+    }
+
+    .negative {
+      color: rgb(211, 8, 8);
+    }
+  }
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

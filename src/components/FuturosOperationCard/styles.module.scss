@@ -1,0 +1,27 @@
+// Estilos mínimos para compatibilidade - Material-UI cuida do resto
+.operationRow {
+  // Mantido para compatibilidade, mas Material-UI cuida do styling
+}
+
+// Tooltip personalizado (se necessário)
+.tokenStatsTooltip {
+  // Mantido para compatibilidade
+}
+
+// Classes para valores (usadas no tooltip) - cores VIBRANTES sem glow
+.positiveValue {
+  color: #22c55e !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+}
+
+.negativeValue {
+  color: #ef4444 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+}
+
+.neutralValue {
+  color: #f0f9ff !important;
+  font-weight: 700 !important;
+}

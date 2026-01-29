@@ -1,0 +1,57 @@
+import { CoinFuture } from "@prisma/client";
+import { prisma } from "./db/client";
+
+export class CoinsSingleton {
+  private static instance: CoinsSingleton;
+
+  public coins: (CoinFuture & {
+    ExchangeCoinTaxFuture: {
+      exchange: {
+        name: string;
+        fee: number;
+        convert: boolean;
+        image_url: string | null;
+      };
+      tax: number;
+    }[];
+  })[] = [];
+
+  constructor() {
+    this.updateCoins();
+  }
+
+  public static getInstance(): CoinsSingleton {
+    if (!CoinsSingleton.instance) {
+      CoinsSingleton.instance = new CoinsSingleton();
+    }
+    return CoinsSingleton.instance;
+  }
+
+  public async updateCoins(isChecked?: boolean): Promise<void> {
+    this.coins = await prisma.coinFuture.findMany({
+      where: {
+        active: true,
+        ...(isChecked && { isFanToken: true }),
+      },
+      include: {
+        ExchangeCoinTaxFuture: {
+          where: {
+            active: true,
+          },
+          select: {
+            tax: true,
+            exchange: {
+              select: {
+                name: true,
+                fee: true,
+                convert: true,
+                image_url: true,
+                active: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+}

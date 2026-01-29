@@ -1,0 +1,166 @@
+.MuiDataGrid-colCellTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100% !important;
+  height: 100%;
+
+  :global(.MuiDataGrid-virtualScroller) {
+    overflow-x: hidden !important;
+  }
+
+  :global(.MuiDataGrid-cellContent) {
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  :global(.MuiDataGrid-row) {
+    border-bottom: 1px solid var(--gray-800);
+  }
+
+  :global(.MuiDataGrid-root.MuiDataGrid-root--densityStandard) {
+    background-color: #0d0f12;
+    border: none !important;
+  }
+
+  :global(.MuiDataGrid-root .MuiDataGrid-cell) {
+    border: none;
+  }
+
+  :global(.MuiDataGrid-columnHeaders) {
+    border: none;
+  }
+
+  :global(.MuiDataGrid-overlay) {
+    background-color: #211f2d;
+  }
+
+  :global(.MuiDataGrid-root) {
+    color: var(--white);
+    border: none;
+
+    :global(div[class$="virtualScroller"]) {
+      &::-webkit-scrollbar {
+        width: 0.25rem;
+      }
+
+      &::-webkit-scrollbar-track {
+        background-color: var(--gray-500);
+        border-radius: 100vw;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--white);
+        border-radius: 100vw;
+
+        transition: filter 0.2s ease;
+
+        &:hover {
+          filter: brightness(0.8);
+        }
+      }
+    }
+  }
+}
+
+.BtnAtivar {
+  color: #fff;
+  border: none;
+
+  &:hover {
+    color: #fff;
+    border-color: var(--purple-200);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 0 1.5px var(--purple-200);
+  }
+}
+
+.box {
+  width: 100%;
+
+  background: var(--gray-800);
+  border-radius: 8px;
+
+  svg {
+    display: none;
+  }
+}
+
+.gridCompra {
+  border: none;
+  color: var(--white);
+  background-color: var(--gray-800);
+  font-size: 17px !important;
+  p {
+    color: var(--white);
+  }
+
+  :global(.MuiDataGrid-columnHeaderTitle) {
+    color: rgb(255, 58, 58);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 20px;
+
+    @media only screen and (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  overflow-x: hidden !important;
+}
+
+.gridVenda {
+  border: none;
+  color: var(--white);
+  background-color: var(--gray-800);
+  font-size: 17px !important;
+  p {
+    color: var(--white);
+  }
+
+  :global(.MuiDataGrid-columnHeaderTitle) {
+    color: #49ac87;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 20px;
+    @media only screen and (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  overflow-x: hidden !important;
+}
+
+.MuiTablePagination {
+  overflow: hidden !important;
+}
+
+.imgStyle {
+  padding: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+@media (max-width: 600px) {
+  .tableContainer {
+    :global(.MuiDataGrid-cellContent) {
+      font-size: 12px;
+      font-weight: 400;
+    }
+  }
+}
+
+.rowColor1 {
+  background-color: #0d0f12 !important;
+}
+
+.rowColor2 {
+  background-color: rgba(33, 32, 45, 1) !important;
+}

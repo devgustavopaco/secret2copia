@@ -1,0 +1,227 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+  binaryTargets   = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  videosId          String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  videosId     String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  email         String?     @unique
+  emailVerified DateTime?
+  isSpot        Boolean?     @default(false)
+  isFutures     Boolean?     @default(false)
+  image         String? @db.Text
+  password      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  phone         String?
+  pricePaid     Float?
+  roleId        String
+  dolarValue    Float?
+  bronze        Int         @db.TinyInt
+  silver        Int         @db.TinyInt
+  gold          Int         @db.TinyInt
+  platinum      Int         @db.TinyInt
+  trialVersion  Boolean?    @default(false)
+  sessions      Session[]
+  Account       Account[]
+  role          Role        @relation(fields: [roleId], references: [id])
+  accessLogs    AccessLog[]
+}
+
+
+model Videos {
+  id                 String   @id @default(cuid())
+  title              String
+  description        String   @db.Text
+  additionalMaterial String?
+  idYoutube          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+  User User[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Exchange {
+  id              String            @id @default(cuid())
+  tag             String            @unique
+  name            String
+  fee             Float
+  image_url       String?           @db.Text
+  convert         Boolean
+  active          Boolean           @default(true)
+  bronze          Boolean
+  silver          Boolean
+  gold            Boolean
+  platinum        Boolean
+  registerUrl     String?
+  ExchangeCoinTax ExchangeCoinTax[]
+  ExchangeCoinTaxFuture ExchangeCoinTaxFuture[]
+}
+
+model Coin {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  ticker          String
+  image_url       String?           @db.Text
+  active          Boolean
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  isFanToken      Boolean           @default(false)
+  ExchangeCoinTax ExchangeCoinTax[]
+}
+
+model CoinFuture {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  ticker          String
+  image_url       String?           @db.Text
+  active          Boolean
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  isFanToken      Boolean           @default(false)
+  ExchangeCoinTaxFuture ExchangeCoinTaxFuture[]
+}
+
+model ExchangeCoinTax {
+  id            String   @id @default(cuid())
+  exchangeId    String
+  coinId        String
+  tax           Float
+  confirmations Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  coin          Coin     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+}
+
+model ExchangeCoinTaxFuture {
+  id            String   @id @default(cuid())
+  exchangeId    String
+  coinId        String
+  tax           Float
+  confirmations Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  exchange      Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  coin          CoinFuture     @relation(fields: [coinId], references: [id], onDelete: Cascade)
+}
+
+model IP {
+  id     String @id @default(cuid())
+  userId String @unique
+  ip     String
+}
+
+model SupportPhone {
+  id     String @id @default(cuid()) @db.VarChar(255)
+  number String @db.VarChar(255)
+}
+
+model Balance {
+  id         String   @id
+  userId     String
+  exchangeId String
+  balance    Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  @@unique([userId, exchangeId])
+  @@index([exchangeId], map: "Balance_exchangeId_fkey")
+}
+
+model CurrentOpportunities {
+  id                    String @id
+  opportunityJson       Json?
+  buyExchangeName       String
+  sellExchangeName      String
+  opportunityIdentifier String @unique
+}
+
+model Movement {
+  id                 String   @id
+  userId             String
+  selectedBuyBroker  String
+  selectedSellBroker String
+  selectedCurrency   String
+  volume             String
+  buyPrice           String
+  sellPrice          String
+  brokerBuyIcon      String?
+  brokerSellIcon     String?
+  currencyIcon       String?
+  createdAt          DateTime @default(now()) @db.DateTime(0)
+
+  @@index([userId], map: "userId_index")
+}
+
+model AccessLog {
+  id          String     @id @default(cuid())
+  userId      String?
+ 
+  ip          String
+  city        String?
+  browser     String
+  deviceType  DeviceType
+  isIphone    Boolean
+  createdAt   DateTime   @default(now())
+  deviceBrand String?
+  deviceModel String?
+  user        User?      @relation(fields: [userId], references: [id])
+   
+  @@index([userId], map: "AccessLog_userId_fkey")
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
+}

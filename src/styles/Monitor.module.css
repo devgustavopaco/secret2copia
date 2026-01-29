@@ -1,0 +1,124 @@
+.backgroundmMonitor {
+  background-image: url("/images/teste.png");
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-position: center;
+  background-repeat: repeat;
+  background-size: cover;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  overflow-y: auto;
+  padding-block: 2rem;
+  max-height: 100vh;
+  gap: 1.75rem;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-inline: auto;
+  min-height: 100vh;
+}
+.content main {
+  flex: 1;
+  width: 100%;
+}
+.content main h1 {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 27;
+  z-index: 1;
+  margin-top: 15px;
+  justify-content: space-between;
+}
+@media screen and (max-width: 968px) {
+  .content main h1 {
+    font-size: 27px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .content main h1 {
+    right: 3%;
+    top: 14.5%;
+  }
+}
+@media screen and (min-width: 968px) {
+  .content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.operations {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(20.25rem, 1fr));
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+  overflow-y: auto;
+}
+
+.loading {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loader {
+  width: 4rem;
+  margin-top: 16rem;
+  margin-left: 36rem;
+}
+
+@media screen and (max-width: 968px) {
+  .loader {
+    width: 2rem;
+    margin-top: 2rem;
+    margin-left: 10rem;
+  }
+}
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem;
+}
+.notFound svg {
+  height: 7rem;
+  width: 7rem;
+  fill: var(--gray-400);
+}
+.notFound div {
+  text-align: center;
+}
+.notFound div h2 {
+  font-size: var(--fs-450);
+  font-weight: 600;
+  color: var(--gray-300);
+}
+.notFound div p {
+  font-size: var(--fs-400);
+  color: var(--gray-300);
+}
+
+.mobileFilter {
+  padding-left: 15px;
+  padding-top: 20px;
+  padding-right: 15px;
+}
+.mobileFilter span {
+  margin-left: 1px;
+  font-size: 20px;
+}
+@media screen and (min-width: 968px) {
+  .mobileFilter {
+    display: none;
+  }
+} /*# sourceMappingURL=Monitor.module.css.map */

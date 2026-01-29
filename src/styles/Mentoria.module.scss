@@ -1,0 +1,162 @@
+.container {
+  background-image: url(https://firebasestorage.googleapis.com/v0/b/nextgain-37481.appspot.com/o/bannerNextGain.webp?alt=media&token=66ddbf2d-3aef-4534-b9ca-6854e5b14a01);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  .banner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: auto;
+    height: 89vh;
+    img {
+      width: 141px;
+      height: 31px;
+    }
+    .title {
+      margin: 2rem 0;
+      max-width: 700px;
+      font-size: var(--fs-600);
+      font-weight: 800;
+    }
+    .text {
+      max-width: 562px;
+      font-size: 22px;
+      font-weight: 500;
+    }
+    .linkButton {
+      max-width: 326px;
+      width: 100%;
+    }
+    .buttonWatch {
+      margin-top: 3.5rem;
+      max-width: 326px;
+      width: 100%;
+      height: 56px;
+      background-color: #7b61ff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: var(--fs-400);
+      font-weight: 600;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .image {
+        margin-left: 1rem;
+        width: 12px;
+        height: 12px !important;
+      }
+    }
+  }
+}
+
+.mentoring {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5rem;
+  .titleMentoring {
+    display: flex;
+    flex-direction: row;
+    font-size: var(--fs-500);
+    font-weight: 500;
+    .title {
+      margin-left: 0.5rem;
+    }
+  }
+  .titleTools {
+    display: flex;
+    flex-direction: row;
+    font-size: var(--fs-500);
+    font-weight: 500;
+    margin-top: 3.5rem;
+    .title {
+      margin-left: 0.5rem;
+    }
+  }
+  .sliders {
+    margin-top: 24px;
+  }
+}
+
+.videoSection {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5rem;
+  margin-top: 2rem;
+  .titleVideo {
+    display: flex;
+    flex-direction: row;
+    font-size: var(--fs-500);
+    font-weight: 500;
+    .title {
+      margin-left: 0.5rem;
+    }
+  }
+  .sliders {
+    .videosWatching {
+      display: flex;
+      flex-direction: column;
+      background-color: #21202d;
+      img {
+        width: 100%;
+      }
+      .videosModule {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        opacity: 0.3;
+        margin: 1rem;
+      }
+      .videosTitle {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #fff;
+        margin-left: 1rem;
+        max-width: 230px;
+        margin-right: 1rem;
+      }
+      .videosButton {
+        color: #7b61ff;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        margin-top: 30px;
+        margin-left: 1rem;
+        margin-bottom: 30px;
+        .videosIcon {
+          margin-left: 0.3rem;
+        }
+      }
+    }
+  }
+  .titleTools {
+    display: flex;
+    flex-direction: row;
+    font-size: var(--fs-500);
+    font-weight: 500;
+    margin-top: 3.5rem;
+    .title {
+      margin-left: 0.5rem;
+    }
+  }
+  .sliders {
+    margin-top: 24px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .container {
+    .banner {
+      height: 87vh;
+      .title {
+        font-size: 1.5rem;
+      }
+      .text {
+        font-size: 1rem;
+      }
+    }
+  }
+}

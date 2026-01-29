@@ -1,0 +1,376 @@
+.backgroundmMonitor {
+  background-image: url("/MONITOR-BACKGROUND.svg");
+  transition: background-image 1.5s ease;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-position: center;
+  background-repeat: repeat;
+  background-size: cover;
+  z-index: 9999999999;
+  overflow: hidden;
+  z-index: -1;
+  padding-top: 100px;
+
+  &.backgroundCleaned {
+    background-image: url("https://firebasestorage.googleapis.com/v0/b/bb-queue.appspot.com/o/e-link%2Fgoing-to%2FMonitor2.png?alt=media&token=520012a5-d90d-4118-9548-084c4ffbf032");
+  }
+  &.backgroundChecked {
+    background-image: url("/newbg1.webp");
+  }
+}
+.updateButton {
+  background: none;
+}
+
+.content {
+  display: flex;
+  overflow-y: auto;
+  padding-block: 2rem;
+  max-height: 100vh;
+  gap: 1.75rem;
+  align-items: flex-start;
+  flex-direction: column;
+  margin-inline: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  margin-top: 20px;
+
+  main {
+    flex: 1;
+    width: 100%;
+
+    h1 {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      top: 27;
+      z-index: 1;
+      margin-top: 15px;
+      justify-content: space-between;
+
+      @media screen and (max-width: 968px) {
+        font-size: 27px;
+      }
+
+      @media screen and (max-width: 768px) {
+        right: 3%;
+        top: 14.5%;
+      }
+    }
+  }
+
+  @media screen and (min-width: 968px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.operations {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(20.25rem, 1fr));
+
+  gap: 1rem 2rem;
+
+  margin-top: 1rem;
+  overflow-y: auto;
+
+  @media only screen and (max-width: 768px) {
+    margin-top: -2rem;
+    padding-bottom: 15rem;
+    overflow-y: hidden;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+  }
+}
+
+.loading {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+
+  @media only screen and (max-width: 768px) {
+    margin-top: 110%;
+    margin-right: 20px;
+    width: 90px;
+  }
+}
+
+.loader {
+  width: 4rem;
+  margin-top: 16rem;
+  margin-left: 36rem;
+}
+
+@media screen and (max-width: 968px) {
+  .loader {
+    width: 2rem;
+    margin-top: 2rem;
+    margin-left: 10rem;
+  }
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  margin: 1rem;
+
+  svg {
+    height: 7rem;
+    width: 7rem;
+    fill: var(--gray-400);
+  }
+
+  div {
+    text-align: center;
+
+    h2 {
+      font-size: var(--fs-450);
+      font-weight: 600;
+      color: var(--gray-300);
+    }
+    p {
+      font-size: var(--fs-400);
+      color: var(--gray-300);
+    }
+  }
+}
+
+.mobileFilter {
+  padding-right: 15px;
+  white-space: nowrap;
+  max-width: 100%;
+  //teste
+
+  span {
+    margin-left: 1px;
+    color: #fff;
+    font-family: "Raleway";
+    font-size: 17.432px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-transform: uppercase;
+  }
+
+  @media screen and (min-width: 768px) {
+    display: none;
+  }
+}
+
+.dolarBlock {
+  span {
+    font-family: "Raleway";
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+  }
+  @media only screen and (min-width: 768px) {
+    display: none;
+  }
+}
+
+.dolarBlockContent {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(5px);
+  width: 175px;
+  padding-inline: 12px;
+  padding-block: 23px;
+
+  span {
+    text-transform: uppercase;
+    font-family: "Raleway";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .dolarContainer {
+    display: flex;
+    justify-content: space-between;
+
+    .dolarLabel {
+      width: 50px;
+      background: none;
+      border: none;
+      color: white;
+      font-family: "IBM Plex Sans";
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 500;
+    }
+  }
+}
+
+.topPart {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.checkbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: flex-end;
+  width: 100%;
+  gap: 10px;
+}
+.checkText {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+// Dentro de styles.module.scss ou onde você define seus estilos
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px; // Largura do switch
+  height: 34px; // Altura do switch
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px; // Raio da borda para torná-lo redondo
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #34c759;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #34c759;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+input:checked.is-checked + .slider {
+  background-color: #34c759;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px; // Raio da borda para torná-lo redondo
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #7158e2;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #7158e2;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+input:checked.is-cleaned + .slider {
+  background-color: #7158e2;
+}
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Certifique-se de que a animação fica no topo */
+}
+.progressBarContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+  .progressBarContent {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    gap: 10px;
+  }
+  progress {
+    width: 100%;
+    height: 20px;
+
+    &::-webkit-progress-bar {
+      background-color: #f3f3f3;
+      border-radius: 10px;
+    }
+
+    &::-webkit-progress-value {
+      background-color: #4caf50;
+      border-radius: 10px;
+    }
+
+    &::-moz-progress-bar {
+      background-color: #4caf50;
+      border-radius: 10px;
+    }
+  }
+}

@@ -1,0 +1,446 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  gap: 1.25rem;
+
+  min-width: 220px;
+  max-width: 220px;
+
+  border-radius: 8px;
+  font-family: "Raleway", sans-serif;
+
+  .title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #e0f2ff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+.updateButton {
+  background: none;
+}
+.dollarPrice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.ExchangesSection {
+  min-width: 220px;
+  .labelExchangeSection {
+    color: #e0f2ff;
+    font-family: "Raleway";
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-transform: uppercase;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+  .addExchange {
+    border-radius: 20px;
+    background: linear-gradient(
+      135deg,
+      rgba(15, 35, 65, 0.01) 0%,
+      rgba(20, 45, 80, 0.008) 50%,
+      rgba(15, 35, 65, 0.012) 100%
+    );
+    border: 1px solid rgba(59, 130, 246, 0.04);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 18px;
+    padding-block: 14px;
+    margin-block: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
+      0 4px 16px rgba(59, 130, 246, 0.015),
+      inset 0 1px 0 rgba(255, 255, 255, 0.015),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
+
+    p {
+      color: #60a5fa;
+      font-family: "Raleway";
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+      text-transform: uppercase;
+    }
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(15, 35, 65, 0.025) 0%,
+        rgba(20, 45, 80, 0.018) 50%,
+        rgba(15, 35, 65, 0.02) 100%
+      );
+      border-color: rgba(59, 130, 246, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06),
+        0 6px 24px rgba(59, 130, 246, 0.025),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.01), 0 0 0 1px rgba(255, 255, 255, 0.015);
+    }
+    &.addChecked {
+      border-color: rgba(34, 197, 94, 0.04);
+      p {
+        color: #22c55e;
+      }
+      &:hover {
+        border-color: rgba(34, 197, 94, 0.08);
+      }
+    }
+  }
+
+  .aroundImage {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(
+      135deg,
+      rgba(15, 35, 65, 0.02) 0%,
+      rgba(20, 45, 80, 0.012) 50%,
+      rgba(15, 35, 65, 0.015) 100%
+    );
+    backdrop-filter: blur(15px) saturate(130%);
+    -webkit-backdrop-filter: blur(15px) saturate(130%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.05);
+    display: flex;
+    padding: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.012);
+
+    img {
+      display: flex;
+      align-items: center;
+      margin-inline: auto;
+    }
+    &.aroundChecked {
+      border-color: rgba(34, 197, 94, 0.05);
+    }
+  }
+
+  .selectedExchanges {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 20px;
+    border: 1px solid rgba(64, 156, 255, 0.04);
+    background: linear-gradient(
+      135deg,
+      rgba(15, 35, 65, 0.01) 0%,
+      rgba(20, 45, 80, 0.008) 50%,
+      rgba(15, 35, 65, 0.012) 100%
+    );
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    padding-inline: 16px;
+    padding-block: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
+      0 4px 16px rgba(59, 130, 246, 0.015),
+      inset 0 1px 0 rgba(255, 255, 255, 0.015),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
+
+    &:hover {
+      border-color: rgba(64, 156, 255, 0.08);
+      background: linear-gradient(
+        135deg,
+        rgba(15, 35, 65, 0.025) 0%,
+        rgba(20, 45, 80, 0.018) 50%,
+        rgba(15, 35, 65, 0.02) 100%
+      );
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06),
+        0 6px 24px rgba(59, 130, 246, 0.025),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.01), 0 0 0 1px rgba(255, 255, 255, 0.015);
+      transform: translateY(-2px);
+    }
+
+    .selectedExchangesBlock {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #e0f2ff;
+      text-align: center;
+      font-family: "Raleway";
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+      text-transform: uppercase;
+
+      img {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(64, 156, 255, 0.4);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    > img {
+      transition: all 0.2s ease;
+      cursor: pointer;
+      opacity: 0.7;
+      filter: brightness(0.9);
+
+      &:hover {
+        opacity: 1;
+        filter: brightness(1.2);
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.text-section {
+  border-radius: 20px;
+  border: 1px solid rgba(64, 156, 255, 0.04);
+  background: linear-gradient(
+    135deg,
+    rgba(15, 35, 65, 0.01) 0%,
+    rgba(20, 45, 80, 0.008) 50%,
+    rgba(15, 35, 65, 0.012) 100%
+  );
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(59, 130, 246, 0.015),
+    inset 0 1px 0 rgba(255, 255, 255, 0.015),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  legend {
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  p {
+    font-weight: 500;
+  }
+
+  p > span {
+    font-size: var(--fs-300);
+  }
+
+  .dolarContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: none;
+  padding: 20px;
+  margin: 0;
+  background-color: #21202d;
+  border-radius: 5px;
+  width: 100%;
+
+  legend {
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  p {
+    font-weight: 500;
+  }
+
+  p > span {
+    font-size: var(--fs-300);
+  }
+}
+
+.dolarLabel {
+  color: #fff;
+  background-color: transparent;
+  border-bottom: 1px solid #ccc;
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  margin-left: -18px;
+  padding-left: 18px;
+  padding-bottom: 3px;
+  width: 78px;
+  font-family: "Raleway";
+  font-size: 16.942px;
+}
+
+.filter-section {
+  flex: 1;
+  max-height: 264px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  // gap: 0.375rem;
+
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    width: 0.125rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--gray-500);
+    border-radius: 100vw;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--white);
+    border-radius: 100vw;
+
+    transition: filter 0.2s ease;
+
+    &:hover {
+      filter: brightness(0.8);
+    }
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.2rem;
+    margin-right: 1rem;
+    margin-block: 0.2rem;
+
+    cursor: pointer;
+    transition: filter 0.2s ease;
+
+    &:hover,
+    &:focus {
+      filter: brightness(0.8);
+    }
+
+    input[type="checkbox"] {
+      appearance: none;
+      background-color: transparent;
+      border: none;
+      margin: 0;
+
+      color: var(--purple-500);
+      height: var(--fs-500);
+      aspect-ratio: 1 / 1;
+      padding: 2px;
+      border: 2px solid currentColor;
+      border-radius: 4px;
+
+      cursor: pointer;
+
+      &:checked {
+        color: var(--purple-500);
+        background-color: var(--purple-500);
+        background-image: url("/check.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        background-origin: content-box;
+
+        &:hover,
+        &:focus {
+          --bg-color: var(--purple-400);
+        }
+      }
+
+      &:active {
+        filter: brightness(0.8);
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.open {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.04);
+  background: linear-gradient(
+    135deg,
+    rgba(15, 35, 65, 0.01) 0%,
+    rgba(20, 45, 80, 0.008) 50%,
+    rgba(15, 35, 65, 0.012) 100%
+  );
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  padding: 16px;
+  cursor: pointer;
+  min-height: 68px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(59, 130, 246, 0.015),
+    inset 0 1px 0 rgba(255, 255, 255, 0.015),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.008), 0 0 0 1px rgba(255, 255, 255, 0.01);
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(15, 35, 65, 0.025) 0%,
+      rgba(20, 45, 80, 0.018) 50%,
+      rgba(15, 35, 65, 0.02) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06),
+      0 6px 24px rgba(59, 130, 246, 0.025),
+      inset 0 1px 0 rgba(255, 255, 255, 0.02),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.01), 0 0 0 1px rgba(255, 255, 255, 0.015);
+  }
+
+  span {
+    color: #e0f2ff;
+    font-family: Raleway;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  img {
+    filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.1);
+  }
+}

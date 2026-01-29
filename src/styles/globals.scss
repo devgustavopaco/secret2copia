@@ -1,0 +1,229 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap");
+
+:root {
+  // --font-family: "Raleway", -apple-system, Helvetica Neue, sans-serif;
+  --font-family-2: "Nunito Sans", -apple-system, Helvetica Neue, sans-serif;
+  --fs-200: 0.75rem;
+  --fs-300: 0.875rem;
+  --fs-400: 1rem;
+  --fs-450: 1.25rem;
+  --fs-500: 1.5rem;
+  --fs-600: 2rem;
+  --fs-700: 2.5rem;
+  --fs-800: 3rem;
+
+  --gray-900: #0d0f12;
+  --gray-800: #333333;
+  --gray-700: #3d3d3d;
+  --gray-600: #444444;
+  --gray-500: #4b4b4b;
+  --gray-400: #575757;
+  --gray-300: #969696;
+  --gray-200: #d6d6d6;
+  --gray-100: #f2f2f2;
+
+  /* --gray-600: #1a1a1a;
+  --gray-400: #333333;
+  --gray-300: #808080;
+  --gray-200: #d9d9d9;
+  --gray-100: #f2f2f2; */
+
+  --white: #ffffff;
+
+  --purple-500: #7158e2;
+  --purple-400: #7d5fff;
+  --purple-200: #957dff;
+
+  --green-500: #32ff7e;
+  --green-200: #80ffaf;
+
+  --red-500: #ff3838;
+  --red-200: #ff8080;
+
+  // TOASTIFY
+
+  --toastify-color-light: #fff;
+  --toastify-color-dark: #0d0f12;
+  --toastify-color-info: #3498db;
+  --toastify-color-success: #07bc0c;
+  --toastify-color-warning: #f1c40f;
+  --toastify-color-error: #e74c3c;
+  --toastify-color-transparent: rgba(255, 255, 255, 0.7);
+
+  --toastify-icon-color-info: var(--toastify-color-info);
+  --toastify-icon-color-success: var(--toastify-color-success);
+  --toastify-icon-color-warning: var(--toastify-color-warning);
+  --toastify-icon-color-error: var(--toastify-color-error);
+
+  --toastify-toast-width: 320px;
+  --toastify-toast-background: #fff;
+  --toastify-toast-min-height: 64px;
+  --toastify-toast-max-height: 800px;
+  --toastify-font-family: sans-serif;
+  --toastify-z-index: 9999;
+
+  --toastify-text-color-light: #757575;
+  --toastify-text-color-dark: #fff;
+
+  //Used only for colored theme
+  --toastify-text-color-info: #fff;
+  --toastify-text-color-success: #fff;
+  --toastify-text-color-warning: #fff;
+  --toastify-text-color-error: #fff;
+
+  --toastify-spinner-color: #616161;
+  --toastify-spinner-color-empty-area: #e0e0e0;
+
+  // Used when no type is provided
+  // toast("**hello**")
+  --toastify-color-progress-light: linear-gradient(
+    to right,
+    #4cd964,
+    #5ac8fa,
+    #007aff,
+    #34aadc,
+    #5856d6,
+    #ff2d55
+  );
+  // Used when no type is provided
+  --toastify-color-progress-dark: var(--purple-500);
+  --toastify-color-progress-info: var(--toastify-color-info);
+  --toastify-color-progress-success: var(--toastify-color-success);
+  --toastify-color-progress-warning: var(--toastify-color-warning);
+  --toastify-color-progress-error: var(--toastify-color-error);
+}
+
+// Estilos globais para a barra de rolagem
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: inherit;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #7d5fff; // Cor roxa para a barra de rolagem
+  border-radius: 20px;
+  border: 2px solid #7d5fff; // Adicionei uma borda sólida para manter a consistência da cor
+}
+
+.monitor-scrollbar-active *::-webkit-scrollbar-thumb {
+  background-color: #1daf23; // Nova cor quando isChecked é true
+  border: 2px solid #1daf23; // Consistência de cor
+}
+
+*::-webkit-scrollbar-corner {
+  background: inherit;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-family-2);
+  line-height: 1.5;
+
+  &::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--gray-500);
+    border-radius: 100vw;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--white);
+    border-radius: 100vw;
+
+    transition: filter 0.2s ease;
+
+    &:hover {
+      filter: brightness(0.8);
+    }
+  }
+
+  /* Add a class for email and password input elements */
+  .input-element:focus::-webkit-input-placeholder {
+    color: transparent;
+  }
+
+  .input-element:focus:-ms-input-placeholder {
+    color: transparent;
+  }
+
+  .input-element:focus::placeholder {
+    color: transparent;
+  }
+
+  .input-element:focus {
+    -webkit-text-fill-color: currentcolor !important;
+    caret-color: currentcolor !important;
+    -webkit-box-shadow: 0 0 0px 1000px #c71c1c inset !important;
+    box-shadow: 0 0 0px 1000px #c71c1c inset !important;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-transition-delay: 9999s;
+    -webkit-transition: color 9999s ease-out, background-color 9999s ease-out;
+    background-color: rgba(255, 0, 0, 0) !important;
+    color: currentcolor !important;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--gray-900);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+body,
+input,
+textarea,
+button {
+  font-family: var(--font-family-2);
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+}
+
+.container {
+  --max-width: auto;
+
+  max-width: var(--max-width);
+  padding-inline: 1rem;
+
+  margin-inline: auto;
+
+  @media screen and (min-width: 768px) {
+    padding-inline: 4rem;
+  }
+
+  @media only screen and (min-width: 1280px) {
+    --max-width: 1440px;
+  }
+  @media only screen and (min-width: 1536px) {
+    --max-width: 1920px;
+  }
+}

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "PublicBookTickerV3Api.proto";
+
+message MexcWrapper {
+  string channel = 1;
+  string symbol = 2;
+  int64 sendTime = 3;
+  PublicBookTickerV3Api publicBookTicker = 4;
+}
