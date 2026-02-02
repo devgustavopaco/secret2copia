@@ -157,15 +157,22 @@ export default function FuturosNewPage({
     return () => window.removeEventListener("exchangeUpdated", handler);
   }, [pullSelectedFromStorage]);
 
+  const [metricsPeriod, setMetricsPeriod] = useState<
+    "30m" | "1h" | "4h" | "12h" | "24h"
+  >("4h");
+  const metricsIntent = isExitMode ? "fechamento" : "abertura";
+
   // 🔌 conecta ao socket APENAS quando exchanges estiverem prontas
-  const { opportunities, isConnected } = useArbitrageSocket(
+  const { opportunities, isConnected, metricsByKey } = useArbitrageSocket(
     symbols,
     refreshRate,
     buyExNames,
     sellExNames,
     isSocketPaused,
     true,
-    0.5
+    0.5,
+    metricsPeriod,
+    metricsIntent
   );
 
   // ✅ opcional: feedback visual no console
@@ -344,6 +351,10 @@ export default function FuturosNewPage({
       <main className={styles.main}>
         {/* ⬇️ Tabela já com filtros aplicados */}
         <DemoGlassTable
+          metricsByKey={metricsByKey}
+          metricsPeriod={metricsPeriod}
+          metricsIntent={metricsIntent}
+          onMetricsPeriodChange={setMetricsPeriod}
           isSidebarOpen={isSidebarOpen}
           opportunities={filteredOpps}
           /** ⬇️ busca controlada + abrir modal de filtros */

@@ -32,14 +32,19 @@ export default function FuturosLitePage() {
     "Huobi",
   ];
 
-  const { opportunities, isConnected } = useArbitrageSocket(
+  const metricsPeriod = "4h" as const;
+  const metricsIntent = isExitMode ? "fechamento" : "abertura";
+
+  const { opportunities, isConnected, metricsByKey } = useArbitrageSocket(
     [],
     500,
     buyExNames,
     sellExNames,
     false,
     true,
-    0.5
+    0.5,
+    metricsPeriod,
+    metricsIntent
   );
 
   const rows = useMemo(() => {

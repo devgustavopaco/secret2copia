@@ -12,6 +12,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "coin-images.coingecko.com",
       },
+      {
+        protocol: "https",
+        hostname: "assets.coingecko.com",
+      },
+      {
+        protocol: "https",
+        hostname: "public.mocortech.com",
+      },
     ],
   },
   webpack: (config) => {

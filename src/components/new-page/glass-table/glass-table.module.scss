@@ -844,6 +844,101 @@
   gap: 8px;
 }
 
+.historyCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.historyTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.historyCount {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.historyLabelText {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+}
+
+.historyMeta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.historyChartBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.historyIcon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.65);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.historyAge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.historyRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.historyMiniLabel {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.historyValue {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
 .pageNumbers {
   display: flex;
   align-items: center;
@@ -1336,6 +1431,8 @@
   color: #ffdf7e;
   background: transparent;
 }
+
+
 
 /* ===== Tabs/listras verticais entre colunas ===== */
 .th,
@@ -2290,8 +2387,8 @@
 
   .searchIconWrapper {
     left: 16px; /* Bem afastado da borda em mobile */
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   .iconGlass {

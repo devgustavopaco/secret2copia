@@ -87,6 +87,23 @@ export type Column<T> = {
   className?: string;
 };
 
+type MetricsIntent = "abertura" | "fechamento";
+type MetricsPeriod = "30m" | "1h" | "4h" | "12h" | "24h";
+type MetricsKey = {
+  symbol: string;
+  spotExchange: string;
+  futuresExchange: string;
+};
+type MetricsUpdate = {
+  key: MetricsKey;
+  period: MetricsPeriod;
+  intent: MetricsIntent;
+  maxOpenPct?: number;
+  maxClosePct?: number;
+  invertidas?: number;
+  updatedAt: number;
+};
+
 export type GlassTableProps<T extends object> = {
   columns: Column<T>[];
   data: T[];
@@ -169,6 +186,23 @@ const fmtPctFunding = (n?: number) =>
 const safe = (s?: string) => s ?? "—";
 const fmtNumber = (n?: number) =>
   typeof n === "number" && isFinite(n) ? String(n) : "—";
+
+const normalizeExchangeLabel = (raw: string) => {
+  const cleaned = raw.replace(/ spot| futures/gi, "").trim().toLowerCase();
+  if (cleaned.includes("gate")) return "Gate";
+  if (cleaned.includes("mexc")) return "MEXC";
+  if (cleaned.includes("bitget")) return "Bitget";
+  if (cleaned.includes("bybit")) return "Bybit";
+  if (cleaned.includes("huobi") || cleaned.includes("htx")) return "Huobi";
+  if (cleaned.includes("bingx")) return "Bingx";
+  if (cleaned.includes("kucoin")) return "Kucoin";
+  if (cleaned.includes("okx")) return "Okx";
+  if (!cleaned) return raw.trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+};
+
+const metricsKeyString = (key: MetricsKey, period: MetricsPeriod, intent: MetricsIntent) =>
+  `${key.symbol}:${key.spotExchange}:${key.futuresExchange}:${period}:${intent}`;
 
 // Função para formatar volumes com abreviações
 const formatVolume = (volume: number) => {
@@ -477,18 +511,6 @@ const ActionCell = React.memo(
           }}
         >
           <CalculatorTableIcon />
-        </button>
-        <button
-          className={styles.iconBtn}
-          aria-label="Abrir Grafico"
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onOpenTradingView(ticker, spotExchange, futuresExchange);
-          }}
-        >
-          <TradingViewIcon />
         </button>
         <button
           className={styles.iconBtn}
@@ -885,6 +907,10 @@ export function DemoGlassTable({
   dollarPrice,
   onCustomButtonClick,
   customButtonLabel,
+  metricsByKey,
+  metricsPeriod: metricsPeriodProp,
+  metricsIntent,
+  onMetricsPeriodChange,
   customButtonIcon,
 }: {
   isSidebarOpen: boolean;
@@ -901,6 +927,10 @@ export function DemoGlassTable({
   dollarPrice?: number;
   onCustomButtonClick?: () => void;
   customButtonLabel?: string;
+  metricsByKey?: Record<string, MetricsUpdate>;
+  metricsPeriod?: MetricsPeriod;
+  metricsIntent?: MetricsIntent;
+  onMetricsPeriodChange?: (period: MetricsPeriod) => void;
   customButtonIcon?: React.ReactNode;
 }) {
   const [filter, setFilter] = React.useState("");
@@ -944,9 +974,23 @@ export function DemoGlassTable({
     xDomain: [number, number];
     yDomain: [number, number];
   } | null>(null);
-  const [metricsPeriod, setMetricsPeriod] = React.useState<
-    "30m" | "1h" | "4h" | "12h" | "24h"
-  >("4h");
+  const [chartPeriod, setChartPeriod] = React.useState<MetricsPeriod>(
+    metricsPeriodProp ?? "4h"
+  );
+  React.useEffect(() => {
+    if (metricsPeriodProp && metricsPeriodProp !== chartPeriod) {
+      setChartPeriod(metricsPeriodProp);
+    }
+  }, [metricsPeriodProp, chartPeriod]);
+  const selectedMetricsPeriod = metricsPeriodProp ?? chartPeriod;
+  const selectedMetricsIntent = metricsIntent ?? "abertura";
+  const handleMetricsPeriodChange = (value: MetricsPeriod) => {
+    if (onMetricsPeriodChange) {
+      onMetricsPeriodChange(value);
+    } else {
+      setChartPeriod(value);
+    }
+  };
 
   // Estados para paginação
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -964,6 +1008,8 @@ export function DemoGlassTable({
     x: 0,
     y: 0,
   });
+
+  const now = useNow();
   const oppMap = React.useMemo(() => {
     if (!opportunities?.length) return new Map<string, ArbitrageOpportunity>();
     return new Map(opportunities.map((op) => [oppKey(op), op] as const));
@@ -1197,7 +1243,7 @@ export function DemoGlassTable({
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, crossIntent]);
 
   const periodMs = React.useMemo(() => {
-    switch (metricsPeriod) {
+    switch (selectedMetricsPeriod) {
       case "1h":
         return 60 * 60 * 1000;
       case "30m":
@@ -1210,7 +1256,7 @@ export function DemoGlassTable({
       default:
         return 4 * 60 * 60 * 1000;
     }
-  }, [metricsPeriod]);
+  }, [selectedMetricsPeriod]);
 
   const nextGainWindowData = React.useMemo(() => {
     if (!nextGainData.length) return [];
@@ -1952,6 +1998,7 @@ export function DemoGlassTable({
               "tempo",
               "volumes",
               "volumes24",
+              "historico",
               "acoes",
             ]);
       } catch {
@@ -1966,6 +2013,7 @@ export function DemoGlassTable({
           "tempo",
           "volumes",
           "volumes24",
+          "historico",
           "acoes",
         ]);
       }
@@ -2150,6 +2198,7 @@ export function DemoGlassTable({
     { id: "tempo", label: "Tempo", required: false },
     { id: "volumes", label: "Volumes", required: false },
     { id: "volumes24", label: "Volumes 24H", required: false },
+    { id: "historico", label: "Histórico", required: false },
     { id: "acoes", label: "Ações", required: false },
   ];
 
@@ -2352,6 +2401,29 @@ export function DemoGlassTable({
     }
   }, [itemsPerPage]);
 
+  const resolveRowMetrics = (row: CoinRow) => {
+    if (!metricsByKey) {
+      return { invertidas: 0, maxOpen: undefined, maxClose: undefined };
+    }
+    const key: MetricsKey = {
+      symbol: `${row.coin.ticker}USDT`,
+      spotExchange: normalizeExchangeLabel(row.spot.bingo),
+      futuresExchange: normalizeExchangeLabel(row.futures.bingo),
+    };
+    const lookupKey = metricsKeyString(
+      key,
+      selectedMetricsPeriod,
+      selectedMetricsIntent
+    );
+    const metrics = metricsByKey[lookupKey];
+    return {
+      invertidas: metrics?.invertidas ?? 0,
+      maxOpen: metrics?.maxOpenPct,
+      maxClose: metrics?.maxClosePct,
+      updatedAt: metrics?.updatedAt,
+    };
+  };
+
   // Definir todas as colunas possíveis
   const allColumns: Column<CoinRow>[] = [
     {
@@ -2522,6 +2594,83 @@ export function DemoGlassTable({
       width: "140px",
     },
     {
+      id: "historico",
+      header: "Histórico",
+      accessor: (row: CoinRow) => {
+        const { invertidas, maxOpen, maxClose, updatedAt } = resolveRowMetrics(row);
+        const age = updatedAt ? formatElapsed(now - updatedAt) : null;
+        const onOpenChart = () =>
+          handleTradingViewClick(row.coin.ticker, row.spot.bingo, row.futures.bingo);
+        return (
+          <div className={styles.historyCell}>
+            <div className={styles.historyTitle}>
+              <span className={styles.historyCount}>{invertidas}</span>
+              <span className={styles.historyLabelText}>invertidas</span>
+              <span className={styles.historyMeta}>
+                <button
+                  className={styles.historyChartBtn}
+                  type="button"
+                  aria-label="Abrir Grafico"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onOpenChart();
+                  }}
+                >
+                  <span className={styles.historyIcon}>
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M3 14l4-4 3 3 5-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M3 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </span>
+                </button>
+                {age && (
+                  <span className={styles.historyAge}>
+                    <span className={styles.historyIcon}>
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M10 6v4l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                    {age}
+                  </span>
+                )}
+              </span>
+            </div>
+            <div className={styles.historyRow}>
+              <span className={styles.historyMiniLabel}>↑ A</span>
+              <span
+                className={classnames(
+                  styles.historyValue,
+                  typeof maxOpen === "number"
+                    ? maxOpen >= 0
+                      ? styles.positive
+                      : styles.negative
+                    : undefined
+                )}
+              >
+                {typeof maxOpen === "number" ? `${maxOpen.toFixed(2)}%` : "—"}
+              </span>
+              <span className={styles.historyMiniLabel}>↑ F</span>
+              <span
+                className={classnames(
+                  styles.historyValue,
+                  typeof maxClose === "number"
+                    ? maxClose >= 0
+                      ? styles.positive
+                      : styles.negative
+                    : undefined
+                )}
+              >
+                {typeof maxClose === "number" ? `${maxClose.toFixed(2)}%` : "—"}
+              </span>
+            </div>
+          </div>
+        );
+      },
+      width: "200px",
+    },
+    {
       id: "tempo",
       header: "Tempo",
       accessor: (r) => <TempoCell validSince={r.validSince} />,
@@ -2581,6 +2730,8 @@ export function DemoGlassTable({
 
   // Componente separado para o card mobile (para usar o hook corretamente)
   const MobileOpportunityCard = ({ row }: { row: CoinRow }) => {
+    const { invertidas, maxOpen, maxClose, updatedAt } = resolveRowMetrics(row);
+    const age = updatedAt ? formatElapsed(now - updatedAt) : null;
     const opp = getOpp(row.id);
     if (!opp) return null;
 
@@ -2695,6 +2846,80 @@ export function DemoGlassTable({
                   {typeof row.volumes24h === 'string' ? row.volumes24h : 
                    row.volumes24h && typeof row.volumes24h === 'object' ? 
                    `S: ${row.volumes24h.s} / F: ${row.volumes24h.f}` : "—"}
+                </div>
+              </div>
+            )}
+
+            {isColumnVisible("historico") && (
+              <div className={styles.cardField}>
+                <label>Histórico</label>
+                <div className={styles.cardValue}>
+                  <div className={styles.historyCell}>
+                    <div className={styles.historyTitle}>
+                      <span className={styles.historyCount}>{invertidas}</span>
+                      <span className={styles.historyLabelText}>invertidas</span>
+                      <button
+                        className={styles.historyChartBtn}
+                        type="button"
+                        aria-label="Abrir Grafico"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleTradingViewClick(
+                            row.coin.ticker,
+                            row.spot.bingo,
+                            row.futures.bingo
+                          );
+                        }}
+                      >
+                        <span className={styles.historyIcon}>
+                          <svg viewBox="0 0 20 20" aria-hidden="true">
+                            <path d="M3 14l4-4 3 3 5-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M3 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
+                        </span>
+                      </button>
+                      {age && (
+                        <span className={styles.historyAge}>
+                          <span className={styles.historyIcon}>
+                            <svg viewBox="0 0 20 20" aria-hidden="true">
+                              <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
+                              <path d="M10 6v4l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </span>
+                          {age}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.historyRow}>
+                      <span className={styles.historyMiniLabel}>↑ A</span>
+                      <span
+                        className={classnames(
+                          styles.historyValue,
+                          typeof maxOpen === "number"
+                            ? maxOpen >= 0
+                              ? styles.positive
+                              : styles.negative
+                            : undefined
+                        )}
+                      >
+                        {typeof maxOpen === "number" ? `${maxOpen.toFixed(2)}%` : "—"}
+                      </span>
+                      <span className={styles.historyMiniLabel}>↑ F</span>
+                      <span
+                        className={classnames(
+                          styles.historyValue,
+                          typeof maxClose === "number"
+                            ? maxClose >= 0
+                              ? styles.positive
+                              : styles.negative
+                            : undefined
+                        )}
+                      >
+                        {typeof maxClose === "number" ? `${maxClose.toFixed(2)}%` : "—"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -3323,10 +3548,10 @@ export function DemoGlassTable({
                       </label>
                       <select
                         className={styles.chartFilterSelect}
-                        value={metricsPeriod}
+                        value={selectedMetricsPeriod}
                         onChange={(e) =>
-                          setMetricsPeriod(
-                            e.target.value as typeof metricsPeriod
+                          handleMetricsPeriodChange(
+                            e.target.value as MetricsPeriod
                           )
                         }
                       >
