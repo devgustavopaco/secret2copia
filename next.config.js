@@ -22,6 +22,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/metrics/latency",
+        destination: "/api/metrics/latency",
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve.fallback = { fs: false };
     return config;

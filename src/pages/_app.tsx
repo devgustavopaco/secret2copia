@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { withTRPC } from "@trpc/next";
 import { NextPage } from "next";
+import Head from "next/head";
 import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import NextNProgress from "nextjs-progressbar";
@@ -37,6 +38,9 @@ const MyApp = ({
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
+        <Head>
+          <title>N E X T G A I N - FUTURES 2025</title>
+        </Head>
         <NextNProgress color="#7158e2" />
         {getLayout(<Component {...pageProps} />)}
         <ToastContainer />
