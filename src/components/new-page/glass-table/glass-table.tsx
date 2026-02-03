@@ -1099,10 +1099,10 @@ export function DemoGlassTable({
     setNextGainLoading(true);
     setNextGainError(null);
 
-    const spotUrl = `https://almeidashop.shop/api/spread-history?symbol=${encodeURIComponent(
+    const spotUrl = `/api/spread-history?symbol=${encodeURIComponent(
       symbol
     )}&spot=${encodeURIComponent(spot)}`;
-    const futuresUrl = `https://almeidashop.shop/api/spread-history?symbol=${encodeURIComponent(
+    const futuresUrl = `/api/spread-history?symbol=${encodeURIComponent(
       symbol
     )}&futures=${encodeURIComponent(futures)}`;
 
