@@ -115,7 +115,7 @@ export type GlassTableProps<T extends object> = {
 function classnames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
-
+//
 const fmtMoney = (n?: number) =>
   typeof n === "number" && isFinite(n)
     ? `$${n.toLocaleString("en-US", { maximumFractionDigits: 4 })}`
@@ -155,46 +155,21 @@ type CoinRow = {
 const oppKey = (op: ArbitrageOpportunity) =>
   `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`;
 
-const nowStore = (() => {
-  let now = Date.now();
-  let timer: number | null = null;
-  const listeners = new Set<() => void>();
+const useNow = () => {
+  const [now, setNow] = React.useState(() => Date.now());
 
-  const tick = () => {
-    now = Date.now();
-    listeners.forEach((listener) => listener());
-  };
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
 
-  const start = () => {
-    if (timer !== null) return;
-    timer = window.setInterval(tick, 1000);
-  };
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
 
-  const stop = () => {
-    if (timer === null || listeners.size > 0) return;
-    window.clearInterval(timer);
-    timer = null;
-  };
-
-  return {
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      start();
-      return () => {
-        listeners.delete(listener);
-        stop();
-      };
-    },
-    getSnapshot() {
-      return now;
-    },
-  };
-})();
-
-const useNow = () =>
-  React.useSyncExternalStore(nowStore.subscribe, nowStore.getSnapshot, () =>
-    Date.now()
-  );
+  return now;
+};
 
 // mapeia ArbitrageOpportunity -> CoinRow (Futures vs Futures)
 function mapOppToRow(op: ArbitrageOpportunity): CoinRow {
@@ -636,7 +611,7 @@ export default function GlassTable<T extends object>({
     >
       <div className={styles.toolbar}>
         <label className={styles.searchGlass}>
-        <Image
+          <Image
             src="/new-page/search-icon.svg"
             alt=""
             width={16}

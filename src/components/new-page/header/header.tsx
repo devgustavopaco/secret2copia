@@ -24,7 +24,7 @@ export default function NewPageHeader({
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -139,7 +139,7 @@ export default function NewPageHeader({
             priority
           />
         </div>
-        
+
         <div className={styles.headerLeft}>
           <ul>
             <li>

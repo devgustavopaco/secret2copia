@@ -20,13 +20,15 @@ type MetricsUpdate = {
 };
 type MetricsUpdateBatch = { updates: MetricsUpdate[] };
 
-
 const SOCKET_URL = "https://almeidashop.shop/";
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
 const normalizeExchangeName = (raw: string) => {
-  const cleaned = raw.replace(/ spot| futures/gi, "").trim().toLowerCase();
+  const cleaned = raw
+    .replace(/ spot| futures/gi, "")
+    .trim()
+    .toLowerCase();
   if (cleaned.includes("gate")) return "Gate";
   if (cleaned.includes("mexc")) return "MEXC";
   if (cleaned.includes("bitget")) return "Bitget";
@@ -39,7 +41,11 @@ const normalizeExchangeName = (raw: string) => {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 };
 
-const metricsKeyString = (key: MetricsKey, period: MetricsPeriod, intent: MetricsIntent) =>
+const metricsKeyString = (
+  key: MetricsKey,
+  period: MetricsPeriod,
+  intent: MetricsIntent
+) =>
   `${key.symbol}:${key.spotExchange}:${key.futuresExchange}:${period}:${intent}`;
 
 const keyFromPair = (symbol: string, pairKey: string) => {
@@ -97,9 +103,9 @@ export function useArbitrageSocket(
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
     []
   );
-  const [metricsByKey, setMetricsByKey] = useState<Record<string, MetricsUpdate>>(
-    {}
-  );
+  const [metricsByKey, setMetricsByKey] = useState<
+    Record<string, MetricsUpdate>
+  >({});
   const metricsKeysRef = useRef<Set<string>>(new Set());
   const prevMetricsConfigRef = useRef({
     period: metricsPeriod,
@@ -173,7 +179,7 @@ export function useArbitrageSocket(
     s.on("metrics:update", (payload: MetricsUpdate | MetricsUpdateBatch) => {
       const updates = Array.isArray((payload as MetricsUpdateBatch).updates)
         ? (payload as MetricsUpdateBatch).updates
-        : [(payload as MetricsUpdate)];
+        : [payload as MetricsUpdate];
       setMetricsByKey((prev) => {
         const next = { ...prev };
         for (const update of updates) {
@@ -220,7 +226,10 @@ export function useArbitrageSocket(
     if (!s || !s.connected) return;
 
     const prevConfig = prevMetricsConfigRef.current;
-    if (prevConfig.period !== metricsPeriod || prevConfig.intent !== metricsIntent) {
+    if (
+      prevConfig.period !== metricsPeriod ||
+      prevConfig.intent !== metricsIntent
+    ) {
       s.emit("metrics:unsubscribe", {});
       metricsKeysRef.current.clear();
       prevConfig.period = metricsPeriod;
@@ -253,8 +262,12 @@ export function useArbitrageSocket(
       metricsKeysRef.current.delete(keyStr);
       const parts = keyStr.split(":");
       if (parts.length >= 3) {
-        const [symbol, spotExchange, futuresExchange] = parts;
-        removed.push({ symbol, spotExchange, futuresExchange });
+        const symbol = parts[0];
+        const spotExchange = parts[1];
+        const futuresExchange = parts[2];
+        if (symbol && spotExchange && futuresExchange) {
+          removed.push({ symbol, spotExchange, futuresExchange });
+        }
       }
     }
 

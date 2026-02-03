@@ -53,7 +53,8 @@ const LOCAL_OVERRIDES: Record<string, string> = {
 };
 
 const LOCAL_LOGO_OVERRIDES: Record<string, string> = {
-  CLAWDONBASE: "https://public.mocortech.com/coin/F20260127131012790z0AeimraeDTEOx.png",
+  CLAWDONBASE:
+    "https://public.mocortech.com/coin/F20260127131012790z0AeimraeDTEOx.png",
 };
 function applyLocalOverride(base: string) {
   return LOCAL_OVERRIDES[base.toUpperCase()]?.toLowerCase() ?? base;
@@ -84,8 +85,6 @@ async function getFromCryptoCompareList(timeoutMs: number) {
     return CRYPTOCOMPARE_CACHE?.data ?? {};
   }
 }
-
-
 
 /** Função principal (igual ao getCoinImage) */
 export async function resolveImage(
@@ -142,7 +141,9 @@ export default async function handler(
     const results: Record<string, string> = {};
     for (const [sym, info] of Object.entries(list)) {
       if (!info?.ImageUrl) continue;
-      results[sym.toUpperCase()] = `https://www.cryptocompare.com${info.ImageUrl}`;
+      results[
+        sym.toUpperCase()
+      ] = `https://www.cryptocompare.com${info.ImageUrl}`;
     }
     // overrides manuais (ganham do provider)
     for (const [sym, url] of Object.entries(LOCAL_LOGO_OVERRIDES)) {
@@ -150,7 +151,9 @@ export default async function handler(
     }
 
     MASTER_CACHE = { ts: now, data: results };
-    console.log(`✅ Logos resolvidos (CryptoCompare): ${Object.keys(results).length}`);
+    console.log(
+      `✅ Logos resolvidos (CryptoCompare): ${Object.keys(results).length}`
+    );
 
     return res.status(200).json(results);
   } catch (err) {

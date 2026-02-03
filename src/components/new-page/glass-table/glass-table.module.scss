@@ -451,7 +451,10 @@
 
 .chartTopRow {
   display: grid;
-  grid-template-columns: minmax(220px, 320px) minmax(260px, 1fr) minmax(220px, 360px);
+  grid-template-columns: minmax(220px, 320px) minmax(260px, 1fr) minmax(
+      220px,
+      360px
+    );
   gap: 16px;
   padding: 12px 16px 6px 16px;
   align-items: center;
@@ -884,7 +887,6 @@
   font-size: 12px;
   font-weight: 600;
 }
-
 
 .historyChartBtn {
   display: inline-flex;
@@ -1431,8 +1433,6 @@
   color: #ffdf7e;
   background: transparent;
 }
-
-
 
 /* ===== Tabs/listras verticais entre colunas ===== */
 .th,
@@ -2655,7 +2655,7 @@
 
   .cardTitle {
     flex: 1;
-    
+
     h3 {
       font-size: 18px;
       font-weight: 700;
@@ -2667,7 +2667,7 @@
   .cardExchanges {
     font-size: 13px;
     color: var(--gt-text-dim);
-    
+
     span {
       font-weight: 500;
     }
@@ -2822,13 +2822,17 @@
     right: 20px !important;
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, rgba(125, 95, 255, 0.95) 0%, rgba(113, 88, 226, 0.95) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(125, 95, 255, 0.95) 0%,
+      rgba(113, 88, 226, 0.95) 100%
+    );
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 6px 20px rgba(125, 95, 255, 0.5),
-                0 0 0 1px rgba(125, 95, 255, 0.4) inset;
+      0 0 0 1px rgba(125, 95, 255, 0.4) inset;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2860,7 +2864,7 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 32px rgba(125, 95, 255, 0.5),
-                  0 0 0 1px rgba(125, 95, 255, 0.4) inset;
+        0 0 0 1px rgba(125, 95, 255, 0.4) inset;
     }
   }
 
@@ -2911,7 +2915,7 @@
     border: 1px solid rgba(125, 95, 255, 0.3);
     border-bottom: none;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(125, 95, 255, 0.2) inset;
+      0 0 0 1px rgba(125, 95, 255, 0.2) inset;
     z-index: 10000;
     animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     max-height: 70vh;
@@ -3075,7 +3079,11 @@
     }
 
     &.active {
-      background: linear-gradient(135deg, rgba(125, 95, 255, 0.8) 0%, rgba(113, 88, 226, 0.8) 100%);
+      background: linear-gradient(
+        135deg,
+        rgba(125, 95, 255, 0.8) 0%,
+        rgba(113, 88, 226, 0.8) 100%
+      );
       border-color: rgba(125, 95, 255, 0.6);
       color: white;
       box-shadow: 0 4px 12px rgba(125, 95, 255, 0.4);
@@ -3092,7 +3100,7 @@
     gap: 4px;
     padding: 2px 6px;
     border-radius: 4px;
-    
+
     &:hover {
       color: rgba(125, 95, 255, 0.9);
       background: rgba(125, 95, 255, 0.1);

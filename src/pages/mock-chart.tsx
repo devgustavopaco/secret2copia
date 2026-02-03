@@ -51,13 +51,14 @@ export default function MockChartPage() {
 
       const ask = Number(tick.ask_price);
       const bid = Number(tick.bid_price);
-      const price = Number.isFinite(ask) && Number.isFinite(bid)
-        ? (ask + bid) / 2
-        : Number.isFinite(ask)
-        ? ask
-        : Number.isFinite(bid)
-        ? bid
-        : NaN;
+      const price =
+        Number.isFinite(ask) && Number.isFinite(bid)
+          ? (ask + bid) / 2
+          : Number.isFinite(ask)
+          ? ask
+          : Number.isFinite(bid)
+          ? bid
+          : NaN;
       if (!Number.isFinite(price)) return;
 
       const exchange = tick.exchange || "Unknown";
@@ -153,11 +154,7 @@ export default function MockChartPage() {
                   name={exchangeLabels.get(key) || key}
                   dot={false}
                   strokeWidth={1.6}
-                  stroke={
-                    ["#38BDF8", "#F472B6", "#F59E0B", "#34D399"][
-                      idx % 4
-                    ]
-                  }
+                  stroke={["#38BDF8", "#F472B6", "#F59E0B", "#34D399"][idx % 4]}
                   connectNulls={false}
                 />
               ))}
