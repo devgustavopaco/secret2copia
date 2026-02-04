@@ -154,7 +154,7 @@ export default function MetricsLatencyPage() {
   const [windowCustom, setWindowCustom] = useState("");
   const [windowMs, setWindowMs] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshMs, setRefreshMs] = useState("10000");
+  const [refreshMs, setRefreshMs] = useState("300000");
 
   const effectiveWindow = useMemo(() => {
     if (windowMs.trim()) return `${windowMs.trim()}ms`;
