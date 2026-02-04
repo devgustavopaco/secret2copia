@@ -163,7 +163,8 @@ export default function FuturesVsFuturesPage({
     refreshRate,
     buyExNames,
     sellExNames,
-    isSocketPaused
+    isSocketPaused,
+    "batch"
   );
 
   // Feedback visual no console

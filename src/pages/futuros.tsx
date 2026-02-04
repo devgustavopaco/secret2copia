@@ -10,7 +10,10 @@ import ConfigIcon from "../components/Icons/ConfigIcon";
 import { appRouter } from "../server/router";
 import { GetServerSidePropsContext } from "next";
 import { createContext } from "../server/router/context";
-import { useArbitrageSocket } from "../hooks/useArbitrageSocket";
+import {
+  useArbitrageSocket,
+  type MetricsHistoryTarget,
+} from "../hooks/useArbitrageSocket";
 import {
   useSpreadAlert,
   type SpreadAlertConfig,
@@ -155,6 +158,8 @@ export default function FuturosNewPage({
     "30m" | "1h" | "4h" | "12h" | "24h"
   >("4h");
   const metricsIntent = isExitMode ? "fechamento" : "abertura";
+  const [metricsHistoryTarget, setMetricsHistoryTarget] =
+    useState<MetricsHistoryTarget | null>(null);
 
   // 🔌 conecta ao socket APENAS quando exchanges estiverem prontas
   const { opportunities, isConnected, metricsByKey } = useArbitrageSocket(
@@ -166,7 +171,9 @@ export default function FuturosNewPage({
     true,
     0.5,
     metricsPeriod,
-    metricsIntent
+    metricsIntent,
+    "batch",
+    metricsHistoryTarget
   );
 
   // ✅ opcional: feedback visual no console
@@ -356,6 +363,7 @@ export default function FuturosNewPage({
           metricsPeriod={metricsPeriod}
           metricsIntent={metricsIntent}
           onMetricsPeriodChange={setMetricsPeriod}
+          onMetricsHistoryTargetChange={setMetricsHistoryTarget}
           isSidebarOpen={isSidebarOpen}
           opportunities={filteredOpps}
           /** ⬇️ busca controlada + abrir modal de filtros */

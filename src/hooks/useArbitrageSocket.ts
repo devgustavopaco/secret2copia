@@ -16,9 +16,31 @@ type MetricsUpdate = {
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
+  history?: Array<{
+    ts: number;
+    spot: number;
+    futures: number;
+    spotBid?: number;
+    spotAsk?: number;
+    futuresBid?: number;
+    futuresAsk?: number;
+  }>;
   updatedAt: number;
 };
 type MetricsUpdateBatch = { updates: MetricsUpdate[] };
+export type MetricsHistoryTarget = {
+  symbol: string;
+  spotExchange: string;
+  futuresExchange: string;
+  period?: MetricsPeriod;
+  intent?: MetricsIntent;
+};
+type ArbitrageDelta = {
+  symbol: string;
+  upserts: ArbitrageOpportunity[];
+  deletes: string[];
+};
+type ArbitrageDeltaBatch = { updates: ArbitrageDelta[]; sentAt?: number };
 
 const SOCKET_URL = "https://almeidashop.shop/";
 const keyOf = (opp: ArbitrageOpportunity) =>
@@ -68,7 +90,9 @@ export function useArbitrageSocket(
   lite: boolean = false,
   minSpread?: number,
   metricsPeriod: MetricsPeriod = "4h",
-  metricsIntent: MetricsIntent = "abertura"
+  metricsIntent: MetricsIntent = "abertura",
+  deltaMode: "single" | "batch" = "single",
+  historyTarget?: MetricsHistoryTarget | null
 ) {
   // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
@@ -107,6 +131,11 @@ export function useArbitrageSocket(
     Record<string, MetricsUpdate>
   >({});
   const metricsKeysRef = useRef<Set<string>>(new Set());
+  const historySubRef = useRef<{
+    key: MetricsKey;
+    period: MetricsPeriod;
+    intent: MetricsIntent;
+  } | null>(null);
   const prevMetricsConfigRef = useRef({
     period: metricsPeriod,
     intent: metricsIntent,
@@ -141,6 +170,7 @@ export function useArbitrageSocket(
         sellExchanges,
         lite,
         minSpread,
+        deltaMode,
       });
     };
 
@@ -151,6 +181,17 @@ export function useArbitrageSocket(
         rafId = null;
         setOpportunities(Array.from(indexRef.current.values()));
       });
+    };
+    const applyDelta = (payload: ArbitrageDelta) => {
+      const { symbol, upserts, deletes } = payload;
+      for (const opp of upserts) {
+        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
+        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
+        indexRef.current.set(keyOf(opp), opp);
+      }
+      for (const pair of deletes) {
+        indexRef.current.delete(keyFromPair(symbol, pair));
+      }
     };
 
     s.on("connect", () => {
@@ -185,25 +226,24 @@ export function useArbitrageSocket(
         for (const update of updates) {
           if (!update?.key) continue;
           const k = metricsKeyString(update.key, update.period, update.intent);
-          next[k] = update;
+          const prev = next[k];
+          if (!update.history?.length && prev?.history?.length) {
+            next[k] = { ...update, history: prev.history };
+          } else {
+            next[k] = update;
+          }
         }
         return next;
       });
     });
 
-    s.on("arbitrageDelta", (payload) => {
-      const { symbol, upserts, deletes } = payload;
-
-      for (const opp of upserts) {
-        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
-        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
-        indexRef.current.set(keyOf(opp), opp);
-      }
-
-      for (const pair of deletes) {
-        indexRef.current.delete(keyFromPair(symbol, pair));
-      }
-
+    s.on("arbitrageDelta", (payload: ArbitrageDelta) => {
+      applyDelta(payload);
+      scheduleFlush();
+    });
+    s.on("arbitrageDeltaBatch", (payload: ArbitrageDeltaBatch) => {
+      const updates = Array.isArray(payload?.updates) ? payload.updates : [];
+      for (const update of updates) applyDelta(update);
       scheduleFlush();
     });
 
@@ -212,6 +252,7 @@ export function useArbitrageSocket(
         s.emit("unsubscribe", { symbols: prevSymbolsRef.current });
       }
       s.emit("metrics:unsubscribe", {});
+      historySubRef.current = null;
       s.off();
       s.disconnect();
       socketRef.current = null;
@@ -232,6 +273,7 @@ export function useArbitrageSocket(
     ) {
       s.emit("metrics:unsubscribe", {});
       metricsKeysRef.current.clear();
+      historySubRef.current = null;
       prevConfig.period = metricsPeriod;
       prevConfig.intent = metricsIntent;
     }
@@ -287,6 +329,66 @@ export function useArbitrageSocket(
     }
   }, [metricsPeriod, metricsIntent, opportunities]);
 
+  useEffect(() => {
+    const s = socketRef.current;
+    if (!s || !s.connected) return;
+
+    const prev = historySubRef.current;
+    const nextPeriod = historyTarget?.period ?? metricsPeriod;
+    const nextIntent = historyTarget?.intent ?? metricsIntent;
+    const normalizedSymbol = historyTarget?.symbol
+      ?.toUpperCase()
+      .trim()
+      .replace(/[^A-Z0-9]/g, "");
+
+    const nextKey =
+      historyTarget &&
+      normalizedSymbol &&
+      historyTarget.spotExchange &&
+      historyTarget.futuresExchange
+        ? {
+            symbol: normalizedSymbol.endsWith("USDT")
+              ? normalizedSymbol
+              : `${normalizedSymbol}USDT`,
+            spotExchange: normalizeExchangeName(historyTarget.spotExchange),
+            futuresExchange: normalizeExchangeName(
+              historyTarget.futuresExchange
+            ),
+          }
+        : null;
+
+    const prevId = prev
+      ? metricsKeyString(prev.key, prev.period, prev.intent)
+      : null;
+    const nextId = nextKey
+      ? metricsKeyString(nextKey, nextPeriod, nextIntent)
+      : null;
+
+    if (prev && prevId && prevId !== nextId) {
+      s.emit("metrics:unsubscribe", {
+        keys: [prev.key],
+        period: prev.period,
+        intent: prev.intent,
+        includeHistory: true,
+      });
+      historySubRef.current = null;
+    }
+
+    if (!nextKey || nextId === prevId) return;
+
+    s.emit("metrics:subscribe", {
+      keys: [nextKey],
+      period: nextPeriod,
+      intent: nextIntent,
+      includeHistory: true,
+    });
+    historySubRef.current = {
+      key: nextKey,
+      period: nextPeriod,
+      intent: nextIntent,
+    };
+  }, [historyTarget, metricsPeriod, metricsIntent, isConnected]);
+
   // 🔹 Detecta mudanças em symbols / refresh / exchanges
   useEffect(() => {
     const s = socketRef.current;
@@ -323,6 +425,7 @@ export function useArbitrageSocket(
         sellExchanges,
         lite,
         minSpread,
+        deltaMode,
       });
     }
 
@@ -330,7 +433,15 @@ export function useArbitrageSocket(
     prevRefreshRef.current = refreshRate;
     if (buyChanged) prevBuyRef.current = normList(buyExchanges);
     if (sellChanged) prevSellRef.current = normList(sellExchanges);
-  }, [symbols, refreshRate, buyExchanges, sellExchanges, lite, minSpread]);
+  }, [
+    symbols,
+    refreshRate,
+    buyExchanges,
+    sellExchanges,
+    lite,
+    minSpread,
+    deltaMode,
+  ]);
 
   return { opportunities, setOpportunities, isConnected, metricsByKey };
 }
