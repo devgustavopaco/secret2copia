@@ -6,6 +6,12 @@ const SOCKET_URL = "https://almeidashop.shop";
 const SOCKET_PATH = "/futuros/socket.io";
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
+type ArbitrageDelta = {
+  symbol: string;
+  upserts: ArbitrageOpportunity[];
+  deletes: string[];
+};
+type ArbitrageDeltaBatch = { updates: ArbitrageDelta[]; sentAt?: number };
 
 // Para futuros vs futuros, ambos são Futures
 const keyFromPair = (symbol: string, pairKey: string) => {
@@ -24,7 +30,8 @@ export function useArbitrageSocketFuturesFutures(
   refreshRate: number,
   buyExchanges: string[],
   sellExchanges: string[],
-  isPaused: boolean = false
+  isPaused: boolean = false,
+  deltaMode: "single" | "batch" = "single"
 ) {
   // Cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
@@ -93,6 +100,7 @@ export function useArbitrageSocketFuturesFutures(
         sellExchanges,
         isFutures: true, // Flag especial para indicar futures vs futures
         lite: true,
+        deltaMode,
       });
     };
 
@@ -103,6 +111,17 @@ export function useArbitrageSocketFuturesFutures(
         rafId = null;
         setOpportunities(Array.from(indexRef.current.values()));
       });
+    };
+    const applyDelta = (payload: ArbitrageDelta) => {
+      const { symbol, upserts, deletes } = payload;
+      for (const opp of upserts) {
+        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
+        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
+        indexRef.current.set(keyOf(opp), opp);
+      }
+      for (const pair of deletes) {
+        indexRef.current.delete(keyFromPair(symbol, pair));
+      }
     };
 
     s.on("connect", () => {
@@ -147,19 +166,13 @@ export function useArbitrageSocketFuturesFutures(
     });
 
     // Deltas incrementais
-    s.on("arbitrageDelta", (payload) => {
-      const { symbol, upserts, deletes } = payload;
-
-      for (const opp of upserts) {
-        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
-        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
-        indexRef.current.set(keyOf(opp), opp);
-      }
-
-      for (const pair of deletes) {
-        indexRef.current.delete(keyFromPair(symbol, pair));
-      }
-
+    s.on("arbitrageDelta", (payload: ArbitrageDelta) => {
+      applyDelta(payload);
+      scheduleFlush();
+    });
+    s.on("arbitrageDeltaBatch", (payload: ArbitrageDeltaBatch) => {
+      const updates = Array.isArray(payload?.updates) ? payload.updates : [];
+      for (const update of updates) applyDelta(update);
       scheduleFlush();
     });
 
@@ -209,6 +222,7 @@ export function useArbitrageSocketFuturesFutures(
         sellExchanges,
         isFutures: true, // Sempre true para futuros vs futuros
         lite: true,
+        deltaMode,
       });
     }
 
@@ -216,7 +230,7 @@ export function useArbitrageSocketFuturesFutures(
     prevRefreshRef.current = refreshRate;
     if (buyChanged) prevBuyRef.current = normList(buyExchanges);
     if (sellChanged) prevSellRef.current = normList(sellExchanges);
-  }, [symbols, refreshRate, buyExchanges, sellExchanges]);
+  }, [symbols, refreshRate, buyExchanges, sellExchanges, deltaMode]);
 
   return { opportunities, setOpportunities, isConnected };
 }

@@ -106,6 +106,15 @@ type MetricsUpdate = {
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
+  history?: Array<{
+    ts: number;
+    spot: number;
+    futures: number;
+    spotBid?: number;
+    spotAsk?: number;
+    futuresBid?: number;
+    futuresAsk?: number;
+  }>;
   updatedAt: number;
 };
 
@@ -891,6 +900,7 @@ export function DemoGlassTable({
   metricsPeriod: metricsPeriodProp,
   metricsIntent,
   onMetricsPeriodChange,
+  onMetricsHistoryTargetChange,
   customButtonIcon,
 }: {
   isSidebarOpen: boolean;
@@ -911,6 +921,15 @@ export function DemoGlassTable({
   metricsPeriod?: MetricsPeriod;
   metricsIntent?: MetricsIntent;
   onMetricsPeriodChange?: (period: MetricsPeriod) => void;
+  onMetricsHistoryTargetChange?: (
+    target: {
+      symbol: string;
+      spotExchange: string;
+      futuresExchange: string;
+      period: MetricsPeriod;
+      intent: MetricsIntent;
+    } | null
+  ) => void;
   customButtonIcon?: React.ReactNode;
 }) {
   const [filter, setFilter] = React.useState("");
@@ -1067,57 +1086,115 @@ export function DemoGlassTable({
   }, []);
 
   React.useEffect(() => {
-    if (chartProvider !== "nextgain") return;
-    const symbol = chartTicker ? `${chartTicker}USDT` : null;
+    if (!onMetricsHistoryTargetChange) return;
     const spot = normalizeExchangeName(chartSpotExchange);
     const futures = normalizeExchangeName(chartFuturesExchange);
 
-    if (!symbol || !spot || !futures) {
-      setNextGainSpotTicks([]);
-      setNextGainFuturesTicks([]);
+    if (
+      !isTradingViewOpen ||
+      chartProvider !== "nextgain" ||
+      !chartTicker ||
+      !spot ||
+      !futures
+    ) {
+      onMetricsHistoryTargetChange(null);
       return;
     }
 
-    const controller = new AbortController();
-    setNextGainLoading(true);
-    setNextGainError(null);
+    onMetricsHistoryTargetChange({
+      symbol: `${chartTicker}USDT`,
+      spotExchange: spot,
+      futuresExchange: futures,
+      period: selectedMetricsPeriod,
+      intent: crossIntent,
+    });
+  }, [
+    onMetricsHistoryTargetChange,
+    isTradingViewOpen,
+    chartProvider,
+    chartTicker,
+    chartSpotExchange,
+    chartFuturesExchange,
+    normalizeExchangeName,
+    selectedMetricsPeriod,
+    crossIntent,
+  ]);
 
-    const spotUrl = `/api/spread-history?symbol=${encodeURIComponent(
-      symbol
-    )}&spot=${encodeURIComponent(spot)}`;
-    const futuresUrl = `/api/spread-history?symbol=${encodeURIComponent(
-      symbol
-    )}&futures=${encodeURIComponent(futures)}`;
-
-    const parsePayload = async (res: Response) => {
-      const data = await res.json();
-      if (Array.isArray(data)) return data as NextGainTick[];
-      if (Array.isArray(data?.data)) return data.data as NextGainTick[];
-      return [];
+  React.useEffect(() => {
+    return () => {
+      onMetricsHistoryTargetChange?.(null);
     };
+  }, [onMetricsHistoryTargetChange]);
 
-    Promise.all([
-      fetch(spotUrl, { signal: controller.signal }).then(parsePayload),
-      fetch(futuresUrl, { signal: controller.signal }).then(parsePayload),
-    ])
-      .then(([spotTicks, futuresTicks]) => {
-        setNextGainSpotTicks(spotTicks);
-        setNextGainFuturesTicks(futuresTicks);
-      })
-      .catch((err) => {
-        if (err?.name === "AbortError") return;
-        setNextGainError("Falha ao carregar dados da NextGain.");
-        setNextGainSpotTicks([]);
-        setNextGainFuturesTicks([]);
-      })
-      .finally(() => setNextGainLoading(false));
+  React.useEffect(() => {
+    if (chartProvider !== "nextgain") return;
 
-    return () => controller.abort();
+    const symbol = chartTicker ? `${chartTicker}USDT` : null;
+    const spot = normalizeExchangeName(chartSpotExchange);
+    const futures = normalizeExchangeName(chartFuturesExchange);
+    if (!symbol || !spot || !futures) {
+      setNextGainSpotTicks([]);
+      setNextGainFuturesTicks([]);
+      setNextGainLoading(false);
+      setNextGainError(null);
+      return;
+    }
+
+    const lookupKey = metricsKeyString(
+      {
+        symbol,
+        spotExchange: spot,
+        futuresExchange: futures,
+      },
+      selectedMetricsPeriod,
+      crossIntent
+    );
+    const history = metricsByKey?.[lookupKey]?.history ?? [];
+
+    if (!history.length) {
+      setNextGainSpotTicks([]);
+      setNextGainFuturesTicks([]);
+      setNextGainLoading(true);
+      setNextGainError("Aguardando historico em tempo real...");
+      return;
+    }
+
+    const toStr = (value?: number) =>
+      Number.isFinite(value) ? Number(value).toString() : "0";
+
+    const spotTicks: NextGainTick[] = history.map((point) => ({
+      ticker_formatted: symbol,
+      exchange_id: 0,
+      ask_price: toStr(point.spotAsk ?? point.spot),
+      ask_size: "0",
+      bid_price: toStr(point.spotBid ?? point.spot),
+      bid_size: "0",
+      volume: "0",
+      timestamp: String(point.ts),
+    }));
+    const futuresTicks: NextGainTick[] = history.map((point) => ({
+      ticker_formatted: symbol,
+      exchange_id: 0,
+      ask_price: toStr(point.futuresAsk ?? point.futures),
+      ask_size: "0",
+      bid_price: toStr(point.futuresBid ?? point.futures),
+      bid_size: "0",
+      volume: "0",
+      timestamp: String(point.ts),
+    }));
+
+    setNextGainSpotTicks(spotTicks);
+    setNextGainFuturesTicks(futuresTicks);
+    setNextGainLoading(false);
+    setNextGainError(null);
   }, [
     chartProvider,
     chartTicker,
     chartSpotExchange,
     chartFuturesExchange,
+    metricsByKey,
+    selectedMetricsPeriod,
+    crossIntent,
     normalizeExchangeName,
   ]);
 
@@ -3422,7 +3499,6 @@ export function DemoGlassTable({
         }
       />
 
-      {/* Paginação */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <div className={styles.paginationInfo}>
