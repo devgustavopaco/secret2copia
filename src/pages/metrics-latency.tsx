@@ -66,6 +66,60 @@ const WINDOW_PRESETS = [
   { label: "1h", value: "1h" },
 ];
 
+const EXCHANGES = [
+  "Gate",
+  "Bybit",
+  "Kucoin",
+  "MEXC",
+  "Bingx",
+  "Bitget",
+  "Huobi",
+  "Okx",
+] as const;
+
+const SIDES = ["spot", "futures"] as const;
+
+const CONTAINER_NAMES = [
+  "worker-bybit-futures",
+  "worker-bybit-spot",
+  "worker-mexc-futures-1",
+  "worker-mexc-futures-2",
+  "worker-mexc-spot-1",
+  "worker-mexc-spot-2",
+  "worker-gate-futures-1",
+  "worker-gate-futures-2",
+  "worker-gate-futures-3",
+  "worker-gate-futures-4",
+  "worker-gate-spot-1",
+  "worker-gate-spot-2",
+  "worker-gate-spot-3",
+  "worker-gate-spot-4",
+  "worker-kucoin-futures-1",
+  "worker-kucoin-futures-2",
+  "worker-kucoin-spot-1",
+  "worker-kucoin-spot-2",
+  "worker-bingx-spot",
+  "worker-bingx-futures",
+  "worker-bitget-spot",
+  "worker-bitget-futures",
+  "worker-okx-spot",
+  "worker-okx-futures",
+  "worker-huobi-spot",
+  "worker-huobi-futures",
+  "worker-spread-recorder",
+  "worker-symbols",
+  "worker-symbols-watcher",
+  "futures-socket-socket-1",
+  "futures-socket-socket-2",
+  "futures-socket-socket-3",
+  "futures-socket-socket_futuros-1",
+  "futures-socket-socket_futuros-2",
+  "futures-socket-socket_futuros-3",
+  "nginx",
+  "redis",
+  "mysql",
+] as const;
+
 const ALERT_THRESHOLDS = {
   p95: { warn: 150, crit: 300 },
   p99: { warn: 250, crit: 450 },
@@ -87,8 +141,24 @@ function buildSystemUrl() {
   return new URL("/api/metrics/system", window.location.origin).toString();
 }
 
-function buildContainersUrl() {
-  return new URL("/api/metrics/containers", window.location.origin).toString();
+function buildContainersUrl(name: string) {
+  return new URL(`/api/metrics/container/${name}`, window.location.origin).toString();
+}
+
+function buildExchangeUrl(
+  exchange: string,
+  windowValue: string,
+  windowMsValue: string,
+  side: string
+) {
+  const url = new URL(`/api/metrics/latency/${exchange}`, window.location.origin);
+  if (windowMsValue) {
+    url.searchParams.set("windowMs", windowMsValue);
+  } else if (windowValue) {
+    url.searchParams.set("window", windowValue);
+  }
+  if (side) url.searchParams.set("side", side);
+  return url.toString();
 }
 
 function formatNumber(value?: number) {
@@ -166,18 +236,116 @@ export default function MetricsLatencyPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const url = buildUrl(
-        windowCustom.trim() || windowPreset,
-        windowMs.trim()
-      );
-      const res = await fetch(url);
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Erro ao buscar metricas");
+      const windowValue = windowCustom.trim() || windowPreset;
+      const windowMsValue = windowMs.trim();
+
+      const entries: LatencyEntry[] = [];
+      let now = Date.now();
+      let windowMsResolved = 0;
+
+      for (const exchange of EXCHANGES) {
+        for (const side of SIDES) {
+          console.log("[metrics-latency] fetch exchange", { exchange, side });
+          const url = buildExchangeUrl(exchange, windowValue, windowMsValue, side);
+          const res = await fetch(url);
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || "Erro ao buscar metricas");
+          }
+          const payload = await res.json();
+          const totals = payload?.totals ?? payload;
+          if (!totals) continue;
+          console.log("[metrics-latency] exchange ok", {
+            exchange,
+            side,
+            count: totals.count,
+            p95: totals.p95,
+            p99: totals.p99,
+          });
+          const entry: LatencyEntry = {
+            exchange: totals.exchange || exchange,
+            side: totals.side || side,
+            count: Number(totals.count) || 0,
+            min: Number(totals.min) || 0,
+            max: Number(totals.max) || 0,
+            avg: Number(totals.avg) || 0,
+            p50: Number(totals.p50) || 0,
+            p95: Number(totals.p95) || 0,
+            p99: Number(totals.p99) || 0,
+            lastTs: Number(totals.lastTs) || 0,
+            lastLag: Number(totals.lastLag) || 0,
+          };
+          entries.push(entry);
+          now = Math.max(now, Number(payload?.now) || 0);
+          windowMsResolved = Number(payload?.windowMs) || windowMsResolved;
+
+          const countSumLive = entries.reduce((acc, e) => acc + (e.count || 0), 0);
+          const weightedAvgLive =
+            countSumLive > 0
+              ? entries.reduce(
+                  (acc, e) => acc + (e.avg || 0) * (e.count || 0),
+                  0
+                ) / countSumLive
+              : 0;
+
+          const totalsLive: LatencyTotals = {
+            exchange: "all",
+            side: "all",
+            count: countSumLive,
+            min: entries.length ? Math.min(...entries.map((e) => e.min)) : 0,
+            max: entries.length ? Math.max(...entries.map((e) => e.max)) : 0,
+            avg: Number(weightedAvgLive.toFixed(2)),
+            p50: entries.length ? Math.max(...entries.map((e) => e.p50)) : 0,
+            p95: entries.length ? Math.max(...entries.map((e) => e.p95)) : 0,
+            p99: entries.length ? Math.max(...entries.map((e) => e.p99)) : 0,
+            lastTs: entries.length ? Math.max(...entries.map((e) => e.lastTs)) : 0,
+            lastLag:
+              entries.length ? Math.max(...entries.map((e) => e.lastLag)) : 0,
+          };
+
+          setData({
+            now,
+            windowMs:
+              windowMsResolved || (windowMsValue ? Number(windowMsValue) : 0),
+            totals: totalsLive,
+            entries: [...entries],
+          });
+        }
       }
-      const payload = (await res.json()) as LatencyResponse;
-      setData(payload);
+
+      const countSum = entries.reduce((acc, e) => acc + (e.count || 0), 0);
+      const weightedAvg =
+        countSum > 0
+          ? entries.reduce((acc, e) => acc + (e.avg || 0) * (e.count || 0), 0) /
+            countSum
+          : 0;
+
+      const totals: LatencyTotals = {
+        exchange: "all",
+        side: "all",
+        count: countSum,
+        min: entries.length ? Math.min(...entries.map((e) => e.min)) : 0,
+        max: entries.length ? Math.max(...entries.map((e) => e.max)) : 0,
+        avg: Number(weightedAvg.toFixed(2)),
+        p50: entries.length ? Math.max(...entries.map((e) => e.p50)) : 0,
+        p95: entries.length ? Math.max(...entries.map((e) => e.p95)) : 0,
+        p99: entries.length ? Math.max(...entries.map((e) => e.p99)) : 0,
+        lastTs: entries.length ? Math.max(...entries.map((e) => e.lastTs)) : 0,
+        lastLag: entries.length ? Math.max(...entries.map((e) => e.lastLag)) : 0,
+      };
+
+      setData({
+        now,
+        windowMs: windowMsResolved || (windowMsValue ? Number(windowMsValue) : 0),
+        totals,
+        entries,
+      });
+      console.log("[metrics-latency] latency done", {
+        entries: entries.length,
+        totalsCount: totals.count,
+      });
     } catch (err: any) {
+      console.error("[metrics-latency] latency error", err);
       setError(err?.message || "Erro inesperado");
     } finally {
       setIsLoading(false);
@@ -188,6 +356,7 @@ export default function MetricsLatencyPage() {
     try {
       setSystemLoading(true);
       setSystemError(null);
+      console.log("[metrics-latency] fetch system");
       const res = await fetch(buildSystemUrl());
       if (!res.ok) {
         const text = await res.text();
@@ -195,7 +364,9 @@ export default function MetricsLatencyPage() {
       }
       const payload = (await res.json()) as SystemMetrics;
       setSystemData(payload);
+      console.log("[metrics-latency] system ok", payload);
     } catch (err: any) {
+      console.error("[metrics-latency] system error", err);
       setSystemError(err?.message || "Erro inesperado");
     } finally {
       setSystemLoading(false);
@@ -206,14 +377,45 @@ export default function MetricsLatencyPage() {
     try {
       setContainersLoading(true);
       setContainersError(null);
-      const res = await fetch(buildContainersUrl());
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Erro ao buscar containers");
+      const containers: ContainerStats[] = [];
+      for (const name of CONTAINER_NAMES) {
+        console.log("[metrics-latency] fetch container", name);
+        const res = await fetch(buildContainersUrl(name));
+        if (!res.ok) {
+          console.warn("[metrics-latency] container skip", name, res.status);
+          continue;
+        }
+        const payload = await res.json();
+        const container = payload?.container?.container ?? payload?.container ?? payload;
+        if (!container) continue;
+        console.log("[metrics-latency] container ok", {
+          name: container.name || name,
+          cpu: container.cpuPercent,
+          mem: container.memUsageBytes,
+        });
+        containers.push({
+          name: container.name || name,
+          cpuPercent: Number(container.cpuPercent) || 0,
+          memUsageBytes: Number(container.memUsageBytes) || 0,
+          memPercentHost: Number(container.memPercentHost ?? container.memPercent) || 0,
+          netRxBytes: Number(container.netRxBytes) || 0,
+          netTxBytes: Number(container.netTxBytes) || 0,
+        });
+
+        setContainersData({
+          enabled: true,
+          count: containers.length,
+          containers: [...containers],
+        });
       }
-      const payload = (await res.json()) as ContainersMetrics;
-      setContainersData(payload);
+      setContainersData({
+        enabled: true,
+        count: containers.length,
+        containers,
+      });
+      console.log("[metrics-latency] containers done", { count: containers.length });
     } catch (err: any) {
+      console.error("[metrics-latency] containers error", err);
       setContainersError(err?.message || "Erro inesperado");
     } finally {
       setContainersLoading(false);
