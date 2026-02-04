@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "../styles/LatencyMetrics.module.scss";
 
 type LatencyTotals = {
@@ -35,6 +35,7 @@ type SystemMetrics = {
 
 type ContainerStats = {
   name: string;
+  status?: string;
   cpuPercent: number;
   memUsageBytes: number;
   memPercentHost: number;
@@ -127,14 +128,89 @@ const ALERT_THRESHOLDS = {
   delay: { warn: 200, crit: 500 },
 };
 
-function buildUrl(windowValue: string, windowMsValue: string) {
-  const url = new URL("/metrics/latency", window.location.origin);
-  if (windowMsValue) {
-    url.searchParams.set("windowMs", windowMsValue);
-  } else if (windowValue) {
-    url.searchParams.set("window", windowValue);
+const RESTART_POLL_INTERVAL_MS = 2000;
+const RESTART_POLL_TIMEOUT_MS = 60000;
+const RESTART_CLEAR_MS = 3000;
+const RESTART_UPTIME_MAX_SEC = 300;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function normalizeContainerPayload(
+  payload: any,
+  fallbackName: string,
+  prev?: ContainerStats
+): ContainerStats | null {
+  const container =
+    payload?.container?.container ?? payload?.container ?? payload;
+  if (!container) return null;
+  const name = String(container.name || fallbackName);
+  const toNumber = (value: unknown, fallback = 0) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  };
+
+  return {
+    name,
+    status:
+      typeof container.status === "string" && container.status.trim()
+        ? container.status
+        : prev?.status,
+    cpuPercent: toNumber(container.cpuPercent, prev?.cpuPercent ?? 0),
+    memUsageBytes: toNumber(container.memUsageBytes, prev?.memUsageBytes ?? 0),
+    memPercentHost: toNumber(
+      container.memPercentHost ?? container.memPercent,
+      prev?.memPercentHost ?? 0
+    ),
+    netRxBytes: toNumber(container.netRxBytes, prev?.netRxBytes ?? 0),
+    netTxBytes: toNumber(container.netTxBytes, prev?.netTxBytes ?? 0),
+  };
+}
+
+function parseUpSeconds(status?: string): number | null {
+  if (!status) return null;
+  const raw = status.toLowerCase();
+  if (!raw.includes("up")) return null;
+  const cleaned = raw.replace(/\(.+?\)/g, "").trim();
+  if (cleaned.includes("about a minute")) return 60;
+  if (cleaned.includes("less than a second")) return 1;
+  let total = 0;
+  const matches = cleaned.matchAll(
+    /(\d+)\s*(second|minute|hour|day|week|month|year)s?/g
+  );
+  let found = false;
+  for (const match of matches) {
+    const value = Number(match[1]);
+    const unit = match[2];
+    if (!Number.isFinite(value)) continue;
+    found = true;
+    switch (unit) {
+      case "second":
+        total += value;
+        break;
+      case "minute":
+        total += value * 60;
+        break;
+      case "hour":
+        total += value * 3600;
+        break;
+      case "day":
+        total += value * 86400;
+        break;
+      case "week":
+        total += value * 604800;
+        break;
+      case "month":
+        total += value * 2592000;
+        break;
+      case "year":
+        total += value * 31536000;
+        break;
+      default:
+        break;
+    }
   }
-  return url.toString();
+  if (!found) return null;
+  return total;
 }
 
 function buildSystemUrl() {
@@ -226,6 +302,23 @@ export default function MetricsLatencyPage() {
     useState<ContainersMetrics | null>(null);
   const [containersError, setContainersError] = useState<string | null>(null);
   const [containersLoading, setContainersLoading] = useState(false);
+  const containersMapRef = useRef<Record<string, ContainerStats>>({});
+  const restartTokenRef = useRef<Record<string, number>>({});
+  const [restartAllStatus, setRestartAllStatus] = useState<{
+    loading: boolean;
+    ok?: boolean;
+    message?: string;
+  }>({ loading: false });
+  const [restartByName, setRestartByName] = useState<
+    Record<
+      string,
+      {
+        loading: boolean;
+        ok?: boolean;
+        message?: string;
+      }
+    >
+  >({});
   const [windowPreset, setWindowPreset] = useState("1m");
   const [windowCustom, setWindowCustom] = useState("");
   const [windowMs, setWindowMs] = useState("");
@@ -237,6 +330,119 @@ export default function MetricsLatencyPage() {
     if (windowCustom.trim()) return windowCustom.trim();
     return windowPreset;
   }, [windowMs, windowCustom, windowPreset]);
+
+  const buildContainerList = useCallback(
+    (map: Record<string, ContainerStats>) => {
+      const list: ContainerStats[] = [];
+      for (const name of CONTAINER_NAMES) {
+        const item = map[name];
+        if (item) list.push(item);
+      }
+      return list;
+    },
+    []
+  );
+
+  const upsertContainer = useCallback(
+    (next: ContainerStats) => {
+      containersMapRef.current = {
+        ...containersMapRef.current,
+        [next.name]: next,
+      };
+      const list = buildContainerList(containersMapRef.current);
+      setContainersData({
+        enabled: true,
+        count: list.length,
+        containers: list,
+      });
+    },
+    [buildContainerList]
+  );
+
+  const fetchContainer = useCallback(
+    async (name: string) => {
+      const res = await fetch(buildContainersUrl(name));
+      if (!res.ok) return null;
+      const payload = await res.json();
+      const prev = containersMapRef.current[name];
+      const normalized = normalizeContainerPayload(payload, name, prev);
+      if (!normalized) return null;
+      upsertContainer(normalized);
+      return normalized;
+    },
+    [upsertContainer]
+  );
+
+  const pollContainerStatus = useCallback(
+    async (name: string, baselineStatus?: string) => {
+      const start = Date.now();
+      let lastStatus = baselineStatus;
+      let lastUptime = parseUpSeconds(baselineStatus || "");
+      while (Date.now() - start < RESTART_POLL_TIMEOUT_MS) {
+        await sleep(RESTART_POLL_INTERVAL_MS);
+        let container: ContainerStats | null = null;
+        try {
+          container = await fetchContainer(name);
+        } catch {
+          continue;
+        }
+        const status = container?.status;
+        if (!status) continue;
+        const uptime = parseUpSeconds(status);
+        if (!lastStatus) {
+          lastStatus = status;
+          lastUptime = uptime;
+          continue;
+        }
+        if (status !== lastStatus) {
+          console.log("[metrics-latency] container status", {
+            name,
+            from: lastStatus,
+            to: status,
+            fromSec: lastUptime ?? null,
+            toSec: uptime ?? null,
+          });
+        }
+        if (
+          uptime !== null &&
+          lastUptime !== null &&
+          uptime < lastUptime &&
+          uptime <= RESTART_UPTIME_MAX_SEC
+        ) {
+          return { ok: true, status };
+        }
+        if (status !== lastStatus) {
+          lastStatus = status;
+          lastUptime = uptime;
+        }
+      }
+      return { ok: false, reason: "timeout" };
+    },
+    [fetchContainer]
+  );
+
+  const finalizeContainerRestart = useCallback(
+    (name: string, token: number) => {
+      setRestartByName((prev) => ({
+        ...prev,
+        [name]: {
+          loading: false,
+          ok: true,
+          message: "Reiniciado",
+        },
+      }));
+      window.setTimeout(() => {
+        if (restartTokenRef.current[name] !== token) return;
+        fetchContainer(name).catch(() => null);
+        setRestartByName((prev) => {
+          const next = { ...prev };
+          delete next[name];
+          return next;
+        });
+      }, RESTART_CLEAR_MS);
+    },
+    [fetchContainer]
+  );
 
   const loadLatency = useCallback(async () => {
     try {
@@ -251,7 +457,6 @@ export default function MetricsLatencyPage() {
 
       for (const exchange of EXCHANGES) {
         for (const side of SIDES) {
-          console.log("[metrics-latency] fetch exchange", { exchange, side });
           const url = buildExchangeUrl(
             exchange,
             windowValue,
@@ -266,13 +471,7 @@ export default function MetricsLatencyPage() {
           const payload = await res.json();
           const totals = payload?.totals ?? payload;
           if (!totals) continue;
-          console.log("[metrics-latency] exchange ok", {
-            exchange,
-            side,
-            count: totals.count,
-            p95: totals.p95,
-            p99: totals.p99,
-          });
+
           const entry: LatencyEntry = {
             exchange: totals.exchange || exchange,
             side: totals.side || side,
@@ -360,10 +559,6 @@ export default function MetricsLatencyPage() {
         totals,
         entries,
       });
-      console.log("[metrics-latency] latency done", {
-        entries: entries.length,
-        totalsCount: totals.count,
-      });
     } catch (err: any) {
       console.error("[metrics-latency] latency error", err);
       setError(err?.message || "Erro inesperado");
@@ -376,7 +571,6 @@ export default function MetricsLatencyPage() {
     try {
       setSystemLoading(true);
       setSystemError(null);
-      console.log("[metrics-latency] fetch system");
       const res = await fetch(buildSystemUrl());
       if (!res.ok) {
         const text = await res.text();
@@ -384,59 +578,30 @@ export default function MetricsLatencyPage() {
       }
       const payload = (await res.json()) as SystemMetrics;
       setSystemData(payload);
-      console.log("[metrics-latency] system ok", payload);
     } catch (err: any) {
       console.error("[metrics-latency] system error", err);
       setSystemError(err?.message || "Erro inesperado");
     } finally {
       setSystemLoading(false);
     }
-  }, []);
+  }, [pollContainerStatus]);
 
   const loadContainers = useCallback(async () => {
     try {
       setContainersLoading(true);
       setContainersError(null);
-      const containers: ContainerStats[] = [];
       for (const name of CONTAINER_NAMES) {
-        console.log("[metrics-latency] fetch container", name);
-        const res = await fetch(buildContainersUrl(name));
-        if (!res.ok) {
-          console.warn("[metrics-latency] container skip", name, res.status);
-          continue;
-        }
-        const payload = await res.json();
-        const container =
-          payload?.container?.container ?? payload?.container ?? payload;
+        const container = await fetchContainer(name);
         if (!container) continue;
-        console.log("[metrics-latency] container ok", {
-          name: container.name || name,
-          cpu: container.cpuPercent,
-          mem: container.memUsageBytes,
-        });
-        containers.push({
-          name: container.name || name,
-          cpuPercent: Number(container.cpuPercent) || 0,
-          memUsageBytes: Number(container.memUsageBytes) || 0,
-          memPercentHost:
-            Number(container.memPercentHost ?? container.memPercent) || 0,
-          netRxBytes: Number(container.netRxBytes) || 0,
-          netTxBytes: Number(container.netTxBytes) || 0,
-        });
-
-        setContainersData({
-          enabled: true,
-          count: containers.length,
-          containers: [...containers],
-        });
       }
+      const list = buildContainerList(containersMapRef.current);
       setContainersData({
         enabled: true,
-        count: containers.length,
-        containers,
+        count: list.length,
+        containers: list,
       });
       console.log("[metrics-latency] containers done", {
-        count: containers.length,
+        count: list.length,
       });
     } catch (err: any) {
       console.error("[metrics-latency] containers error", err);
@@ -444,7 +609,22 @@ export default function MetricsLatencyPage() {
     } finally {
       setContainersLoading(false);
     }
-  }, []);
+  }, [buildContainerList, fetchContainer]);
+
+  const finalizeRestartAll = useCallback(
+    (ok: boolean) => {
+      setRestartAllStatus({
+        loading: false,
+        ok,
+        message: ok ? "Reiniciado" : "timeout",
+      });
+      window.setTimeout(() => {
+        loadContainers();
+        setRestartAllStatus({ loading: false });
+      }, RESTART_CLEAR_MS);
+    },
+    [loadContainers]
+  );
 
   useEffect(() => {
     loadLatency();
@@ -463,6 +643,103 @@ export default function MetricsLatencyPage() {
     }, interval);
     return () => clearInterval(id);
   }, [autoRefresh, refreshMs, loadLatency, loadSystem, loadContainers]);
+
+  const restartOne = useCallback(
+    async (name: string) => {
+      const token = Date.now();
+      restartTokenRef.current[name] = token;
+      setRestartByName((prev) => ({
+        ...prev,
+        [name]: { loading: true },
+      }));
+      try {
+        const baselineStatus = containersMapRef.current[name]?.status;
+        const res = await fetch(`/api/ops/container/${name}/restart`, {
+          method: "POST",
+        });
+        const payload = await res.json().catch(() => null);
+        console.log("[metrics-latency] restart-one response", {
+          name,
+          status: res.status,
+          payload,
+        });
+        const timedOut = payload?.reason === "timeout";
+        if (payload?.ok === false && !timedOut) {
+          setRestartByName((prev) => ({
+            ...prev,
+            [name]: {
+              loading: false,
+              ok: false,
+              message: payload?.reason || "Erro",
+            },
+          }));
+          return false;
+        }
+        const queued = timedOut || Boolean(payload?.queued) || res.status === 202;
+        if (queued) {
+          setRestartByName((prev) => ({
+            ...prev,
+            [name]: {
+              loading: true,
+              ok: true,
+              message: "Reiniciando...",
+            },
+          }));
+          const result = await pollContainerStatus(name, baselineStatus);
+          if (result.ok) {
+            finalizeContainerRestart(name, token);
+            return true;
+          } else {
+            setRestartByName((prev) => ({
+              ...prev,
+              [name]: {
+                loading: false,
+                ok: false,
+                message: result.reason || "timeout",
+              },
+            }));
+            return false;
+          }
+        }
+        finalizeContainerRestart(name, token);
+        return true;
+      } catch (err: any) {
+        setRestartByName((prev) => ({
+          ...prev,
+          [name]: {
+            loading: false,
+            ok: false,
+            message: err?.message || "Erro",
+          },
+        }));
+        return false;
+      }
+    },
+    [finalizeContainerRestart, pollContainerStatus]
+  );
+
+  const restartAll = useCallback(async () => {
+    setRestartAllStatus({
+      loading: true,
+      ok: true,
+      message: "Reiniciando...",
+    });
+    const excluded = new Set(["nginx", "redis"]);
+    let failed = false;
+    try {
+      for (const name of CONTAINER_NAMES) {
+        if (excluded.has(name)) continue;
+        const ok = await restartOne(name);
+        if (!ok) {
+          failed = true;
+          break;
+        }
+      }
+    } catch {
+      failed = true;
+    }
+    finalizeRestartAll(!failed);
+  }, [finalizeRestartAll, restartOne]);
 
   const sortedEntries = useMemo(() => {
     if (!data?.entries) return [];
@@ -811,6 +1088,27 @@ export default function MetricsLatencyPage() {
                   )}
                 </span>
               </div>
+              <div className={styles.tableActions}>
+                <button
+                  type="button"
+                  className={styles.actionButton}
+                  disabled={restartAllStatus.loading}
+                  onClick={restartAll}
+                >
+                  {restartAllStatus.loading
+                    ? "Reiniciando..."
+                    : "Reiniciar todos"}
+                </button>
+                {restartAllStatus.message && (
+                  <span
+                    className={
+                      restartAllStatus.ok ? styles.actionOk : styles.actionErr
+                    }
+                  >
+                    {restartAllStatus.message}
+                  </span>
+                )}
+              </div>
             </div>
             <div className={styles.tableWrap}>
               <table>
@@ -822,34 +1120,61 @@ export default function MetricsLatencyPage() {
                     <th>% Host</th>
                     <th>Net RX</th>
                     <th>Net TX</th>
+                    <th>Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {containersLoading &&
                   !(containersData ?? data?.containers)?.containers?.length ? (
                     <tr>
-                      <td colSpan={6} className={styles.emptyRow}>
+                      <td colSpan={7} className={styles.emptyRow}>
                         Carregando containers...
                       </td>
                     </tr>
                   ) : (
                     (containersData ?? data?.containers)?.containers?.map(
-                      (container) => (
-                        <tr key={container.name}>
-                          <td>{container.name}</td>
-                          <td>{formatPercent(container.cpuPercent)}</td>
-                          <td>{formatBytes(container.memUsageBytes)}</td>
-                          <td>{formatPercent(container.memPercentHost)}</td>
-                          <td>{formatBytes(container.netRxBytes)}</td>
-                          <td>{formatBytes(container.netTxBytes)}</td>
-                        </tr>
-                      )
+                      (container) => {
+                        const status = restartByName[container.name];
+                        return (
+                          <tr key={container.name}>
+                            <td>{container.name}</td>
+                            <td>{formatPercent(container.cpuPercent)}</td>
+                            <td>{formatBytes(container.memUsageBytes)}</td>
+                            <td>{formatPercent(container.memPercentHost)}</td>
+                            <td>{formatBytes(container.netRxBytes)}</td>
+                            <td>{formatBytes(container.netTxBytes)}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className={styles.actionButton}
+                                onClick={() => restartOne(container.name)}
+                                disabled={status?.loading}
+                              >
+                                {status?.loading
+                                  ? "Reiniciando..."
+                                  : "Reiniciar"}
+                              </button>
+                              {status?.message && (
+                                <span
+                                  className={
+                                    status.ok
+                                      ? styles.actionOk
+                                      : styles.actionErr
+                                  }
+                                >
+                                  {status.message}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      }
                     )
                   )}
                   {!(containersData ?? data?.containers)?.containers?.length &&
                     !containersLoading && (
                       <tr>
-                        <td colSpan={6} className={styles.emptyRow}>
+                        <td colSpan={7} className={styles.emptyRow}>
                           Nenhum container reportado.
                         </td>
                       </tr>

@@ -382,6 +382,42 @@
   gap: 8px;
 }
 
+.tableActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+
+.actionButton {
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(15, 118, 110, 0.18);
+  color: var(--accent);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionOk {
+  color: var(--accent);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.actionErr {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
 .tableHeader h2 {
   font-size: 1.5rem;
   margin: 0;
