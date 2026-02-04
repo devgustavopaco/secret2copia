@@ -30,7 +30,10 @@ export default async function handler(
   }
 
   const upstreamBase = process.env.LATENCY_METRICS_API_URL || DEFAULT_UPSTREAM;
-  const upstreamUrl = `${upstreamBase.replace(/\/+$/, "")}/metrics/latency?system=0&containers=1`;
+  const upstreamUrl = `${upstreamBase.replace(
+    /\/+$/,
+    ""
+  )}/metrics/latency?system=0&containers=1`;
 
   // Primeiro tenta buscar do upstream (mesmo formato que o backend expõe)
   try {
@@ -49,7 +52,7 @@ export default async function handler(
 
   try {
     const { stdout } = await execAsync(
-      "docker stats --no-stream --format \"{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}\""
+      'docker stats --no-stream --format "{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}"'
     );
     const lines = stdout
       .split("\n")

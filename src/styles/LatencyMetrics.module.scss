@@ -13,8 +13,11 @@
   padding: 48px clamp(20px, 5vw, 80px) 80px;
   color: var(--ink);
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  background:
-    radial-gradient(1200px 500px at 10% -10%, #ffe6c7 0%, transparent 60%),
+  background: radial-gradient(
+      1200px 500px at 10% -10%,
+      #ffe6c7 0%,
+      transparent 60%
+    ),
     radial-gradient(900px 480px at 100% 0%, #c9f1ea 0%, transparent 55%),
     linear-gradient(180deg, #fdf7ef 0%, #f4f6f4 100%);
   position: relative;
