@@ -142,7 +142,10 @@ function buildSystemUrl() {
 }
 
 function buildContainersUrl(name: string) {
-  return new URL(`/api/metrics/container/${name}`, window.location.origin).toString();
+  return new URL(
+    `/api/metrics/container/${name}`,
+    window.location.origin
+  ).toString();
 }
 
 function buildExchangeUrl(
@@ -151,7 +154,10 @@ function buildExchangeUrl(
   windowMsValue: string,
   side: string
 ) {
-  const url = new URL(`/api/metrics/latency/${exchange}`, window.location.origin);
+  const url = new URL(
+    `/api/metrics/latency/${exchange}`,
+    window.location.origin
+  );
   if (windowMsValue) {
     url.searchParams.set("windowMs", windowMsValue);
   } else if (windowValue) {
@@ -246,7 +252,12 @@ export default function MetricsLatencyPage() {
       for (const exchange of EXCHANGES) {
         for (const side of SIDES) {
           console.log("[metrics-latency] fetch exchange", { exchange, side });
-          const url = buildExchangeUrl(exchange, windowValue, windowMsValue, side);
+          const url = buildExchangeUrl(
+            exchange,
+            windowValue,
+            windowMsValue,
+            side
+          );
           const res = await fetch(url);
           if (!res.ok) {
             const text = await res.text();
@@ -279,7 +290,10 @@ export default function MetricsLatencyPage() {
           now = Math.max(now, Number(payload?.now) || 0);
           windowMsResolved = Number(payload?.windowMs) || windowMsResolved;
 
-          const countSumLive = entries.reduce((acc, e) => acc + (e.count || 0), 0);
+          const countSumLive = entries.reduce(
+            (acc, e) => acc + (e.count || 0),
+            0
+          );
           const weightedAvgLive =
             countSumLive > 0
               ? entries.reduce(
@@ -298,9 +312,12 @@ export default function MetricsLatencyPage() {
             p50: entries.length ? Math.max(...entries.map((e) => e.p50)) : 0,
             p95: entries.length ? Math.max(...entries.map((e) => e.p95)) : 0,
             p99: entries.length ? Math.max(...entries.map((e) => e.p99)) : 0,
-            lastTs: entries.length ? Math.max(...entries.map((e) => e.lastTs)) : 0,
-            lastLag:
-              entries.length ? Math.max(...entries.map((e) => e.lastLag)) : 0,
+            lastTs: entries.length
+              ? Math.max(...entries.map((e) => e.lastTs))
+              : 0,
+            lastLag: entries.length
+              ? Math.max(...entries.map((e) => e.lastLag))
+              : 0,
           };
 
           setData({
@@ -331,12 +348,15 @@ export default function MetricsLatencyPage() {
         p95: entries.length ? Math.max(...entries.map((e) => e.p95)) : 0,
         p99: entries.length ? Math.max(...entries.map((e) => e.p99)) : 0,
         lastTs: entries.length ? Math.max(...entries.map((e) => e.lastTs)) : 0,
-        lastLag: entries.length ? Math.max(...entries.map((e) => e.lastLag)) : 0,
+        lastLag: entries.length
+          ? Math.max(...entries.map((e) => e.lastLag))
+          : 0,
       };
 
       setData({
         now,
-        windowMs: windowMsResolved || (windowMsValue ? Number(windowMsValue) : 0),
+        windowMs:
+          windowMsResolved || (windowMsValue ? Number(windowMsValue) : 0),
         totals,
         entries,
       });
@@ -386,7 +406,8 @@ export default function MetricsLatencyPage() {
           continue;
         }
         const payload = await res.json();
-        const container = payload?.container?.container ?? payload?.container ?? payload;
+        const container =
+          payload?.container?.container ?? payload?.container ?? payload;
         if (!container) continue;
         console.log("[metrics-latency] container ok", {
           name: container.name || name,
@@ -397,7 +418,8 @@ export default function MetricsLatencyPage() {
           name: container.name || name,
           cpuPercent: Number(container.cpuPercent) || 0,
           memUsageBytes: Number(container.memUsageBytes) || 0,
-          memPercentHost: Number(container.memPercentHost ?? container.memPercent) || 0,
+          memPercentHost:
+            Number(container.memPercentHost ?? container.memPercent) || 0,
           netRxBytes: Number(container.netRxBytes) || 0,
           netTxBytes: Number(container.netTxBytes) || 0,
         });
@@ -413,7 +435,9 @@ export default function MetricsLatencyPage() {
         count: containers.length,
         containers,
       });
-      console.log("[metrics-latency] containers done", { count: containers.length });
+      console.log("[metrics-latency] containers done", {
+        count: containers.length,
+      });
     } catch (err: any) {
       console.error("[metrics-latency] containers error", err);
       setContainersError(err?.message || "Erro inesperado");

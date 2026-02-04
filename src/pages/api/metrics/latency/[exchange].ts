@@ -28,7 +28,9 @@ export default async function handler(
   const base = (
     process.env.LATENCY_METRICS_API_URL || DEFAULT_UPSTREAM
   ).replace(/\/+$/, "");
-  const url = new URL(`${base}/metrics/latency/${encodeURIComponent(exchange)}`);
+  const url = new URL(
+    `${base}/metrics/latency/${encodeURIComponent(exchange)}`
+  );
   if (window) url.searchParams.set("window", window);
   if (windowMs) url.searchParams.set("windowMs", windowMs);
   if (side) url.searchParams.set("side", side);
