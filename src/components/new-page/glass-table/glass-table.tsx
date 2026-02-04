@@ -3498,7 +3498,6 @@ export function DemoGlassTable({
           </>
         }
       />
-
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <div className={styles.paginationInfo}>
