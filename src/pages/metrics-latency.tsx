@@ -18,11 +18,43 @@ type LatencyTotals = {
 
 type LatencyEntry = LatencyTotals;
 
+type SystemMetrics = {
+  cpu: {
+    cores: number;
+    usagePct: number;
+  };
+  memory: {
+    totalBytes: number;
+    usedBytes: number;
+    usedPct: number;
+    availableBytes: number;
+  };
+  loadAvg: number[];
+  uptimeSec: number;
+};
+
+type ContainerStats = {
+  name: string;
+  cpuPercent: number;
+  memUsageBytes: number;
+  memPercentHost: number;
+  netRxBytes: number;
+  netTxBytes: number;
+};
+
+type ContainersMetrics = {
+  enabled: boolean;
+  count: number;
+  containers: ContainerStats[];
+};
+
 type LatencyResponse = {
   now: number;
   windowMs: number;
   totals: LatencyTotals;
   entries: LatencyEntry[];
+  system?: SystemMetrics;
+  containers?: ContainersMetrics;
 };
 
 const WINDOW_PRESETS = [
@@ -51,9 +83,34 @@ function buildUrl(windowValue: string, windowMsValue: string) {
   return url.toString();
 }
 
+function buildSystemUrl() {
+  return new URL("/api/metrics/system", window.location.origin).toString();
+}
+
+function buildContainersUrl() {
+  return new URL("/api/metrics/containers", window.location.origin).toString();
+}
+
 function formatNumber(value?: number) {
   if (value === null || value === undefined || Number.isNaN(value)) return "--";
   return new Intl.NumberFormat("pt-BR").format(value);
+}
+
+function formatPercent(value?: number) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "--";
+  return `${value.toFixed(2)}%`;
+}
+
+function formatBytes(value?: number) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "--";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = value;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size.toFixed(size >= 100 ? 0 : 2)} ${units[unit]}`;
 }
 
 function formatMs(value?: number) {
@@ -73,10 +130,26 @@ function calcDelay(now?: number, lastTs?: number) {
   return diff < 0 ? 0 : diff;
 }
 
+function formatUptime(value?: number) {
+  if (!value || Number.isNaN(value)) return "--";
+  const total = Math.floor(value);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
 export default function MetricsLatencyPage() {
   const [data, setData] = useState<LatencyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [systemData, setSystemData] = useState<SystemMetrics | null>(null);
+  const [systemError, setSystemError] = useState<string | null>(null);
+  const [systemLoading, setSystemLoading] = useState(false);
+  const [containersData, setContainersData] =
+    useState<ContainersMetrics | null>(null);
+  const [containersError, setContainersError] = useState<string | null>(null);
+  const [containersLoading, setContainersLoading] = useState(false);
   const [windowPreset, setWindowPreset] = useState("1m");
   const [windowCustom, setWindowCustom] = useState("");
   const [windowMs, setWindowMs] = useState("");
@@ -89,7 +162,7 @@ export default function MetricsLatencyPage() {
     return windowPreset;
   }, [windowMs, windowCustom, windowPreset]);
 
-  const load = useCallback(async () => {
+  const loadLatency = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -111,17 +184,59 @@ export default function MetricsLatencyPage() {
     }
   }, [windowCustom, windowMs, windowPreset]);
 
+  const loadSystem = useCallback(async () => {
+    try {
+      setSystemLoading(true);
+      setSystemError(null);
+      const res = await fetch(buildSystemUrl());
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Erro ao buscar system");
+      }
+      const payload = (await res.json()) as SystemMetrics;
+      setSystemData(payload);
+    } catch (err: any) {
+      setSystemError(err?.message || "Erro inesperado");
+    } finally {
+      setSystemLoading(false);
+    }
+  }, []);
+
+  const loadContainers = useCallback(async () => {
+    try {
+      setContainersLoading(true);
+      setContainersError(null);
+      const res = await fetch(buildContainersUrl());
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Erro ao buscar containers");
+      }
+      const payload = (await res.json()) as ContainersMetrics;
+      setContainersData(payload);
+    } catch (err: any) {
+      setContainersError(err?.message || "Erro inesperado");
+    } finally {
+      setContainersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadLatency();
+    loadSystem();
+    loadContainers();
+  }, [loadLatency, loadSystem, loadContainers]);
 
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = Number(refreshMs);
     if (!Number.isFinite(interval) || interval < 2000) return;
-    const id = setInterval(load, interval);
+    const id = setInterval(() => {
+      loadLatency();
+      loadSystem();
+      loadContainers();
+    }, interval);
     return () => clearInterval(id);
-  }, [autoRefresh, refreshMs, load]);
+  }, [autoRefresh, refreshMs, loadLatency, loadSystem, loadContainers]);
 
   const sortedEntries = useMemo(() => {
     if (!data?.entries) return [];
@@ -223,6 +338,46 @@ export default function MetricsLatencyPage() {
     },
   ];
 
+  const resolvedSystem = systemData ?? data?.system ?? null;
+  const systemCards = useMemo(() => {
+    if (!resolvedSystem) return [];
+    const { cpu, memory, loadAvg, uptimeSec } = resolvedSystem;
+    return [
+      {
+        label: "CPU",
+        value: formatPercent(cpu?.usagePct),
+        unit: "",
+        info: `Cores: ${formatNumber(cpu?.cores)}`,
+      },
+      {
+        label: "Memoria",
+        value: formatBytes(memory?.usedBytes),
+        unit: "",
+        info: `Uso: ${formatPercent(memory?.usedPct)} / Total: ${formatBytes(
+          memory?.totalBytes
+        )}`,
+      },
+      {
+        label: "Disponivel",
+        value: formatBytes(memory?.availableBytes),
+        unit: "",
+        info: "Memoria livre do host.",
+      },
+      {
+        label: "Load avg",
+        value: loadAvg ? loadAvg.map((v) => v.toFixed(2)).join(" / ") : "--",
+        unit: "",
+        info: "Load average 1m / 5m / 15m.",
+      },
+      {
+        label: "Uptime",
+        value: formatUptime(uptimeSec),
+        unit: "",
+        info: "Tempo ligado da VPS.",
+      },
+    ];
+  }, [resolvedSystem]);
+
   return (
     <>
       <Head>
@@ -315,7 +470,11 @@ export default function MetricsLatencyPage() {
             <button
               type="button"
               className={styles.primaryButton}
-              onClick={load}
+              onClick={() => {
+                loadLatency();
+                loadSystem();
+                loadContainers();
+              }}
             >
               Atualizar agora
             </button>
@@ -359,6 +518,121 @@ export default function MetricsLatencyPage() {
             );
           })}
         </section>
+
+        {systemError && (
+          <section className={styles.errorBox}>
+            <strong>System:</strong> {systemError}
+          </section>
+        )}
+
+        {(resolvedSystem || systemLoading) && (
+          <section className={styles.cards}>
+            {systemLoading && !systemCards.length ? (
+              <div className={styles.card}>
+                <span>Sistema</span>
+                <strong>Carregando...</strong>
+              </div>
+            ) : (
+              systemCards.map((card, index) => (
+                <div
+                  key={card.label}
+                  className={styles.card}
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  <span>
+                    {card.label}
+                    <span
+                      className={styles.info}
+                      title={card.info}
+                      aria-label={card.info}
+                    >
+                      i
+                    </span>
+                  </span>
+                  <strong>
+                    {card.value}{" "}
+                    {card.unit ? (
+                      <em className={styles.unitInline}>{card.unit}</em>
+                    ) : null}
+                  </strong>
+                </div>
+              ))
+            )}
+          </section>
+        )}
+
+        {containersError && (
+          <section className={styles.errorBox}>
+            <strong>Containers:</strong> {containersError}
+          </section>
+        )}
+
+        {(containersData || containersLoading || data?.containers) && (
+          <section className={styles.tableSection}>
+            <div className={styles.tableHeader}>
+              <h2>Containers</h2>
+              <div className={styles.tableMeta}>
+                <span>
+                  Status:{" "}
+                  {(containersData ?? data?.containers)?.enabled
+                    ? "Ativo"
+                    : "Indisponivel"}
+                </span>
+                <span>
+                  Containers:{" "}
+                  {formatNumber(
+                    (containersData ?? data?.containers)?.count || 0
+                  )}
+                </span>
+              </div>
+            </div>
+            <div className={styles.tableWrap}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>CPU</th>
+                    <th>Memoria</th>
+                    <th>% Host</th>
+                    <th>Net RX</th>
+                    <th>Net TX</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {containersLoading &&
+                  !(containersData ?? data?.containers)?.containers?.length ? (
+                    <tr>
+                      <td colSpan={6} className={styles.emptyRow}>
+                        Carregando containers...
+                      </td>
+                    </tr>
+                  ) : (
+                    (containersData ?? data?.containers)?.containers?.map(
+                      (container) => (
+                        <tr key={container.name}>
+                          <td>{container.name}</td>
+                          <td>{formatPercent(container.cpuPercent)}</td>
+                          <td>{formatBytes(container.memUsageBytes)}</td>
+                          <td>{formatPercent(container.memPercentHost)}</td>
+                          <td>{formatBytes(container.netRxBytes)}</td>
+                          <td>{formatBytes(container.netTxBytes)}</td>
+                        </tr>
+                      )
+                    )
+                  )}
+                  {!(containersData ?? data?.containers)?.containers?.length &&
+                    !containersLoading && (
+                      <tr>
+                        <td colSpan={6} className={styles.emptyRow}>
+                          Nenhum container reportado.
+                        </td>
+                      </tr>
+                    )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         <section className={styles.legend}>
           <div className={styles.legendCard}>
