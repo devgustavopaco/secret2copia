@@ -26,9 +26,14 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  TooltipProps,
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 // Função para abrir calculadora em popup
 const openCalculatorPopup = () => {
@@ -158,14 +163,7 @@ type NextGainChartPoint = {
   spreadPct: number;
 };
 
-type NextGainTooltipProps = {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-    dataKey: string;
-    payload: NextGainChartPoint;
-  }>;
-  label?: string;
+type NextGainTooltipProps = TooltipProps<ValueType, NameType> & {
   data: NextGainChartPoint[];
   spotLabel: string;
   futuresLabel: string;
@@ -188,7 +186,10 @@ const fmtNumber = (n?: number) =>
   typeof n === "number" && isFinite(n) ? String(n) : "—";
 
 const normalizeExchangeLabel = (raw: string) => {
-  const cleaned = raw.replace(/ spot| futures/gi, "").trim().toLowerCase();
+  const cleaned = raw
+    .replace(/ spot| futures/gi, "")
+    .trim()
+    .toLowerCase();
   if (cleaned.includes("gate")) return "Gate";
   if (cleaned.includes("mexc")) return "MEXC";
   if (cleaned.includes("bitget")) return "Bitget";
@@ -201,7 +202,11 @@ const normalizeExchangeLabel = (raw: string) => {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 };
 
-const metricsKeyString = (key: MetricsKey, period: MetricsPeriod, intent: MetricsIntent) =>
+const metricsKeyString = (
+  key: MetricsKey,
+  period: MetricsPeriod,
+  intent: MetricsIntent
+) =>
   `${key.symbol}:${key.spotExchange}:${key.futuresExchange}:${period}:${intent}`;
 
 // Função para formatar volumes com abreviações
@@ -231,46 +236,21 @@ type CoinRow = {
 const oppKey = (op: ArbitrageOpportunity) =>
   `${op.ticker}-${op.lowestAsk?.exchange}-${op.highestBid?.exchange}`;
 
-const nowStore = (() => {
-  let now = Date.now();
-  let timer: number | null = null;
-  const listeners = new Set<() => void>();
+const useNow = () => {
+  const [now, setNow] = React.useState(() => Date.now());
 
-  const tick = () => {
-    now = Date.now();
-    listeners.forEach((listener) => listener());
-  };
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
 
-  const start = () => {
-    if (timer !== null) return;
-    timer = window.setInterval(tick, 1000);
-  };
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
 
-  const stop = () => {
-    if (timer === null || listeners.size > 0) return;
-    window.clearInterval(timer);
-    timer = null;
-  };
-
-  return {
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      start();
-      return () => {
-        listeners.delete(listener);
-        stop();
-      };
-    },
-    getSnapshot() {
-      return now;
-    },
-  };
-})();
-
-const useNow = () =>
-  React.useSyncExternalStore(nowStore.subscribe, nowStore.getSnapshot, () =>
-    Date.now()
-  );
+  return now;
+};
 
 // mapeia ArbitrageOpportunity -> CoinRow
 // mapeia ArbitrageOpportunity -> CoinRow
@@ -1071,7 +1051,10 @@ export function DemoGlassTable({
 
   const normalizeExchangeName = React.useCallback((raw?: string | null) => {
     if (!raw) return null;
-    const cleaned = raw.replace(/ spot| futures/gi, "").trim().toLowerCase();
+    const cleaned = raw
+      .replace(/ spot| futures/gi, "")
+      .trim()
+      .toLowerCase();
     if (cleaned.includes("gate")) return "Gate";
     if (cleaned.includes("mexc")) return "MEXC";
     if (cleaned.includes("bitget")) return "Bitget";
@@ -1146,14 +1129,12 @@ export function DemoGlassTable({
       : null;
     const filtered = normalizedTicker
       ? list.filter(
-          (row) =>
-            row.ticker_formatted?.toUpperCase() === normalizedTicker
+          (row) => row.ticker_formatted?.toUpperCase() === normalizedTicker
         )
       : list;
     const filtered2 = normalizedTicker
       ? list2.filter(
-          (row) =>
-            row.ticker_formatted?.toUpperCase() === normalizedTicker
+          (row) => row.ticker_formatted?.toUpperCase() === normalizedTicker
         )
       : list2;
 
@@ -1273,14 +1254,12 @@ export function DemoGlassTable({
       : null;
     const filteredSpot = normalizedTicker
       ? list.filter(
-          (row) =>
-            row.ticker_formatted?.toUpperCase() === normalizedTicker
+          (row) => row.ticker_formatted?.toUpperCase() === normalizedTicker
         )
       : list;
     const filteredFutures = normalizedTicker
       ? list2.filter(
-          (row) =>
-            row.ticker_formatted?.toUpperCase() === normalizedTicker
+          (row) => row.ticker_formatted?.toUpperCase() === normalizedTicker
         )
       : list2;
 
@@ -1347,38 +1326,62 @@ export function DemoGlassTable({
 
     mergedTs.forEach((ts) => {
       if (ts < minTs) {
-        while (spotBidIdx < spotBidSeries.length && spotBidSeries[spotBidIdx]!.ts <= ts) {
+        while (
+          spotBidIdx < spotBidSeries.length &&
+          spotBidSeries[spotBidIdx]!.ts <= ts
+        ) {
           lastSpotBid = spotBidSeries[spotBidIdx]!.price;
           spotBidIdx += 1;
         }
-        while (spotAskIdx < spotAskSeries.length && spotAskSeries[spotAskIdx]!.ts <= ts) {
+        while (
+          spotAskIdx < spotAskSeries.length &&
+          spotAskSeries[spotAskIdx]!.ts <= ts
+        ) {
           lastSpotAsk = spotAskSeries[spotAskIdx]!.price;
           spotAskIdx += 1;
         }
-        while (futBidIdx < futuresBidSeries.length && futuresBidSeries[futBidIdx]!.ts <= ts) {
+        while (
+          futBidIdx < futuresBidSeries.length &&
+          futuresBidSeries[futBidIdx]!.ts <= ts
+        ) {
           lastFutBid = futuresBidSeries[futBidIdx]!.price;
           futBidIdx += 1;
         }
-        while (futAskIdx < futuresAskSeries.length && futuresAskSeries[futAskIdx]!.ts <= ts) {
+        while (
+          futAskIdx < futuresAskSeries.length &&
+          futuresAskSeries[futAskIdx]!.ts <= ts
+        ) {
           lastFutAsk = futuresAskSeries[futAskIdx]!.price;
           futAskIdx += 1;
         }
         return;
       }
 
-      while (spotBidIdx < spotBidSeries.length && spotBidSeries[spotBidIdx]!.ts <= ts) {
+      while (
+        spotBidIdx < spotBidSeries.length &&
+        spotBidSeries[spotBidIdx]!.ts <= ts
+      ) {
         lastSpotBid = spotBidSeries[spotBidIdx]!.price;
         spotBidIdx += 1;
       }
-      while (spotAskIdx < spotAskSeries.length && spotAskSeries[spotAskIdx]!.ts <= ts) {
+      while (
+        spotAskIdx < spotAskSeries.length &&
+        spotAskSeries[spotAskIdx]!.ts <= ts
+      ) {
         lastSpotAsk = spotAskSeries[spotAskIdx]!.price;
         spotAskIdx += 1;
       }
-      while (futBidIdx < futuresBidSeries.length && futuresBidSeries[futBidIdx]!.ts <= ts) {
+      while (
+        futBidIdx < futuresBidSeries.length &&
+        futuresBidSeries[futBidIdx]!.ts <= ts
+      ) {
         lastFutBid = futuresBidSeries[futBidIdx]!.price;
         futBidIdx += 1;
       }
-      while (futAskIdx < futuresAskSeries.length && futuresAskSeries[futAskIdx]!.ts <= ts) {
+      while (
+        futAskIdx < futuresAskSeries.length &&
+        futuresAskSeries[futAskIdx]!.ts <= ts
+      ) {
         lastFutAsk = futuresAskSeries[futAskIdx]!.price;
         futAskIdx += 1;
       }
@@ -1538,7 +1541,14 @@ export function DemoGlassTable({
   }, []);
 
   const NextGainTooltip = React.useCallback(
-    ({ active, payload, label, data, spotLabel, futuresLabel }: NextGainTooltipProps) => {
+    ({
+      active,
+      payload,
+      label,
+      data,
+      spotLabel,
+      futuresLabel,
+    }: NextGainTooltipProps) => {
       if (!active || !payload?.length) return null;
       const point = payload[0]?.payload;
       if (!point) return null;
@@ -2597,10 +2607,15 @@ export function DemoGlassTable({
       id: "historico",
       header: "Histórico",
       accessor: (row: CoinRow) => {
-        const { invertidas, maxOpen, maxClose, updatedAt } = resolveRowMetrics(row);
+        const { invertidas, maxOpen, maxClose, updatedAt } =
+          resolveRowMetrics(row);
         const age = updatedAt ? formatElapsed(now - updatedAt) : null;
         const onOpenChart = () =>
-          handleTradingViewClick(row.coin.ticker, row.spot.bingo, row.futures.bingo);
+          handleTradingViewClick(
+            row.coin.ticker,
+            row.spot.bingo,
+            row.futures.bingo
+          );
         return (
           <div className={styles.historyCell}>
             <div className={styles.historyTitle}>
@@ -2619,8 +2634,21 @@ export function DemoGlassTable({
                 >
                   <span className={styles.historyIcon}>
                     <svg viewBox="0 0 20 20" aria-hidden="true">
-                      <path d="M3 14l4-4 3 3 5-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M3 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      <path
+                        d="M3 14l4-4 3 3 5-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 17h14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </span>
                 </button>
@@ -2628,8 +2656,22 @@ export function DemoGlassTable({
                   <span className={styles.historyAge}>
                     <span className={styles.historyIcon}>
                       <svg viewBox="0 0 20 20" aria-hidden="true">
-                        <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M10 6v4l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle
+                          cx="10"
+                          cy="10"
+                          r="7"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M10 6v4l3 2"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </span>
                     {age}
@@ -2709,7 +2751,7 @@ export function DemoGlassTable({
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -2717,7 +2759,8 @@ export function DemoGlassTable({
 
   // Estado para controlar modal de paginação mobile
   const [isPaginationModalOpen, setIsPaginationModalOpen] = useState(false);
-  const [isPaginationModalClosing, setIsPaginationModalClosing] = useState(false);
+  const [isPaginationModalClosing, setIsPaginationModalClosing] =
+    useState(false);
 
   // Função para fechar o modal com animação
   const closePaginationModal = () => {
@@ -2732,19 +2775,18 @@ export function DemoGlassTable({
   const MobileOpportunityCard = ({ row }: { row: CoinRow }) => {
     const { invertidas, maxOpen, maxClose, updatedAt } = resolveRowMetrics(row);
     const age = updatedAt ? formatElapsed(now - updatedAt) : null;
+    const logoUrl = useCoinLogo(row.coin.ticker, row.coin.ticker);
     const opp = getOpp(row.id);
     if (!opp) return null;
 
-    // USA O MESMO SISTEMA DO DESKTOP!
-    const logoUrl = useCoinLogo(row.coin.ticker, row.coin.ticker);
-    
     // Extrai os valores numéricos dos spreads (remove "E: " e "%")
-    const spreadLong = parseFloat(row.spreads.long.replace(/[^\d.-]/g, ''));
-    const spreadShort = parseFloat(row.spreads.short.replace(/[^\d.-]/g, ''));
+    const spreadLong = parseFloat(row.spreads.long.replace(/[^\d.-]/g, ""));
+    const spreadShort = parseFloat(row.spreads.short.replace(/[^\d.-]/g, ""));
     const spreadClass = spreadLong > 0 ? "positive" : "negative";
 
     // Verifica se o header deve ser exibido
-    const showHeader = isColumnVisible("showCoinLogo") || isColumnVisible("moeda");
+    const showHeader =
+      isColumnVisible("showCoinLogo") || isColumnVisible("moeda");
 
     return (
       <div key={row.id} className={styles.opportunityCard}>
@@ -2763,7 +2805,7 @@ export function DemoGlassTable({
               <div className={styles.cardTitle}>
                 <h3>{row.coin.ticker}</h3>
                 <div className={styles.cardExchanges}>
-                  <span 
+                  <span
                     className={styles.exchangeLink}
                     onClick={(e) => {
                       e.preventDefault();
@@ -2777,10 +2819,15 @@ export function DemoGlassTable({
                     }}
                   >
                     {row.spot.bingo.replace(/spot|futures/i, "")}
-                    <Image src="/new-page/link.svg" alt="" width={10} height={10} />
+                    <Image
+                      src="/new-page/link.svg"
+                      alt=""
+                      width={10}
+                      height={10}
+                    />
                   </span>
                   {" → "}
-                  <span 
+                  <span
                     className={styles.exchangeLink}
                     onClick={(e) => {
                       e.preventDefault();
@@ -2794,7 +2841,12 @@ export function DemoGlassTable({
                     }}
                   >
                     {row.futures.bingo.replace(/spot|futures/i, "")}
-                    <Image src="/new-page/link.svg" alt="" width={10} height={10} />
+                    <Image
+                      src="/new-page/link.svg"
+                      alt=""
+                      width={10}
+                      height={10}
+                    />
                   </span>
                 </div>
               </div>
@@ -2802,223 +2854,276 @@ export function DemoGlassTable({
           </div>
         )}
 
-          <div className={styles.cardBody}>
-            {isColumnVisible("spot") && (
-              <div className={styles.cardField}>
-                <label>Spot</label>
-                <div className={styles.cardValue}>{row.spot.price}</div>
-                <div className={styles.cardSubValue}>{row.spot.live}</div>
-              </div>
-            )}
+        <div className={styles.cardBody}>
+          {isColumnVisible("spot") && (
+            <div className={styles.cardField}>
+              <label>Spot</label>
+              <div className={styles.cardValue}>{row.spot.price}</div>
+              <div className={styles.cardSubValue}>{row.spot.live}</div>
+            </div>
+          )}
 
-            {isColumnVisible("futuros") && (
-              <div className={styles.cardField}>
-                <label>Futuros</label>
-                <div className={styles.cardValue}>{row.futures.price}</div>
-                <div className={styles.cardSubValue}>{row.futures.live}</div>
-              </div>
-            )}
+          {isColumnVisible("futuros") && (
+            <div className={styles.cardField}>
+              <label>Futuros</label>
+              <div className={styles.cardValue}>{row.futures.price}</div>
+              <div className={styles.cardSubValue}>{row.futures.live}</div>
+            </div>
+          )}
 
-            {isColumnVisible("funding") && (
-              <div className={styles.cardField}>
-                <label>Funding</label>
-                <div className={styles.cardValue}>
-                  {row.funding ? `${parseFloat(row.funding) > 0 ? "+" : ""}${row.funding}%` : "—"}
-                </div>
+          {isColumnVisible("funding") && (
+            <div className={styles.cardField}>
+              <label>Funding</label>
+              <div className={styles.cardValue}>
+                {row.funding
+                  ? `${parseFloat(row.funding) > 0 ? "+" : ""}${row.funding}%`
+                  : "—"}
               </div>
-            )}
+            </div>
+          )}
 
-            {isColumnVisible("volumes") && (
-              <div className={styles.cardField}>
-                <label>Volumes</label>
-                <div className={styles.cardValue}>
-                  {typeof row.volumes === 'string' ? row.volumes : 
-                   row.volumes && typeof row.volumes === 'object' ? 
-                   `S: ${row.volumes.s} / F: ${row.volumes.f}` : "—"}
-                </div>
+          {isColumnVisible("volumes") && (
+            <div className={styles.cardField}>
+              <label>Volumes</label>
+              <div className={styles.cardValue}>
+                {typeof row.volumes === "string"
+                  ? row.volumes
+                  : row.volumes && typeof row.volumes === "object"
+                  ? `S: ${row.volumes.s} / F: ${row.volumes.f}`
+                  : "—"}
               </div>
-            )}
+            </div>
+          )}
 
-            {isColumnVisible("volumes24") && (
-              <div className={styles.cardField}>
-                <label>Volume 24h</label>
-                <div className={styles.cardValue}>
-                  {typeof row.volumes24h === 'string' ? row.volumes24h : 
-                   row.volumes24h && typeof row.volumes24h === 'object' ? 
-                   `S: ${row.volumes24h.s} / F: ${row.volumes24h.f}` : "—"}
-                </div>
+          {isColumnVisible("volumes24") && (
+            <div className={styles.cardField}>
+              <label>Volume 24h</label>
+              <div className={styles.cardValue}>
+                {typeof row.volumes24h === "string"
+                  ? row.volumes24h
+                  : row.volumes24h && typeof row.volumes24h === "object"
+                  ? `S: ${row.volumes24h.s} / F: ${row.volumes24h.f}`
+                  : "—"}
               </div>
-            )}
+            </div>
+          )}
 
-            {isColumnVisible("historico") && (
-              <div className={styles.cardField}>
-                <label>Histórico</label>
-                <div className={styles.cardValue}>
-                  <div className={styles.historyCell}>
-                    <div className={styles.historyTitle}>
-                      <span className={styles.historyCount}>{invertidas}</span>
-                      <span className={styles.historyLabelText}>invertidas</span>
-                      <button
-                        className={styles.historyChartBtn}
-                        type="button"
-                        aria-label="Abrir Grafico"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleTradingViewClick(
-                            row.coin.ticker,
-                            row.spot.bingo,
-                            row.futures.bingo
-                          );
-                        }}
-                      >
+          {isColumnVisible("historico") && (
+            <div className={styles.cardField}>
+              <label>Histórico</label>
+              <div className={styles.cardValue}>
+                <div className={styles.historyCell}>
+                  <div className={styles.historyTitle}>
+                    <span className={styles.historyCount}>{invertidas}</span>
+                    <span className={styles.historyLabelText}>invertidas</span>
+                    <button
+                      className={styles.historyChartBtn}
+                      type="button"
+                      aria-label="Abrir Grafico"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleTradingViewClick(
+                          row.coin.ticker,
+                          row.spot.bingo,
+                          row.futures.bingo
+                        );
+                      }}
+                    >
+                      <span className={styles.historyIcon}>
+                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                          <path
+                            d="M3 14l4-4 3 3 5-6"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M3 17h14"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                    {age && (
+                      <span className={styles.historyAge}>
                         <span className={styles.historyIcon}>
                           <svg viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M3 14l4-4 3 3 5-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M3 17h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <circle
+                              cx="10"
+                              cy="10"
+                              r="7"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            />
+                            <path
+                              d="M10 6v4l3 2"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </span>
-                      </button>
-                      {age && (
-                        <span className={styles.historyAge}>
-                          <span className={styles.historyIcon}>
-                            <svg viewBox="0 0 20 20" aria-hidden="true">
-                              <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
-                              <path d="M10 6v4l3 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </span>
-                          {age}
-                        </span>
+                        {age}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.historyRow}>
+                    <span className={styles.historyMiniLabel}>↑ A</span>
+                    <span
+                      className={classnames(
+                        styles.historyValue,
+                        typeof maxOpen === "number"
+                          ? maxOpen >= 0
+                            ? styles.positive
+                            : styles.negative
+                          : undefined
                       )}
-                    </div>
-                    <div className={styles.historyRow}>
-                      <span className={styles.historyMiniLabel}>↑ A</span>
-                      <span
-                        className={classnames(
-                          styles.historyValue,
-                          typeof maxOpen === "number"
-                            ? maxOpen >= 0
-                              ? styles.positive
-                              : styles.negative
-                            : undefined
-                        )}
-                      >
-                        {typeof maxOpen === "number" ? `${maxOpen.toFixed(2)}%` : "—"}
-                      </span>
-                      <span className={styles.historyMiniLabel}>↑ F</span>
-                      <span
-                        className={classnames(
-                          styles.historyValue,
-                          typeof maxClose === "number"
-                            ? maxClose >= 0
-                              ? styles.positive
-                              : styles.negative
-                            : undefined
-                        )}
-                      >
-                        {typeof maxClose === "number" ? `${maxClose.toFixed(2)}%` : "—"}
-                      </span>
-                    </div>
+                    >
+                      {typeof maxOpen === "number"
+                        ? `${maxOpen.toFixed(2)}%`
+                        : "—"}
+                    </span>
+                    <span className={styles.historyMiniLabel}>↑ F</span>
+                    <span
+                      className={classnames(
+                        styles.historyValue,
+                        typeof maxClose === "number"
+                          ? maxClose >= 0
+                            ? styles.positive
+                            : styles.negative
+                          : undefined
+                      )}
+                    >
+                      {typeof maxClose === "number"
+                        ? `${maxClose.toFixed(2)}%`
+                        : "—"}
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {isColumnVisible("tempo") && (
-              <div className={styles.cardField}>
-                <label>Tempo</label>
-                <div className={styles.cardValue}>
-                  <TempoCell validSince={row.validSince} />
-                </div>
+          {isColumnVisible("tempo") && (
+            <div className={styles.cardField}>
+              <label>Tempo</label>
+              <div className={styles.cardValue}>
+                <TempoCell validSince={row.validSince} />
               </div>
-            )}
+            </div>
+          )}
 
-            {isColumnVisible("spreads") && (
-              <div className={styles.cardSpread}>
-                <div className={`${styles.cardSpreadItem} ${
-                  isElementVisible("showSpreadBackground") ? styles[spreadClass] : ""
-                }`}>
-                  <label>Entrada (E)</label>
-                  <div className={styles.spreadValue}>
-                    {spreadLong > 0 ? "+" : ""}{spreadLong.toFixed(2)}%
-                  </div>
-                </div>
-                <div className={`${styles.cardSpreadItem} ${
-                  isElementVisible("showSpreadBackground") 
-                    ? (spreadShort > 0 ? styles.positive : styles.negative)
+          {isColumnVisible("spreads") && (
+            <div className={styles.cardSpread}>
+              <div
+                className={`${styles.cardSpreadItem} ${
+                  isElementVisible("showSpreadBackground")
+                    ? styles[spreadClass]
                     : ""
-                }`}>
-                  <label>Saída (S)</label>
-                  <div className={styles.spreadValue}>
-                    {spreadShort > 0 ? "+" : ""}{spreadShort.toFixed(2)}%
-                  </div>
+                }`}
+              >
+                <label>Entrada (E)</label>
+                <div className={styles.spreadValue}>
+                  {spreadLong > 0 ? "+" : ""}
+                  {spreadLong.toFixed(2)}%
                 </div>
               </div>
-            )}
-
-            {isColumnVisible("acoes") && (
-              <div className={styles.cardActions}>
-                <button
-                  className={`${styles.cardActionBtn} ${
-                    isFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`)
-                      ? styles.favorited
-                      : ""
-                  }`}
-                  onClick={() =>
-                    toggleFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`)
-                  }
-                  title="Favoritar"
-                >
-                  {isFavorite(`${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`) ? (
-                    <StarFilledIcon />
-                  ) : (
-                    <StarIcon />
-                  )}
-                </button>
-                <button
-                  className={styles.cardActionBtn}
-                  onClick={() => {
-                    const url = generateTradingViewURL(
-                      row.coin.ticker,
-                      row.spot.bingo,
-                      row.futures.bingo
-                    );
-                    setTradingViewUrl(url);
-                    setChartTicker(row.coin.ticker);
-                    setChartSpotExchange(row.spot.bingo);
-                    setChartFuturesExchange(row.futures.bingo);
-                    setChartProvider("tradingview");
-                    setIsTradingViewOpen(true);
-                  }}
-                  title="Ver grafico"
-                >
-                  <TradingViewIcon />
-                </button>
-                <button
-                  className={styles.cardActionBtn}
-                  onClick={() => openCalculatorPopup()}
-                  title="Abrir calculadora"
-                >
-                  <CalculatorTableIcon />
-                </button>
-                <button
-                  className={styles.cardActionBtn}
-                  onClick={() =>
-                    openDeleteModal(
-                      `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`,
-                      `${row.coin.ticker} (${row.spot.bingo} → ${row.futures.bingo})`
-                    )
-                  }
-                  title="Excluir oportunidade"
-                >
-                  <TrashIcon />
-                </button>
+              <div
+                className={`${styles.cardSpreadItem} ${
+                  isElementVisible("showSpreadBackground")
+                    ? spreadShort > 0
+                      ? styles.positive
+                      : styles.negative
+                    : ""
+                }`}
+              >
+                <label>Saída (S)</label>
+                <div className={styles.spreadValue}>
+                  {spreadShort > 0 ? "+" : ""}
+                  {spreadShort.toFixed(2)}%
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {isColumnVisible("acoes") && (
+            <div className={styles.cardActions}>
+              <button
+                className={`${styles.cardActionBtn} ${
+                  isFavorite(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                  )
+                    ? styles.favorited
+                    : ""
+                }`}
+                onClick={() =>
+                  toggleFavorite(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                  )
+                }
+                title="Favoritar"
+              >
+                {isFavorite(
+                  `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                ) ? (
+                  <StarFilledIcon />
+                ) : (
+                  <StarIcon />
+                )}
+              </button>
+              <button
+                className={styles.cardActionBtn}
+                onClick={() => {
+                  const url = generateTradingViewURL(
+                    row.coin.ticker,
+                    row.spot.bingo,
+                    row.futures.bingo
+                  );
+                  setTradingViewUrl(url);
+                  setChartTicker(row.coin.ticker);
+                  setChartSpotExchange(row.spot.bingo);
+                  setChartFuturesExchange(row.futures.bingo);
+                  setChartProvider("tradingview");
+                  setIsTradingViewOpen(true);
+                }}
+                title="Ver grafico"
+              >
+                <TradingViewIcon />
+              </button>
+              <button
+                className={styles.cardActionBtn}
+                onClick={() => openCalculatorPopup()}
+                title="Abrir calculadora"
+              >
+                <CalculatorTableIcon />
+              </button>
+              <button
+                className={styles.cardActionBtn}
+                onClick={() =>
+                  openDeleteModal(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`,
+                    `${row.coin.ticker} (${row.spot.bingo} → ${row.futures.bingo})`
+                  )
+                }
+                title="Excluir oportunidade"
+              >
+                <TrashIcon />
+              </button>
+            </div>
+          )}
         </div>
-      );
-    };
+      </div>
+    );
+  };
 
   // Renderiza cards mobile
   const renderMobileCards = () => {
@@ -3040,9 +3145,7 @@ export function DemoGlassTable({
     <>
       {/* Mobile Cards Container */}
       {isMobile && (
-        <div className={styles.mobileCardsContainer}>
-          {renderMobileCards()}
-        </div>
+        <div className={styles.mobileCardsContainer}>{renderMobileCards()}</div>
       )}
 
       {/* Botão Flutuante de Paginação Mobile */}
@@ -3058,30 +3161,71 @@ export function DemoGlassTable({
           }}
           title={isPaginationModalOpen ? "Fechar navegação" : "Abrir navegação"}
           style={{
-            position: 'fixed',
-            bottom: '250px',
-            right: '20px',
-            zIndex: 99999
+            position: "fixed",
+            bottom: "250px",
+            right: "20px",
+            zIndex: 99999,
           }}
         >
           {isPaginationModalOpen ? (
             // Ícone X quando está aberto
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 6L18 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           ) : (
             // Ícone de lista quando está fechado
             <>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M3 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="7" cy="6" r="1.5" fill="currentColor"/>
-                <circle cx="7" cy="12" r="1.5" fill="currentColor"/>
-                <circle cx="7" cy="18" r="1.5" fill="currentColor"/>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 6H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M3 12H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M3 18H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <circle cx="7" cy="6" r="1.5" fill="currentColor" />
+                <circle cx="7" cy="12" r="1.5" fill="currentColor" />
+                <circle cx="7" cy="18" r="1.5" fill="currentColor" />
               </svg>
-              <span className={styles.pageIndicator}>{currentPage}/{totalPages}</span>
+              <span className={styles.pageIndicator}>
+                {currentPage}/{totalPages}
+              </span>
             </>
           )}
         </button>
@@ -3090,11 +3234,17 @@ export function DemoGlassTable({
       {/* Modal de Paginação Mobile */}
       {isMobile && isPaginationModalOpen && (
         <>
-          <div 
-            className={`${styles.paginationModalOverlay} ${isPaginationModalClosing ? styles.fadeOut : ''}`}
+          <div
+            className={`${styles.paginationModalOverlay} ${
+              isPaginationModalClosing ? styles.fadeOut : ""
+            }`}
             onClick={closePaginationModal}
           />
-          <div className={`${styles.paginationModal} ${isPaginationModalClosing ? styles.slideDown : ''}`}>
+          <div
+            className={`${styles.paginationModal} ${
+              isPaginationModalClosing ? styles.slideDown : ""
+            }`}
+          >
             <div className={styles.paginationModalHeader}>
               <h3>Navegação</h3>
             </div>
@@ -3102,7 +3252,8 @@ export function DemoGlassTable({
             <div className={styles.paginationModalBody}>
               <div className={styles.paginationInfo}>
                 <span className={styles.paginationInfoText}>
-                  Mostrando {startIndex + 1} - {Math.min(endIndex, totalItems)} de {totalItems} oportunidades
+                  Mostrando {startIndex + 1} - {Math.min(endIndex, totalItems)}{" "}
+                  de {totalItems} oportunidades
                 </span>
                 <div className={styles.itemsPerPageSelector}>
                   <label>Por página:</label>
@@ -3499,9 +3650,7 @@ export function DemoGlassTable({
               <div className={styles.chartTitle}>
                 <span>Grafico</span>
                 {chartTicker && (
-                  <span className={styles.chartTicker}>
-                    {chartTicker}USDT
-                  </span>
+                  <span className={styles.chartTicker}>{chartTicker}USDT</span>
                 )}
               </div>
               <div className={styles.providerTabs}>
@@ -3561,14 +3710,14 @@ export function DemoGlassTable({
                         <option value="1h">1h</option>
                         <option value="30m">30m</option>
                       </select>
-                      <label className={styles.chartFilterLabel}>Intencao</label>
+                      <label className={styles.chartFilterLabel}>
+                        Intencao
+                      </label>
                       <select
                         className={styles.chartFilterSelect}
                         value={crossIntent}
                         onChange={(e) =>
-                          setCrossIntent(
-                            e.target.value as typeof crossIntent
-                          )
+                          setCrossIntent(e.target.value as typeof crossIntent)
                         }
                       >
                         <option value="abertura">Abertura</option>
@@ -3671,7 +3820,8 @@ export function DemoGlassTable({
                     onWheel={(event) => {
                       if (!nextGainWindowData.length) return;
                       event.preventDefault();
-                      const rect = nextGainChartRef.current?.getBoundingClientRect();
+                      const rect =
+                        nextGainChartRef.current?.getBoundingClientRect();
                       if (!rect) return;
                       const x = event.clientX - rect.left;
                       const y = event.clientY - rect.top;
@@ -3692,7 +3842,8 @@ export function DemoGlassTable({
                       const [yMin, yMax] = yDomain;
                       const rangeX = xMax - xMin;
                       const rangeY = yMax - yMin;
-                      if (!Number.isFinite(rangeX) || !Number.isFinite(rangeY)) return;
+                      if (!Number.isFinite(rangeX) || !Number.isFinite(rangeY))
+                        return;
 
                       const zoomIn = event.deltaY < 0;
                       const zoomFactor = zoomIn ? 0.9 : 1.1;
@@ -3768,28 +3919,30 @@ export function DemoGlassTable({
                       if (!nextGainWindowData.length) return;
                       if (event.button !== 0) return;
                       if (!nextGainChartRef.current) return;
-                      const rect = nextGainChartRef.current.getBoundingClientRect();
+                      const rect =
+                        nextGainChartRef.current.getBoundingClientRect();
                       panStateRef.current = {
                         startX: event.clientX - rect.left,
                         startY: event.clientY - rect.top,
-                        xDomain:
-                          nextGainXDomain ?? [
-                            nextGainExtents.minTs,
-                            nextGainExtents.maxTs,
-                          ],
-                        yDomain:
-                          nextGainYDomain ?? [
-                            nextGainExtents.minY,
-                            nextGainExtents.maxY,
-                          ],
+                        xDomain: nextGainXDomain ?? [
+                          nextGainExtents.minTs,
+                          nextGainExtents.maxTs,
+                        ],
+                        yDomain: nextGainYDomain ?? [
+                          nextGainExtents.minY,
+                          nextGainExtents.maxY,
+                        ],
                       };
                     }}
                     onMouseMove={(event) => {
                       if (!panStateRef.current || !nextGainChartRef.current)
                         return;
-                      const rect = nextGainChartRef.current.getBoundingClientRect();
-                      const dx = event.clientX - rect.left - panStateRef.current.startX;
-                      const dy = event.clientY - rect.top - panStateRef.current.startY;
+                      const rect =
+                        nextGainChartRef.current.getBoundingClientRect();
+                      const dx =
+                        event.clientX - rect.left - panStateRef.current.startX;
+                      const dy =
+                        event.clientY - rect.top - panStateRef.current.startY;
                       const width = rect.width || 1;
                       const height = rect.height || 1;
 
@@ -3874,11 +4027,17 @@ export function DemoGlassTable({
                             tickFormatter={(value) =>
                               formatTimeLabel(value as number)
                             }
-                            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+                            tick={{
+                              fill: "rgba(255,255,255,0.6)",
+                              fontSize: 11,
+                            }}
                           />
                           <YAxis
                             domain={nextGainYDomain ?? ["auto", "auto"]}
-                            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+                            tick={{
+                              fill: "rgba(255,255,255,0.6)",
+                              fontSize: 11,
+                            }}
                           />
                           <Tooltip
                             content={(props) => (
@@ -3905,7 +4064,7 @@ export function DemoGlassTable({
                             dot={(props: any) => {
                               const { cx, cy, payload } = props;
                               if (!payload || !nextGainPeakTs.has(payload.ts)) {
-                                return null;
+                                return <g />;
                               }
                               return (
                                 <circle

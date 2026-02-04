@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useDeferredValue,
-} from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import styles from "../styles/futures-new.module.scss";
 import NewPageSidebar from "../components/new-page/sidebar";
 import NewPageHeader from "../components/new-page/header/header";
@@ -186,7 +180,10 @@ export default function FuturosNewPage({
   }, [isConnected, isReady, buyExNames, sellExNames]);
 
   // ✅ NOVO: aplica filtros iguais aos da tela antiga
-  const deferredOpportunities = useDeferredValue(opportunities ?? []);
+  const deferredOpportunities = useMemo(
+    () => opportunities ?? [],
+    [opportunities]
+  );
   const filteredOpps: ArbitrageOpportunity[] = useMemo(() => {
     const base = deferredOpportunities.filter((op) => {
       if (!op) return false;
@@ -328,7 +325,11 @@ export default function FuturosNewPage({
 
   // Fecha a sidebar quando o modal abre (especialmente em mobile)
   useEffect(() => {
-    if (modalOpen && typeof window !== "undefined" && window.innerWidth <= 768) {
+    if (
+      modalOpen &&
+      typeof window !== "undefined" &&
+      window.innerWidth <= 768
+    ) {
       setSidebarCollapsed(true);
     }
   }, [modalOpen]);
