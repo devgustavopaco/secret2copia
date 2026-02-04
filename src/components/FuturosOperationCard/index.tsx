@@ -160,8 +160,9 @@ const dynamicDecimalFormatter = (value: number, ticker: string): string => {
   }).format(value);
 };
 
+// Normaliza para o mesmo padrão da calculadora (BRL quando isUSD = true)
 const calculatePrice = (price: number, isUSD: boolean, dolarValue: number) =>
-  isUSD ? price : price / dolarValue;
+  isUSD ? price * dolarValue : price;
 
 // Styled components
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
@@ -386,7 +387,7 @@ export function FuturosOperationCard({
     return `${s}s`;
   };
 
-  const dolarValue = user?.dolarValue ?? dollarPrice;
+  const dolarValue = user?.dolarValue ?? 1;
 
   // preços topo
   const spotAsk = calculatePrice(
