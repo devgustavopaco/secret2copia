@@ -155,7 +155,7 @@ export default function FuturosNewPage({
   }, [pullSelectedFromStorage]);
 
   const [metricsPeriod, setMetricsPeriod] = useState<
-    "30m" | "1h" | "4h" | "12h" | "24h"
+    "30m" | "1h" | "4h" | "12h"
   >("4h");
   const metricsIntent = isExitMode ? "fechamento" : "abertura";
   const [metricsHistoryTarget, setMetricsHistoryTarget] =

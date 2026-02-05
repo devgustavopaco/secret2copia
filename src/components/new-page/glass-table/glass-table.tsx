@@ -93,7 +93,7 @@ export type Column<T> = {
 };
 
 type MetricsIntent = "abertura" | "fechamento";
-type MetricsPeriod = "30m" | "1h" | "4h" | "12h" | "24h";
+type MetricsPeriod = "30m" | "1h" | "4h" | "12h";
 type MetricsKey = {
   symbol: string;
   spotExchange: string;
@@ -106,6 +106,8 @@ type MetricsUpdate = {
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
+  lastInversionMs?: number;
+  lastInversionAt?: number;
   history?: Array<{
     ts: number;
     spot: number;
@@ -228,6 +230,24 @@ const formatVolume = (volume: number) => {
     return volume.toFixed(0);
   }
 };
+
+const periodToMs = (period: MetricsPeriod) => {
+  switch (period) {
+    case "1h":
+      return 60 * 60 * 1000;
+    case "30m":
+      return 30 * 60 * 1000;
+    case "12h":
+      return 12 * 60 * 60 * 1000;
+    case "4h":
+    default:
+      return 4 * 60 * 60 * 1000;
+  }
+};
+
+const NEXTGAIN_HISTORY_MIN_COVERAGE_RATIO = 0.95;
+const getNextGainMaxStalenessMs = (periodMs: number) =>
+  Math.min(5 * 60 * 1000, Math.max(90 * 1000, periodMs / 20));
 
 type CoinRow = {
   id: string;
@@ -1132,6 +1152,7 @@ export function DemoGlassTable({
     const symbol = chartTicker ? `${chartTicker}USDT` : null;
     const spot = normalizeExchangeName(chartSpotExchange);
     const futures = normalizeExchangeName(chartFuturesExchange);
+
     if (!symbol || !spot || !futures) {
       setNextGainSpotTicks([]);
       setNextGainFuturesTicks([]);
@@ -1150,18 +1171,16 @@ export function DemoGlassTable({
       crossIntent
     );
     const history = metricsByKey?.[lookupKey]?.history ?? [];
-
     if (!history.length) {
       setNextGainSpotTicks([]);
       setNextGainFuturesTicks([]);
       setNextGainLoading(true);
-      setNextGainError("Aguardando historico em tempo real...");
+      setNextGainError("Aguardando historico do socket...");
       return;
     }
 
     const toStr = (value?: number) =>
       Number.isFinite(value) ? Number(value).toString() : "0";
-
     const spotTicks: NextGainTick[] = history.map((point) => ({
       ticker_formatted: symbol,
       exchange_id: 0,
@@ -1182,7 +1201,6 @@ export function DemoGlassTable({
       volume: "0",
       timestamp: String(point.ts),
     }));
-
     setNextGainSpotTicks(spotTicks);
     setNextGainFuturesTicks(futuresTicks);
     setNextGainLoading(false);
@@ -1300,21 +1318,10 @@ export function DemoGlassTable({
     return merged;
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, crossIntent]);
 
-  const periodMs = React.useMemo(() => {
-    switch (selectedMetricsPeriod) {
-      case "1h":
-        return 60 * 60 * 1000;
-      case "30m":
-        return 30 * 60 * 1000;
-      case "12h":
-        return 12 * 60 * 60 * 1000;
-      case "24h":
-        return 24 * 60 * 60 * 1000;
-      case "4h":
-      default:
-        return 4 * 60 * 60 * 1000;
-    }
-  }, [selectedMetricsPeriod]);
+  const periodMs = React.useMemo(
+    () => periodToMs(selectedMetricsPeriod),
+    [selectedMetricsPeriod]
+  );
 
   const nextGainWindowData = React.useMemo(() => {
     if (!nextGainData.length) return [];
@@ -1322,6 +1329,61 @@ export function DemoGlassTable({
     const minTs = maxTs - periodMs;
     return nextGainData.filter((row) => row.ts >= minTs);
   }, [nextGainData, periodMs]);
+
+  const nextGainHistoryState = React.useMemo(() => {
+    if (!nextGainWindowData.length) {
+      return {
+        coverageRatio: 0,
+        isRecent: false,
+        isReady: false,
+      };
+    }
+
+    let minTs = nextGainWindowData[0]!.ts;
+    let maxTs = nextGainWindowData[nextGainWindowData.length - 1]!.ts;
+    nextGainWindowData.forEach((row) => {
+      if (row.ts < minTs) minTs = row.ts;
+      if (row.ts > maxTs) maxTs = row.ts;
+    });
+
+    const coverageMs = Math.max(0, maxTs - minTs);
+    const coverageRatio = periodMs > 0 ? Math.min(1, coverageMs / periodMs) : 0;
+    const maxStalenessMs = getNextGainMaxStalenessMs(periodMs);
+    const isRecent = now - maxTs <= maxStalenessMs;
+    const isReady = coverageRatio >= NEXTGAIN_HISTORY_MIN_COVERAGE_RATIO;
+
+    return {
+      coverageRatio,
+      isRecent,
+      isReady,
+    };
+  }, [nextGainWindowData, periodMs, now]);
+
+  const isNextGainChartReady =
+    nextGainWindowData.length > 0 && nextGainHistoryState.isReady;
+
+  const nextGainLoadingHint = React.useMemo(() => {
+    if (nextGainLoading) {
+      return "Carregando historico...";
+    }
+    if (nextGainError) {
+      return nextGainError;
+    }
+    if (!isNextGainChartReady) {
+      const coverage = Math.round(nextGainHistoryState.coverageRatio * 100);
+      return `Aguardando historico completo (${coverage}% do periodo)...`;
+    }
+    if (!nextGainHistoryState.isRecent) {
+      return "Historico carregado, mas sem ticks recentes.";
+    }
+    return null;
+  }, [
+    nextGainLoading,
+    nextGainError,
+    isNextGainChartReady,
+    nextGainHistoryState.coverageRatio,
+    nextGainHistoryState.isRecent,
+  ]);
 
   const nextGainMaxSpreads = React.useMemo(() => {
     const list = nextGainSpotTicks || [];
@@ -2507,6 +2569,7 @@ export function DemoGlassTable({
       invertidas: metrics?.invertidas ?? 0,
       maxOpen: metrics?.maxOpenPct,
       maxClose: metrics?.maxClosePct,
+      lastInversionMs: metrics?.lastInversionMs,
       updatedAt: metrics?.updatedAt,
     };
   };
@@ -2684,9 +2747,12 @@ export function DemoGlassTable({
       id: "historico",
       header: "Histórico",
       accessor: (row: CoinRow) => {
-        const { invertidas, maxOpen, maxClose, updatedAt } =
+        const { invertidas, maxOpen, maxClose, lastInversionMs } =
           resolveRowMetrics(row);
-        const age = updatedAt ? formatElapsed(now - updatedAt) : null;
+        const age =
+          typeof lastInversionMs === "number"
+            ? formatElapsed(lastInversionMs)
+            : null;
         const onOpenChart = () =>
           handleTradingViewClick(
             row.coin.ticker,
@@ -2850,8 +2916,12 @@ export function DemoGlassTable({
 
   // Componente separado para o card mobile (para usar o hook corretamente)
   const MobileOpportunityCard = ({ row }: { row: CoinRow }) => {
-    const { invertidas, maxOpen, maxClose, updatedAt } = resolveRowMetrics(row);
-    const age = updatedAt ? formatElapsed(now - updatedAt) : null;
+    const { invertidas, maxOpen, maxClose, lastInversionMs } =
+      resolveRowMetrics(row);
+    const age =
+      typeof lastInversionMs === "number"
+        ? formatElapsed(lastInversionMs)
+        : null;
     const logoUrl = useCoinLogo(row.coin.ticker, row.coin.ticker);
     const opp = getOpp(row.id);
     if (!opp) return null;
@@ -3713,8 +3783,23 @@ export function DemoGlassTable({
 
       {/* Modal de Grafico */}
       {isTradingViewOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalLarge}>
+        <div
+          className={classnames(
+            styles.modalOverlay,
+            styles.chartModalOverlay,
+            isSidebarOpen
+              ? styles.chartModalOverlaySidebarOpen
+              : styles.chartModalOverlaySidebarClosed
+          )}
+        >
+          <div
+            className={classnames(
+              styles.modalLarge,
+              isSidebarOpen
+                ? styles.modalLargeSidebarOpen
+                : styles.modalLargeSidebarClosed
+            )}
+          >
             <button
               onClick={() => setIsTradingViewOpen(false)}
               className={styles.closeButton}
@@ -3779,7 +3864,6 @@ export function DemoGlassTable({
                           )
                         }
                       >
-                        <option value="24h">24h</option>
                         <option value="12h">12h</option>
                         <option value="4h">4h</option>
                         <option value="1h">1h</option>
@@ -3885,8 +3969,16 @@ export function DemoGlassTable({
                           </span>
                         </div>
                       </div>
-                      {nextGainLoading && <span>Carregando...</span>}
-                      {nextGainError && <span>{nextGainError}</span>}
+                      {nextGainLoadingHint && (
+                        <span
+                          className={classnames(
+                            styles.chartLoadingHint,
+                            nextGainError && styles.chartLoadingHintError
+                          )}
+                        >
+                          {nextGainLoadingHint}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div
@@ -4090,7 +4182,7 @@ export function DemoGlassTable({
                       ]);
                     }}
                   >
-                    {!nextGainLoading && nextGainWindowData.length > 0 ? (
+                    {isNextGainChartReady ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={nextGainWindowData}>
                           <CartesianGrid stroke="rgba(255,255,255,0.08)" />
@@ -4157,11 +4249,7 @@ export function DemoGlassTable({
                       </ResponsiveContainer>
                     ) : (
                       <div className={styles.chartEmpty}>
-                        {nextGainLoading
-                          ? "Carregando dados..."
-                          : nextGainError
-                          ? nextGainError
-                          : "Sem dados para este ticker."}
+                        {nextGainLoadingHint ?? "Sem dados para este ticker."}
                       </div>
                     )}
                   </div>

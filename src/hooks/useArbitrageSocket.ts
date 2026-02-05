@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
 type MetricsIntent = "abertura" | "fechamento";
-type MetricsPeriod = "30m" | "1h" | "4h" | "12h" | "24h";
+type MetricsPeriod = "30m" | "1h" | "4h" | "12h";
 type MetricsKey = {
   symbol: string;
   spotExchange: string;
@@ -16,6 +16,8 @@ type MetricsUpdate = {
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
+  lastInversionMs?: number;
+  lastInversionAt?: number;
   history?: Array<{
     ts: number;
     spot: number;

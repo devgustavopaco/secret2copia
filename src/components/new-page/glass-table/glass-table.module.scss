@@ -403,6 +403,14 @@
   }
 }
 
+.modalLargeSidebarOpen {
+  max-width: calc(100vw - 17vw - 48px);
+}
+
+.modalLargeSidebarClosed {
+  max-width: calc(100vw - 48px);
+}
+
 .chartHeader {
   display: flex;
   align-items: center;
@@ -481,6 +489,17 @@
   text-align: right;
   color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
+}
+
+.chartLoadingHint {
+  max-width: 320px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.chartLoadingHintError {
+  color: #ff7f7f;
 }
 
 .chartRightStats {
@@ -1025,6 +1044,18 @@
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+}
+
+.chartModalOverlay {
+  align-items: center;
+}
+
+.chartModalOverlaySidebarOpen {
+  padding-left: calc(17vw + 20px);
+}
+
+.chartModalOverlaySidebarClosed {
+  padding-left: 20px;
 }
 
 .modal {
@@ -2555,6 +2586,16 @@
     max-width: 95vw;
     max-height: 85vh;
     border-radius: 16px;
+  }
+
+  .modalLargeSidebarOpen,
+  .modalLargeSidebarClosed {
+    max-width: 95vw;
+  }
+
+  .chartModalOverlaySidebarOpen,
+  .chartModalOverlaySidebarClosed {
+    padding-left: 20px;
   }
 
   .closeButton {
