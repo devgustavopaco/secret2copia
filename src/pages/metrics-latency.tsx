@@ -675,7 +675,8 @@ export default function MetricsLatencyPage() {
           }));
           return false;
         }
-        const queued = timedOut || Boolean(payload?.queued) || res.status === 202;
+        const queued =
+          timedOut || Boolean(payload?.queued) || res.status === 202;
         if (queued) {
           setRestartByName((prev) => ({
             ...prev,

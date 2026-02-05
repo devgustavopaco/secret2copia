@@ -96,6 +96,7 @@ export function useArbitrageSocket(
   deltaMode: "single" | "batch" = "single",
   historyTarget?: MetricsHistoryTarget | null
 ) {
+  const METRICS_MAX_KEYS = 200;
   // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
 
@@ -280,8 +281,20 @@ export function useArbitrageSocket(
       prevConfig.intent = metricsIntent;
     }
 
+    const scoreOf = (opp: ArbitrageOpportunity) => {
+      const v =
+        metricsIntent === "fechamento"
+          ? Number(opp.spreadS ?? opp.spread ?? 0)
+          : Number(opp.spread ?? 0);
+      return Number.isFinite(v) ? v : 0;
+    };
+    const orderedOpps = Array.from(indexRef.current.values())
+      .filter((opp) => Boolean(opp?.ticker))
+      .sort((a, b) => scoreOf(b) - scoreOf(a))
+      .slice(0, METRICS_MAX_KEYS);
+
     const keyMap = new Map<string, MetricsKey>();
-    for (const opp of indexRef.current.values()) {
+    for (const opp of orderedOpps) {
       const symbol = opp.ticker?.toUpperCase();
       if (!symbol) continue;
       const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);

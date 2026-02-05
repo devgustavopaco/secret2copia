@@ -245,10 +245,6 @@ const periodToMs = (period: MetricsPeriod) => {
   }
 };
 
-const NEXTGAIN_HISTORY_MIN_COVERAGE_RATIO = 0.95;
-const getNextGainMaxStalenessMs = (periodMs: number) =>
-  Math.min(5 * 60 * 1000, Math.max(90 * 1000, periodMs / 20));
-
 type CoinRow = {
   id: string;
   coin: { ticker: string; logo: string };
@@ -1330,37 +1326,7 @@ export function DemoGlassTable({
     return nextGainData.filter((row) => row.ts >= minTs);
   }, [nextGainData, periodMs]);
 
-  const nextGainHistoryState = React.useMemo(() => {
-    if (!nextGainWindowData.length) {
-      return {
-        coverageRatio: 0,
-        isRecent: false,
-        isReady: false,
-      };
-    }
-
-    let minTs = nextGainWindowData[0]!.ts;
-    let maxTs = nextGainWindowData[nextGainWindowData.length - 1]!.ts;
-    nextGainWindowData.forEach((row) => {
-      if (row.ts < minTs) minTs = row.ts;
-      if (row.ts > maxTs) maxTs = row.ts;
-    });
-
-    const coverageMs = Math.max(0, maxTs - minTs);
-    const coverageRatio = periodMs > 0 ? Math.min(1, coverageMs / periodMs) : 0;
-    const maxStalenessMs = getNextGainMaxStalenessMs(periodMs);
-    const isRecent = now - maxTs <= maxStalenessMs;
-    const isReady = coverageRatio >= NEXTGAIN_HISTORY_MIN_COVERAGE_RATIO;
-
-    return {
-      coverageRatio,
-      isRecent,
-      isReady,
-    };
-  }, [nextGainWindowData, periodMs, now]);
-
-  const isNextGainChartReady =
-    nextGainWindowData.length > 0 && nextGainHistoryState.isReady;
+  const isNextGainChartReady = nextGainWindowData.length > 0;
 
   const nextGainLoadingHint = React.useMemo(() => {
     if (nextGainLoading) {
@@ -1370,20 +1336,10 @@ export function DemoGlassTable({
       return nextGainError;
     }
     if (!isNextGainChartReady) {
-      const coverage = Math.round(nextGainHistoryState.coverageRatio * 100);
-      return `Aguardando historico completo (${coverage}% do periodo)...`;
-    }
-    if (!nextGainHistoryState.isRecent) {
-      return "Historico carregado, mas sem ticks recentes.";
+      return "Aguardando historico do socket...";
     }
     return null;
-  }, [
-    nextGainLoading,
-    nextGainError,
-    isNextGainChartReady,
-    nextGainHistoryState.coverageRatio,
-    nextGainHistoryState.isRecent,
-  ]);
+  }, [nextGainLoading, nextGainError, isNextGainChartReady]);
 
   const nextGainMaxSpreads = React.useMemo(() => {
     const list = nextGainSpotTicks || [];
@@ -1547,26 +1503,35 @@ export function DemoGlassTable({
     };
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, periodMs]);
 
-  const nextGainInvertidasCount = React.useMemo(() => {
-    if (!nextGainWindowData.length) return 0;
-    let count = 0;
-    let prevSign: number | null = null;
-    nextGainWindowData.forEach((row) => {
-      if (!Number.isFinite(row.spot) || !Number.isFinite(row.futures)) return;
-      const diff = row.spot - row.futures;
-      if (diff === 0) return;
-      const sign = diff > 0 ? 1 : -1;
-      if (prevSign === null) {
-        prevSign = sign;
-        return;
-      }
-      if (sign !== prevSign) {
-        count += 1;
-        prevSign = sign;
-      }
-    });
-    return count;
-  }, [nextGainWindowData]);
+  const nextGainChartMetrics = React.useMemo(() => {
+    if (!metricsByKey || !chartTicker) return null;
+    const spot = normalizeExchangeName(chartSpotExchange);
+    const futures = normalizeExchangeName(chartFuturesExchange);
+    if (!spot || !futures) return null;
+    const lookupKey = metricsKeyString(
+      {
+        symbol: `${chartTicker}USDT`,
+        spotExchange: spot,
+        futuresExchange: futures,
+      },
+      selectedMetricsPeriod,
+      crossIntent
+    );
+    return metricsByKey?.[lookupKey] ?? null;
+  }, [
+    metricsByKey,
+    chartTicker,
+    chartSpotExchange,
+    chartFuturesExchange,
+    normalizeExchangeName,
+    selectedMetricsPeriod,
+    crossIntent,
+  ]);
+
+  const nextGainInvertidasCount =
+    typeof nextGainChartMetrics?.invertidas === "number"
+      ? nextGainChartMetrics.invertidas
+      : 0;
   const nextGainExtents = React.useMemo(() => {
     if (!nextGainWindowData.length) {
       return {
@@ -2354,6 +2319,7 @@ export function DemoGlassTable({
   const [rows, setRows] = React.useState<CoinRow[]>([]);
   const pendingRowsRef = React.useRef<CoinRow[]>([]);
   const sortTimerRef = React.useRef<number | null>(null);
+  const metricsCacheRef = React.useRef<Map<string, MetricsUpdate>>(new Map());
 
   const sortRows = React.useCallback(
     (rowsToSort: CoinRow[]) => {
@@ -2565,12 +2531,17 @@ export function DemoGlassTable({
       selectedMetricsIntent
     );
     const metrics = metricsByKey[lookupKey];
+    if (metrics) {
+      metricsCacheRef.current.set(lookupKey, metrics);
+    }
+    const cached = metricsCacheRef.current.get(lookupKey);
+    const finalMetrics = metrics ?? cached;
     return {
-      invertidas: metrics?.invertidas ?? 0,
-      maxOpen: metrics?.maxOpenPct,
-      maxClose: metrics?.maxClosePct,
-      lastInversionMs: metrics?.lastInversionMs,
-      updatedAt: metrics?.updatedAt,
+      invertidas: finalMetrics?.invertidas ?? 0,
+      maxOpen: finalMetrics?.maxOpenPct,
+      maxClose: finalMetrics?.maxClosePct,
+      lastInversionMs: finalMetrics?.lastInversionMs,
+      updatedAt: finalMetrics?.updatedAt,
     };
   };
 
@@ -2745,7 +2716,23 @@ export function DemoGlassTable({
     },
     {
       id: "historico",
-      header: "Histórico",
+      header: (
+        <div className={styles.historyHeader}>
+          <span>Histórico</span>
+          <select
+            className={styles.historyHeaderSelect}
+            value={selectedMetricsPeriod}
+            onChange={(e) =>
+              handleMetricsPeriodChange(e.target.value as MetricsPeriod)
+            }
+          >
+            <option value="12h">12h</option>
+            <option value="4h">4h</option>
+            <option value="1h">1h</option>
+            <option value="30m">30m</option>
+          </select>
+        </div>
+      ),
       accessor: (row: CoinRow) => {
         const { invertidas, maxOpen, maxClose, lastInversionMs } =
           resolveRowMetrics(row);

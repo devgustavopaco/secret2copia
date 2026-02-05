@@ -878,6 +878,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.historyHeaderSelect {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(125, 95, 255, 0.4);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(125, 95, 255, 0.8);
+    box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.2);
+  }
+}
+
 .historyTitle {
   font-size: 13px;
   font-weight: 700;
