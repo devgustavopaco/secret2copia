@@ -14,6 +14,7 @@ type MetricsUpdate = {
   key: MetricsKey;
   period: MetricsPeriod;
   intent: MetricsIntent;
+  includeHistory?: boolean;
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
@@ -135,6 +136,9 @@ export function useArbitrageSocket(
   const [metricsByKey, setMetricsByKey] = useState<
     Record<string, MetricsUpdate>
   >({});
+  const [metricsHistoryByKey, setMetricsHistoryByKey] = useState<
+    Record<string, MetricsUpdate>
+  >({});
   const metricsKeysRef = useRef<Set<string>>(new Set());
   const historySubRef = useRef<{
     key: MetricsKey;
@@ -244,18 +248,60 @@ export function useArbitrageSocket(
         ? (payload as MetricsUpdateBatch).updates
         : [payload as MetricsUpdate];
       setMetricsByKey((prev) => {
+        let changed = false;
         const next = { ...prev };
         for (const update of updates) {
           if (!update?.key) continue;
           const k = metricsKeyString(update.key, update.period, update.intent);
-          const prev = next[k];
-          if (!update.history?.length && prev?.history?.length) {
-            next[k] = { ...update, history: prev.history };
+          const isHistoryUpdate =
+            update.includeHistory === true ||
+            (update.includeHistory == null && Array.isArray(update.history));
+          if (isHistoryUpdate) {
+            const prevValue = next[k];
+            if (
+              !prevValue ||
+              Number(update.updatedAt ?? 0) >= Number(prevValue.updatedAt ?? 0)
+            ) {
+              next[k] = {
+                key: update.key,
+                period: update.period,
+                intent: update.intent,
+                includeHistory: false,
+                maxOpenPct: update.maxOpenPct,
+                maxClosePct: update.maxClosePct,
+                invertidas: update.invertidas,
+                lastInversionMs: update.lastInversionMs,
+                lastInversionAt: update.lastInversionAt,
+                updatedAt: update.updatedAt,
+              };
+              changed = true;
+            }
+            continue;
+          }
+          next[k] = update;
+          changed = true;
+        }
+        return changed ? next : prev;
+      });
+      setMetricsHistoryByKey((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const update of updates) {
+          if (!update?.key) continue;
+          const isHistoryUpdate =
+            update.includeHistory === true ||
+            (update.includeHistory == null && Array.isArray(update.history));
+          if (!isHistoryUpdate) continue;
+          const k = metricsKeyString(update.key, update.period, update.intent);
+          const prevValue = next[k];
+          if (!update.history?.length && prevValue?.history?.length) {
+            next[k] = { ...update, history: prevValue.history };
           } else {
             next[k] = update;
           }
+          changed = true;
         }
-        return next;
+        return changed ? next : prev;
       });
     });
 
@@ -495,5 +541,11 @@ export function useArbitrageSocket(
     deltaMode,
   ]);
 
-  return { opportunities, setOpportunities, isConnected, metricsByKey };
+  return {
+    opportunities,
+    setOpportunities,
+    isConnected,
+    metricsByKey,
+    metricsHistoryByKey,
+  };
 }

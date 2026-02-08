@@ -166,20 +166,21 @@ export default function FuturosNewPage({
   >([]);
 
   // 🔌 conecta ao socket APENAS quando exchanges estiverem prontas
-  const { opportunities, isConnected, metricsByKey } = useArbitrageSocket(
-    symbols,
-    refreshRate,
-    buyExNames,
-    sellExNames,
-    isSocketPaused,
-    true,
-    0.5,
-    metricsPeriod,
-    metricsIntent,
-    "batch",
-    metricsHistoryTarget,
-    visibleMetricsKeys
-  );
+  const { opportunities, isConnected, metricsByKey, metricsHistoryByKey } =
+    useArbitrageSocket(
+      symbols,
+      refreshRate,
+      buyExNames,
+      sellExNames,
+      isSocketPaused,
+      true,
+      0.5,
+      metricsPeriod,
+      metricsIntent,
+      "batch",
+      metricsHistoryTarget,
+      visibleMetricsKeys
+    );
 
   // ✅ opcional: feedback visual no console
   useEffect(() => {
@@ -365,6 +366,7 @@ export default function FuturosNewPage({
         {/* ⬇️ Tabela já com filtros aplicados */}
         <DemoGlassTable
           metricsByKey={metricsByKey}
+          metricsHistoryByKey={metricsHistoryByKey}
           metricsPeriod={metricsPeriod}
           metricsIntent={metricsIntent}
           onMetricsPeriodChange={setMetricsPeriod}

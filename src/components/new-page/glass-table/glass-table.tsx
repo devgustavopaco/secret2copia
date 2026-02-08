@@ -103,6 +103,7 @@ type MetricsUpdate = {
   key: MetricsKey;
   period: MetricsPeriod;
   intent: MetricsIntent;
+  includeHistory?: boolean;
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
@@ -913,6 +914,7 @@ export function DemoGlassTable({
   onCustomButtonClick,
   customButtonLabel,
   metricsByKey,
+  metricsHistoryByKey,
   metricsPeriod: metricsPeriodProp,
   metricsIntent,
   onMetricsPeriodChange,
@@ -935,6 +937,7 @@ export function DemoGlassTable({
   onCustomButtonClick?: () => void;
   customButtonLabel?: string;
   metricsByKey?: Record<string, MetricsUpdate>;
+  metricsHistoryByKey?: Record<string, MetricsUpdate>;
   metricsPeriod?: MetricsPeriod;
   metricsIntent?: MetricsIntent;
   onMetricsPeriodChange?: (period: MetricsPeriod) => void;
@@ -977,7 +980,7 @@ export function DemoGlassTable({
   const [nextGainError, setNextGainError] = React.useState<string | null>(null);
   const [crossIntent, setCrossIntent] = React.useState<
     "abertura" | "fechamento"
-  >("abertura");
+  >(metricsIntent ?? "abertura");
   const nextGainChartRef = React.useRef<HTMLDivElement | null>(null);
   const [nextGainXDomain, setNextGainXDomain] = React.useState<
     [number, number] | null
@@ -1001,6 +1004,10 @@ export function DemoGlassTable({
   }, [metricsPeriodProp, chartPeriod]);
   const selectedMetricsPeriod = metricsPeriodProp ?? chartPeriod;
   const selectedMetricsIntent = metricsIntent ?? "abertura";
+  const chartMetricsByKey = metricsHistoryByKey ?? metricsByKey;
+  React.useEffect(() => {
+    setCrossIntent(selectedMetricsIntent);
+  }, [selectedMetricsIntent]);
   const handleMetricsPeriodChange = (value: MetricsPeriod) => {
     if (onMetricsPeriodChange) {
       onMetricsPeriodChange(value);
@@ -1169,7 +1176,7 @@ export function DemoGlassTable({
       selectedMetricsPeriod,
       crossIntent
     );
-    const history = metricsByKey?.[lookupKey]?.history ?? [];
+    const history = chartMetricsByKey?.[lookupKey]?.history ?? [];
     if (!history.length) {
       setNextGainSpotTicks([]);
       setNextGainFuturesTicks([]);
@@ -1209,7 +1216,7 @@ export function DemoGlassTable({
     chartTicker,
     chartSpotExchange,
     chartFuturesExchange,
-    metricsByKey,
+    chartMetricsByKey,
     selectedMetricsPeriod,
     crossIntent,
     normalizeExchangeName,
@@ -1507,7 +1514,7 @@ export function DemoGlassTable({
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, periodMs]);
 
   const nextGainChartMetrics = React.useMemo(() => {
-    if (!metricsByKey || !chartTicker) return null;
+    if (!chartMetricsByKey || !chartTicker) return null;
     const spot = normalizeExchangeName(chartSpotExchange);
     const futures = normalizeExchangeName(chartFuturesExchange);
     if (!spot || !futures) return null;
@@ -1520,9 +1527,9 @@ export function DemoGlassTable({
       selectedMetricsPeriod,
       crossIntent
     );
-    return metricsByKey?.[lookupKey] ?? null;
+    return chartMetricsByKey?.[lookupKey] ?? null;
   }, [
-    metricsByKey,
+    chartMetricsByKey,
     chartTicker,
     chartSpotExchange,
     chartFuturesExchange,
@@ -1915,10 +1922,11 @@ export function DemoGlassTable({
       setChartTicker(ticker);
       setChartSpotExchange(spotExchange);
       setChartFuturesExchange(futuresExchange);
+      setCrossIntent(selectedMetricsIntent);
       setChartProvider("tradingview");
       setIsTradingViewOpen(true);
     },
-    []
+    [selectedMetricsIntent]
   );
 
   // Função para formatar tempo decorrido (igual à tabela antiga)
