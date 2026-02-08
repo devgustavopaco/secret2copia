@@ -917,6 +917,7 @@ export function DemoGlassTable({
   metricsIntent,
   onMetricsPeriodChange,
   onMetricsHistoryTargetChange,
+  onVisibleMetricsKeysChange,
   customButtonIcon,
 }: {
   isSidebarOpen: boolean;
@@ -946,6 +947,7 @@ export function DemoGlassTable({
       intent: MetricsIntent;
     } | null
   ) => void;
+  onVisibleMetricsKeysChange?: (keys: MetricsKey[]) => void;
   customButtonIcon?: React.ReactNode;
 }) {
   const [filter, setFilter] = React.useState("");
@@ -1010,6 +1012,7 @@ export function DemoGlassTable({
   // Estados para paginação
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(40);
+  const visibleMetricsKeysRef = React.useRef("");
 
   // Estado para tooltip
   const [tooltip, setTooltip] = React.useState<{
@@ -2501,6 +2504,29 @@ export function DemoGlassTable({
   const startIndex = (currentPage - 1) * clampedItemsPerPage;
   const endIndex = startIndex + clampedItemsPerPage;
   const paginatedRows = rows.slice(startIndex, endIndex);
+
+  React.useEffect(() => {
+    if (!onVisibleMetricsKeysChange) return;
+    const uniqueKeys = new Map<string, MetricsKey>();
+    for (const row of paginatedRows) {
+      const key: MetricsKey = {
+        symbol: `${row.coin.ticker}USDT`,
+        spotExchange: normalizeExchangeLabel(row.spot.bingo),
+        futuresExchange: normalizeExchangeLabel(row.futures.bingo),
+      };
+      const dedupeKey = `${key.symbol}:${key.spotExchange}:${key.futuresExchange}`;
+      if (!uniqueKeys.has(dedupeKey)) {
+        uniqueKeys.set(dedupeKey, key);
+      }
+    }
+    const keys = Array.from(uniqueKeys.values());
+    const signature = keys
+      .map((key) => `${key.symbol}:${key.spotExchange}:${key.futuresExchange}`)
+      .join("|");
+    if (signature === visibleMetricsKeysRef.current) return;
+    visibleMetricsKeysRef.current = signature;
+    onVisibleMetricsKeysChange(keys);
+  }, [onVisibleMetricsKeysChange, paginatedRows]);
 
   // Ajustar página atual se ela for maior que o total de páginas disponíveis
   React.useEffect(() => {

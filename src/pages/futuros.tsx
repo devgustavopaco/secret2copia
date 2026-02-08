@@ -13,6 +13,7 @@ import { createContext } from "../server/router/context";
 import {
   useArbitrageSocket,
   type MetricsHistoryTarget,
+  type SocketMetricsKey,
 } from "../hooks/useArbitrageSocket";
 import {
   useSpreadAlert,
@@ -160,6 +161,9 @@ export default function FuturosNewPage({
   const metricsIntent = isExitMode ? "fechamento" : "abertura";
   const [metricsHistoryTarget, setMetricsHistoryTarget] =
     useState<MetricsHistoryTarget | null>(null);
+  const [visibleMetricsKeys, setVisibleMetricsKeys] = useState<
+    SocketMetricsKey[]
+  >([]);
 
   // 🔌 conecta ao socket APENAS quando exchanges estiverem prontas
   const { opportunities, isConnected, metricsByKey } = useArbitrageSocket(
@@ -173,7 +177,8 @@ export default function FuturosNewPage({
     metricsPeriod,
     metricsIntent,
     "batch",
-    metricsHistoryTarget
+    metricsHistoryTarget,
+    visibleMetricsKeys
   );
 
   // ✅ opcional: feedback visual no console
@@ -364,6 +369,7 @@ export default function FuturosNewPage({
           metricsIntent={metricsIntent}
           onMetricsPeriodChange={setMetricsPeriod}
           onMetricsHistoryTargetChange={setMetricsHistoryTarget}
+          onVisibleMetricsKeysChange={setVisibleMetricsKeys}
           isSidebarOpen={isSidebarOpen}
           opportunities={filteredOpps}
           /** ⬇️ busca controlada + abrir modal de filtros */

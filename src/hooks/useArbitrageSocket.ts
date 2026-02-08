@@ -4,11 +4,12 @@ import { ArbitrageOpportunity } from "../server/router/orderbook";
 
 type MetricsIntent = "abertura" | "fechamento";
 type MetricsPeriod = "30m" | "1h" | "4h" | "12h";
-type MetricsKey = {
+export type SocketMetricsKey = {
   symbol: string;
   spotExchange: string;
   futuresExchange: string;
 };
+type MetricsKey = SocketMetricsKey;
 type MetricsUpdate = {
   key: MetricsKey;
   period: MetricsPeriod;
@@ -94,7 +95,8 @@ export function useArbitrageSocket(
   metricsPeriod: MetricsPeriod = "4h",
   metricsIntent: MetricsIntent = "abertura",
   deltaMode: "single" | "batch" = "single",
-  historyTarget?: MetricsHistoryTarget | null
+  historyTarget?: MetricsHistoryTarget | null,
+  visibleMetricsKeys?: SocketMetricsKey[] | null
 ) {
   const METRICS_MAX_KEYS = 200;
   // 🔹 cache de logos em memória do frontend
@@ -150,6 +152,23 @@ export function useArbitrageSocket(
   const prevBuyRef = useRef<string[]>(normList(buyExchanges));
   const prevSellRef = useRef<string[]>(normList(sellExchanges));
   const [isConnected, setIsConnected] = useState(false);
+  const useExplicitMetricsKeys = visibleMetricsKeys !== undefined;
+  const normalizeMetricsKey = (raw: SocketMetricsKey): MetricsKey | null => {
+    const symbol = String(raw?.symbol ?? "")
+      .toUpperCase()
+      .trim()
+      .replace(/[^A-Z0-9]/g, "");
+    const spotExchange = normalizeExchangeName(String(raw?.spotExchange ?? ""));
+    const futuresExchange = normalizeExchangeName(
+      String(raw?.futuresExchange ?? "")
+    );
+    if (!symbol || !spotExchange || !futuresExchange) return null;
+    return {
+      symbol: symbol.endsWith("USDT") ? symbol : `${symbol}USDT`,
+      spotExchange,
+      futuresExchange,
+    };
+  };
 
   useEffect(() => {
     if (isPaused) {
@@ -281,27 +300,39 @@ export function useArbitrageSocket(
       prevConfig.intent = metricsIntent;
     }
 
-    const scoreOf = (opp: ArbitrageOpportunity) => {
-      const v =
-        metricsIntent === "fechamento"
-          ? Number(opp.spreadS ?? opp.spread ?? 0)
-          : Number(opp.spread ?? 0);
-      return Number.isFinite(v) ? v : 0;
-    };
-    const orderedOpps = Array.from(indexRef.current.values())
-      .filter((opp) => Boolean(opp?.ticker))
-      .sort((a, b) => scoreOf(b) - scoreOf(a))
-      .slice(0, METRICS_MAX_KEYS);
-
     const keyMap = new Map<string, MetricsKey>();
-    for (const opp of orderedOpps) {
-      const symbol = opp.ticker?.toUpperCase();
-      if (!symbol) continue;
-      const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
-      const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
-      const key: MetricsKey = { symbol, spotExchange, futuresExchange };
-      const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
-      keyMap.set(keyStr, key);
+    if (useExplicitMetricsKeys) {
+      const explicitKeys = Array.isArray(visibleMetricsKeys)
+        ? visibleMetricsKeys
+        : [];
+      for (const rawKey of explicitKeys) {
+        const key = normalizeMetricsKey(rawKey);
+        if (!key) continue;
+        const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
+        keyMap.set(keyStr, key);
+      }
+    } else {
+      const scoreOf = (opp: ArbitrageOpportunity) => {
+        const v =
+          metricsIntent === "fechamento"
+            ? Number(opp.spreadS ?? opp.spread ?? 0)
+            : Number(opp.spread ?? 0);
+        return Number.isFinite(v) ? v : 0;
+      };
+      const orderedOpps = Array.from(indexRef.current.values())
+        .filter((opp) => Boolean(opp?.ticker))
+        .sort((a, b) => scoreOf(b) - scoreOf(a))
+        .slice(0, METRICS_MAX_KEYS);
+
+      for (const opp of orderedOpps) {
+        const symbol = opp.ticker?.toUpperCase();
+        if (!symbol) continue;
+        const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
+        const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
+        const key: MetricsKey = { symbol, spotExchange, futuresExchange };
+        const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
+        keyMap.set(keyStr, key);
+      }
     }
 
     const currentSet = new Set(keyMap.keys());
@@ -342,7 +373,13 @@ export function useArbitrageSocket(
         intent: metricsIntent,
       });
     }
-  }, [metricsPeriod, metricsIntent, opportunities]);
+  }, [
+    metricsPeriod,
+    metricsIntent,
+    opportunities,
+    visibleMetricsKeys,
+    useExplicitMetricsKeys,
+  ]);
 
   useEffect(() => {
     const s = socketRef.current;
