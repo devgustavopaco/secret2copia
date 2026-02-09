@@ -202,9 +202,10 @@ export function useArbitrageSocket(
         indexRef.current.set(keyOf(opp), opp);
       }
 
-      for (const pair of deletes) {
-        indexRef.current.delete(keyFromPair(symbol, pair));
-      }
+      // TESTE: nao remove da tela quando chega delete
+      // for (const pair of deletes) {
+      //   indexRef.current.delete(keyFromPair(symbol, pair));
+      // }
 
       scheduleFlush();
     });
