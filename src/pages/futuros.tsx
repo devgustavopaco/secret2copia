@@ -379,18 +379,12 @@ export default function FuturosNewPage({
       const invertedCount = Number(metrics?.invertidas ?? 0);
       const maxOpenPct = Number(metrics?.maxOpenPct ?? 0);
       const maxClosePct = Number(metrics?.maxClosePct ?? 0);
-      const minInvertedSafe = Number.isFinite(minInverted)
-        ? Math.max(0, Math.trunc(minInverted))
-        : 0;
       const pass =
         p < maxProfit &&
         p > minProfit &&
         askLiq >= minLiquidity &&
         bidLiq >= minLiquidity &&
-        (spotVol >= minVolume24h || futVol >= minVolume24h) &&
-        invertedCount >= minInvertedSafe &&
-        maxOpenPct >= minMaxOpenSpread &&
-        maxClosePct >= minMaxCloseSpread;
+        (spotVol >= minVolume24h || futVol >= minVolume24h);
 
       if (!pass) return false;
       if (!symbolFilter) return true;
