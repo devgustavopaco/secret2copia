@@ -79,8 +79,9 @@ function formatDurationByIndex(index: number) {
 }
 
 function levelByIndex(index: number): Level {
-  const levels: Level[] = ["Iniciante", "Intermediário", "Avançado"];
-  return levels[index % levels.length];
+  const levels = ["Iniciante", "Intermediário", "Avançado"] as const;
+  const safeIndex = ((index % levels.length) + levels.length) % levels.length;
+  return levels[safeIndex] ?? "Iniciante";
 }
 
 function cleanLessonTitle(title: string) {
