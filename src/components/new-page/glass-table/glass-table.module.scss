@@ -697,7 +697,10 @@
   color: rgba(255, 255, 255, 0.95);
 }
 .mutedAction {
-  color: rgba(255, 255, 255, 0.55);
+  color: #ff5c8a;
+}
+.mutedAction:hover {
+  color: #ff5c8a;
 }
 .iconBtn:active {
   transform: translateY(1px);
@@ -1624,7 +1627,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1200;
   padding: 20px;
 }
 

@@ -453,7 +453,7 @@ const ActionCell = React.memo(
     spotExchange: string;
     futuresExchange: string;
     isMuted: boolean;
-    onToggleMute: (ticker: string) => void;
+    onToggleMute: (key: string) => void;
     onOpenOpportunity: (
       ticker: string,
       spotExchange: string,
@@ -499,15 +499,17 @@ const ActionCell = React.memo(
         </button>
         <button
           className={`${styles.iconBtn} ${isMuted ? styles.mutedAction : ""}`}
-          aria-label={isMuted ? "Reativar moeda" : "Silenciar moeda"}
-          title={isMuted ? "Reativar moeda" : "Silenciar moeda"}
+          aria-label={
+            isMuted ? "Reativar oportunidade" : "Silenciar oportunidade"
+          }
+          title={isMuted ? "Reativar oportunidade" : "Silenciar oportunidade"}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onToggleMute(ticker);
+            onToggleMute(key);
           }}
         >
-          <TrashIcon />
+          <AlertIcon slashed={!isMuted} />
         </button>
         <button
           className={styles.iconBtn}
@@ -2057,11 +2059,13 @@ export function DemoGlassTable({
     }
   });
 
-  // Estado para moedas silenciadas
-  const [mutedTickers, setMutedTickers] = React.useState<Set<string>>(() => {
+  // Estado para oportunidades silenciadas
+  const [mutedOpportunities, setMutedOpportunities] = React.useState<
+    Set<string>
+  >(() => {
     if (typeof window === "undefined") return new Set();
     try {
-      const saved = localStorage.getItem("mutedTickers");
+      const saved = localStorage.getItem("mutedOpportunities");
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -2199,26 +2203,35 @@ export function DemoGlassTable({
   );
 
   const isMuted = React.useCallback(
-    (ticker: string) => mutedTickers.has(ticker),
-    [mutedTickers]
+    (key: string) => mutedOpportunities.has(key),
+    [mutedOpportunities]
   );
 
-  const toggleMuteTicker = React.useCallback((ticker: string) => {
-    setMutedTickers((prev) => {
+  const toggleMuteOpportunity = React.useCallback((key: string) => {
+    setMutedOpportunities((prev) => {
       const next = new Set(prev);
-      if (next.has(ticker)) {
-        next.delete(ticker);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(ticker);
+        next.add(key);
       }
-      localStorage.setItem("mutedTickers", JSON.stringify([...next]));
+      localStorage.setItem("mutedOpportunities", JSON.stringify([...next]));
       return next;
     });
   }, []);
 
-  const getMutedTickers = React.useCallback(
-    () => Array.from(mutedTickers).sort(),
-    [mutedTickers]
+  const getMutedOpportunities = React.useCallback(
+    () =>
+      Array.from(mutedOpportunities)
+        .map((key) => {
+          const [ticker, spotExchange, futuresExchange] = key.split("-");
+          return {
+            key,
+            name: `${ticker} (${spotExchange} → ${futuresExchange})`,
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [mutedOpportunities]
   );
 
   // Função para abrir modal de confirmação
@@ -2530,7 +2543,7 @@ export function DemoGlassTable({
     // Filtrar oportunidades excluídas
     const filteredRows = mappedRows.filter((row) => {
       const key = `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`;
-      return !isExcluded(key) && !isMuted(row.coin.ticker);
+      return !isExcluded(key);
     });
 
     return filteredRows;
@@ -2975,8 +2988,10 @@ export function DemoGlassTable({
           ticker={row.coin.ticker}
           spotExchange={row.spot.bingo}
           futuresExchange={row.futures.bingo}
-          isMuted={isMuted(row.coin.ticker)}
-          onToggleMute={toggleMuteTicker}
+          isMuted={isMuted(
+            `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+          )}
+          onToggleMute={toggleMuteOpportunity}
           onOpenOpportunity={handleOpenOpportunity}
           onOpenTradingView={handleTradingViewClick}
           onDelete={openDeleteModal}
@@ -3377,16 +3392,32 @@ export function DemoGlassTable({
               </button>
               <button
                 className={`${styles.cardActionBtn} ${
-                  isMuted(row.coin.ticker) ? styles.mutedAction : ""
+                  isMuted(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                  )
+                    ? styles.mutedAction
+                    : ""
                 }`}
-                onClick={() => toggleMuteTicker(row.coin.ticker)}
+                onClick={() =>
+                  toggleMuteOpportunity(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                  )
+                }
                 title={
-                  isMuted(row.coin.ticker)
-                    ? "Reativar moeda"
-                    : "Silenciar moeda"
+                  isMuted(
+                    `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                  )
+                    ? "Reativar oportunidade"
+                    : "Silenciar oportunidade"
                 }
               >
-                <TrashIcon />
+                <AlertIcon
+                  slashed={
+                    !isMuted(
+                      `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
+                    )
+                  }
+                />
               </button>
               <button
                 className={styles.cardActionBtn}
@@ -3723,15 +3754,15 @@ export function DemoGlassTable({
                 <TrashIcon />
               </button>
             )}
-            {mutedTickers.size > 0 && (
+            {mutedOpportunities.size > 0 && (
               <button
                 type="button"
                 className={styles.iconGlass}
-                aria-label="Gerenciar Silenciadas"
+                aria-label="Gerenciar Oportunidades Silenciadas"
                 onClick={() => setMutedModal({ isOpen: true })}
-                title={`${mutedTickers.size} moeda(s) silenciada(s)`}
+                title={`${mutedOpportunities.size} oportunidade(s) silenciada(s)`}
               >
-                <TrashIcon />
+                <AlertIcon slashed />
               </button>
             )}
             {isSocketPaused !== undefined && onToggleSocketPause && (
@@ -3982,35 +4013,75 @@ export function DemoGlassTable({
 
       {mutedModal.isOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h3>Moedas Silenciadas</h3>
-            </div>
-            <div className={styles.modalContent}>
-              <p>Selecione as moedas que deseja reativar:</p>
-              <div className={styles.excludedList}>
-                {getMutedTickers().map((ticker) => (
-                  <div key={ticker} className={styles.excludedItem}>
-                    <div className={styles.excludedInfo}>
-                      <strong>{ticker}</strong>
-                    </div>
+          <div className={`${styles.modal} ${styles.restoreNarrowPanel}`}>
+            <div className={styles.restoreNarrowBody}>
+              <div className={styles.restoreModalBody}>
+                <div className={styles.restoreConfigV2}>
+                  <div className={styles.restoreInlineHeader}>
+                    <h3 className={styles.restoreInlineTitle}>
+                      Oportunidades Silenciadas
+                      <TrashIcon className={styles.restoreInlineTitleIcon} />
+                    </h3>
                     <button
-                      className={styles.restoreButton}
-                      onClick={() => toggleMuteTicker(ticker)}
+                      type="button"
+                      className={styles.restoreInlineClose}
+                      onClick={() => setMutedModal({ isOpen: false })}
+                      aria-label="Fechar modal de oportunidades silenciadas"
                     >
-                      Reativar
+                      ×
                     </button>
                   </div>
-                ))}
+
+                  <div className={styles.restoreIntroCard}>
+                    <h4 className={styles.restoreIntroTitle}>
+                      Reativação de Oportunidades
+                    </h4>
+                    <p className={styles.restoreIntroText}>
+                      Oportunidades silenciadas continuam visíveis no monitor,
+                      mas não disparam alerta sonoro ou notificação enquanto o
+                      alarme estiver ativo. Reative as que você deseja voltar a
+                      alertar.
+                    </p>
+                    <p className={styles.restoreIntroMeta}>
+                      {mutedOpportunities.size} oportunidade(s) silenciada(s)
+                    </p>
+                  </div>
+
+                  <div className={styles.excludedList}>
+                    {getMutedOpportunities().map((opportunity) => (
+                      <div
+                        key={opportunity.key}
+                        className={styles.excludedItem}
+                      >
+                        <div className={styles.excludedInfo}>
+                          <strong>{opportunity.name}</strong>
+                        </div>
+                        <button
+                          className={styles.restoreButton}
+                          onClick={() => toggleMuteOpportunity(opportunity.key)}
+                        >
+                          Reativar
+                        </button>
+                      </div>
+                    ))}
+                    {getMutedOpportunities().length === 0 && (
+                      <div className={styles.restoreEmptyState}>
+                        Nenhuma oportunidade está silenciada no momento.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className={styles.modalButtons}>
-              <button
-                className={styles.cancelButton}
-                onClick={() => setMutedModal({ isOpen: false })}
+              <div
+                className={`${styles.modalButtons} ${styles.restoreModalActions}`}
               >
-                Fechar
-              </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setMutedModal({ isOpen: false })}
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         </div>

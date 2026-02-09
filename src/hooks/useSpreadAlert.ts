@@ -151,6 +151,17 @@ export function useSpreadAlert(
       }
     }
 
+    const mutedKeys = (() => {
+      if (typeof window === "undefined") return new Set<string>();
+      try {
+        const raw = localStorage.getItem("mutedOpportunities");
+        const parsed = raw ? JSON.parse(raw) : [];
+        return new Set<string>(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        return new Set<string>();
+      }
+    })();
+
     opportunities.forEach((opp) => {
       if (!opp) return;
 
@@ -160,6 +171,7 @@ export function useSpreadAlert(
       // Verifica se o spread atinge o valor configurado
       if (spread >= config.spreadValue) {
         const key = `${opp.ticker}-${opp.lowestAsk?.exchange}-${opp.highestBid?.exchange}`;
+        if (mutedKeys.has(key)) return;
         const alerted = alertedRef.current.get(key);
 
         // Se não foi alertado ainda, ou se alertas repetidos estão ativos
