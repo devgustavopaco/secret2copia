@@ -13,7 +13,6 @@ import TradingViewIcon from "../../Icons/TradingViewIcon";
 import StarIcon from "../../Icons/StarIcon";
 import StarFilledIcon from "../../Icons/StarFilledIcon";
 import TrashIcon from "../../Icons/TrashIcon";
-import MuteIcon from "../../Icons/MuteIcon";
 import { useCoinLogo } from "../../../hooks/useCoinLogo";
 
 import type { ArbitrageOpportunity } from "../../../server/router/orderbook";
@@ -37,7 +36,6 @@ import {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-// Função para abrir calculadora em popup
 const openCalculatorPopup = () => {
   const width = 800;
   const height = 800;
@@ -509,7 +507,7 @@ const ActionCell = React.memo(
             onToggleMute(ticker);
           }}
         >
-          <MuteIcon />
+          <TrashIcon />
         </button>
         <button
           className={styles.iconBtn}
@@ -3388,7 +3386,7 @@ export function DemoGlassTable({
                     : "Silenciar moeda"
                 }
               >
-                <MuteIcon />
+                <TrashIcon />
               </button>
               <button
                 className={styles.cardActionBtn}
@@ -3733,7 +3731,7 @@ export function DemoGlassTable({
                 onClick={() => setMutedModal({ isOpen: true })}
                 title={`${mutedTickers.size} moeda(s) silenciada(s)`}
               >
-                <MuteIcon />
+                <TrashIcon />
               </button>
             )}
             {isSocketPaused !== undefined && onToggleSocketPause && (
