@@ -1,5 +1,5 @@
 import styles from "../styles/DeleteAccount.module.scss";
-
+//
 export default function DeleteAccount() {
   return (
     <div className={styles.container}>
@@ -33,7 +33,6 @@ export default function DeleteAccount() {
           a exclusão ou solicitando mais informações, se necessário.
         </li>
       </ol>
-
       <h2>Dados Excluídos</h2>
       <p>
         Após a exclusão da conta, os seguintes dados serão removidos
@@ -50,7 +49,6 @@ export default function DeleteAccount() {
         período adicional (como registros financeiros), serão mantidos apenas
         pelo período necessário, conforme a legislação vigente.
       </p>
-
       <h2>Contato</h2>
       <p>
         Para mais informações sobre a exclusão de contas ou outros assuntos,
