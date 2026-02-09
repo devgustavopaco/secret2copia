@@ -1,0 +1,967 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  background: #0b0b10;
+  color: #ededf7;
+  padding: 1.25rem 0 4rem;
+}
+
+.backgroundGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      560px circle at 12% 8%,
+      rgba(143, 0, 255, 0.18),
+      transparent 62%
+    ),
+    radial-gradient(
+      640px circle at 90% 34%,
+      rgba(56, 40, 122, 0.2),
+      transparent 58%
+    );
+  opacity: 0.6;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: min(1360px, calc(100% - 3rem));
+  margin-inline: auto;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pageTopbar {
+  border: 1px solid #23233a;
+  background: rgba(17, 17, 26, 0.92);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.breadcrumb {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  color: #a3a3c7;
+  font-size: 0.78rem;
+
+  svg {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.courseMiniProgress {
+  margin-top: 0.7rem;
+  max-width: 280px;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.courseMiniHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #8f8fb4;
+
+  strong {
+    color: #bdbde2;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+}
+
+.courseMiniTrack {
+  width: 100%;
+  height: 0.26rem;
+  border-radius: 999px;
+  background: #1f1f33;
+  overflow: hidden;
+}
+
+.courseMiniValue {
+  height: 100%;
+  background: linear-gradient(90deg, #8f00ff, #4a2faf);
+}
+
+.ghostButton,
+.avatarButton,
+.primaryButton,
+.secondaryQuietButton,
+.secondaryButton,
+.tabButton,
+.filterButton,
+.moduleTrigger,
+.lessonItem {
+  outline: none;
+}
+
+.ghostButton:focus-visible,
+.avatarButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryQuietButton:focus-visible,
+.secondaryButton:focus-visible,
+.tabButton:focus-visible,
+.filterButton:focus-visible,
+.moduleTrigger:focus-visible,
+.lessonItem:focus-visible,
+.searchWrapper input:focus-visible {
+  box-shadow: 0 0 0 2px #8f00ff;
+}
+
+.ghostButton {
+  border: 1px solid #2b2b45;
+  background: transparent;
+  color: #a3a3c7;
+  padding: 0.62rem 0.9rem;
+  border-radius: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #ededf7;
+    border-color: #404064;
+    background: #1a1a2b;
+  }
+}
+
+.avatarButton {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid #5b2b8f;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #8f00ff, #601f9e);
+  box-shadow: 0 0 20px rgba(143, 0, 255, 0.2);
+}
+
+.contentGrid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 7fr) minmax(330px, 3fr);
+}
+
+.mainColumn,
+.sidebarColumn {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.playerCard,
+.tabsCard,
+.progressCard,
+.sidebarCard,
+.shortcutsFooter,
+.skeletonCard {
+  background: #11111a;
+  border: 1px solid #23233a;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(8, 8, 14, 0.28);
+}
+
+.playerCard,
+.tabsCard,
+.progressCard,
+.sidebarCard {
+  padding: 1.5rem;
+}
+
+.playerCard {
+  animation: playerCardEnter 0.24s ease;
+}
+
+.playerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.playerHeader > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.lessonTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.badgesRow {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.badge {
+  border: 1px solid #2e2e48;
+  background: #181828;
+  color: #d6d6ee;
+  padding: 0.24rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badgeCompleted {
+  color: #aff9c0;
+  border-color: #2f6f41;
+  background: #183221;
+}
+
+.playerHeaderActions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.primaryButton,
+.secondaryQuietButton,
+.secondaryButton {
+  border-radius: 0.7rem;
+  border: 1px solid transparent;
+  padding: 0.62rem 0.92rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s ease;
+  white-space: nowrap;
+}
+
+.playerHeaderActions .primaryButton,
+.playerHeaderActions .secondaryQuietButton {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: fit-content;
+  max-width: 260px;
+}
+
+.playerHeaderActions .primaryButton {
+  min-width: 178px;
+}
+
+.playerHeaderActions .secondaryQuietButton {
+  min-width: 168px;
+}
+
+.primaryButton {
+  color: #fff;
+  background: #8f00ff;
+  box-shadow: 0 0 20px rgba(143, 0, 255, 0.15);
+
+  &:hover {
+    background: #601f9e;
+    border-color: #7a40b0;
+  }
+}
+
+.secondaryQuietButton {
+  color: #b9b9d8;
+  background: transparent;
+  border-color: #343455;
+
+  &:hover {
+    color: #ededf7;
+    border-color: #50507b;
+    background: rgba(33, 33, 52, 0.55);
+  }
+}
+
+.secondaryButton {
+  color: #e9e9f8;
+  background: #1a1a2b;
+  border-color: #313150;
+
+  &:hover {
+    border-color: #4a4a74;
+    background: #24243a;
+  }
+}
+
+.mockPlayer {
+  margin-top: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #2a2a45;
+  position: relative;
+  overflow: hidden;
+  height: 460px;
+  background: #101018;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 30%,
+      rgba(143, 0, 255, 0.2),
+      transparent 65%
+    );
+  }
+}
+
+.playerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
+}
+
+.playerCardCompletedFlash {
+  animation: completedFlash 0.9s ease;
+}
+
+.badgePop {
+  animation: badgePop 0.5s ease;
+}
+
+.playerIframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  z-index: 2;
+}
+
+.playControl {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 5.4rem;
+  height: 5.4rem;
+  background: transparent;
+  border: none;
+  color: #ededf7;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, color 0.18s ease;
+
+  svg {
+    font-size: 4.4rem;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    color: #fff;
+  }
+}
+
+.playerFooterRow {
+  margin-top: 0.9rem;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.playerFooterLeft {
+  min-width: 0;
+}
+
+.inlineLink {
+  display: inline-flex;
+  color: #c58bff;
+  text-decoration: none;
+  font-size: 0.8rem;
+  border-bottom: 1px dashed rgba(197, 139, 255, 0.5);
+  width: fit-content;
+
+  &:hover {
+    color: #e0c1ff;
+    border-bottom-color: rgba(224, 193, 255, 0.8);
+  }
+}
+
+.tabsHeader {
+  border-bottom: 1px solid #25253d;
+  padding: 0;
+  border-radius: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  max-width: 320px;
+  margin-inline: auto;
+}
+
+.tabButton {
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #8f8fb6;
+  border-radius: 0;
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 0.66rem 0.2rem 0.62rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    color: #d9d9ef;
+  }
+}
+
+.tabButtonActive {
+  color: #fff;
+  border-bottom-color: #8f00ff;
+  box-shadow: inset 0 -1px 0 #8f00ff;
+}
+
+.tabContent {
+  margin-top: 1rem;
+  color: #a3a3c7;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.overviewText {
+  color: #a3a3c7;
+}
+
+.overviewLink {
+  color: #c58bff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #e0c1ff;
+  }
+}
+
+.materialList {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.materialItem {
+  border: 1px solid #2a2a45;
+  background: #151524;
+  border-radius: 0.65rem;
+  color: #ededf7;
+  padding: 0.68rem 0.75rem;
+}
+
+.commentsMock {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.progressTitle {
+  color: #8d8db4;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.progressCard {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressNumbers {
+  margin-top: 0.55rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  strong {
+    color: #ededf7;
+    font-size: 2.15rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  span {
+    color: #7d7da3;
+    font-size: 0.73rem;
+    font-weight: 500;
+  }
+}
+
+.progressTrack {
+  margin-top: 0.75rem;
+  width: 100%;
+  height: 0.5rem;
+  background: #1c1c2e;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #2b2b45;
+}
+
+.progressValue {
+  height: 100%;
+  background: linear-gradient(90deg, #8f00ff, #601f9e);
+}
+
+.progressSummary {
+  margin-top: 1rem;
+  border: 1px solid #272741;
+  background: #151524;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.progressSummaryRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+
+  span {
+    color: #7f7fa6;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: #d1d1ed;
+    font-weight: 500;
+    text-align: right;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.progressNextLessonTitle {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.2rem;
+
+  svg {
+    position: absolute;
+    left: 0.7rem;
+    color: #8484a7;
+  }
+
+  input {
+    width: 100%;
+    border: 1px solid #2b2b45;
+    background: #141423;
+    color: #ededf7;
+    border-radius: 0.65rem;
+    height: 2.3rem;
+    padding: 0 0.75rem 0 2.15rem;
+    transition: 0.18s ease;
+
+    &::placeholder {
+      color: #8d8db2;
+    }
+
+    &:hover {
+      border-color: #3f3f62;
+    }
+  }
+}
+
+.filterRow {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 1.3rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #23233a;
+}
+
+.filterButton {
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.58rem;
+  border: 1px solid #2c2c47;
+  background: #181828;
+  color: #a3a3c7;
+  cursor: pointer;
+  font-size: 0.73rem;
+  font-weight: 600;
+  transition: 0.18s ease;
+
+  &:hover {
+    border-color: #45456b;
+    color: #ededf7;
+  }
+}
+
+.filterButtonActive {
+  background: #8f00ff;
+  border-color: #8f00ff;
+  color: #fff;
+
+  &:hover {
+    background: #601f9e;
+    border-color: #601f9e;
+  }
+}
+
+.accordionRoot {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.moduleBlock {
+  border: 1px solid #272741;
+  border-radius: 0.8rem;
+  background: #141422;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: #34345a;
+  }
+}
+
+.moduleTrigger {
+  width: 100%;
+  border: none;
+  background: #171728;
+  color: #ededf7;
+  padding: 0.78rem 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.16s ease;
+
+  &:hover {
+    background: #1f1f34;
+  }
+
+  div {
+    display: grid;
+    gap: 0.14rem;
+    text-align: left;
+  }
+
+  strong {
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  span {
+    color: #9f9fc4;
+    font-size: 0.74rem;
+  }
+
+  svg {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+  }
+}
+
+.iconOpen {
+  transform: rotate(180deg);
+}
+
+.lessonsScrollArea {
+  max-height: 21.5rem;
+  overflow-y: auto;
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.58rem;
+}
+
+.lessonItem {
+  border: 1px solid #2c2c48;
+  border-radius: 0.72rem;
+  background: #151524;
+  width: 100%;
+  padding: 0.42rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+  color: #ededf7;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #4a4a74;
+    background: #1b1b2c;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+  }
+}
+
+.lessonImage {
+  width: 4.4rem;
+  height: 2.55rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+  border: 1px solid #2d2d49;
+}
+
+.lessonItemSelected {
+  border-color: #8f00ff;
+  background: #1d1233;
+  box-shadow: 0 0 22px rgba(143, 0, 255, 0.16);
+}
+
+.lessonMeta {
+  flex: 1;
+  display: grid;
+  gap: 0.14rem;
+  min-width: 0;
+}
+
+.lessonMetaTitle {
+  font-size: 0.79rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lessonMetaDuration {
+  font-size: 0.72rem;
+  color: #a3a3c7;
+}
+
+.lessonStatus {
+  display: inline-flex;
+  color: #8f00ff;
+  font-size: 1rem;
+  margin-right: 0.1rem;
+}
+
+.lessonStatusCompleted {
+  color: #39ff88;
+  filter: drop-shadow(0 0 6px rgba(57, 255, 136, 0.35));
+}
+
+.emptyState {
+  border: 1px dashed #31314f;
+  border-radius: 0.7rem;
+  color: #9a9ac1;
+  font-size: 0.8rem;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.shortcutsFooter {
+  padding: 0.9rem 1rem;
+  color: #a3a3c7;
+  font-size: 0.82rem;
+
+  strong {
+    color: #ededf7;
+    font-weight: 600;
+  }
+}
+
+.loadingGrid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 7fr) minmax(330px, 3fr);
+}
+
+.skeletonCard {
+  padding: 1.5rem;
+}
+
+.skeletonTitle,
+.skeletonPlayer,
+.skeletonRow,
+.skeletonList {
+  background: linear-gradient(90deg, #19192a, #24243a, #19192a);
+  background-size: 210% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 0.6rem;
+}
+
+.skeletonTitle {
+  height: 1.2rem;
+  width: 45%;
+}
+
+.skeletonPlayer {
+  margin-top: 1rem;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.skeletonRow {
+  margin-top: 1rem;
+  height: 2.2rem;
+  width: 100%;
+}
+
+.skeletonList {
+  margin-top: 1rem;
+  height: 24rem;
+  width: 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes completedFlash {
+  0% {
+    box-shadow: 0 0 0 rgba(57, 255, 136, 0);
+  }
+  40% {
+    box-shadow: 0 0 0 2px rgba(57, 255, 136, 0.32),
+      0 0 22px rgba(57, 255, 136, 0.18);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(8, 8, 14, 0.28);
+  }
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0.94);
+  }
+  65% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes playerCardEnter {
+  0% {
+    opacity: 0.76;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1080px) {
+  .contentGrid,
+  .loadingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: calc(100% - 1rem);
+  }
+
+  .pageTopbar {
+    padding: 1rem;
+    border-radius: 0.85rem;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pageTitle {
+    font-size: 1.4rem;
+  }
+
+  .playerCard,
+  .tabsCard,
+  .progressCard,
+  .sidebarCard {
+    padding: 1rem;
+    border-radius: 0.85rem;
+  }
+
+  .playerHeader {
+    flex-direction: column;
+  }
+
+  .playerHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .playerHeaderActions .primaryButton,
+  .playerHeaderActions .secondaryQuietButton {
+    width: fit-content;
+    max-width: 100%;
+    min-width: 160px;
+    height: 42px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .playerFooterRow {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .tabsHeader {
+    max-width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mockPlayer {
+    height: 280px;
+  }
+
+  .filterRow {
+    flex-wrap: wrap;
+  }
+}

@@ -3,6 +3,7 @@ const nextConfig = {
   swcMinify: false,
   reactStrictMode: true,
   images: {
+    domains: ["i.ytimg.com", "img.youtube.com"],
     remotePatterns: [
       {
         protocol: "https",
@@ -19,6 +20,14 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "public.mocortech.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
       },
     ],
   },

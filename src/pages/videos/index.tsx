@@ -1,13 +1,9 @@
-import type { Videos } from "@prisma/client";
 import type { GetServerSideProps, NextPage } from "next";
 import { getServerSession } from "next-auth";
 import Head from "next/head";
-import { BeatLoader } from "react-spinners";
 import { Header } from "../../components/Header";
-import { DesktopClassScheduleComponent } from "../../components/VideosPage/ClassSchedule/Desktop";
-import { VideoComponent } from "../../components/VideosPage/Video";
+import { ProVideosExperience } from "../../components/VideosPage/ProVideosExperience";
 import { getSupportNumber } from "../../server/db/getSuportNumber";
-import styles from "../../styles/Videos.module.scss";
 import { trpc } from "../../utils/trpc";
 import { authOptions } from "../api/auth/[...nextauth]";
 
@@ -16,30 +12,21 @@ interface VideosProps {
 }
 
 const Videos: NextPage<VideosProps> = ({ supportNumber }: VideosProps) => {
-  const { data: videos } = trpc.useQuery(["videos.getVideos"], {
+  const { data: videos, isLoading } = trpc.useQuery(["videos.getVideos"], {
     ssr: true,
     context: {
       skipBatch: true,
     },
   });
 
-  const firstClass = videos ? videos[0] : ({} as Videos);
-  console.log(videos, "Videos");
   return (
     <>
       <Head>
-        <title>Treinamento - NEXTGAIN</title>
-        <meta name="description" content="Treinamento - NEXTGAIN" />
+        <title>Aulas - NEXTGAIN</title>
+        <meta name="description" content="Aulas e vídeos - NEXTGAIN" />
       </Head>
       <Header supportNumber={supportNumber} />
-      <section className={styles.container}>
-        {firstClass ? (
-          <VideoComponent aula={firstClass} data={videos || []} />
-        ) : (
-          <BeatLoader color="#969696" size="0.5rem" />
-        )}
-        <DesktopClassScheduleComponent data={videos || []} />
-      </section>
+      <ProVideosExperience videos={videos || []} isLoading={isLoading} />
     </>
   );
 };
@@ -48,7 +35,6 @@ export default Videos;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { req } = context;
-
   const session = await getServerSession(req, context.res, authOptions);
 
   if (!session) {
