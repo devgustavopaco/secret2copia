@@ -25,6 +25,7 @@ export default function FuturesVsFuturesPage({
 }: {
   initialExchanges: any[];
 }) {
+  const uiTheme: "purple-new" = "purple-new";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"buy" | "sell">("buy");
@@ -359,7 +360,7 @@ export default function FuturesVsFuturesPage({
     selectedExchanges.some((e) => e.id === id);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-theme={uiTheme}>
       <div className={styles.backgroundBlur}></div>
 
       <FuturesFuturesSidebar

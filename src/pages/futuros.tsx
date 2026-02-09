@@ -25,15 +25,7 @@ export default function FuturosNewPage({
 }: {
   initialExchanges: any[];
 }) {
-  const [uiTheme] = useState<"slate" | "purple" | "purple-new">(() => {
-    if (typeof window === "undefined") return "slate";
-    try {
-      const saved = localStorage.getItem("uiTheme");
-      return saved === "purple" || saved === "purple-new" ? saved : "slate";
-    } catch {
-      return "slate";
-    }
-  });
+  const uiTheme: "purple-new" = "purple-new";
 
   const [useMockData] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
