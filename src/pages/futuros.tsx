@@ -47,8 +47,10 @@ export default function FuturosNewPage({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"spot" | "futures">("spot");
-  const [selectedExchanges, setSelectedExchanges] = useState<any[]>([]);
+  const [spotSelectedExchanges, setSpotSelectedExchanges] = useState<any[]>([]);
+  const [futuresSelectedExchanges, setFuturesSelectedExchanges] = useState<
+    any[]
+  >([]);
   const closeFilter = useCallback(() => setIsFilterModalOpen(false), []);
   // ✅ NOVO: estados de filtro
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -499,33 +501,66 @@ export default function FuturosNewPage({
   const filteredFuturesExchanges = initialExchanges?.filter((e) =>
     ALLOWED_FUTURES_EXCHANGES.includes(e.name)
   );
-  const exchangesToShow =
-    modalType === "spot" ? filteredSpotExchanges : filteredFuturesExchanges;
 
   useEffect(() => {
     if (modalOpen) {
-      const storageKey =
-        modalType === "spot" ? "spotExchanges" : "futuresExchanges";
-      const stored = localStorage.getItem(storageKey);
-      setSelectedExchanges(stored ? JSON.parse(stored) : []);
+      const storedSpot = localStorage.getItem("spotExchanges");
+      const storedFutures = localStorage.getItem("futuresExchanges");
+      setSpotSelectedExchanges(storedSpot ? JSON.parse(storedSpot) : []);
+      setFuturesSelectedExchanges(
+        storedFutures ? JSON.parse(storedFutures) : []
+      );
     }
-  }, [modalOpen, modalType]);
+  }, [modalOpen]);
 
-  const handleToggleExchange = (exchange: any) => {
-    setSelectedExchanges((prev) => {
+  const handleToggleExchange = (exchange: any, type: "spot" | "futures") => {
+    const setSelected =
+      type === "spot" ? setSpotSelectedExchanges : setFuturesSelectedExchanges;
+    const storageKey = type === "spot" ? "spotExchanges" : "futuresExchanges";
+    setSelected((prev) => {
       const isAlready = prev.some((e) => e.id === exchange.id);
       const updated = isAlready
         ? prev.filter((e) => e.id !== exchange.id)
         : [...prev, exchange];
-      const storageKey =
-        modalType === "spot" ? "spotExchanges" : "futuresExchanges";
       localStorage.setItem(storageKey, JSON.stringify(updated));
       window.dispatchEvent(new Event("exchangeUpdated"));
       return updated;
     });
   };
-  const isExchangeSelected = (id: string) =>
-    selectedExchanges.some((e) => e.id === id);
+  const isExchangeSelected = (
+    id: string,
+    type: "spot" | "futures"
+  ): boolean => {
+    const selected =
+      type === "spot" ? spotSelectedExchanges : futuresSelectedExchanges;
+    return selected.some((e) => e.id === id);
+  };
+
+  const handleSelectAll = (type: "spot" | "futures") => {
+    const storageKey = type === "spot" ? "spotExchanges" : "futuresExchanges";
+    const all =
+      type === "spot"
+        ? [...(filteredSpotExchanges ?? [])]
+        : [...(filteredFuturesExchanges ?? [])];
+    localStorage.setItem(storageKey, JSON.stringify(all));
+    window.dispatchEvent(new Event("exchangeUpdated"));
+    if (type === "spot") {
+      setSpotSelectedExchanges(all);
+      return;
+    }
+    setFuturesSelectedExchanges(all);
+  };
+
+  const handleClearAll = (type: "spot" | "futures") => {
+    const storageKey = type === "spot" ? "spotExchanges" : "futuresExchanges";
+    localStorage.setItem(storageKey, JSON.stringify([]));
+    window.dispatchEvent(new Event("exchangeUpdated"));
+    if (type === "spot") {
+      setSpotSelectedExchanges([]);
+      return;
+    }
+    setFuturesSelectedExchanges([]);
+  };
 
   // Função para abrir/fechar a sidebar em mobile
   const toggleSidebar = () => {
@@ -593,46 +628,147 @@ export default function FuturosNewPage({
         />
       </main>
 
-      {/* MODAL DE EXCHANGES (igual ao seu) */}
+      {/* MODAL DE EXCHANGES */}
       <GlassModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={`Selecionar exchanges ${
-          modalType === "spot" ? "SPOT" : "FUTURES"
-        }`}
+        shellless
+        panelClassName={styles.exchangeShelllessPanel}
+        bodyClassName={styles.exchangeShelllessBody}
       >
-        <div className={styles.modalGrid}>
-          {exchangesToShow?.map((exchange) => {
-            const selected = isExchangeSelected(exchange.id);
-            return (
-              <div
-                key={exchange.id}
-                className={`${styles.exchangeCard} ${
-                  selected ? styles.selected : ""
-                }`}
-                onClick={() => handleToggleExchange(exchange)}
-              >
-                <div className={styles.exchangeIcon}>
-                  <img
-                    src={exchange.image_url ?? ""}
-                    alt={exchange.name}
-                    onError={(e) =>
-                      ((e.target as HTMLImageElement).src =
-                        "/default-exchange.png")
-                    }
-                  />
+        <div className={styles.exchangePickerRoot}>
+          <button
+            type="button"
+            className={styles.exchangeFloatingClose}
+            onClick={() => setModalOpen(false)}
+            aria-label="Fechar modal de corretoras"
+          >
+            ×
+          </button>
+
+          <div className={styles.exchangeDualModal}>
+            <section className={styles.exchangePanel}>
+              <h3 className={styles.exchangePanelTitle}>SPOT</h3>
+              <div className={styles.exchangePanelBox}>
+                <div className={styles.exchangePanelToolbar}>
+                  <span className={styles.exchangeCountPill}>
+                    {spotSelectedExchanges.length} selecionadas
+                  </span>
+                  <div className={styles.exchangePanelActions}>
+                    <button
+                      type="button"
+                      className={styles.exchangeToolbarBtn}
+                      onClick={() => handleSelectAll("spot")}
+                    >
+                      Selecionar todas
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.exchangeToolbarBtn}
+                      onClick={() => handleClearAll("spot")}
+                    >
+                      Limpar
+                    </button>
+                  </div>
                 </div>
-                <div className={styles.exchangeName}>{exchange.name}</div>
-                {selected && (
-                  <img
-                    src="/images/checkedIcon.svg"
-                    className={styles.checkedIcon}
-                    alt="Selecionada"
-                  />
-                )}
+                <div className={styles.exchangeCircleGrid}>
+                  {(filteredSpotExchanges ?? []).map((exchange) => {
+                    const selected = isExchangeSelected(exchange.id, "spot");
+                    return (
+                      <button
+                        type="button"
+                        key={`spot-${exchange.id}`}
+                        className={`${styles.exchangeCircleCard} ${
+                          selected ? styles.exchangeCircleSelected : ""
+                        }`}
+                        onClick={() => handleToggleExchange(exchange, "spot")}
+                      >
+                        {selected && (
+                          <img
+                            src="/images/checkedIcon.svg"
+                            className={styles.exchangeCircleCheck}
+                            alt="Selecionada"
+                          />
+                        )}
+                        <div className={styles.exchangeCircleIconWrap}>
+                          <img
+                            src={exchange.image_url ?? ""}
+                            alt={exchange.name}
+                            onError={(e) =>
+                              ((e.target as HTMLImageElement).src =
+                                "/default-exchange.png")
+                            }
+                          />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            );
-          })}
+            </section>
+
+            <section className={styles.exchangePanel}>
+              <h3 className={styles.exchangePanelTitle}>FUTUROS</h3>
+              <div className={styles.exchangePanelBox}>
+                <div className={styles.exchangePanelToolbar}>
+                  <span className={styles.exchangeCountPill}>
+                    {futuresSelectedExchanges.length} selecionadas
+                  </span>
+                  <div className={styles.exchangePanelActions}>
+                    <button
+                      type="button"
+                      className={styles.exchangeToolbarBtn}
+                      onClick={() => handleSelectAll("futures")}
+                    >
+                      Selecionar todas
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.exchangeToolbarBtn}
+                      onClick={() => handleClearAll("futures")}
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.exchangeCircleGrid}>
+                  {(filteredFuturesExchanges ?? []).map((exchange) => {
+                    const selected = isExchangeSelected(exchange.id, "futures");
+                    return (
+                      <button
+                        type="button"
+                        key={`futures-${exchange.id}`}
+                        className={`${styles.exchangeCircleCard} ${
+                          selected ? styles.exchangeCircleSelected : ""
+                        }`}
+                        onClick={() =>
+                          handleToggleExchange(exchange, "futures")
+                        }
+                      >
+                        {selected && (
+                          <img
+                            src="/images/checkedIcon.svg"
+                            className={styles.exchangeCircleCheck}
+                            alt="Selecionada"
+                          />
+                        )}
+                        <div className={styles.exchangeCircleIconWrap}>
+                          <img
+                            src={exchange.image_url ?? ""}
+                            alt={exchange.name}
+                            onError={(e) =>
+                              ((e.target as HTMLImageElement).src =
+                                "/default-exchange.png")
+                            }
+                          />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </GlassModal>
 

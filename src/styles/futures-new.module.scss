@@ -1,19 +1,77 @@
 .container {
-  background-color: #000000;
+  background-color: #0b0f14;
+  background-image: linear-gradient(145deg, #090d16 0%, #0f1928 100%);
   width: 100%;
   height: 100vh;
   position: relative;
   z-index: 0;
 }
+
+.container[data-theme="purple"] {
+  background-color: #000000;
+  background-image: none;
+}
+
+.container[data-theme="purple-new"] {
+  background-color: #090b10;
+  background-image: linear-gradient(
+    160deg,
+    #08090e 0%,
+    #0b0f1a 45%,
+    #0a0d14 100%
+  );
+}
+
 .backgroundBlur {
   position: absolute;
-  background-image: url("/new-page/background-blur.png");
+  background-image: radial-gradient(
+      1200px 700px at 8% 10%,
+      rgba(45, 82, 125, 0.32),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 520px at 88% 20%,
+      rgba(34, 58, 90, 0.28),
+      transparent 58%
+    );
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
   z-index: -1;
   background-size: cover;
+}
+
+.container[data-theme="purple"] .backgroundBlur {
+  background-image: url("/new-page/background-blur.png");
+}
+
+.container[data-theme="purple-new"] .backgroundBlur {
+  background-image: radial-gradient(
+      920px 560px at 12% 14%,
+      rgba(133, 96, 255, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      760px 480px at 86% 28%,
+      rgba(92, 66, 201, 0.14),
+      transparent 68%
+    ),
+    radial-gradient(
+      2px 2px at 16% 22%,
+      rgba(255, 255, 255, 0.18),
+      transparent 65%
+    ),
+    radial-gradient(
+      2px 2px at 68% 34%,
+      rgba(255, 255, 255, 0.14),
+      transparent 65%
+    ),
+    radial-gradient(
+      2px 2px at 42% 66%,
+      rgba(255, 255, 255, 0.16),
+      transparent 65%
+    );
 }
 /* futures-new.module.scss */
 .container {
@@ -95,6 +153,243 @@
   height: 20px;
   filter: drop-shadow(0 0 4px rgba(153, 0, 255, 0.6));
 }
+
+.exchangeDualModal {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.exchangeShelllessPanel {
+  width: min(1440px, 90vw) !important;
+  max-height: 92vh !important;
+}
+
+.exchangeShelllessBody {
+  padding: 0 !important;
+  max-height: 92vh !important;
+}
+
+.exchangePickerRoot {
+  position: relative;
+  padding: 16px 24px 6px;
+}
+
+.exchangeFloatingClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 238, 255, 0.35);
+  background: rgba(19, 24, 37, 0.6);
+  color: rgba(239, 236, 255, 0.9);
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.56);
+    background: rgba(28, 35, 54, 0.76);
+  }
+}
+
+.exchangePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exchangePanelTitle {
+  margin: 0;
+  text-align: center;
+  color: rgba(239, 236, 255, 0.95);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.exchangePanelBox {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 27, 42, 0.5),
+    rgba(13, 18, 29, 0.38)
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  padding: 10px 10px 10px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.exchangePanelToolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+  width: 100%;
+  min-height: 36px;
+}
+
+.exchangeCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 123, 254, 0.72);
+  background: linear-gradient(
+    180deg,
+    rgba(126, 82, 240, 0.52),
+    rgba(92, 55, 192, 0.36)
+  );
+  color: rgba(244, 238, 255, 0.98);
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 0 22px rgba(132, 92, 246, 0.22);
+}
+
+.exchangePanelActions {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+
+.exchangeToolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 18, 31, 0.42);
+  color: rgba(235, 232, 248, 0.92);
+  padding: 0 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(206, 183, 255, 0.46);
+    background: rgba(26, 36, 58, 0.6);
+  }
+}
+
+.exchangeCircleGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: 100%;
+  max-width: none;
+  flex: 1 1 auto;
+  gap: 14px;
+  justify-items: center;
+  justify-content: start;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+  align-items: start;
+  align-content: center;
+  min-height: 0;
+}
+
+.exchangeCircleCard {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 1px solid rgba(196, 204, 226, 0.2);
+  background: radial-gradient(
+      146px 146px at 30% 20%,
+      rgba(194, 206, 236, 0.08),
+      transparent 64%
+    ),
+    rgba(29, 35, 50, 0.62);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(214, 224, 246, 0.32);
+    background: radial-gradient(
+        146px 146px at 30% 20%,
+        rgba(194, 206, 236, 0.12),
+        transparent 64%
+      ),
+      rgba(31, 38, 54, 0.72);
+  }
+}
+
+.exchangeCircleSelected {
+  border-width: 2px;
+  border-color: rgba(170, 137, 255, 0.98);
+  background: radial-gradient(
+      146px 146px at 30% 20%,
+      rgba(154, 120, 255, 0.32),
+      transparent 64%
+    ),
+    rgba(38, 34, 62, 0.9);
+  box-shadow: 0 0 22px rgba(140, 100, 255, 0.45),
+    inset 0 0 0 1px rgba(215, 198, 255, 0.32);
+}
+
+.exchangeCircleCheck {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+}
+
+.exchangeCircleIconWrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: transparent;
+  opacity: 0.62;
+  filter: saturate(0.68) brightness(0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+    display: block;
+  }
+}
+
+.exchangeCircleSelected .exchangeCircleIconWrap {
+  opacity: 1;
+  filter: none;
+}
+
 /* 🌟 Modal de Filtro moderno e funcional */
 .modalContent {
   display: flex;
@@ -250,6 +545,80 @@
     width: 36px;
     height: 36px;
     margin-bottom: 6px;
+  }
+
+  .exchangeDualModal {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .exchangePickerRoot {
+    padding: 20px 10px 8px;
+  }
+
+  .exchangeFloatingClose {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    top: 2px;
+    right: 2px;
+  }
+
+  .exchangePanelBox {
+    padding: 12px;
+    min-height: auto;
+  }
+
+  .exchangePanelTitle {
+    font-size: 1rem;
+    letter-spacing: 0.14em;
+  }
+
+  .exchangeCountPill {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 0.92rem;
+  }
+
+  .exchangeToolbarBtn {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 0.86rem;
+    border-width: 1px;
+  }
+
+  .exchangePanelToolbar {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .exchangePanelActions {
+    width: 100%;
+  }
+
+  .exchangeToolbarBtn {
+    flex: 1 1 auto;
+  }
+
+  .exchangeCircleGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    max-width: none;
+    gap: 12px;
+    min-height: auto;
+    margin-left: 0;
+    margin-right: 0;
+    justify-items: center;
+  }
+
+  .exchangeCircleCard {
+    width: 78px;
+    height: 78px;
+  }
+
+  .exchangeCircleIconWrap {
+    width: 52px;
+    height: 52px;
   }
 
   .modalContent {

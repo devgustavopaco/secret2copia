@@ -2,13 +2,12 @@
 
 import { useState, useCallback, useEffect } from "react";
 import HamburgerIcon from "../Icons/HamburgerIcon";
-import PlusIcon from "../Icons/PlusIcon";
 import styles from "./sidebar.module.scss";
 import ArrowIcon from "../Icons/ArrowIcon";
 
 type Props = {
   onToggleChange?: (isOpen: boolean) => void;
-  onAddExchange?: (type: "spot" | "futures") => void;
+  onAddExchange?: () => void;
   forceCollapsed?: boolean; // Permite controle externo do estado collapsed
   onCollapseChange?: (collapsed: boolean) => void; // Notifica mudanças no estado
 };
@@ -19,6 +18,14 @@ export default function NewPageSidebar({
   forceCollapsed,
   onCollapseChange,
 }: Props) {
+  const sortExchangesByName = useCallback((list: any[]) => {
+    return [...list].sort((a, b) =>
+      String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "pt-BR", {
+        sensitivity: "base",
+      })
+    );
+  }, []);
+
   // Detecta se é mobile e inicia collapsed se for
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -35,13 +42,14 @@ export default function NewPageSidebar({
   }, [forceCollapsed]);
   const [spotExchanges, setSpotExchanges] = useState<any[]>([]);
   const [futuresExchanges, setFuturesExchanges] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"spot" | "futures">("spot");
 
   const loadExchanges = useCallback(() => {
     const spot = JSON.parse(localStorage.getItem("spotExchanges") || "[]");
     const fut = JSON.parse(localStorage.getItem("futuresExchanges") || "[]");
-    setSpotExchanges(spot);
-    setFuturesExchanges(fut);
-  }, []);
+    setSpotExchanges(sortExchangesByName(spot));
+    setFuturesExchanges(sortExchangesByName(fut));
+  }, [sortExchangesByName]);
 
   useEffect(() => {
     loadExchanges();
@@ -87,7 +95,7 @@ export default function NewPageSidebar({
   // === remove handlers (atualizam LS + evento global) ===
   const removeFromSpot = (id: string) => {
     setSpotExchanges((prev) => {
-      const updated = prev.filter((e) => e.id !== id);
+      const updated = sortExchangesByName(prev.filter((e) => e.id !== id));
       localStorage.setItem("spotExchanges", JSON.stringify(updated));
       window.dispatchEvent(new Event("exchangeUpdated"));
       return updated;
@@ -95,7 +103,7 @@ export default function NewPageSidebar({
   };
   const removeFromFutures = (id: string) => {
     setFuturesExchanges((prev) => {
-      const updated = prev.filter((e) => e.id !== id);
+      const updated = sortExchangesByName(prev.filter((e) => e.id !== id));
       localStorage.setItem("futuresExchanges", JSON.stringify(updated));
       window.dispatchEvent(new Event("exchangeUpdated"));
       return updated;
@@ -105,18 +113,6 @@ export default function NewPageSidebar({
   return (
     <>
       <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
-        {/* fundos decorativos */}
-        <img
-          className={styles.sidebarBackground}
-          src="/new-page/diamond-blur.svg"
-          alt="Sidebar Background"
-        />
-        <img
-          className={styles.sidebarBackgroundDown}
-          src="/new-page/diamond-down-blur.svg"
-          alt="Sidebar Background"
-        />
-
         {/* header */}
         <div className={styles.sidebarHeader}>
           <img src="/new-page/logo.svg" alt="Logo" />
@@ -136,102 +132,105 @@ export default function NewPageSidebar({
 
         {/* corpo */}
         <div className={styles.sidebarBody}>
-          {/* SPOT */}
-          <div className={styles.sidebarTopBody}>
+          <div className={styles.sidebarActionBar}>
             <button
               type="button"
-              className={styles.spotButton}
-              aria-label="Adicionar corretora spot"
-              onClick={() => onAddExchange?.("spot")}
+              className={styles.primaryActionButton}
+              aria-label="Selecionar corretoras"
+              onClick={() => onAddExchange?.()}
             >
-              <span className={styles.label}>Exchanges SPOT</span>
-              <PlusIcon className={styles.plusIcon} />
+              Selecionar corretoras
             </button>
-
-            <div className={styles.exchangeList}>
-              {spotExchanges.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma exchange</p>
-              ) : (
-                spotExchanges.map((ex) => (
-                  <div key={ex.id} className={styles.exchangeItem}>
-                    <div className={styles.exchangeLeft}>
-                      <img
-                        src={ex.image_url ?? "/default-exchange.png"}
-                        alt={ex.name}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/default-exchange.png";
-                        }}
-                      />
-                      <span>{ex.name}</span>
-                    </div>
-
-                    {/* X de remover — mesmo “vidro”/borda/glow */}
-                    <button
-                      type="button"
-                      className={styles.removeBtn}
-                      aria-label={`Remover ${ex.name}`}
-                      onClick={() => removeFromSpot(ex.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ")
-                          removeFromSpot(ex.id);
-                      }}
-                    >
-                      <img src="/images/X.svg" alt="" />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
 
-          <div className={styles.divisor}></div>
+          <div className={styles.segmentedWrap}>
+            <div className={styles.segmentedTabs}>
+              <button
+                type="button"
+                className={`${styles.segmentedTab} ${
+                  activeTab === "spot" ? styles.activeTab : ""
+                }`}
+                onClick={() => setActiveTab("spot")}
+              >
+                SPOT ({spotExchanges.length})
+              </button>
+              <button
+                type="button"
+                className={`${styles.segmentedTab} ${
+                  activeTab === "futures" ? styles.activeTab : ""
+                }`}
+                onClick={() => setActiveTab("futures")}
+              >
+                FUTUROS ({futuresExchanges.length})
+              </button>
+            </div>
 
-          {/* FUTURES */}
-          <div className={styles.sidebarTopBody}>
-            <button
-              type="button"
-              className={styles.spotButton}
-              aria-label="Adicionar corretora futures"
-              onClick={() => onAddExchange?.("futures")}
-            >
-              <span className={styles.label}>Exchanges Futures</span>
-              <PlusIcon className={styles.plusIcon} />
-            </button>
-
-            <div className={styles.exchangeList}>
-              {futuresExchanges.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma exchange</p>
-              ) : (
-                futuresExchanges.map((ex) => (
-                  <div key={ex.id} className={styles.exchangeItem}>
-                    <div className={styles.exchangeLeft}>
-                      <img
-                        src={ex.image_url ?? "/default-exchange.png"}
-                        alt={ex.name}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/default-exchange.png";
+            <div key={activeTab} className={styles.sidebarTopBody}>
+              <div className={styles.exchangeList}>
+                {activeTab === "spot" ? (
+                  spotExchanges.length === 0 ? (
+                    <p className={styles.emptyText}>Nenhuma exchange</p>
+                  ) : (
+                    spotExchanges.map((ex) => (
+                      <div key={ex.id} className={styles.exchangeItem}>
+                        <div className={styles.exchangeLeft}>
+                          <img
+                            src={ex.image_url ?? "/default-exchange.png"}
+                            alt={ex.name}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                "/default-exchange.png";
+                            }}
+                          />
+                          <span>{ex.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.removeBtn}
+                          aria-label={`Remover ${ex.name}`}
+                          onClick={() => removeFromSpot(ex.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ")
+                              removeFromSpot(ex.id);
+                          }}
+                        >
+                          <img src="/images/X.svg" alt="" />
+                        </button>
+                      </div>
+                    ))
+                  )
+                ) : futuresExchanges.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma exchange</p>
+                ) : (
+                  futuresExchanges.map((ex) => (
+                    <div key={ex.id} className={styles.exchangeItem}>
+                      <div className={styles.exchangeLeft}>
+                        <img
+                          src={ex.image_url ?? "/default-exchange.png"}
+                          alt={ex.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/default-exchange.png";
+                          }}
+                        />
+                        <span>{ex.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.removeBtn}
+                        aria-label={`Remover ${ex.name}`}
+                        onClick={() => removeFromFutures(ex.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            removeFromFutures(ex.id);
                         }}
-                      />
-                      <span>{ex.name}</span>
+                      >
+                        <img src="/images/X.svg" alt="" />
+                      </button>
                     </div>
-
-                    <button
-                      type="button"
-                      className={styles.removeBtn}
-                      aria-label={`Remover ${ex.name}`}
-                      onClick={() => removeFromFutures(ex.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ")
-                          removeFromFutures(ex.id);
-                      }}
-                    >
-                      <img src="/images/X.svg" alt="" />
-                    </button>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -44,6 +44,7 @@
 
 /* PAINEL — vidro com borda gradiente e sombra soft */
 .panel {
+  --gm-header-h: 64px;
   position: relative;
   width: min(1100px, 94vw);
   height: min(86vh, 900px);
@@ -82,6 +83,22 @@
     z-index: 2;
   }
 }
+
+.shelllessPanel {
+  width: min(1260px, 96vw);
+  height: auto;
+  max-height: 88vh;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+}
+
+.shelllessPanel::before {
+  display: none;
+}
 @keyframes panelIn {
   to {
     opacity: 1;
@@ -103,6 +120,29 @@
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0));
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
+}
+
+.compactHeader {
+  padding: 8px 12px 8px 14px;
+}
+
+.compactHeader .title {
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.compactHeader .close {
+  width: 34px;
+  height: 34px;
+}
+
+.compactHeader .closeGlyph {
+  font-size: 18px;
+}
+
+.compactHeader + .body {
+  height: calc(100% - 42px);
+  padding-top: 12px;
 }
 .title {
   margin: 0;
@@ -133,7 +173,7 @@
 /* BODY — espaço pra conteúdo rolar */
 .body {
   position: relative;
-  height: calc(100% - 64px);
+  height: calc(100% - var(--gm-header-h));
   padding: 20px 22px 22px 22px;
   overflow: auto;
 
@@ -143,6 +183,12 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+.shelllessBody {
+  height: auto;
+  max-height: 88vh;
+  padding: 0;
 }
 
 /* ====== Cards de exchanges (demo) ====== */
