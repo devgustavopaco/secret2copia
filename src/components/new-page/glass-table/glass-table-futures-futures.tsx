@@ -633,9 +633,9 @@ export default function GlassTable<T extends object>({
             <button
               type="button"
               className={styles.iconGlass}
-              aria-label={"Abrir modal"}
+              aria-label={"Alertas"}
               onClick={onCustomButtonClick}
-              title={"Abrir modal"}
+              title={"Alertas"}
             >
               {<AlertIcon />}
             </button>
@@ -1427,6 +1427,9 @@ export function DemoGlassTable({
     { id: "volumes24", label: "Volumes 24H", required: false },
     { id: "acoes", label: "Ações", required: false },
   ];
+  const visibleColumnCount = columnConfig.filter((col) =>
+    isColumnVisible(col.id)
+  ).length;
 
   const [rows, setRows] = React.useState<CoinRow[]>([]);
   const pendingRowsRef = React.useRef<CoinRow[]>([]);
@@ -1955,12 +1958,16 @@ export function DemoGlassTable({
       />
 
       {/* Paginação */}
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
+      {
+        <div className={`${styles.pagination} ${styles.paginationTextOnly}`}>
           <div className={styles.paginationInfo}>
             <span>
-              Mostrando {startIndex + 1} - {Math.min(endIndex, totalItems)} de{" "}
-              {totalItems} oportunidades
+              {totalItems > 0
+                ? `Mostrando ${startIndex + 1} - ${Math.min(
+                    endIndex,
+                    totalItems
+                  )} de ${totalItems} oportunidades`
+                : "Sem oportunidades no momento"}
             </span>
             <div className={styles.itemsPerPage}>
               <label>
@@ -2043,7 +2050,7 @@ export function DemoGlassTable({
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* Modal de Confirmação de Exclusão */}
       {deleteModal.isOpen && (
@@ -2126,43 +2133,75 @@ export function DemoGlassTable({
       {/* Modal de Configuração de Colunas */}
       {columnConfigModal.isOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h3>Configurar Colunas</h3>
-            </div>
-            <div className={styles.modalContent}>
-              <p>Selecione quais colunas deseja exibir na tabela:</p>
-              <div className={styles.columnList}>
-                {columnConfig.map((col) => (
-                  <div key={col.id} className={styles.columnItem}>
-                    <div className={styles.columnInfo}>
-                      <strong>{col.label}</strong>
-                      {col.required && (
-                        <span className={styles.requiredBadge}>
-                          Obrigatória
-                        </span>
-                      )}
-                    </div>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={isColumnVisible(col.id)}
-                        onChange={() => toggleColumn(col.id)}
-                        disabled={col.required}
-                      />
-                      <span className={styles.slider}></span>
-                    </label>
+          <div className={`${styles.modal} ${styles.settingsNarrowPanel}`}>
+            <div className={styles.settingsNarrowBody}>
+              <div className={styles.settingsModalBody}>
+                <div className={styles.settingsConfigV2}>
+                  <div className={styles.settingsInlineHeader}>
+                    <h3 className={styles.settingsInlineTitle}>
+                      Configurar Colunas
+                      <ConfigIcon className={styles.settingsInlineTitleIcon} />
+                    </h3>
+                    <button
+                      type="button"
+                      className={styles.settingsInlineClose}
+                      onClick={() => setColumnConfigModal({ isOpen: false })}
+                      aria-label="Fechar modal de configurações"
+                    >
+                      ×
+                    </button>
                   </div>
-                ))}
+
+                  <div className={styles.settingsIntroCard}>
+                    <h4 className={styles.settingsIntroTitle}>
+                      Visibilidade da Tabela
+                    </h4>
+                    <p className={styles.settingsIntroText}>
+                      Defina quais colunas devem aparecer no monitor.
+                    </p>
+                    <p className={styles.settingsIntroMeta}>
+                      {visibleColumnCount} de {columnConfig.length} colunas
+                      ativas
+                    </p>
+                  </div>
+
+                  <div className={styles.settingsGrid}>
+                    {columnConfig.map((col) => (
+                      <div key={col.id} className={styles.settingsItem}>
+                        <div className={styles.settingsItemInfo}>
+                          <span className={styles.settingsItemLabel}>
+                            {col.label}
+                          </span>
+                          {col.required && (
+                            <span className={styles.requiredBadge}>
+                              Obrigatória
+                            </span>
+                          )}
+                        </div>
+                        <label className={styles.switch}>
+                          <input
+                            type="checkbox"
+                            checked={isColumnVisible(col.id)}
+                            onChange={() => toggleColumn(col.id)}
+                            disabled={col.required}
+                          />
+                          <span className={styles.slider}></span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className={styles.modalButtons}>
-              <button
-                className={styles.cancelButton}
-                onClick={() => setColumnConfigModal({ isOpen: false })}
+              <div
+                className={`${styles.modalButtons} ${styles.settingsModalActions}`}
               >
-                Fechar
-              </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setColumnConfigModal({ isOpen: false })}
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import TradingViewIcon from "../../Icons/TradingViewIcon";
 import StarIcon from "../../Icons/StarIcon";
 import StarFilledIcon from "../../Icons/StarFilledIcon";
 import TrashIcon from "../../Icons/TrashIcon";
+import MuteIcon from "../../Icons/MuteIcon";
 import { useCoinLogo } from "../../../hooks/useCoinLogo";
 
 import type { ArbitrageOpportunity } from "../../../server/router/orderbook";
@@ -23,6 +24,7 @@ import AlertIcon from "../../Icons/AlertIcon";
 import {
   LineChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -93,7 +95,7 @@ export type Column<T> = {
 };
 
 type MetricsIntent = "abertura" | "fechamento";
-type MetricsPeriod = "30m" | "1h" | "4h" | "12h";
+type MetricsPeriod = "30m" | "1h" | "4h" | "12h" | "24h";
 type MetricsKey = {
   symbol: string;
   spotExchange: string;
@@ -103,21 +105,11 @@ type MetricsUpdate = {
   key: MetricsKey;
   period: MetricsPeriod;
   intent: MetricsIntent;
-  includeHistory?: boolean;
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
   lastInversionMs?: number;
   lastInversionAt?: number;
-  history?: Array<{
-    ts: number;
-    spot: number;
-    futures: number;
-    spotBid?: number;
-    spotAsk?: number;
-    futuresBid?: number;
-    futuresAsk?: number;
-  }>;
   updatedAt: number;
 };
 
@@ -131,6 +123,8 @@ export type GlassTableProps<T extends object> = {
   zebra?: boolean;
   dense?: boolean;
   emptyMessage?: string;
+  emptyState?: React.ReactNode;
+  isLoading?: boolean;
   className?: string;
   isSidebarOpen?: boolean;
   virtualized?: boolean;
@@ -142,6 +136,8 @@ export type GlassTableProps<T extends object> = {
 
   /** ⬇️ NOVO: elemento extra na toolbar */
   toolbarExtra?: React.ReactNode;
+  toolbarStatus?: React.ReactNode;
+  filterSummary?: React.ReactNode;
 
   /** ⬇️ NOVO: controle de agrupamento */
   isGrouped?: boolean;
@@ -232,20 +228,6 @@ const formatVolume = (volume: number) => {
   }
 };
 
-const periodToMs = (period: MetricsPeriod) => {
-  switch (period) {
-    case "1h":
-      return 60 * 60 * 1000;
-    case "30m":
-      return 30 * 60 * 1000;
-    case "12h":
-      return 12 * 60 * 60 * 1000;
-    case "4h":
-    default:
-      return 4 * 60 * 60 * 1000;
-  }
-};
-
 type CoinRow = {
   id: string;
   coin: { ticker: string; logo: string };
@@ -322,12 +304,12 @@ function mapOppToRow(op: ArbitrageOpportunity, isExitMode?: boolean): CoinRow {
     fundingRateExpTs: (op as any).fundingRateExpTs,
     validSince: (op as any).validSince,
     volumes: {
-      s: `S: ${askLiq.toFixed(0)}`,
-      f: `F: ${bidLiq.toFixed(0)}`,
+      s: `S: ${formatVolume(askLiq)}`,
+      f: `F: ${formatVolume(bidLiq)}`,
     },
     volumes24h: {
-      s: `S: ${op.spotVolume24h ? op.spotVolume24h.toFixed(0) : "0"}`,
-      f: `F: ${op.futVolume24h ? op.futVolume24h.toFixed(0) : "0"}`,
+      s: `S: ${formatVolume(op.spotVolume24h ?? 0)}`,
+      f: `F: ${formatVolume(op.futVolume24h ?? 0)}`,
     },
   };
 }
@@ -338,6 +320,8 @@ function CoinCell({
   showTooltip,
   hideTooltip,
   showLogo,
+  isFavorited,
+  onToggleFavorite,
   toggleGroupExpansion,
   styles,
 }: any) {
@@ -411,6 +395,36 @@ function CoinCell({
       onMouseLeave={hideTooltip}
       onMouseMove={(e) => tooltipContent && showTooltip(e, tooltipContent)}
     >
+      <button
+        className={`${styles.favoriteBtn} ${
+          isFavorited ? styles.favorited : ""
+        }`}
+        aria-label={isFavorited ? "Remover dos favoritos" : "Favoritar"}
+        title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFavorite?.();
+        }}
+      >
+        {isFavorited ? <StarFilledIcon /> : <StarIcon />}
+      </button>
+
+      {/* Balão de contagem no estilo EasyArb (+N) */}
+      {(r as any)._isGroup && (r as any)._groupCount > 1 && (
+        <button
+          className={styles.groupCountBadge}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleGroupExpansion(r.coin.ticker);
+          }}
+          title={`Mostrar ${(r as any)._groupCount} operações`}
+          aria-label={`Mostrar ${(r as any)._groupCount} operações`}
+        >
+          +{Math.max((r as any)._groupCount - 1, 1)}
+        </button>
+      )}
       {showLogo && (
         <Image
           src={logoUrl}
@@ -421,41 +435,6 @@ function CoinCell({
         />
       )}
       <span className={styles.coinTicker}>{r.coin.ticker}</span>
-
-      {/* Setinha de expansão para grupos */}
-      {(r as any)._isGroup && (r as any)._groupCount > 1 && (
-        <button
-          className={`${styles.expandButton} ${
-            (r as any)._isExpanded ? styles.expanded : ""
-          }`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleGroupExpansion(r.coin.ticker);
-          }}
-          title={
-            (r as any)._isExpanded
-              ? "Colapsar grupo"
-              : `Expandir grupo (${(r as any)._groupCount} operações)`
-          }
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 4.5L6 7.5L9 4.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      )}
     </div>
   );
 }
@@ -465,8 +444,8 @@ const ActionCell = React.memo(
     ticker,
     spotExchange,
     futuresExchange,
-    isFavorited,
-    onToggleFavorite,
+    isMuted,
+    onToggleMute,
     onOpenOpportunity,
     onOpenTradingView,
     onDelete,
@@ -475,8 +454,8 @@ const ActionCell = React.memo(
     ticker: string;
     spotExchange: string;
     futuresExchange: string;
-    isFavorited: boolean;
-    onToggleFavorite: (key: string) => void;
+    isMuted: boolean;
+    onToggleMute: (ticker: string) => void;
     onOpenOpportunity: (
       ticker: string,
       spotExchange: string,
@@ -496,19 +475,21 @@ const ActionCell = React.memo(
     return (
       <div className={styles.actions}>
         <button
-          className={`${styles.iconBtn} ${isFavorited ? styles.favorited : ""}`}
-          aria-label="Favoritar"
+          className={styles.iconBtn}
+          aria-label="Ver gráfico"
+          title="Ver gráfico"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onToggleFavorite(key);
+            onOpenTradingView(ticker, spotExchange, futuresExchange);
           }}
         >
-          {isFavorited ? <StarFilledIcon /> : <StarIcon />}
+          <TradingViewIcon />
         </button>
         <button
           className={styles.iconBtn}
           aria-label="Abrir Calculadora"
+          title="Abrir calculadora da oportunidade"
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -519,8 +500,21 @@ const ActionCell = React.memo(
           <CalculatorTableIcon />
         </button>
         <button
+          className={`${styles.iconBtn} ${isMuted ? styles.mutedAction : ""}`}
+          aria-label={isMuted ? "Reativar moeda" : "Silenciar moeda"}
+          title={isMuted ? "Reativar moeda" : "Silenciar moeda"}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleMute(ticker);
+          }}
+        >
+          <MuteIcon />
+        </button>
+        <button
           className={styles.iconBtn}
           aria-label="Excluir"
+          title="Excluir oportunidade"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -536,7 +530,7 @@ const ActionCell = React.memo(
     prev.ticker === next.ticker &&
     prev.spotExchange === next.spotExchange &&
     prev.futuresExchange === next.futuresExchange &&
-    prev.isFavorited === next.isFavorited
+    prev.isMuted === next.isMuted
 );
 
 export default function GlassTable<T extends object>({
@@ -552,10 +546,14 @@ export default function GlassTable<T extends object>({
   zebra = false,
   dense = false,
   emptyMessage = "Sem dados",
+  emptyState,
+  isLoading = false,
   className,
   isSidebarOpen,
   virtualized = false,
   toolbarExtra,
+  toolbarStatus,
+  filterSummary,
   isGrouped = false,
   onToggleGrouping,
   isExitMode = false,
@@ -565,7 +563,7 @@ export default function GlassTable<T extends object>({
   const scrollerRef = React.useRef<HTMLDivElement | null>(null);
   const [scrollTop, setScrollTop] = React.useState(0);
   const [viewportHeight, setViewportHeight] = React.useState(0);
-  const rowHeight = dense ? 56 : 80;
+  const rowHeight = dense ? 60 : 86;
   const overscan = 6;
   const useVirtual = virtualized && data.length > 0;
   const styleVars: React.CSSProperties = {
@@ -715,9 +713,15 @@ export default function GlassTable<T extends object>({
             {data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length}>
-                  <div className={styles.loaderWrapper}>
-                    <PacmanLoader color="#7B61FF" size={40} />
-                  </div>
+                  {isLoading ? (
+                    <div className={styles.loaderWrapper}>
+                      <PacmanLoader color="#7B61FF" size={40} />
+                    </div>
+                  ) : emptyState ? (
+                    <div className={styles.emptyState}>{emptyState}</div>
+                  ) : (
+                    <div className={styles.emptyMessage}>{emptyMessage}</div>
+                  )}
                 </td>
               </tr>
             ) : (
@@ -832,14 +836,21 @@ export default function GlassTable<T extends object>({
           />
         </label>
 
+        {filterSummary && (
+          <div className={styles.filterSummary}>{filterSummary}</div>
+        )}
+
         <div className={styles.toolbarRight}>
+          {toolbarStatus && (
+            <div className={styles.toolbarStatus}>{toolbarStatus}</div>
+          )}
           {onCustomButtonClick && (
             <button
               type="button"
               className={styles.iconGlass}
-              aria-label={"Abrir modal"}
+              aria-label={"Alertas"}
               onClick={onCustomButtonClick}
-              title={"Abrir modal"}
+              title={"Alertas"}
             >
               {<AlertIcon />}
             </button>
@@ -871,6 +882,7 @@ export default function GlassTable<T extends object>({
             className={styles.iconGlass}
             aria-label="Filtrar"
             onClick={onFilterClick}
+            title="Abrir filtros"
           >
             <FilterIcon />
           </button>
@@ -879,6 +891,7 @@ export default function GlassTable<T extends object>({
             className={styles.iconGlass}
             aria-label="Calculadora"
             onClick={openCalculatorPopup}
+            title="Abrir calculadora"
           >
             <CalculatorIcon />
           </button>
@@ -910,16 +923,17 @@ export function DemoGlassTable({
   onRefreshRateChange,
   isSocketPaused,
   onToggleSocketPause,
+  isConnected,
+  isLoading,
+  activeFilters,
+  onClearFilters,
   dollarPrice,
   onCustomButtonClick,
   customButtonLabel,
   metricsByKey,
-  metricsHistoryByKey,
   metricsPeriod: metricsPeriodProp,
   metricsIntent,
   onMetricsPeriodChange,
-  onMetricsHistoryTargetChange,
-  onVisibleMetricsKeysChange,
   customButtonIcon,
 }: {
   isSidebarOpen: boolean;
@@ -933,24 +947,17 @@ export function DemoGlassTable({
   onRefreshRateChange?: (rate: number) => void;
   isSocketPaused?: boolean;
   onToggleSocketPause?: () => void;
+  isConnected?: boolean;
+  isLoading?: boolean;
+  activeFilters?: string[];
+  onClearFilters?: () => void;
   dollarPrice?: number;
   onCustomButtonClick?: () => void;
   customButtonLabel?: string;
   metricsByKey?: Record<string, MetricsUpdate>;
-  metricsHistoryByKey?: Record<string, MetricsUpdate>;
   metricsPeriod?: MetricsPeriod;
   metricsIntent?: MetricsIntent;
   onMetricsPeriodChange?: (period: MetricsPeriod) => void;
-  onMetricsHistoryTargetChange?: (
-    target: {
-      symbol: string;
-      spotExchange: string;
-      futuresExchange: string;
-      period: MetricsPeriod;
-      intent: MetricsIntent;
-    } | null
-  ) => void;
-  onVisibleMetricsKeysChange?: (keys: MetricsKey[]) => void;
   customButtonIcon?: React.ReactNode;
 }) {
   const [filter, setFilter] = React.useState("");
@@ -980,7 +987,7 @@ export function DemoGlassTable({
   const [nextGainError, setNextGainError] = React.useState<string | null>(null);
   const [crossIntent, setCrossIntent] = React.useState<
     "abertura" | "fechamento"
-  >(metricsIntent ?? "abertura");
+  >("abertura");
   const nextGainChartRef = React.useRef<HTMLDivElement | null>(null);
   const [nextGainXDomain, setNextGainXDomain] = React.useState<
     [number, number] | null
@@ -1004,10 +1011,8 @@ export function DemoGlassTable({
   }, [metricsPeriodProp, chartPeriod]);
   const selectedMetricsPeriod = metricsPeriodProp ?? chartPeriod;
   const selectedMetricsIntent = metricsIntent ?? "abertura";
-  const chartMetricsByKey = metricsHistoryByKey ?? metricsByKey;
-  React.useEffect(() => {
-    setCrossIntent(selectedMetricsIntent);
-  }, [selectedMetricsIntent]);
+  const [isDenseMode, setIsDenseMode] = React.useState(true);
+  const embedVolumeInMarketColumns = isDenseMode;
   const handleMetricsPeriodChange = (value: MetricsPeriod) => {
     if (onMetricsPeriodChange) {
       onMetricsPeriodChange(value);
@@ -1019,7 +1024,6 @@ export function DemoGlassTable({
   // Estados para paginação
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(40);
-  const visibleMetricsKeysRef = React.useRef("");
 
   // Estado para tooltip
   const [tooltip, setTooltip] = React.useState<{
@@ -1112,49 +1116,7 @@ export function DemoGlassTable({
   }, []);
 
   React.useEffect(() => {
-    if (!onMetricsHistoryTargetChange) return;
-    const spot = normalizeExchangeName(chartSpotExchange);
-    const futures = normalizeExchangeName(chartFuturesExchange);
-
-    if (
-      !isTradingViewOpen ||
-      chartProvider !== "nextgain" ||
-      !chartTicker ||
-      !spot ||
-      !futures
-    ) {
-      onMetricsHistoryTargetChange(null);
-      return;
-    }
-
-    onMetricsHistoryTargetChange({
-      symbol: `${chartTicker}USDT`,
-      spotExchange: spot,
-      futuresExchange: futures,
-      period: selectedMetricsPeriod,
-      intent: crossIntent,
-    });
-  }, [
-    onMetricsHistoryTargetChange,
-    isTradingViewOpen,
-    chartProvider,
-    chartTicker,
-    chartSpotExchange,
-    chartFuturesExchange,
-    normalizeExchangeName,
-    selectedMetricsPeriod,
-    crossIntent,
-  ]);
-
-  React.useEffect(() => {
-    return () => {
-      onMetricsHistoryTargetChange?.(null);
-    };
-  }, [onMetricsHistoryTargetChange]);
-
-  React.useEffect(() => {
     if (chartProvider !== "nextgain") return;
-
     const symbol = chartTicker ? `${chartTicker}USDT` : null;
     const spot = normalizeExchangeName(chartSpotExchange);
     const futures = normalizeExchangeName(chartFuturesExchange);
@@ -1162,63 +1124,49 @@ export function DemoGlassTable({
     if (!symbol || !spot || !futures) {
       setNextGainSpotTicks([]);
       setNextGainFuturesTicks([]);
-      setNextGainLoading(false);
-      setNextGainError(null);
       return;
     }
 
-    const lookupKey = metricsKeyString(
-      {
-        symbol,
-        spotExchange: spot,
-        futuresExchange: futures,
-      },
-      selectedMetricsPeriod,
-      crossIntent
-    );
-    const history = chartMetricsByKey?.[lookupKey]?.history ?? [];
-    if (!history.length) {
-      setNextGainSpotTicks([]);
-      setNextGainFuturesTicks([]);
-      setNextGainLoading(true);
-      setNextGainError("Aguardando historico do socket...");
-      return;
-    }
-
-    const toStr = (value?: number) =>
-      Number.isFinite(value) ? Number(value).toString() : "0";
-    const spotTicks: NextGainTick[] = history.map((point) => ({
-      ticker_formatted: symbol,
-      exchange_id: 0,
-      ask_price: toStr(point.spotAsk ?? point.spot),
-      ask_size: "0",
-      bid_price: toStr(point.spotBid ?? point.spot),
-      bid_size: "0",
-      volume: "0",
-      timestamp: String(point.ts),
-    }));
-    const futuresTicks: NextGainTick[] = history.map((point) => ({
-      ticker_formatted: symbol,
-      exchange_id: 0,
-      ask_price: toStr(point.futuresAsk ?? point.futures),
-      ask_size: "0",
-      bid_price: toStr(point.futuresBid ?? point.futures),
-      bid_size: "0",
-      volume: "0",
-      timestamp: String(point.ts),
-    }));
-    setNextGainSpotTicks(spotTicks);
-    setNextGainFuturesTicks(futuresTicks);
-    setNextGainLoading(false);
+    const controller = new AbortController();
+    setNextGainLoading(true);
     setNextGainError(null);
+
+    const spotUrl = `/api/spread-history?symbol=${encodeURIComponent(
+      symbol
+    )}&spot=${encodeURIComponent(spot)}`;
+    const futuresUrl = `/api/spread-history?symbol=${encodeURIComponent(
+      symbol
+    )}&futures=${encodeURIComponent(futures)}`;
+
+    const parsePayload = async (res: Response) => {
+      const data = await res.json();
+      if (Array.isArray(data)) return data as NextGainTick[];
+      if (Array.isArray(data?.data)) return data.data as NextGainTick[];
+      return [];
+    };
+
+    Promise.all([
+      fetch(spotUrl, { signal: controller.signal }).then(parsePayload),
+      fetch(futuresUrl, { signal: controller.signal }).then(parsePayload),
+    ])
+      .then(([spotTicks, futuresTicks]) => {
+        setNextGainSpotTicks(spotTicks);
+        setNextGainFuturesTicks(futuresTicks);
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        setNextGainError("Falha ao carregar dados da NextGain.");
+        setNextGainSpotTicks([]);
+        setNextGainFuturesTicks([]);
+      })
+      .finally(() => setNextGainLoading(false));
+
+    return () => controller.abort();
   }, [
     chartProvider,
     chartTicker,
     chartSpotExchange,
     chartFuturesExchange,
-    chartMetricsByKey,
-    selectedMetricsPeriod,
-    crossIntent,
     normalizeExchangeName,
   ]);
 
@@ -1324,32 +1272,28 @@ export function DemoGlassTable({
     return merged;
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, crossIntent]);
 
-  const periodMs = React.useMemo(
-    () => periodToMs(selectedMetricsPeriod),
-    [selectedMetricsPeriod]
-  );
+  const periodMs = React.useMemo(() => {
+    switch (selectedMetricsPeriod) {
+      case "1h":
+        return 60 * 60 * 1000;
+      case "30m":
+        return 30 * 60 * 1000;
+      case "12h":
+        return 12 * 60 * 60 * 1000;
+      case "24h":
+        return 24 * 60 * 60 * 1000;
+      case "4h":
+      default:
+        return 4 * 60 * 60 * 1000;
+    }
+  }, [selectedMetricsPeriod]);
 
   const nextGainWindowData = React.useMemo(() => {
     if (!nextGainData.length) return [];
-    const maxTs = nextGainData[nextGainData.length - 1]!.ts;
-    const minTs = maxTs - periodMs;
-    return nextGainData.filter((row) => row.ts >= minTs);
+    const nowTs = Date.now();
+    const minTs = nowTs - periodMs;
+    return nextGainData.filter((row) => row.ts >= minTs && row.ts <= nowTs);
   }, [nextGainData, periodMs]);
-
-  const isNextGainChartReady = nextGainWindowData.length > 0;
-
-  const nextGainLoadingHint = React.useMemo(() => {
-    if (nextGainLoading) {
-      return "Carregando historico...";
-    }
-    if (nextGainError) {
-      return nextGainError;
-    }
-    if (!isNextGainChartReady) {
-      return "Aguardando historico do socket...";
-    }
-    return null;
-  }, [nextGainLoading, nextGainError, isNextGainChartReady]);
 
   const nextGainMaxSpreads = React.useMemo(() => {
     const list = nextGainSpotTicks || [];
@@ -1513,35 +1457,26 @@ export function DemoGlassTable({
     };
   }, [chartTicker, nextGainSpotTicks, nextGainFuturesTicks, periodMs]);
 
-  const nextGainChartMetrics = React.useMemo(() => {
-    if (!chartMetricsByKey || !chartTicker) return null;
-    const spot = normalizeExchangeName(chartSpotExchange);
-    const futures = normalizeExchangeName(chartFuturesExchange);
-    if (!spot || !futures) return null;
-    const lookupKey = metricsKeyString(
-      {
-        symbol: `${chartTicker}USDT`,
-        spotExchange: spot,
-        futuresExchange: futures,
-      },
-      selectedMetricsPeriod,
-      crossIntent
-    );
-    return chartMetricsByKey?.[lookupKey] ?? null;
-  }, [
-    chartMetricsByKey,
-    chartTicker,
-    chartSpotExchange,
-    chartFuturesExchange,
-    normalizeExchangeName,
-    selectedMetricsPeriod,
-    crossIntent,
-  ]);
-
-  const nextGainInvertidasCount =
-    typeof nextGainChartMetrics?.invertidas === "number"
-      ? nextGainChartMetrics.invertidas
-      : 0;
+  const nextGainInvertidasCount = React.useMemo(() => {
+    if (!nextGainWindowData.length) return 0;
+    let count = 0;
+    let prevSign: number | null = null;
+    nextGainWindowData.forEach((row) => {
+      if (!Number.isFinite(row.spot) || !Number.isFinite(row.futures)) return;
+      const diff = row.spot - row.futures;
+      if (diff === 0) return;
+      const sign = diff > 0 ? 1 : -1;
+      if (prevSign === null) {
+        prevSign = sign;
+        return;
+      }
+      if (sign !== prevSign) {
+        count += 1;
+        prevSign = sign;
+      }
+    });
+    return count;
+  }, [nextGainWindowData]);
   const nextGainExtents = React.useMemo(() => {
     if (!nextGainWindowData.length) {
       return {
@@ -1570,18 +1505,55 @@ export function DemoGlassTable({
     return { minTs, maxTs, minY, maxY };
   }, [nextGainWindowData]);
 
+  const nextGainZoomBounds = React.useMemo(() => {
+    const maxTs = Date.now();
+    const minByPeriod = maxTs - periodMs;
+    return {
+      minTs: minByPeriod,
+      maxTs,
+    };
+  }, [periodMs]);
+
   React.useEffect(() => {
     if (!nextGainWindowData.length) {
       setNextGainXDomain(null);
       setNextGainYDomain(null);
       return;
     }
-    setNextGainXDomain([nextGainExtents.minTs, nextGainExtents.maxTs]);
-    setNextGainYDomain([nextGainExtents.minY, nextGainExtents.maxY]);
+    if (!nextGainXDomain || !nextGainYDomain) {
+      setNextGainXDomain([nextGainZoomBounds.minTs, nextGainZoomBounds.maxTs]);
+      setNextGainYDomain([nextGainExtents.minY, nextGainExtents.maxY]);
+    }
   }, [
     nextGainWindowData,
-    nextGainExtents.minTs,
-    nextGainExtents.maxTs,
+    nextGainZoomBounds.minTs,
+    nextGainZoomBounds.maxTs,
+    nextGainExtents.minY,
+    nextGainExtents.maxY,
+    nextGainXDomain,
+    nextGainYDomain,
+  ]);
+
+  // Resetar zoom quando muda contexto do gráfico/filtro.
+  React.useEffect(() => {
+    setNextGainXDomain(null);
+    setNextGainYDomain(null);
+  }, [
+    chartTicker,
+    chartSpotExchange,
+    chartFuturesExchange,
+    selectedMetricsPeriod,
+    crossIntent,
+  ]);
+
+  const resetNextGainZoom = React.useCallback(() => {
+    if (!nextGainWindowData.length) return;
+    setNextGainXDomain([nextGainZoomBounds.minTs, nextGainZoomBounds.maxTs]);
+    setNextGainYDomain([nextGainExtents.minY, nextGainExtents.maxY]);
+  }, [
+    nextGainWindowData.length,
+    nextGainZoomBounds.minTs,
+    nextGainZoomBounds.maxTs,
     nextGainExtents.minY,
     nextGainExtents.maxY,
   ]);
@@ -1922,11 +1894,10 @@ export function DemoGlassTable({
       setChartTicker(ticker);
       setChartSpotExchange(spotExchange);
       setChartFuturesExchange(futuresExchange);
-      setCrossIntent(selectedMetricsIntent);
       setChartProvider("tradingview");
       setIsTradingViewOpen(true);
     },
-    [selectedMetricsIntent]
+    []
   );
 
   // Função para formatar tempo decorrido (igual à tabela antiga)
@@ -1938,6 +1909,14 @@ export function DemoGlassTable({
     if (h > 0) return `${h}h ${m}m ${s}s`;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
+  };
+
+  const formatElapsedHms = (ms: number) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    return `${h}h ${m}m ${s}s`;
   };
 
   const FundingExpiry = ({ expiryTime }: { expiryTime?: number }) => {
@@ -1980,9 +1959,35 @@ export function DemoGlassTable({
 
     if (!validSince) return <span className={styles.chip}>—</span>;
 
+    const elapsedMs = now - validSince;
+    const isFresh = elapsedMs < 60 * 1000;
+
     return (
-      <span className={styles.chip}>
-        {`T: ${formatElapsed(now - validSince)}`}
+      <span
+        className={`${styles.chip} ${isFresh ? styles.chipFresh : ""}`}
+        title="Duração da oportunidade"
+      >
+        <span className={styles.chipIcon} aria-hidden="true">
+          <svg viewBox="0 0 20 20">
+            <circle
+              cx="10"
+              cy="10"
+              r="7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <path
+              d="M10 6v4l3 2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        {formatElapsedHms(elapsedMs)}
       </span>
     );
   };
@@ -2054,6 +2059,17 @@ export function DemoGlassTable({
     }
   });
 
+  // Estado para moedas silenciadas
+  const [mutedTickers, setMutedTickers] = React.useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("mutedTickers");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
   // Estado para modal de confirmação
   const [deleteModal, setDeleteModal] = React.useState<{
     isOpen: boolean;
@@ -2067,6 +2083,12 @@ export function DemoGlassTable({
 
   // Estado para modal de restauração
   const [restoreModal, setRestoreModal] = React.useState<{
+    isOpen: boolean;
+  }>({
+    isOpen: false,
+  });
+
+  const [mutedModal, setMutedModal] = React.useState<{
     isOpen: boolean;
   }>({
     isOpen: false,
@@ -2104,6 +2126,13 @@ export function DemoGlassTable({
   );
   ActionCell.displayName = "ActionCell";
 
+  const alwaysVisibleColumns = ["moeda", "spot", "futuros", "spreads"];
+  const ensureAlwaysVisibleColumns = (columns: Set<string>) => {
+    const next = new Set(columns);
+    for (const id of alwaysVisibleColumns) next.add(id);
+    return next;
+  };
+
   // Estado para colunas visíveis (persistido no localStorage)
   const [visibleColumns, setVisibleColumns] = React.useState<Set<string>>(
     () => {
@@ -2111,36 +2140,38 @@ export function DemoGlassTable({
       try {
         const saved = localStorage.getItem("visibleColumns");
         return saved
-          ? new Set(JSON.parse(saved))
-          : new Set([
-              "moeda",
-              "showCoinLogo",
-              "spot",
-              "futuros",
-              "spreads",
-              "showSpreadBackground",
-              "funding",
-              "tempo",
-              "volumes",
-              "volumes24",
-              "historico",
-              "acoes",
-            ]);
+          ? ensureAlwaysVisibleColumns(new Set(JSON.parse(saved)))
+          : ensureAlwaysVisibleColumns(
+              new Set([
+                "moeda",
+                "showCoinLogo",
+                "spot",
+                "futuros",
+                "spreads",
+                "showSpreadBackground",
+                "funding",
+                "tempo",
+                "historico",
+                "acoes",
+              ])
+            );
       } catch {
-        return new Set([
-          "moeda",
-          "showCoinLogo",
-          "spot",
-          "futuros",
-          "spreads",
-          "showSpreadBackground",
-          "funding",
-          "tempo",
-          "volumes",
-          "volumes24",
-          "historico",
-          "acoes",
-        ]);
+        return ensureAlwaysVisibleColumns(
+          new Set([
+            "moeda",
+            "showCoinLogo",
+            "spot",
+            "futuros",
+            "spreads",
+            "showSpreadBackground",
+            "funding",
+            "tempo",
+            "volumes",
+            "volumes24",
+            "historico",
+            "acoes",
+          ])
+        );
       }
     }
   );
@@ -2167,6 +2198,29 @@ export function DemoGlassTable({
   const isExcluded = React.useCallback(
     (key: string) => excluded.has(key),
     [excluded]
+  );
+
+  const isMuted = React.useCallback(
+    (ticker: string) => mutedTickers.has(ticker),
+    [mutedTickers]
+  );
+
+  const toggleMuteTicker = React.useCallback((ticker: string) => {
+    setMutedTickers((prev) => {
+      const next = new Set(prev);
+      if (next.has(ticker)) {
+        next.delete(ticker);
+      } else {
+        next.add(ticker);
+      }
+      localStorage.setItem("mutedTickers", JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  const getMutedTickers = React.useCallback(
+    () => Array.from(mutedTickers).sort(),
+    [mutedTickers]
   );
 
   // Função para abrir modal de confirmação
@@ -2273,8 +2327,11 @@ export function DemoGlassTable({
       }
 
       // Salvar no localStorage
-      localStorage.setItem("visibleColumns", JSON.stringify([...newVisible]));
-      return newVisible;
+      localStorage.setItem(
+        "visibleColumns",
+        JSON.stringify([...ensureAlwaysVisibleColumns(newVisible)])
+      );
+      return ensureAlwaysVisibleColumns(newVisible);
     });
   };
 
@@ -2309,11 +2366,7 @@ export function DemoGlassTable({
 
   // Configuração das colunas com labels
   const columnConfig = [
-    { id: "moeda", label: "Moeda", required: false },
     { id: "showCoinLogo", label: "Mostrar Logo da Moeda", required: false },
-    { id: "spot", label: "Spot", required: false },
-    { id: "futuros", label: "Futuros", required: false },
-    { id: "spreads", label: "Spreads", required: false },
     {
       id: "showSpreadBackground",
       label: "Mostrar Background do Spread",
@@ -2326,11 +2379,13 @@ export function DemoGlassTable({
     { id: "historico", label: "Histórico", required: false },
     { id: "acoes", label: "Ações", required: false },
   ];
+  const visibleColumnCount = columnConfig.filter((col) =>
+    isColumnVisible(col.id)
+  ).length;
 
   const [rows, setRows] = React.useState<CoinRow[]>([]);
   const pendingRowsRef = React.useRef<CoinRow[]>([]);
   const sortTimerRef = React.useRef<number | null>(null);
-  const metricsCacheRef = React.useRef<Map<string, MetricsUpdate>>(new Map());
 
   const sortRows = React.useCallback(
     (rowsToSort: CoinRow[]) => {
@@ -2477,7 +2532,7 @@ export function DemoGlassTable({
     // Filtrar oportunidades excluídas
     const filteredRows = mappedRows.filter((row) => {
       const key = `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`;
-      return !isExcluded(key);
+      return !isExcluded(key) && !isMuted(row.coin.ticker);
     });
 
     return filteredRows;
@@ -2513,29 +2568,6 @@ export function DemoGlassTable({
   const endIndex = startIndex + clampedItemsPerPage;
   const paginatedRows = rows.slice(startIndex, endIndex);
 
-  React.useEffect(() => {
-    if (!onVisibleMetricsKeysChange) return;
-    const uniqueKeys = new Map<string, MetricsKey>();
-    for (const row of paginatedRows) {
-      const key: MetricsKey = {
-        symbol: `${row.coin.ticker}USDT`,
-        spotExchange: normalizeExchangeLabel(row.spot.bingo),
-        futuresExchange: normalizeExchangeLabel(row.futures.bingo),
-      };
-      const dedupeKey = `${key.symbol}:${key.spotExchange}:${key.futuresExchange}`;
-      if (!uniqueKeys.has(dedupeKey)) {
-        uniqueKeys.set(dedupeKey, key);
-      }
-    }
-    const keys = Array.from(uniqueKeys.values());
-    const signature = keys
-      .map((key) => `${key.symbol}:${key.spotExchange}:${key.futuresExchange}`)
-      .join("|");
-    if (signature === visibleMetricsKeysRef.current) return;
-    visibleMetricsKeysRef.current = signature;
-    onVisibleMetricsKeysChange(keys);
-  }, [onVisibleMetricsKeysChange, paginatedRows]);
-
   // Ajustar página atual se ela for maior que o total de páginas disponíveis
   React.useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
@@ -2559,23 +2591,37 @@ export function DemoGlassTable({
       spotExchange: normalizeExchangeLabel(row.spot.bingo),
       futuresExchange: normalizeExchangeLabel(row.futures.bingo),
     };
-    const lookupKey = metricsKeyString(
-      key,
+    const periods: MetricsPeriod[] = [
       selectedMetricsPeriod,
-      selectedMetricsIntent
-    );
-    const metrics = metricsByKey[lookupKey];
-    if (metrics) {
-      metricsCacheRef.current.set(lookupKey, metrics);
+      "4h",
+      "1h",
+      "12h",
+      "30m",
+      "24h",
+    ];
+    const intents: MetricsIntent[] = [
+      selectedMetricsIntent,
+      "abertura",
+      "fechamento",
+    ];
+    let metrics: MetricsUpdate | undefined;
+    for (const intent of intents) {
+      for (const period of periods) {
+        const lookupKey = metricsKeyString(key, period, intent);
+        const candidate = metricsByKey[lookupKey];
+        if (candidate) {
+          metrics = candidate;
+          break;
+        }
+      }
+      if (metrics) break;
     }
-    const cached = metricsCacheRef.current.get(lookupKey);
-    const finalMetrics = metrics ?? cached;
     return {
-      invertidas: finalMetrics?.invertidas ?? 0,
-      maxOpen: finalMetrics?.maxOpenPct,
-      maxClose: finalMetrics?.maxClosePct,
-      lastInversionMs: finalMetrics?.lastInversionMs,
-      updatedAt: finalMetrics?.updatedAt,
+      invertidas: metrics?.invertidas ?? 0,
+      maxOpen: metrics?.maxOpenPct,
+      maxClose: metrics?.maxClosePct,
+      lastInversionMs: metrics?.lastInversionMs,
+      updatedAt: metrics?.updatedAt,
     };
   };
 
@@ -2584,19 +2630,24 @@ export function DemoGlassTable({
     {
       id: "moeda",
       header: "Moeda",
-      accessor: (r) => (
-        <CoinCell
-          r={r}
-          getOpp={getOpp}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-          showLogo={isElementVisible("showCoinLogo")}
-          toggleGroupExpansion={toggleGroupExpansion}
-          styles={styles}
-        />
-      ),
+      accessor: (r) => {
+        const favoriteKey = `${r.coin.ticker}-${r.spot.bingo}-${r.futures.bingo}`;
+        return (
+          <CoinCell
+            r={r}
+            getOpp={getOpp}
+            showTooltip={showTooltip}
+            hideTooltip={hideTooltip}
+            showLogo={isElementVisible("showCoinLogo")}
+            isFavorited={isFavorite(favoriteKey)}
+            onToggleFavorite={() => toggleFavorite(favoriteKey)}
+            toggleGroupExpansion={toggleGroupExpansion}
+            styles={styles}
+          />
+        );
+      },
 
-      width: "160px",
+      width: "184px",
     },
 
     {
@@ -2621,12 +2672,23 @@ export function DemoGlassTable({
             {r.spot.bingo.replace(/spot|futures/i, "")}
             <Image src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
-          <div className={styles.price}>{r.spot.price}</div>
-          <div className={styles.live}>{r.spot.live}</div>
+          <div className={styles.priceRow}>
+            <div className={styles.price}>{r.spot.price}</div>
+            <div
+              className={styles.priceLiq}
+              title="Liquidez primeira linha (USDT)"
+            >
+              {r.spot.live === "—" ? "—" : r.spot.live.replace(/^Liq\s*/i, "")}
+            </div>
+          </div>
+          {embedVolumeInMarketColumns && (
+            <div className={styles.live} title="Volume 24H (USDT)">
+              VOL: ${r.volumes24h.s.replace(/^S:\s*/i, "")}
+            </div>
+          )}
         </div>
       ),
-      width: "150px",
-      align: "center",
+      width: "140px",
     },
     {
       id: "futuros",
@@ -2650,48 +2712,74 @@ export function DemoGlassTable({
             {r.futures.bingo.replace(/spot|futures/i, "")}
             <Image src="/new-page/link.svg" alt="" width={12} height={12} />
           </div>
-          <div className={styles.price}>{r.futures.price}</div>
-          <div className={styles.live}>{r.futures.live}</div>
+          <div className={styles.priceRow}>
+            <div className={styles.price}>{r.futures.price}</div>
+            <div
+              className={styles.priceLiq}
+              title="Liquidez primeira linha (USDT)"
+            >
+              {r.futures.live === "—"
+                ? "—"
+                : r.futures.live.replace(/^Liq\s*/i, "")}
+            </div>
+          </div>
+          {embedVolumeInMarketColumns && (
+            <div className={styles.live} title="Volume 24H (USDT)">
+              VOL: ${r.volumes24h.f.replace(/^F:\s*/i, "")}
+            </div>
+          )}
         </div>
       ),
-      width: "150px",
-      align: "center",
+      width: "140px",
     },
     {
       id: "spreads",
       header: "Spreads",
-      accessor: (r) => (
-        <div className={styles.cellSplitHorizontal}>
-          <span
-            className={classnames(
-              isExitMode ? styles.negative : styles.positive,
-              styles.bold,
-              isElementVisible("showSpreadBackground") &&
-                classnames(
-                  styles.spreadCell,
-                  isExitMode ? styles.negative : styles.positive
-                )
-            )}
-          >
-            {r.spreads.long}
-          </span>
-          <span
-            className={classnames(
-              isExitMode ? styles.positive : styles.negative,
-              styles.bold,
-              isElementVisible("showSpreadBackground") &&
-                classnames(
-                  styles.spreadCell,
-                  isExitMode ? styles.positive : styles.negative
-                )
-            )}
-          >
-            {r.spreads.short}
-          </span>
-        </div>
-      ),
-      width: "200px",
+      accessor: (r) => {
+        const longValue = parseFloat(r.spreads.long.replace(/[^\d.-]/g, ""));
+        const shortValue = parseFloat(r.spreads.short.replace(/[^\d.-]/g, ""));
+        return (
+          <div className={styles.cellSplitHorizontal}>
+            <span
+              className={classnames(
+                styles.spreadGroup,
+                styles.positive,
+                isElementVisible("showSpreadBackground") &&
+                  classnames(styles.spreadCell, styles.positive)
+              )}
+            >
+              <span className={styles.spreadLabel} title="Lucro entrada">
+                E:
+              </span>
+              <span className={styles.spreadValue}>
+                {Number.isFinite(longValue)
+                  ? `${longValue > 0 ? "+" : ""}${longValue.toFixed(2)}%`
+                  : "—"}
+              </span>
+            </span>
+            <span
+              className={classnames(
+                styles.spreadGroup,
+                styles.negative,
+                isElementVisible("showSpreadBackground") &&
+                  classnames(styles.spreadCell, styles.negative)
+              )}
+            >
+              <span className={styles.spreadLabel} title="Lucro saída">
+                S:
+              </span>
+              <span className={styles.spreadValue}>
+                {Number.isFinite(shortValue)
+                  ? `${shortValue > 0 ? "+" : ""}${shortValue.toFixed(2)}%`
+                  : "—"}
+              </span>
+            </span>
+          </div>
+        );
+      },
+      width: "154px",
       align: "center",
+      className: styles.colSpread,
     },
     {
       id: "funding",
@@ -2723,7 +2811,8 @@ export function DemoGlassTable({
           </div>
         );
       },
-      width: "100px",
+      width: "108px",
+      align: "right",
     },
 
     {
@@ -2735,7 +2824,9 @@ export function DemoGlassTable({
           <span className={styles.muted}>{r.volumes.f}</span>
         </div>
       ),
-      width: "120px",
+      width: "78px",
+      align: "right",
+      className: styles.colCompact,
     },
     {
       id: "volumes24",
@@ -2746,7 +2837,9 @@ export function DemoGlassTable({
           <span className={styles.muted}>{r.volumes24h.f}</span>
         </div>
       ),
-      width: "140px",
+      width: "90px",
+      align: "right",
+      className: styles.colCompact,
     },
     {
       id: "historico",
@@ -2754,16 +2847,17 @@ export function DemoGlassTable({
         <div className={styles.historyHeader}>
           <span>Histórico</span>
           <select
-            className={styles.historyHeaderSelect}
+            className={styles.historyPeriodSelect}
             value={selectedMetricsPeriod}
             onChange={(e) =>
               handleMetricsPeriodChange(e.target.value as MetricsPeriod)
             }
+            aria-label="Período das métricas"
           >
-            <option value="12h">12h</option>
-            <option value="4h">4h</option>
-            <option value="1h">1h</option>
             <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="4h">4h</option>
+            <option value="12h">12h</option>
           </select>
         </div>
       ),
@@ -2782,42 +2876,15 @@ export function DemoGlassTable({
           );
         return (
           <div className={styles.historyCell}>
-            <div className={styles.historyTitle}>
-              <span className={styles.historyCount}>{invertidas}</span>
-              <span className={styles.historyLabelText}>invertidas</span>
-              <span className={styles.historyMeta}>
-                <button
-                  className={styles.historyChartBtn}
-                  type="button"
-                  aria-label="Abrir Grafico"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onOpenChart();
-                  }}
-                >
-                  <span className={styles.historyIcon}>
-                    <svg viewBox="0 0 20 20" aria-hidden="true">
-                      <path
-                        d="M3 14l4-4 3 3 5-6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M3 17h14"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </span>
-                </button>
+            <div className={styles.historyInner}>
+              <div className={styles.historyTitle}>
+                <span className={styles.historyCount}>{invertidas}</span>
+                <span className={styles.historyLabelText}>invertidas</span>
                 {age && (
-                  <span className={styles.historyAge}>
+                  <span
+                    className={styles.historyAge}
+                    title="Duração da última invertida"
+                  >
                     <span className={styles.historyIcon}>
                       <svg viewBox="0 0 20 20" aria-hidden="true">
                         <circle
@@ -2841,46 +2908,65 @@ export function DemoGlassTable({
                     {age}
                   </span>
                 )}
-              </span>
-            </div>
-            <div className={styles.historyRow}>
-              <span className={styles.historyMiniLabel}>↑ A</span>
-              <span
-                className={classnames(
-                  styles.historyValue,
-                  typeof maxOpen === "number"
-                    ? maxOpen >= 0
-                      ? styles.positive
-                      : styles.negative
-                    : undefined
-                )}
-              >
-                {typeof maxOpen === "number" ? `${maxOpen.toFixed(2)}%` : "—"}
-              </span>
-              <span className={styles.historyMiniLabel}>↑ F</span>
-              <span
-                className={classnames(
-                  styles.historyValue,
-                  typeof maxClose === "number"
-                    ? maxClose >= 0
-                      ? styles.positive
-                      : styles.negative
-                    : undefined
-                )}
-              >
-                {typeof maxClose === "number" ? `${maxClose.toFixed(2)}%` : "—"}
-              </span>
+              </div>
+              <div className={styles.historyRow}>
+                <span className={styles.historyPair}>
+                  <span
+                    className={styles.historyMiniLabel}
+                    title={`Maior spread de abertura (${selectedMetricsPeriod})`}
+                  >
+                    ↑ A
+                  </span>
+                  <span
+                    className={classnames(
+                      styles.historyValue,
+                      typeof maxOpen === "number"
+                        ? maxOpen >= 0
+                          ? styles.positive
+                          : styles.negative
+                        : undefined
+                    )}
+                  >
+                    {typeof maxOpen === "number"
+                      ? `${maxOpen > 0 ? "+" : ""}${maxOpen.toFixed(2)}%`
+                      : "—"}
+                  </span>
+                </span>
+                <span className={styles.historyPair}>
+                  <span
+                    className={styles.historyMiniLabel}
+                    title={`Maior spread de fechamento (${selectedMetricsPeriod})`}
+                  >
+                    ↑ F
+                  </span>
+                  <span
+                    className={classnames(
+                      styles.historyValue,
+                      typeof maxClose === "number"
+                        ? maxClose >= 0
+                          ? styles.positive
+                          : styles.negative
+                        : undefined
+                    )}
+                  >
+                    {typeof maxClose === "number"
+                      ? `${maxClose > 0 ? "+" : ""}${maxClose.toFixed(2)}%`
+                      : "—"}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
         );
       },
-      width: "200px",
+      width: "188px",
+      className: styles.colHistoryCompact,
     },
     {
       id: "tempo",
       header: "Tempo",
       accessor: (r) => <TempoCell validSince={r.validSince} />,
-      width: "100px",
+      width: "116px",
       align: "center",
     },
     {
@@ -2891,22 +2977,26 @@ export function DemoGlassTable({
           ticker={row.coin.ticker}
           spotExchange={row.spot.bingo}
           futuresExchange={row.futures.bingo}
-          isFavorited={isFavorite(
-            `${row.coin.ticker}-${row.spot.bingo}-${row.futures.bingo}`
-          )}
-          onToggleFavorite={toggleFavorite}
+          isMuted={isMuted(row.coin.ticker)}
+          onToggleMute={toggleMuteTicker}
           onOpenOpportunity={handleOpenOpportunity}
           onOpenTradingView={handleTradingViewClick}
           onDelete={openDeleteModal}
           styles={styles}
         />
       ),
-      width: "140px",
+      width: "122px",
+      align: "center",
     },
   ];
 
   // Filtrar colunas visíveis
-  const columns = allColumns.filter((col) => isColumnVisible(col.id));
+  const columns = allColumns.filter((col) => {
+    if (col.id === "volumes24") {
+      return !embedVolumeInMarketColumns;
+    }
+    return isColumnVisible(col.id);
+  });
 
   // Estado para detectar mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -3119,7 +3209,10 @@ export function DemoGlassTable({
                       </span>
                     </button>
                     {age && (
-                      <span className={styles.historyAge}>
+                      <span
+                        className={styles.historyAge}
+                        title="Duração da última invertida"
+                      >
                         <span className={styles.historyIcon}>
                           <svg viewBox="0 0 20 20" aria-hidden="true">
                             <circle
@@ -3145,7 +3238,12 @@ export function DemoGlassTable({
                     )}
                   </div>
                   <div className={styles.historyRow}>
-                    <span className={styles.historyMiniLabel}>↑ A</span>
+                    <span
+                      className={styles.historyMiniLabel}
+                      title={`Maior spread de abertura (${selectedMetricsPeriod})`}
+                    >
+                      ↑ A
+                    </span>
                     <span
                       className={classnames(
                         styles.historyValue,
@@ -3160,7 +3258,12 @@ export function DemoGlassTable({
                         ? `${maxOpen.toFixed(2)}%`
                         : "—"}
                     </span>
-                    <span className={styles.historyMiniLabel}>↑ F</span>
+                    <span
+                      className={styles.historyMiniLabel}
+                      title={`Maior spread de fechamento (${selectedMetricsPeriod})`}
+                    >
+                      ↑ F
+                    </span>
                     <span
                       className={classnames(
                         styles.historyValue,
@@ -3275,6 +3378,19 @@ export function DemoGlassTable({
                 <CalculatorTableIcon />
               </button>
               <button
+                className={`${styles.cardActionBtn} ${
+                  isMuted(row.coin.ticker) ? styles.mutedAction : ""
+                }`}
+                onClick={() => toggleMuteTicker(row.coin.ticker)}
+                title={
+                  isMuted(row.coin.ticker)
+                    ? "Reativar moeda"
+                    : "Silenciar moeda"
+                }
+              >
+                <MuteIcon />
+              </button>
+              <button
                 className={styles.cardActionBtn}
                 onClick={() =>
                   openDeleteModal(
@@ -3296,18 +3412,71 @@ export function DemoGlassTable({
   // Renderiza cards mobile
   const renderMobileCards = () => {
     if (paginatedRows.length === 0) {
-      return (
-        <div className={styles.emptyCards}>
-          <PacmanLoader color="#7B61FF" size={30} />
-          <p>Carregando oportunidades...</p>
-        </div>
-      );
+      if (isLoading) {
+        return (
+          <div className={styles.emptyCards}>
+            <PacmanLoader color="#7B61FF" size={30} />
+            <p>Carregando oportunidades...</p>
+          </div>
+        );
+      }
+      return <div className={styles.emptyCards}>{emptyStateNode}</div>;
     }
 
     return paginatedRows.map((r) => (
       <MobileOpportunityCard key={r.id} row={r} />
     ));
   };
+
+  const activeFilterLabels = (activeFilters ?? []).filter(Boolean);
+  const showClearFilters = activeFilterLabels.length > 0 && onClearFilters;
+
+  const filterSummaryNode =
+    activeFilterLabels.length > 0 ? (
+      <div className={styles.filterSummaryInner}>
+        <span className={styles.filterLabel}>Filtros ativos:</span>
+        <div className={styles.filterChips}>
+          {activeFilterLabels.map((label) => (
+            <span key={label} className={styles.filterChip}>
+              {label}
+            </span>
+          ))}
+        </div>
+        {showClearFilters && (
+          <button
+            type="button"
+            className={styles.clearFiltersBtn}
+            onClick={onClearFilters}
+          >
+            Limpar filtros
+          </button>
+        )}
+      </div>
+    ) : null;
+
+  const emptyStateNode = (
+    <div className={styles.emptyStateCard}>
+      <div className={styles.emptyTitle}>Nenhuma oportunidade</div>
+      <div className={styles.emptyBody}>
+        {isSocketPaused
+          ? "Atualizações pausadas. Retome o socket para ver novas oportunidades."
+          : isConnected
+          ? activeFilterLabels.length > 0
+            ? "Os filtros atuais estão muito restritivos."
+            : "Ainda não há oportunidades disponíveis."
+          : "Conectando ao servidor..."}
+      </div>
+      {showClearFilters && (
+        <button
+          type="button"
+          className={styles.emptyAction}
+          onClick={onClearFilters}
+        >
+          Limpar filtros
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -3317,7 +3486,7 @@ export function DemoGlassTable({
       )}
 
       {/* Botão Flutuante de Paginação Mobile */}
-      {isMobile && totalPages > 1 && (
+      {isMobile && totalItems > 0 && (
         <button
           className={styles.paginationFloatingBtn}
           onClick={() => {
@@ -3518,6 +3687,7 @@ export function DemoGlassTable({
         data={paginatedRows}
         rowKey={(r) => r.id}
         maxHeight={560}
+        dense={isDenseMode}
         virtualized
         zebra
         onRowClick={(r) => console.log("click row:", r.id)}
@@ -3527,6 +3697,9 @@ export function DemoGlassTable({
         isExitMode={isExitMode}
         onToggleExitMode={onToggleExitMode}
         onCustomButtonClick={onCustomButtonClick}
+        isLoading={Boolean(isLoading)}
+        emptyState={emptyStateNode}
+        filterSummary={filterSummaryNode}
         // Adicionar botões extras na toolbar
         toolbarExtra={
           <>
@@ -3550,6 +3723,17 @@ export function DemoGlassTable({
                 title={`${excluded.size} oportunidade(s) excluída(s)`}
               >
                 <TrashIcon />
+              </button>
+            )}
+            {mutedTickers.size > 0 && (
+              <button
+                type="button"
+                className={styles.iconGlass}
+                aria-label="Gerenciar Silenciadas"
+                onClick={() => setMutedModal({ isOpen: true })}
+                title={`${mutedTickers.size} moeda(s) silenciada(s)`}
+              >
+                <MuteIcon />
               </button>
             )}
             {isSocketPaused !== undefined && onToggleSocketPause && (
@@ -3589,12 +3773,18 @@ export function DemoGlassTable({
           </>
         }
       />
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
+
+      {/* Paginação */}
+      {
+        <div className={`${styles.pagination} ${styles.paginationTextOnly}`}>
           <div className={styles.paginationInfo}>
             <span>
-              Mostrando {startIndex + 1} - {Math.min(endIndex, totalItems)} de{" "}
-              {totalItems} oportunidades
+              {totalItems > 0
+                ? `Mostrando ${startIndex + 1} - ${Math.min(
+                    endIndex,
+                    totalItems
+                  )} de ${totalItems} oportunidades`
+                : "Sem oportunidades no momento"}
             </span>
             <div className={styles.itemsPerPage}>
               <label>
@@ -3677,7 +3867,7 @@ export function DemoGlassTable({
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* Modal de Confirmação de Exclusão */}
       {deleteModal.isOpen && (
@@ -3723,23 +3913,94 @@ export function DemoGlassTable({
       {/* Modal de Restauração de Oportunidades */}
       {restoreModal.isOpen && (
         <div className={styles.modalOverlay}>
+          <div className={`${styles.modal} ${styles.restoreNarrowPanel}`}>
+            <div className={styles.restoreNarrowBody}>
+              <div className={styles.restoreModalBody}>
+                <div className={styles.restoreConfigV2}>
+                  <div className={styles.restoreInlineHeader}>
+                    <h3 className={styles.restoreInlineTitle}>
+                      Oportunidades Excluídas
+                      <TrashIcon className={styles.restoreInlineTitleIcon} />
+                    </h3>
+                    <button
+                      type="button"
+                      className={styles.restoreInlineClose}
+                      onClick={() => setRestoreModal({ isOpen: false })}
+                      aria-label="Fechar modal de oportunidades excluídas"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div className={styles.restoreIntroCard}>
+                    <h4 className={styles.restoreIntroTitle}>
+                      Restauração de Oportunidades
+                    </h4>
+                    <p className={styles.restoreIntroText}>
+                      Selecione as oportunidades que deseja restaurar para
+                      voltarem ao monitor.
+                    </p>
+                    <p className={styles.restoreIntroMeta}>
+                      {excluded.size} oportunidade(s) excluída(s)
+                    </p>
+                  </div>
+
+                  <div className={styles.excludedList}>
+                    {getExcludedOpportunities().map((opp) => (
+                      <div key={opp.key} className={styles.excludedItem}>
+                        <div className={styles.excludedInfo}>
+                          <strong>{opp.name}</strong>
+                        </div>
+                        <button
+                          className={styles.restoreButton}
+                          onClick={() => restoreOpportunity(opp.key)}
+                        >
+                          Restaurar
+                        </button>
+                      </div>
+                    ))}
+                    {getExcludedOpportunities().length === 0 && (
+                      <div className={styles.restoreEmptyState}>
+                        Nenhuma oportunidade excluída no momento.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div
+                className={`${styles.modalButtons} ${styles.restoreModalActions}`}
+              >
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setRestoreModal({ isOpen: false })}
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mutedModal.isOpen && (
+        <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
-              <h3>Oportunidades Excluídas</h3>
+              <h3>Moedas Silenciadas</h3>
             </div>
             <div className={styles.modalContent}>
-              <p>Selecione as oportunidades que deseja restaurar:</p>
+              <p>Selecione as moedas que deseja reativar:</p>
               <div className={styles.excludedList}>
-                {getExcludedOpportunities().map((opp) => (
-                  <div key={opp.key} className={styles.excludedItem}>
+                {getMutedTickers().map((ticker) => (
+                  <div key={ticker} className={styles.excludedItem}>
                     <div className={styles.excludedInfo}>
-                      <strong>{opp.name}</strong>
+                      <strong>{ticker}</strong>
                     </div>
                     <button
                       className={styles.restoreButton}
-                      onClick={() => restoreOpportunity(opp.key)}
+                      onClick={() => toggleMuteTicker(ticker)}
                     >
-                      Restaurar
+                      Reativar
                     </button>
                   </div>
                 ))}
@@ -3748,7 +4009,7 @@ export function DemoGlassTable({
             <div className={styles.modalButtons}>
               <button
                 className={styles.cancelButton}
-                onClick={() => setRestoreModal({ isOpen: false })}
+                onClick={() => setMutedModal({ isOpen: false })}
               >
                 Fechar
               </button>
@@ -3760,43 +4021,95 @@ export function DemoGlassTable({
       {/* Modal de Configuração de Colunas */}
       {columnConfigModal.isOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h3>Configurar Colunas</h3>
-            </div>
-            <div className={styles.modalContent}>
-              <p>Selecione quais colunas deseja exibir na tabela:</p>
-              <div className={styles.columnList}>
-                {columnConfig.map((col) => (
-                  <div key={col.id} className={styles.columnItem}>
-                    <div className={styles.columnInfo}>
-                      <strong>{col.label}</strong>
-                      {col.required && (
-                        <span className={styles.requiredBadge}>
-                          Obrigatória
-                        </span>
-                      )}
-                    </div>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={isColumnVisible(col.id)}
-                        onChange={() => toggleColumn(col.id)}
-                        disabled={col.required}
-                      />
-                      <span className={styles.slider}></span>
-                    </label>
+          <div className={`${styles.modal} ${styles.settingsNarrowPanel}`}>
+            <div className={styles.settingsNarrowBody}>
+              <div className={styles.settingsModalBody}>
+                <div className={styles.settingsConfigV2}>
+                  <div className={styles.settingsInlineHeader}>
+                    <h3 className={styles.settingsInlineTitle}>
+                      Configurar Colunas
+                      <ConfigIcon className={styles.settingsInlineTitleIcon} />
+                    </h3>
+                    <button
+                      type="button"
+                      className={styles.settingsInlineClose}
+                      onClick={() => setColumnConfigModal({ isOpen: false })}
+                      aria-label="Fechar modal de configurações"
+                    >
+                      ×
+                    </button>
                   </div>
-                ))}
+
+                  <div className={styles.settingsIntroCard}>
+                    <h4 className={styles.settingsIntroTitle}>
+                      Visibilidade da Tabela
+                    </h4>
+                    <p className={styles.settingsIntroText}>
+                      Defina quais colunas e densidade devem aparecer no
+                      monitor.
+                    </p>
+                    <p className={styles.settingsIntroMeta}>
+                      {visibleColumnCount} de {columnConfig.length} colunas
+                      ativas
+                    </p>
+                  </div>
+
+                  <div className={styles.settingsGrid}>
+                    <div className={styles.settingsItem}>
+                      <div className={styles.settingsItemInfo}>
+                        <span className={styles.settingsItemLabel}>
+                          Densidade da tabela
+                        </span>
+                        <span className={styles.settingsItemMeta}>
+                          {isDenseMode ? "Compacta" : "Confortável"}
+                        </span>
+                      </div>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={isDenseMode}
+                          onChange={() => setIsDenseMode((prev) => !prev)}
+                        />
+                        <span className={styles.slider}></span>
+                      </label>
+                    </div>
+
+                    {columnConfig.map((col) => (
+                      <div key={col.id} className={styles.settingsItem}>
+                        <div className={styles.settingsItemInfo}>
+                          <span className={styles.settingsItemLabel}>
+                            {col.label}
+                          </span>
+                          {col.required && (
+                            <span className={styles.requiredBadge}>
+                              Obrigatória
+                            </span>
+                          )}
+                        </div>
+                        <label className={styles.switch}>
+                          <input
+                            type="checkbox"
+                            checked={isColumnVisible(col.id)}
+                            onChange={() => toggleColumn(col.id)}
+                            disabled={col.required}
+                          />
+                          <span className={styles.slider}></span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className={styles.modalButtons}>
-              <button
-                className={styles.cancelButton}
-                onClick={() => setColumnConfigModal({ isOpen: false })}
+              <div
+                className={`${styles.modalButtons} ${styles.settingsModalActions}`}
               >
-                Fechar
-              </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setColumnConfigModal({ isOpen: false })}
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -3804,23 +4117,8 @@ export function DemoGlassTable({
 
       {/* Modal de Grafico */}
       {isTradingViewOpen && (
-        <div
-          className={classnames(
-            styles.modalOverlay,
-            styles.chartModalOverlay,
-            isSidebarOpen
-              ? styles.chartModalOverlaySidebarOpen
-              : styles.chartModalOverlaySidebarClosed
-          )}
-        >
-          <div
-            className={classnames(
-              styles.modalLarge,
-              isSidebarOpen
-                ? styles.modalLargeSidebarOpen
-                : styles.modalLargeSidebarClosed
-            )}
-          >
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalLarge}>
             <button
               onClick={() => setIsTradingViewOpen(false)}
               className={styles.closeButton}
@@ -3885,6 +4183,7 @@ export function DemoGlassTable({
                           )
                         }
                       >
+                        <option value="24h">24h</option>
                         <option value="12h">12h</option>
                         <option value="4h">4h</option>
                         <option value="1h">1h</option>
@@ -3990,16 +4289,8 @@ export function DemoGlassTable({
                           </span>
                         </div>
                       </div>
-                      {nextGainLoadingHint && (
-                        <span
-                          className={classnames(
-                            styles.chartLoadingHint,
-                            nextGainError && styles.chartLoadingHintError
-                          )}
-                        >
-                          {nextGainLoadingHint}
-                        </span>
-                      )}
+                      {nextGainLoading && <span>Carregando...</span>}
+                      {nextGainError && <span>{nextGainError}</span>}
                     </div>
                   </div>
                   <div
@@ -4018,8 +4309,8 @@ export function DemoGlassTable({
                       if (width <= 0 || height <= 0) return;
 
                       const xDomain = nextGainXDomain ?? [
-                        nextGainExtents.minTs,
-                        nextGainExtents.maxTs,
+                        nextGainZoomBounds.minTs,
+                        nextGainZoomBounds.maxTs,
                       ];
                       const yDomain = nextGainYDomain ?? [
                         nextGainExtents.minY,
@@ -4033,6 +4324,8 @@ export function DemoGlassTable({
                       if (!Number.isFinite(rangeX) || !Number.isFinite(rangeY))
                         return;
 
+                      if (!Number.isFinite(event.deltaY) || event.deltaY === 0)
+                        return;
                       const zoomIn = event.deltaY < 0;
                       const zoomFactor = zoomIn ? 0.9 : 1.1;
                       const ratioX = x / width;
@@ -4047,7 +4340,8 @@ export function DemoGlassTable({
 
                       const minRangeX = Math.max(
                         5000,
-                        (nextGainExtents.maxTs - nextGainExtents.minTs) / 500
+                        (nextGainZoomBounds.maxTs - nextGainZoomBounds.minTs) /
+                          500
                       );
                       const minRangeY = Math.max(
                         Number.EPSILON,
@@ -4082,8 +4376,8 @@ export function DemoGlassTable({
                       const [clampedXMin, clampedXMax] = clampDomain(
                         nextXMin,
                         nextXMax,
-                        nextGainExtents.minTs,
-                        nextGainExtents.maxTs,
+                        nextGainZoomBounds.minTs,
+                        nextGainZoomBounds.maxTs,
                         minRangeX
                       );
                       const [clampedYMin, clampedYMax] = clampDomain(
@@ -4113,8 +4407,8 @@ export function DemoGlassTable({
                         startX: event.clientX - rect.left,
                         startY: event.clientY - rect.top,
                         xDomain: nextGainXDomain ?? [
-                          nextGainExtents.minTs,
-                          nextGainExtents.maxTs,
+                          nextGainZoomBounds.minTs,
+                          nextGainZoomBounds.maxTs,
                         ],
                         yDomain: nextGainYDomain ?? [
                           nextGainExtents.minY,
@@ -4173,8 +4467,8 @@ export function DemoGlassTable({
                       const [clampedXMin, clampedXMax] = clampDomain(
                         nextX[0],
                         nextX[1],
-                        nextGainExtents.minTs,
-                        nextGainExtents.maxTs
+                        nextGainZoomBounds.minTs,
+                        nextGainZoomBounds.maxTs
                       );
                       const [clampedYMin, clampedYMax] = clampDomain(
                         nextY[0],
@@ -4193,38 +4487,74 @@ export function DemoGlassTable({
                       panStateRef.current = null;
                     }}
                     onDoubleClick={() => {
-                      setNextGainXDomain([
-                        nextGainExtents.minTs,
-                        nextGainExtents.maxTs,
-                      ]);
-                      setNextGainYDomain([
-                        nextGainExtents.minY,
-                        nextGainExtents.maxY,
-                      ]);
+                      resetNextGainZoom();
                     }}
                   >
-                    {isNextGainChartReady ? (
+                    {!nextGainLoading && nextGainWindowData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={nextGainWindowData}>
-                          <CartesianGrid stroke="rgba(255,255,255,0.08)" />
+                          <defs>
+                            <linearGradient
+                              id="chartSpotFill"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="0%"
+                                stopColor="rgba(109, 225, 255, 0.26)"
+                              />
+                              <stop
+                                offset="100%"
+                                stopColor="rgba(109, 225, 255, 0.00)"
+                              />
+                            </linearGradient>
+                            <linearGradient
+                              id="chartFuturesFill"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="0%"
+                                stopColor="rgba(180, 117, 255, 0.25)"
+                              />
+                              <stop
+                                offset="100%"
+                                stopColor="rgba(180, 117, 255, 0.00)"
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            stroke="rgba(255,255,255,0.09)"
+                            strokeDasharray="2 8"
+                            vertical={false}
+                            horizontal={true}
+                          />
                           <XAxis
                             dataKey="ts"
                             type="number"
                             domain={nextGainXDomain ?? ["auto", "auto"]}
                             minTickGap={40}
+                            axisLine={false}
+                            tickLine={false}
                             tickFormatter={(value) =>
                               formatTimeLabel(value as number)
                             }
                             tick={{
-                              fill: "rgba(255,255,255,0.6)",
-                              fontSize: 11,
+                              fill: "rgba(255,255,255,0.54)",
+                              fontSize: 10,
                             }}
                           />
                           <YAxis
                             domain={nextGainYDomain ?? ["auto", "auto"]}
+                            axisLine={false}
+                            tickLine={false}
                             tick={{
-                              fill: "rgba(255,255,255,0.6)",
-                              fontSize: 11,
+                              fill: "rgba(255,255,255,0.54)",
+                              fontSize: 10,
                             }}
                           />
                           <Tooltip
@@ -4237,18 +4567,38 @@ export function DemoGlassTable({
                               />
                             )}
                           />
-                          <Line
-                            type="stepAfter"
+                          <Area
+                            type="monotone"
                             dataKey="spot"
-                            stroke="#38BDF8"
-                            strokeWidth={1.6}
-                            dot={false}
+                            stroke="none"
+                            fill="url(#chartSpotFill)"
+                            isAnimationActive={false}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="futures"
+                            stroke="none"
+                            fill="url(#chartFuturesFill)"
+                            isAnimationActive={false}
                           />
                           <Line
-                            type="stepAfter"
+                            type="monotone"
+                            dataKey="spot"
+                            stroke="#67deff"
+                            strokeWidth={1.7}
+                            dot={false}
+                            activeDot={{
+                              r: 3,
+                              fill: "#8ae7ff",
+                              stroke: "#0f111c",
+                              strokeWidth: 1.5,
+                            }}
+                          />
+                          <Line
+                            type="monotone"
                             dataKey="futures"
-                            stroke="#F472B6"
-                            strokeWidth={1.6}
+                            stroke="#b979ff"
+                            strokeWidth={1.9}
                             dot={(props: any) => {
                               const { cx, cy, payload } = props;
                               if (!payload || !nextGainPeakTs.has(payload.ts)) {
@@ -4258,19 +4608,29 @@ export function DemoGlassTable({
                                 <circle
                                   cx={cx}
                                   cy={cy}
-                                  r={6}
+                                  r={5}
                                   fill="none"
-                                  stroke="#ffffff"
-                                  strokeWidth={2}
+                                  stroke="#f7f4ff"
+                                  strokeWidth={1.8}
                                 />
                               );
+                            }}
+                            activeDot={{
+                              r: 3,
+                              fill: "#d3b2ff",
+                              stroke: "#0f111c",
+                              strokeWidth: 1.5,
                             }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
                       <div className={styles.chartEmpty}>
-                        {nextGainLoadingHint ?? "Sem dados para este ticker."}
+                        {nextGainLoading
+                          ? "Carregando dados..."
+                          : nextGainError
+                          ? nextGainError
+                          : "Sem dados para este ticker."}
                       </div>
                     )}
                   </div>

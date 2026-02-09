@@ -9,6 +9,10 @@ type Props = {
   title?: string;
   onClose: () => void;
   children?: React.ReactNode;
+  compactHeader?: boolean;
+  shellless?: boolean;
+  panelClassName?: string;
+  bodyClassName?: string;
 };
 
 export default function GlassModal({
@@ -16,6 +20,10 @@ export default function GlassModal({
   title,
   onClose,
   children,
+  compactHeader = false,
+  shellless = false,
+  panelClassName,
+  bodyClassName,
 }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -64,26 +72,40 @@ export default function GlassModal({
   return (
     <div className={styles.overlay} onClick={backdropClick}>
       <div
-        className={styles.panel}
+        className={`${styles.panel} ${shellless ? styles.shelllessPanel : ""} ${
+          panelClassName ?? ""
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="gm-title"
         tabIndex={-1}
         ref={panelRef}
       >
-        <header className={styles.header}>
-          <h2 id="gm-title" className={styles.title}>
-            {title ?? "Adicionar exchange"}
-          </h2>
-          <button
-            className={styles.close}
-            aria-label="Fechar"
-            onClick={() => onCloseRef.current()}
+        {!shellless && (
+          <header
+            className={`${styles.header} ${
+              compactHeader ? styles.compactHeader : ""
+            }`}
           >
-            <span className={styles.closeGlyph}>×</span>
-          </button>
-        </header>
-        <div className={styles.body}>{children}</div>
+            <h2 id="gm-title" className={styles.title}>
+              {title ?? "Adicionar exchange"}
+            </h2>
+            <button
+              className={styles.close}
+              aria-label="Fechar"
+              onClick={() => onCloseRef.current()}
+            >
+              <span className={styles.closeGlyph}>×</span>
+            </button>
+          </header>
+        )}
+        <div
+          className={`${styles.body} ${shellless ? styles.shelllessBody : ""} ${
+            bodyClassName ?? ""
+          }`}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

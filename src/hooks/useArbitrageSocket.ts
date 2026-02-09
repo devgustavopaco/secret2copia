@@ -3,48 +3,24 @@ import { io, Socket } from "socket.io-client";
 import { ArbitrageOpportunity } from "../server/router/orderbook";
 
 type MetricsIntent = "abertura" | "fechamento";
-type MetricsPeriod = "30m" | "1h" | "4h" | "12h";
-export type SocketMetricsKey = {
+type MetricsPeriod = "30m" | "1h" | "4h" | "12h" | "24h";
+type MetricsKey = {
   symbol: string;
   spotExchange: string;
   futuresExchange: string;
 };
-type MetricsKey = SocketMetricsKey;
 type MetricsUpdate = {
   key: MetricsKey;
   period: MetricsPeriod;
   intent: MetricsIntent;
-  includeHistory?: boolean;
   maxOpenPct?: number;
   maxClosePct?: number;
   invertidas?: number;
   lastInversionMs?: number;
   lastInversionAt?: number;
-  history?: Array<{
-    ts: number;
-    spot: number;
-    futures: number;
-    spotBid?: number;
-    spotAsk?: number;
-    futuresBid?: number;
-    futuresAsk?: number;
-  }>;
   updatedAt: number;
 };
 type MetricsUpdateBatch = { updates: MetricsUpdate[] };
-export type MetricsHistoryTarget = {
-  symbol: string;
-  spotExchange: string;
-  futuresExchange: string;
-  period?: MetricsPeriod;
-  intent?: MetricsIntent;
-};
-type ArbitrageDelta = {
-  symbol: string;
-  upserts: ArbitrageOpportunity[];
-  deletes: string[];
-};
-type ArbitrageDeltaBatch = { updates: ArbitrageDelta[]; sentAt?: number };
 
 const SOCKET_URL = "https://almeidashop.shop/";
 const keyOf = (opp: ArbitrageOpportunity) =>
@@ -94,12 +70,8 @@ export function useArbitrageSocket(
   lite: boolean = false,
   minSpread?: number,
   metricsPeriod: MetricsPeriod = "4h",
-  metricsIntent: MetricsIntent = "abertura",
-  deltaMode: "single" | "batch" = "single",
-  historyTarget?: MetricsHistoryTarget | null,
-  visibleMetricsKeys?: SocketMetricsKey[] | null
+  metricsIntent: MetricsIntent = "abertura"
 ) {
-  const METRICS_MAX_KEYS = 200;
   // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
 
@@ -136,15 +108,7 @@ export function useArbitrageSocket(
   const [metricsByKey, setMetricsByKey] = useState<
     Record<string, MetricsUpdate>
   >({});
-  const [metricsHistoryByKey, setMetricsHistoryByKey] = useState<
-    Record<string, MetricsUpdate>
-  >({});
   const metricsKeysRef = useRef<Set<string>>(new Set());
-  const historySubRef = useRef<{
-    key: MetricsKey;
-    period: MetricsPeriod;
-    intent: MetricsIntent;
-  } | null>(null);
   const prevMetricsConfigRef = useRef({
     period: metricsPeriod,
     intent: metricsIntent,
@@ -156,23 +120,6 @@ export function useArbitrageSocket(
   const prevBuyRef = useRef<string[]>(normList(buyExchanges));
   const prevSellRef = useRef<string[]>(normList(sellExchanges));
   const [isConnected, setIsConnected] = useState(false);
-  const useExplicitMetricsKeys = visibleMetricsKeys !== undefined;
-  const normalizeMetricsKey = (raw: SocketMetricsKey): MetricsKey | null => {
-    const symbol = String(raw?.symbol ?? "")
-      .toUpperCase()
-      .trim()
-      .replace(/[^A-Z0-9]/g, "");
-    const spotExchange = normalizeExchangeName(String(raw?.spotExchange ?? ""));
-    const futuresExchange = normalizeExchangeName(
-      String(raw?.futuresExchange ?? "")
-    );
-    if (!symbol || !spotExchange || !futuresExchange) return null;
-    return {
-      symbol: symbol.endsWith("USDT") ? symbol : `${symbol}USDT`,
-      spotExchange,
-      futuresExchange,
-    };
-  };
 
   useEffect(() => {
     if (isPaused) {
@@ -196,7 +143,6 @@ export function useArbitrageSocket(
         sellExchanges,
         lite,
         minSpread,
-        deltaMode,
       });
     };
 
@@ -207,17 +153,6 @@ export function useArbitrageSocket(
         rafId = null;
         setOpportunities(Array.from(indexRef.current.values()));
       });
-    };
-    const applyDelta = (payload: ArbitrageDelta) => {
-      const { symbol, upserts, deletes } = payload;
-      for (const opp of upserts) {
-        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
-        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
-        indexRef.current.set(keyOf(opp), opp);
-      }
-      for (const pair of deletes) {
-        indexRef.current.delete(keyFromPair(symbol, pair));
-      }
     };
 
     s.on("connect", () => {
@@ -248,70 +183,29 @@ export function useArbitrageSocket(
         ? (payload as MetricsUpdateBatch).updates
         : [payload as MetricsUpdate];
       setMetricsByKey((prev) => {
-        let changed = false;
         const next = { ...prev };
         for (const update of updates) {
           if (!update?.key) continue;
           const k = metricsKeyString(update.key, update.period, update.intent);
-          const isHistoryUpdate =
-            update.includeHistory === true ||
-            (update.includeHistory == null && Array.isArray(update.history));
-          if (isHistoryUpdate) {
-            const prevValue = next[k];
-            if (
-              !prevValue ||
-              Number(update.updatedAt ?? 0) >= Number(prevValue.updatedAt ?? 0)
-            ) {
-              next[k] = {
-                key: update.key,
-                period: update.period,
-                intent: update.intent,
-                includeHistory: false,
-                maxOpenPct: update.maxOpenPct,
-                maxClosePct: update.maxClosePct,
-                invertidas: update.invertidas,
-                lastInversionMs: update.lastInversionMs,
-                lastInversionAt: update.lastInversionAt,
-                updatedAt: update.updatedAt,
-              };
-              changed = true;
-            }
-            continue;
-          }
           next[k] = update;
-          changed = true;
         }
-        return changed ? next : prev;
-      });
-      setMetricsHistoryByKey((prev) => {
-        let changed = false;
-        const next = { ...prev };
-        for (const update of updates) {
-          if (!update?.key) continue;
-          const isHistoryUpdate =
-            update.includeHistory === true ||
-            (update.includeHistory == null && Array.isArray(update.history));
-          if (!isHistoryUpdate) continue;
-          const k = metricsKeyString(update.key, update.period, update.intent);
-          const prevValue = next[k];
-          if (!update.history?.length && prevValue?.history?.length) {
-            next[k] = { ...update, history: prevValue.history };
-          } else {
-            next[k] = update;
-          }
-          changed = true;
-        }
-        return changed ? next : prev;
+        return next;
       });
     });
 
-    s.on("arbitrageDelta", (payload: ArbitrageDelta) => {
-      applyDelta(payload);
-      scheduleFlush();
-    });
-    s.on("arbitrageDeltaBatch", (payload: ArbitrageDeltaBatch) => {
-      const updates = Array.isArray(payload?.updates) ? payload.updates : [];
-      for (const update of updates) applyDelta(update);
+    s.on("arbitrageDelta", (payload) => {
+      const { symbol, upserts, deletes } = payload;
+
+      for (const opp of upserts) {
+        const sym = opp.ticker?.replace(/USDT$/i, "")?.toUpperCase();
+        opp.coinImage = coinImageCache.get(sym) || "/default-coin.png";
+        indexRef.current.set(keyOf(opp), opp);
+      }
+
+      for (const pair of deletes) {
+        indexRef.current.delete(keyFromPair(symbol, pair));
+      }
+
       scheduleFlush();
     });
 
@@ -320,7 +214,6 @@ export function useArbitrageSocket(
         s.emit("unsubscribe", { symbols: prevSymbolsRef.current });
       }
       s.emit("metrics:unsubscribe", {});
-      historySubRef.current = null;
       s.off();
       s.disconnect();
       socketRef.current = null;
@@ -341,44 +234,19 @@ export function useArbitrageSocket(
     ) {
       s.emit("metrics:unsubscribe", {});
       metricsKeysRef.current.clear();
-      historySubRef.current = null;
       prevConfig.period = metricsPeriod;
       prevConfig.intent = metricsIntent;
     }
 
     const keyMap = new Map<string, MetricsKey>();
-    if (useExplicitMetricsKeys) {
-      const explicitKeys = Array.isArray(visibleMetricsKeys)
-        ? visibleMetricsKeys
-        : [];
-      for (const rawKey of explicitKeys) {
-        const key = normalizeMetricsKey(rawKey);
-        if (!key) continue;
-        const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
-        keyMap.set(keyStr, key);
-      }
-    } else {
-      const scoreOf = (opp: ArbitrageOpportunity) => {
-        const v =
-          metricsIntent === "fechamento"
-            ? Number(opp.spreadS ?? opp.spread ?? 0)
-            : Number(opp.spread ?? 0);
-        return Number.isFinite(v) ? v : 0;
-      };
-      const orderedOpps = Array.from(indexRef.current.values())
-        .filter((opp) => Boolean(opp?.ticker))
-        .sort((a, b) => scoreOf(b) - scoreOf(a))
-        .slice(0, METRICS_MAX_KEYS);
-
-      for (const opp of orderedOpps) {
-        const symbol = opp.ticker?.toUpperCase();
-        if (!symbol) continue;
-        const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
-        const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
-        const key: MetricsKey = { symbol, spotExchange, futuresExchange };
-        const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
-        keyMap.set(keyStr, key);
-      }
+    for (const opp of indexRef.current.values()) {
+      const symbol = opp.ticker?.toUpperCase();
+      if (!symbol) continue;
+      const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
+      const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
+      const key: MetricsKey = { symbol, spotExchange, futuresExchange };
+      const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
+      keyMap.set(keyStr, key);
     }
 
     const currentSet = new Set(keyMap.keys());
@@ -419,73 +287,7 @@ export function useArbitrageSocket(
         intent: metricsIntent,
       });
     }
-  }, [
-    metricsPeriod,
-    metricsIntent,
-    opportunities,
-    visibleMetricsKeys,
-    useExplicitMetricsKeys,
-  ]);
-
-  useEffect(() => {
-    const s = socketRef.current;
-    if (!s || !s.connected) return;
-
-    const prev = historySubRef.current;
-    const nextPeriod = historyTarget?.period ?? metricsPeriod;
-    const nextIntent = historyTarget?.intent ?? metricsIntent;
-    const normalizedSymbol = historyTarget?.symbol
-      ?.toUpperCase()
-      .trim()
-      .replace(/[^A-Z0-9]/g, "");
-
-    const nextKey =
-      historyTarget &&
-      normalizedSymbol &&
-      historyTarget.spotExchange &&
-      historyTarget.futuresExchange
-        ? {
-            symbol: normalizedSymbol.endsWith("USDT")
-              ? normalizedSymbol
-              : `${normalizedSymbol}USDT`,
-            spotExchange: normalizeExchangeName(historyTarget.spotExchange),
-            futuresExchange: normalizeExchangeName(
-              historyTarget.futuresExchange
-            ),
-          }
-        : null;
-
-    const prevId = prev
-      ? metricsKeyString(prev.key, prev.period, prev.intent)
-      : null;
-    const nextId = nextKey
-      ? metricsKeyString(nextKey, nextPeriod, nextIntent)
-      : null;
-
-    if (prev && prevId && prevId !== nextId) {
-      s.emit("metrics:unsubscribe", {
-        keys: [prev.key],
-        period: prev.period,
-        intent: prev.intent,
-        includeHistory: true,
-      });
-      historySubRef.current = null;
-    }
-
-    if (!nextKey || nextId === prevId) return;
-
-    s.emit("metrics:subscribe", {
-      keys: [nextKey],
-      period: nextPeriod,
-      intent: nextIntent,
-      includeHistory: true,
-    });
-    historySubRef.current = {
-      key: nextKey,
-      period: nextPeriod,
-      intent: nextIntent,
-    };
-  }, [historyTarget, metricsPeriod, metricsIntent, isConnected]);
+  }, [metricsPeriod, metricsIntent, opportunities]);
 
   // 🔹 Detecta mudanças em symbols / refresh / exchanges
   useEffect(() => {
@@ -523,7 +325,6 @@ export function useArbitrageSocket(
         sellExchanges,
         lite,
         minSpread,
-        deltaMode,
       });
     }
 
@@ -531,21 +332,7 @@ export function useArbitrageSocket(
     prevRefreshRef.current = refreshRate;
     if (buyChanged) prevBuyRef.current = normList(buyExchanges);
     if (sellChanged) prevSellRef.current = normList(sellExchanges);
-  }, [
-    symbols,
-    refreshRate,
-    buyExchanges,
-    sellExchanges,
-    lite,
-    minSpread,
-    deltaMode,
-  ]);
+  }, [symbols, refreshRate, buyExchanges, sellExchanges, lite, minSpread]);
 
-  return {
-    opportunities,
-    setOpportunities,
-    isConnected,
-    metricsByKey,
-    metricsHistoryByKey,
-  };
+  return { opportunities, setOpportunities, isConnected, metricsByKey };
 }

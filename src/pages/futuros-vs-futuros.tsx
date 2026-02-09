@@ -6,6 +6,8 @@ import FuturesFuturesSidebar from "../components/new-page/sidebar-futures-future
 import NewPageHeader from "../components/new-page/header/header";
 import { DemoGlassTable } from "../components/new-page/glass-table/glass-table-futures-futures";
 import GlassModal from "../components/new-page/modal/glass-modal";
+import AlertIcon from "../components/Icons/AlertIcon";
+import FilterIcon from "../components/Icons/FilterIcon";
 import { appRouter } from "../server/router";
 import { GetServerSidePropsContext } from "next";
 import { createContext } from "../server/router/context";
@@ -35,10 +37,18 @@ export default function FuturesVsFuturesPage({
   const [maxProfit, setMaxProfit] = useState<number>(200);
   const [minLiquidity, setMinLiquidity] = useState<number>(0);
   const [minVolume24h, setMinVolume24h] = useState<number>(0);
+  const [minInverted, setMinInverted] = useState<number>(0);
+  const [minMaxOpenSpread, setMinMaxOpenSpread] = useState<number>(0);
+  const [minMaxCloseSpread, setMinMaxCloseSpread] = useState<number>(0);
   const [tempMinProfit, setTempMinProfit] = useState(minProfit);
   const [tempMaxProfit, setTempMaxProfit] = useState(maxProfit);
   const [tempMinLiquidity, setTempMinLiquidity] = useState(minLiquidity);
   const [tempMinVolume24h, setTempMinVolume24h] = useState(minVolume24h);
+  const [tempMinInverted, setTempMinInverted] = useState(minInverted);
+  const [tempMinMaxOpenSpread, setTempMinMaxOpenSpread] =
+    useState(minMaxOpenSpread);
+  const [tempMinMaxCloseSpread, setTempMinMaxCloseSpread] =
+    useState(minMaxCloseSpread);
 
   // Busca por símbolo
   const [symbolFilter, setSymbolFilter] = useState("");
@@ -163,8 +173,7 @@ export default function FuturesVsFuturesPage({
     refreshRate,
     buyExNames,
     sellExNames,
-    isSocketPaused,
-    "batch"
+    isSocketPaused
   );
 
   // Feedback visual no console
@@ -223,12 +232,26 @@ export default function FuturesVsFuturesPage({
       if (op.ticker?.toUpperCase().includes("MET")) return false;
 
       const p = isExitMode ? op.spreadS : op.spread;
+      const maxOpenPct = Math.max(
+        Number(op.tokenStats?.maxE1h ?? 0),
+        Number(op.tokenStats?.maxE6h ?? 0),
+        Number(op.tokenStats?.maxE24h ?? 0)
+      );
+      const maxClosePct = Math.max(
+        Number(op.tokenStats?.maxS1h ?? 0),
+        Number(op.tokenStats?.maxS6h ?? 0),
+        Number(op.tokenStats?.maxS24h ?? 0)
+      );
+      const invertedCount = Number((op as any)?.invertidas ?? 0);
       const pass =
         p < maxProfit &&
         p > minProfit &&
         askLiq >= minLiquidity &&
         bidLiq >= minLiquidity &&
-        (spotVol >= minVolume24h || futVol >= minVolume24h);
+        (spotVol >= minVolume24h || futVol >= minVolume24h) &&
+        invertedCount >= minInverted &&
+        maxOpenPct >= minMaxOpenSpread &&
+        maxClosePct >= minMaxCloseSpread;
 
       if (!pass) return false;
       if (!symbolFilter) return true;
@@ -247,6 +270,9 @@ export default function FuturesVsFuturesPage({
     maxProfit,
     minLiquidity,
     minVolume24h,
+    minInverted,
+    minMaxOpenSpread,
+    minMaxCloseSpread,
     symbolFilter,
     isExitMode,
   ]);
@@ -263,11 +289,13 @@ export default function FuturesVsFuturesPage({
       }
     });
 
-  const [tempSpreadValue, setTempSpreadValue] = useState<number>(1.0);
-  const [tempAlertDuration, setTempAlertDuration] = useState<number>(60);
+  const [tempSpreadValue, setTempSpreadValue] = useState<number | "">(1.0);
+  const [tempAlertDuration, setTempAlertDuration] = useState<number | "">(60);
   const [tempRepeatAlerts, setTempRepeatAlerts] = useState<boolean>(false);
-  const [tempAlertInterval, setTempAlertInterval] = useState<number>(30);
+  const [tempAlertInterval, setTempAlertInterval] = useState<number | "">(30);
   const [validationError, setValidationError] = useState<string>("");
+  const toNumber = (value: number | "") =>
+    value === "" ? Number.NaN : Number(value);
 
   useEffect(() => {
     if (isCustomModalOpen && spreadAlertConfig) {
@@ -486,120 +514,263 @@ export default function FuturesVsFuturesPage({
         isOpen={isCustomModalOpen}
         onClose={() => setIsCustomModalOpen(false)}
         title="Alerta Geral de Spread (Futures/Futures)"
+        shellless
+        panelClassName={styles.alertNarrowPanel}
+        bodyClassName={styles.alertNarrowBody}
       >
-        <div className={styles.modalContent}>
-          <div className={styles.alertDescription}>
-            <p>Configure um valor de spread para arbitragem entre futuros.</p>
+        <div className={`${styles.modalContent} ${styles.alertModalBody}`}>
+          <div className={styles.alertConfigV2}>
+            <div className={styles.alertInlineHeader}>
+              <h3 className={styles.alertInlineTitle}>
+                Alerta Geral de Spread (Futures/Futures)
+                <AlertIcon className={styles.alertInlineTitleIcon} />
+              </h3>
+              <button
+                type="button"
+                className={styles.alertInlineClose}
+                onClick={() => setIsCustomModalOpen(false)}
+                aria-label="Fechar modal de alerta"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.alertIntroCard}>
+              <h4 className={styles.alertIntroTitle}>Alerta Geral de Spread</h4>
+              <p className={styles.alertIntroText}>
+                Monitora automaticamente todas as oportunidades Futures/Futures
+                e dispara alerta quando o spread atingir ou ultrapassar o valor
+                definido.
+              </p>
+            </div>
+
+            <div className={styles.alertFieldGrid}>
+              <label className={styles.alertField}>
+                Valor do Spread (%)
+                <div className={styles.alertInputWrap}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={tempSpreadValue}
+                    onChange={(e) =>
+                      setTempSpreadValue(
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      )
+                    }
+                    placeholder="Ex: 1.5"
+                  />
+                  <span className={styles.alertUnit}>%</span>
+                </div>
+                <div className={styles.alertPresets}>
+                  {[0.5, 1, 1.5, 2].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className={`${styles.alertPresetBtn} ${
+                        toNumber(tempSpreadValue) === preset
+                          ? styles.activePreset
+                          : ""
+                      }`}
+                      onClick={() => setTempSpreadValue(preset)}
+                    >
+                      {preset}%
+                    </button>
+                  ))}
+                </div>
+              </label>
+
+              <label className={styles.alertField}>
+                Duração do Alerta (segundos)
+                <div className={styles.alertInputWrap}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="300"
+                    value={tempAlertDuration}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? Number.NaN
+                          : Number(e.target.value);
+                      setTempAlertDuration(
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      );
+                      if (
+                        tempRepeatAlerts &&
+                        Number.isFinite(value) &&
+                        Number.isFinite(toNumber(tempAlertInterval)) &&
+                        value > toNumber(tempAlertInterval)
+                      ) {
+                        setValidationError(
+                          "A duração não pode ser maior que o intervalo entre alertas"
+                        );
+                      } else {
+                        setValidationError("");
+                      }
+                    }}
+                    placeholder="Ex: 60"
+                  />
+                  <span className={styles.alertUnit}>s</span>
+                </div>
+                <span className={styles.inputHint}>Máximo: 300 segundos</span>
+              </label>
+            </div>
+
+            <div className={styles.alertToggleRow}>
+              <div className={styles.alertToggleMeta}>
+                <span className={styles.switchLabel}>
+                  Ativar alertas repetidos
+                </span>
+                <span className={styles.inputHint}>
+                  Reenvia alerta caso a arbitragem continue acima do spread.
+                </span>
+              </div>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={tempRepeatAlerts}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setTempRepeatAlerts(checked);
+                    if (
+                      checked &&
+                      Number.isFinite(toNumber(tempAlertDuration)) &&
+                      Number.isFinite(toNumber(tempAlertInterval)) &&
+                      toNumber(tempAlertDuration) > toNumber(tempAlertInterval)
+                    ) {
+                      setTempAlertInterval(toNumber(tempAlertDuration));
+                    }
+                    setValidationError("");
+                  }}
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </div>
+
+            {tempRepeatAlerts && (
+              <label className={styles.alertField}>
+                Intervalo entre Alertas (segundos)
+                <div className={styles.alertInputWrap}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="300"
+                    value={tempAlertInterval}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? Number.NaN
+                          : Number(e.target.value);
+                      setTempAlertInterval(
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      );
+                      if (
+                        Number.isFinite(value) &&
+                        Number.isFinite(toNumber(tempAlertDuration)) &&
+                        value < toNumber(tempAlertDuration)
+                      ) {
+                        setValidationError(
+                          "O intervalo deve ser maior ou igual à duração do alerta"
+                        );
+                      } else {
+                        setValidationError("");
+                      }
+                    }}
+                    placeholder="Ex: 30"
+                  />
+                  <span className={styles.alertUnit}>s</span>
+                </div>
+                <span className={styles.inputHint}>
+                  Deve ser maior ou igual à duração do alerta.
+                </span>
+              </label>
+            )}
+
+            <div className={styles.alertPreview}>
+              Vai alertar quando spread &ge;{" "}
+              <strong>
+                {Number.isFinite(toNumber(tempSpreadValue))
+                  ? toNumber(tempSpreadValue).toFixed(2)
+                  : "0.00"}
+                %
+              </strong>{" "}
+              por{" "}
+              <strong>
+                {Math.max(
+                  0,
+                  Number.isFinite(toNumber(tempAlertDuration))
+                    ? toNumber(tempAlertDuration)
+                    : 0
+                )}
+                s
+              </strong>
+              {tempRepeatAlerts && (
+                <>
+                  {" "}
+                  a cada{" "}
+                  <strong>
+                    {Math.max(
+                      0,
+                      Number.isFinite(toNumber(tempAlertInterval))
+                        ? toNumber(tempAlertInterval)
+                        : 0
+                    )}
+                    s
+                  </strong>
+                </>
+              )}
+              .
+            </div>
+
+            {validationError && (
+              <div className={styles.validationError}>{validationError}</div>
+            )}
           </div>
-
-          <label>
-            Valor do Spread (%):
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={tempSpreadValue}
-              onChange={(e) => setTempSpreadValue(Number(e.target.value))}
-              placeholder="Ex: 1.5"
-            />
-          </label>
-
-          <label>
-            Duração do Alerta (segundos):
-            <input
-              type="number"
-              min="1"
-              max="300"
-              value={tempAlertDuration}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setTempAlertDuration(value);
-                if (tempRepeatAlerts && value > tempAlertInterval) {
-                  setValidationError(
-                    "A duração não pode ser maior que o intervalo entre alertas"
-                  );
-                } else {
-                  setValidationError("");
-                }
-              }}
-              placeholder="Ex: 60"
-            />
-            <span className={styles.inputHint}>
-              Máximo: 300 segundos (5 minutos)
-            </span>
-          </label>
-
-          <div className={styles.switchContainer}>
-            <label className={styles.switchLabel}>
-              Enviar alertas repetidos?
-            </label>
-            <label className={styles.switch}>
-              <input
-                type="checkbox"
-                checked={tempRepeatAlerts}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setTempRepeatAlerts(checked);
-                  if (checked && tempAlertDuration > tempAlertInterval) {
-                    setTempAlertInterval(tempAlertDuration);
-                    setValidationError("");
-                  } else {
-                    setValidationError("");
-                  }
-                }}
-              />
-              <span className={styles.slider}></span>
-            </label>
-          </div>
-
-          {tempRepeatAlerts && (
-            <label>
-              Intervalo entre Alertas (segundos):
-              <input
-                type="number"
-                min="1"
-                max="300"
-                value={tempAlertInterval}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setTempAlertInterval(value);
-                  if (value < tempAlertDuration) {
-                    setValidationError(
-                      "O intervalo deve ser maior ou igual à duração do alerta"
-                    );
-                  } else {
-                    setValidationError("");
-                  }
-                }}
-                placeholder="Ex: 30"
-              />
-              <span className={styles.inputHint}>
-                Máximo: 300 segundos (5 minutos). Deve ser ≥ duração do alerta
-              </span>
-            </label>
-          )}
-
-          {validationError && (
-            <div className={styles.validationError}>{validationError}</div>
-          )}
         </div>
 
-        <div className={styles.modalButtons}>
+        <div className={`${styles.modalButtons} ${styles.alertModalActions}`}>
           <button
             className={styles.confirmButton}
             onClick={() => {
-              if (tempRepeatAlerts && tempAlertDuration > tempAlertInterval) {
+              const spreadValue = toNumber(tempSpreadValue);
+              const alertDuration = toNumber(tempAlertDuration);
+              const alertInterval = toNumber(tempAlertInterval);
+
+              if (!Number.isFinite(spreadValue) || spreadValue < 0) {
+                setValidationError("Informe um valor de spread válido.");
+                return;
+              }
+
+              if (!Number.isFinite(alertDuration) || alertDuration <= 0) {
+                setValidationError("Informe uma duração válida para o alerta.");
+                return;
+              }
+
+              if (
+                tempRepeatAlerts &&
+                (!Number.isFinite(alertInterval) || alertInterval <= 0)
+              ) {
+                setValidationError(
+                  "Informe um intervalo válido entre alertas."
+                );
+                return;
+              }
+
+              if (tempRepeatAlerts && alertDuration > alertInterval) {
                 setValidationError(
                   "A duração não pode ser maior que o intervalo entre alertas"
                 );
                 return;
               }
 
-              const finalDuration = Math.min(tempAlertDuration, 300);
-              const finalInterval = Math.min(tempAlertInterval, 300);
+              const finalDuration = Math.min(alertDuration, 300);
+              const finalInterval = Math.min(
+                Number.isFinite(alertInterval) ? alertInterval : finalDuration,
+                300
+              );
 
               const newConfig: SpreadAlertConfig = {
-                spreadValue: tempSpreadValue,
+                spreadValue,
                 alertDuration: finalDuration,
                 repeatAlerts: tempRepeatAlerts,
                 alertInterval: finalInterval,
@@ -615,7 +786,9 @@ export default function FuturesVsFuturesPage({
             }}
             disabled={!!validationError}
           >
-            {spreadAlertConfig?.isActive ? "Atualizar Alerta" : "Ativar Alerta"}
+            {spreadAlertConfig?.isActive
+              ? "Salvar Alterações"
+              : "Ativar Alerta"}
           </button>
           {spreadAlertConfig?.isActive && (
             <button
@@ -650,43 +823,185 @@ export default function FuturesVsFuturesPage({
         isOpen={isFilterModalOpen}
         onClose={closeFilter}
         title="Filtro de Lucro"
+        shellless
+        panelClassName={styles.filterNarrowPanel}
+        bodyClassName={styles.filterNarrowBody}
       >
-        <div className={styles.modalContent}>
-          <label>
-            Lucro Mínimo (%):
-            <input
-              type="number"
-              value={tempMinProfit}
-              onChange={(e) => setTempMinProfit(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Lucro Máximo (%):
-            <input
-              type="number"
-              value={tempMaxProfit}
-              onChange={(e) => setTempMaxProfit(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Liquidez Mínima (USDT):
-            <input
-              type="number"
-              value={tempMinLiquidity}
-              onChange={(e) => setTempMinLiquidity(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Volume Mínimo (24h USDT):
-            <input
-              type="number"
-              value={tempMinVolume24h}
-              onChange={(e) => setTempMinVolume24h(Number(e.target.value))}
-            />
-          </label>
+        <div className={`${styles.modalContent} ${styles.filterModalBody}`}>
+          <div className={styles.filterConfigV2}>
+            <div className={styles.filterInlineHeader}>
+              <h3 className={styles.filterInlineTitle}>
+                Filtro de Lucro
+                <FilterIcon className={styles.filterInlineTitleIcon} />
+              </h3>
+              <button
+                type="button"
+                className={styles.alertInlineClose}
+                onClick={closeFilter}
+                aria-label="Fechar modal de filtros"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className={styles.filterIntroCard}>
+              <h4 className={styles.filterIntroTitle}>Filtro Operacional</h4>
+              <p className={styles.filterIntroText}>
+                Defina faixa de lucro e mínimos de liquidez/volume para mostrar
+                apenas oportunidades relevantes no monitor.
+              </p>
+            </div>
+
+            <div className={styles.filterFieldGrid}>
+              <label className={styles.filterField}>
+                Lucro Mín.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    value={tempMinProfit}
+                    onChange={(e) => setTempMinProfit(Number(e.target.value))}
+                  />
+                  <span className={styles.filterUnit}>%</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Lucro Máx.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    value={tempMaxProfit}
+                    onChange={(e) => setTempMaxProfit(Number(e.target.value))}
+                  />
+                  <span className={styles.filterUnit}>%</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Liquidez Mín.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    value={tempMinLiquidity}
+                    onChange={(e) =>
+                      setTempMinLiquidity(Number(e.target.value))
+                    }
+                  />
+                  <span className={styles.filterUnit}>USDT</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Volume Mín. 24h
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    value={tempMinVolume24h}
+                    onChange={(e) =>
+                      setTempMinVolume24h(Number(e.target.value))
+                    }
+                  />
+                  <span className={styles.filterUnit}>USDT</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Maior Spread de Fechamento Mín.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={tempMinMaxCloseSpread}
+                    onChange={(e) =>
+                      setTempMinMaxCloseSpread(Number(e.target.value))
+                    }
+                  />
+                  <span className={styles.filterUnit}>%</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Maior Spread de Abertura Mín.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={tempMinMaxOpenSpread}
+                    onChange={(e) =>
+                      setTempMinMaxOpenSpread(Number(e.target.value))
+                    }
+                  />
+                  <span className={styles.filterUnit}>%</span>
+                </div>
+              </label>
+
+              <label className={styles.filterField}>
+                Invertidas Mín.
+                <div className={styles.filterInputWrap}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={tempMinInverted}
+                    onChange={(e) => setTempMinInverted(Number(e.target.value))}
+                  />
+                </div>
+              </label>
+            </div>
+
+            <div className={styles.filterPreview}>
+              <div className={styles.filterPreviewGrid}>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>Lucro</span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinProfit}% - {tempMaxProfit}%
+                  </strong>
+                </div>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>
+                    Liquidez Mín.
+                  </span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinLiquidity} USDT
+                  </strong>
+                </div>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>
+                    Volume 24h Mín.
+                  </span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinVolume24h} USDT
+                  </strong>
+                </div>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>
+                    Fechamento Mín
+                  </span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinMaxCloseSpread}%
+                  </strong>
+                </div>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>
+                    Abertura Mín
+                  </span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinMaxOpenSpread}%
+                  </strong>
+                </div>
+                <div className={styles.filterPreviewItem}>
+                  <span className={styles.filterPreviewLabel}>
+                    Invertidas Mín.
+                  </span>
+                  <strong className={styles.filterPreviewValue}>
+                    {tempMinInverted}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className={styles.modalButtons}>
+        <div className={`${styles.modalButtons} ${styles.filterModalActions}`}>
           <button
             className={styles.confirmButton}
             onClick={() => {
@@ -694,6 +1009,9 @@ export default function FuturesVsFuturesPage({
               setMaxProfit(tempMaxProfit);
               setMinLiquidity(tempMinLiquidity);
               setMinVolume24h(tempMinVolume24h);
+              setMinInverted(tempMinInverted);
+              setMinMaxOpenSpread(tempMinMaxOpenSpread);
+              setMinMaxCloseSpread(tempMinMaxCloseSpread);
               setIsFilterModalOpen(false);
             }}
           >
