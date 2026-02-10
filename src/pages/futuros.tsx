@@ -317,6 +317,30 @@ export default function FuturosNewPage({
     return raw.trim();
   };
 
+  const metricsByKeyForUI = useMemo(() => {
+    const out: Record<string, any> = { ...metricsByKey };
+    for (const [key, value] of Object.entries(metricsByKey)) {
+      const parts = key.split(":");
+      if (parts.length < 5) continue;
+      const [symbol, spotEx, futEx, period, intent] = parts;
+      if (!symbol || !spotEx || !futEx || !period || !intent) continue;
+      const baseSymbol = symbol.replace(/USDT$/i, "");
+      const symbolUsdt = symbol.toUpperCase().endsWith("USDT")
+        ? symbol
+        : `${symbol}USDT`;
+      const add = (sym: string, sEx: string, fEx: string) => {
+        if (!sym || !sEx || !fEx) return;
+        out[`${sym}:${sEx}:${fEx}:${period}:${intent}`] = value as any;
+        out[`${sym}:${sEx} Spot:${fEx} Futures:${period}:${intent}`] =
+          value as any;
+      };
+      add(symbol, spotEx, futEx);
+      add(symbolUsdt, spotEx, futEx);
+      if (baseSymbol && baseSymbol != symbol) add(baseSymbol, spotEx, futEx);
+    }
+    return out;
+  }, [metricsByKey]);
+
   const getMetricsForOpp = useCallback(
     (op: ArbitrageOpportunity) => {
       const rawTicker = (op.ticker ?? "").toUpperCase().trim();
@@ -340,7 +364,7 @@ export default function FuturosNewPage({
         for (const spotExchange of spotCandidates) {
           for (const futuresExchange of futuresCandidates) {
             const key = `${symbol}:${spotExchange}:${futuresExchange}:${metricsPeriod}:${metricsIntent}`;
-            const found = metricsByKey[key];
+            const found = metricsByKeyForUI[key];
             if (found) return found;
           }
         }
@@ -579,7 +603,7 @@ export default function FuturosNewPage({
       <main className={styles.main}>
         {/* ⬇️ Tabela já com filtros aplicados */}
         <DemoGlassTable
-          metricsByKey={metricsByKey}
+          metricsByKey={metricsByKeyForUI}
           metricsPeriod={metricsPeriod}
           metricsIntent={metricsIntent}
           onMetricsPeriodChange={setMetricsPeriod}

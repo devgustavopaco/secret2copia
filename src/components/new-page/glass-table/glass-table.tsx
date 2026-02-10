@@ -2597,11 +2597,48 @@ export function DemoGlassTable({
     if (!metricsByKey) {
       return { invertidas: 0, maxOpen: undefined, maxClose: undefined };
     }
-    const key: MetricsKey = {
-      symbol: `${row.coin.ticker}USDT`,
-      spotExchange: normalizeExchangeLabel(row.spot.bingo),
-      futuresExchange: normalizeExchangeLabel(row.futures.bingo),
-    };
+
+    const baseTicker = String(row.coin.ticker ?? "").trim();
+    const symbolCandidates = Array.from(
+      new Set(
+        [
+          baseTicker,
+          baseTicker.toUpperCase(),
+          `${baseTicker}USDT`,
+          `${baseTicker.toUpperCase()}USDT`,
+        ].filter(Boolean)
+      )
+    );
+
+    const rawSpot = String(row.spot.bingo ?? "").trim();
+    const rawFut = String(row.futures.bingo ?? "").trim();
+    const normSpot = normalizeExchangeLabel(rawSpot);
+    const normFut = normalizeExchangeLabel(rawFut);
+
+    const spotCandidates = Array.from(
+      new Set(
+        [
+          normSpot,
+          normSpot.toUpperCase(),
+          rawSpot,
+          rawSpot.toUpperCase(),
+          rawSpot.replace(/ spot| futures/gi, "").trim(),
+        ].filter(Boolean)
+      )
+    );
+
+    const futuresCandidates = Array.from(
+      new Set(
+        [
+          normFut,
+          normFut.toUpperCase(),
+          rawFut,
+          rawFut.toUpperCase(),
+          rawFut.replace(/ spot| futures/gi, "").trim(),
+        ].filter(Boolean)
+      )
+    );
+
     const periods: MetricsPeriod[] = [
       selectedMetricsPeriod,
       "4h",
@@ -2615,18 +2652,33 @@ export function DemoGlassTable({
       "abertura",
       "fechamento",
     ];
+
     let metrics: MetricsUpdate | undefined;
     for (const intent of intents) {
       for (const period of periods) {
-        const lookupKey = metricsKeyString(key, period, intent);
-        const candidate = metricsByKey[lookupKey];
-        if (candidate) {
-          metrics = candidate;
-          break;
+        for (const symbol of symbolCandidates) {
+          for (const spotExchange of spotCandidates) {
+            for (const futuresExchange of futuresCandidates) {
+              const lookupKey = metricsKeyString(
+                { symbol, spotExchange, futuresExchange },
+                period,
+                intent
+              );
+              const candidate = metricsByKey[lookupKey];
+              if (candidate) {
+                metrics = candidate;
+                break;
+              }
+            }
+            if (metrics) break;
+          }
+          if (metrics) break;
         }
+        if (metrics) break;
       }
       if (metrics) break;
     }
+
     return {
       invertidas: metrics?.invertidas ?? 0,
       maxOpen: metrics?.maxOpenPct,

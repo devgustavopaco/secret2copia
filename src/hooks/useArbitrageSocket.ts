@@ -23,6 +23,7 @@ type MetricsUpdate = {
 type MetricsUpdateBatch = { updates: MetricsUpdate[] };
 
 const SOCKET_URL = "https://almeidashop.shop/";
+const METRICS_SOCKET_PATH = "/metrics/socket.io";
 const keyOf = (opp: ArbitrageOpportunity) =>
   `${opp.ticker}-${opp.lowestAsk.exchange}-${opp.highestBid.exchange}`;
 
@@ -75,6 +76,34 @@ export function useArbitrageSocket(
   // 🔹 cache de logos em memória do frontend
   const coinImageCache = useRef<Map<string, string>>(new Map()).current;
 
+  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
+    []
+  );
+  const [metricsByKey, setMetricsByKey] = useState<
+    Record<string, MetricsUpdate>
+  >({});
+
+  useEffect(() => {
+    try {
+      (window as any).__metricsByKey = metricsByKey;
+    } catch {}
+  }, [metricsByKey]);
+  const metricsKeysRef = useRef<Set<string>>(new Set());
+  const prevMetricsConfigRef = useRef({
+    period: metricsPeriod,
+    intent: metricsIntent,
+  });
+  const metricsPeriodRef = useRef(metricsPeriod);
+  const metricsIntentRef = useRef(metricsIntent);
+  const socketRef = useRef<Socket | null>(null);
+  const metricsSocketRef = useRef<Socket | null>(null);
+  const indexRef = useRef<Map<string, ArbitrageOpportunity>>(new Map());
+  const prevSymbolsRef = useRef<string[]>([]);
+  const prevRefreshRef = useRef<number>(refreshRate);
+  const prevBuyRef = useRef<string[]>(normList(buyExchanges));
+  const prevSellRef = useRef<string[]>(normList(sellExchanges));
+  const [isConnected, setIsConnected] = useState(false);
+
   // ✅ faz apenas uma chamada ao /api/coins/logos por sessão
   useEffect(() => {
     let cancelled = false;
@@ -102,24 +131,10 @@ export function useArbitrageSocket(
     };
   }, [coinImageCache]);
 
-  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>(
-    []
-  );
-  const [metricsByKey, setMetricsByKey] = useState<
-    Record<string, MetricsUpdate>
-  >({});
-  const metricsKeysRef = useRef<Set<string>>(new Set());
-  const prevMetricsConfigRef = useRef({
-    period: metricsPeriod,
-    intent: metricsIntent,
-  });
-  const socketRef = useRef<Socket | null>(null);
-  const indexRef = useRef<Map<string, ArbitrageOpportunity>>(new Map());
-  const prevSymbolsRef = useRef<string[]>([]);
-  const prevRefreshRef = useRef<number>(refreshRate);
-  const prevBuyRef = useRef<string[]>(normList(buyExchanges));
-  const prevSellRef = useRef<string[]>(normList(sellExchanges));
-  const [isConnected, setIsConnected] = useState(false);
+  useEffect(() => {
+    metricsPeriodRef.current = metricsPeriod;
+    metricsIntentRef.current = metricsIntent;
+  }, [metricsPeriod, metricsIntent]);
 
   useEffect(() => {
     if (isPaused) {
@@ -127,12 +142,22 @@ export function useArbitrageSocket(
         socketRef.current.disconnect();
         socketRef.current = null;
       }
+      if (metricsSocketRef.current) {
+        metricsSocketRef.current.disconnect();
+        metricsSocketRef.current = null;
+      }
       setIsConnected(false);
       return;
     }
 
     const s = io(SOCKET_URL, { transports: ["websocket"] });
     socketRef.current = s;
+
+    const ms = io(SOCKET_URL, {
+      transports: ["websocket"],
+      path: METRICS_SOCKET_PATH,
+    });
+    metricsSocketRef.current = ms;
 
     const subscribeCurrent = () => {
       if (!s.connected) return;
@@ -178,7 +203,7 @@ export function useArbitrageSocket(
     });
 
     // 🔹 Deltas incrementais
-    s.on("metrics:update", (payload: MetricsUpdate | MetricsUpdateBatch) => {
+    ms.on("metrics:update", (payload: MetricsUpdate | MetricsUpdateBatch) => {
       const updates = Array.isArray((payload as MetricsUpdateBatch).updates)
         ? (payload as MetricsUpdateBatch).updates
         : [payload as MetricsUpdate];
@@ -214,7 +239,12 @@ export function useArbitrageSocket(
       if (prevSymbolsRef.current.length) {
         s.emit("unsubscribe", { symbols: prevSymbolsRef.current });
       }
-      s.emit("metrics:unsubscribe", {});
+      if (metricsSocketRef.current) {
+        metricsSocketRef.current.emit("metrics:unsubscribe", {});
+        metricsSocketRef.current.off();
+        metricsSocketRef.current.disconnect();
+        metricsSocketRef.current = null;
+      }
       s.off();
       s.disconnect();
       socketRef.current = null;
@@ -225,71 +255,85 @@ export function useArbitrageSocket(
   }, [isPaused]);
 
   useEffect(() => {
-    const s = socketRef.current;
-    if (!s || !s.connected) return;
+    const ms = metricsSocketRef.current;
+    if (!ms) return;
 
-    const prevConfig = prevMetricsConfigRef.current;
-    if (
-      prevConfig.period !== metricsPeriod ||
-      prevConfig.intent !== metricsIntent
-    ) {
-      s.emit("metrics:unsubscribe", {});
-      metricsKeysRef.current.clear();
-      prevConfig.period = metricsPeriod;
-      prevConfig.intent = metricsIntent;
-    }
+    const syncMetricsSubs = () => {
+      if (!ms.connected) return;
 
-    const keyMap = new Map<string, MetricsKey>();
-    for (const opp of indexRef.current.values()) {
-      const symbol = opp.ticker?.toUpperCase();
-      if (!symbol) continue;
-      const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
-      const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
-      const key: MetricsKey = { symbol, spotExchange, futuresExchange };
-      const keyStr = metricsKeyString(key, metricsPeriod, metricsIntent);
-      keyMap.set(keyStr, key);
-    }
+      const prevConfig = prevMetricsConfigRef.current;
+      const period = metricsPeriodRef.current;
+      const intent = metricsIntentRef.current;
 
-    const currentSet = new Set(keyMap.keys());
-    const added: MetricsKey[] = [];
-    for (const [keyStr, key] of keyMap.entries()) {
-      if (!metricsKeysRef.current.has(keyStr)) {
-        metricsKeysRef.current.add(keyStr);
-        added.push(key);
+      if (prevConfig.period !== period || prevConfig.intent !== intent) {
+        ms.emit("metrics:unsubscribe", {});
+        metricsKeysRef.current.clear();
+        prevConfig.period = period;
+        prevConfig.intent = intent;
       }
-    }
 
-    const removed: MetricsKey[] = [];
-    for (const keyStr of Array.from(metricsKeysRef.current)) {
-      if (currentSet.has(keyStr)) continue;
-      metricsKeysRef.current.delete(keyStr);
-      const parts = keyStr.split(":");
-      if (parts.length >= 3) {
-        const symbol = parts[0];
-        const spotExchange = parts[1];
-        const futuresExchange = parts[2];
-        if (symbol && spotExchange && futuresExchange) {
-          removed.push({ symbol, spotExchange, futuresExchange });
+      const keyMap = new Map<string, MetricsKey>();
+      for (const opp of indexRef.current.values()) {
+        const symbol = opp.ticker?.toUpperCase();
+        if (!symbol) continue;
+        const spotExchange = normalizeExchangeName(opp.lowestAsk.exchange);
+        const futuresExchange = normalizeExchangeName(opp.highestBid.exchange);
+        const key: MetricsKey = { symbol, spotExchange, futuresExchange };
+        const keyStr = metricsKeyString(key, period, intent);
+        keyMap.set(keyStr, key);
+      }
+
+      const currentSet = new Set(keyMap.keys());
+      const added: MetricsKey[] = [];
+      for (const [keyStr, key] of keyMap.entries()) {
+        if (!metricsKeysRef.current.has(keyStr)) {
+          metricsKeysRef.current.add(keyStr);
+          added.push(key);
         }
       }
-    }
 
-    if (removed.length) {
-      s.emit("metrics:unsubscribe", {
-        keys: removed,
-        period: metricsPeriod,
-        intent: metricsIntent,
-      });
-    }
-    if (added.length) {
-      s.emit("metrics:subscribe", {
-        keys: added,
-        period: metricsPeriod,
-        intent: metricsIntent,
-      });
-    }
+      const removed: MetricsKey[] = [];
+      for (const keyStr of Array.from(metricsKeysRef.current)) {
+        if (currentSet.has(keyStr)) continue;
+        metricsKeysRef.current.delete(keyStr);
+        const parts = keyStr.split(":");
+        if (parts.length >= 3) {
+          const symbol = parts[0];
+          const spotExchange = parts[1];
+          const futuresExchange = parts[2];
+          if (symbol && spotExchange && futuresExchange) {
+            removed.push({ symbol, spotExchange, futuresExchange });
+          }
+        }
+      }
+
+      if (removed.length) {
+        ms.emit("metrics:unsubscribe", {
+          keys: removed,
+          period,
+          intent,
+        });
+      }
+      if (added.length) {
+        ms.emit("metrics:subscribe", {
+          keys: added,
+          period,
+          intent,
+        });
+      }
+    };
+
+    const onConnect = () => syncMetricsSubs();
+    if (!ms.connected) ms.on("connect", onConnect);
+
+    syncMetricsSubs();
+
+    return () => {
+      ms.off("connect", onConnect);
+    };
   }, [metricsPeriod, metricsIntent, opportunities]);
 
+  // 🔹 Detecta mudanças em symbols / refresh / exchanges
   // 🔹 Detecta mudanças em symbols / refresh / exchanges
   useEffect(() => {
     const s = socketRef.current;
